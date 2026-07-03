@@ -1,6 +1,6 @@
 @{
     ViewData["Title"] = "تفاصيل الطبيب";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
     var doctor = ViewBag.Doctor as MockDoctor;
     var clinics = ViewBag.Clinics as List<MockClinic> ?? new();
     MockClinic? clinic = null;
