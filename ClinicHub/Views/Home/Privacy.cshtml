@@ -1,8 +1,79 @@
 @{
-    ViewData["Title"] = "سياسة الخصوصية";
+    ViewData["Title"] = "سياسة الخصوصية وأمن البيانات - Doctory";
 }
-<h2 class="page-title">@ViewData["Title"]</h2>
 
-<div class="table-card" style="padding: 24px;">
-    <p>تستخدم هذه الصفحة لتفصيل سياسة الخصوصية الخاصة بموقعك.</p>
-</div>
+<!-- Security & Privacy Section -->
+<section style="background: radial-gradient(circle at 10% 20%, rgba(74, 144, 226, 0.05) 0%, rgba(255, 255, 255, 1) 90%); padding: 60px 0;">
+    <div class="container">
+        <div class="text-center" style="margin-bottom: 50px;">
+            <h1 style="font-size: 36px; font-weight: 800; color: var(--text-dark); margin-bottom: 20px;">سياسة الخصوصية وأمن البيانات</h1>
+            <p style="font-size: 16px; color: var(--text-muted); max-width: 800px; margin: 0 auto; line-height: 1.8;">
+                في منصة <strong>Doctory</strong>، نضع أمن المعلومات الطبية والتشغيلية وسريتها على رأس أولوياتنا. نتبع معايير أمنية صارمة لضمان حماية بياناتكم.
+            </p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <!-- Data Encryption Card -->
+            <div class="col-lg-6">
+                <div style="background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 30px; height: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <span style="font-size: 32px; color: var(--primary-color);">🔒</span>
+                        <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin: 0;">تشفير وحماية البيانات</h3>
+                    </div>
+                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.8; margin-bottom: 0;">
+                        يتم تشفير جميع حركات مرور البيانات بين المتصفح والخوادم باستخدام بروتوكول <strong>HTTPS</strong> الآمن وتشفير <strong>SSL/TLS</strong>. كما يتم تشفير كلمات المرور والبيانات الحساسة في قواعد البيانات لمنع أي وصول غير مصرح به.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Isolation Card -->
+            <div class="col-lg-6">
+                <div style="background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 30px; height: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <span style="font-size: 32px; color: var(--primary-color);">🛡️</span>
+                        <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin: 0;">عزل بيانات المشتركين</h3>
+                    </div>
+                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.8; margin-bottom: 0;">
+                        نطبق نظام عزل قواعد بيانات صارم (Multi-Tenant Isolation). يضمن هذا النظام عدم إمكانية تداخل بيانات أي عيادة مشتركة مع عيادة أخرى، ويحفظ خصوصية السجلات الطبية وبيانات المرضى والأطباء الخاصة بكل عيادة على حدة.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Roles Card -->
+            <div class="col-lg-6">
+                <div style="background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 30px; height: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <span style="font-size: 32px; color: var(--primary-color);">👥</span>
+                        <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin: 0;">التحكم بالصلاحيات والأدوار</h3>
+                    </div>
+                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.8; margin-bottom: 0;">
+                        يعتمد النظام على إدارة الصلاحيات المبنية على الأدوار (Role-Based Access Control). لا يمكن لأي مستخدم الوصول إلى أي شاشة أو بيان إلا بعد التحقق من دوره وامتلاكه للصلاحية المناسبة (مدير نظام، مالك عيادة، كادر طبي).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Backup Card -->
+            <div class="col-lg-6">
+                <div style="background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 30px; height: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <span style="font-size: 32px; color: var(--primary-color);">💾</span>
+                        <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin: 0;">النسخ الاحتياطي المستمر</h3>
+                    </div>
+                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.8; margin-bottom: 0;">
+                        نقوم بإجراء نسخ احتياطي يومي وتلقائي لقواعد البيانات والملفات التشغيلية للعيادات. يتم حفظ هذه النسخ في خوادم مشفرة ومنعزلة جغرافياً لضمان القدرة على استعادة النظام والبيانات في حالات الطوارئ دون أي فقدان للمعلومات الطبية.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 50px; background-color: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+            <h3 style="font-size: 22px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">التزامنا القانوني والأخلاقي</h3>
+            <p style="font-size: 14px; color: var(--text-muted); line-height: 1.9; margin-bottom: 15px;">
+                نلتزم في منصة Doctory بالقوانين والتشريعات المحلية والدولية المنظمة لحماية خصوصية البيانات الطبية للمرضى (مثل معايير HIPAA وGDPR). نحن نضمن عدم بيع، أو مشاركة، أو استخدام بياناتكم أو بيانات مرضاكم لأي أغراض تسويقية أو تجارية خارج نطاق تشغيل عيادتكم.
+            </p>
+            <p style="font-size: 14px; color: var(--text-muted); line-height: 1.9; margin-bottom: 0;">
+                لأي استفسارات أو بلاغات أمنية تتعلق بخصوصية بياناتكم على المنصة، يرجى التواصل مع فريق حماية البيانات المخصص لدينا عبر البريد الإلكتروني: <strong style="color: var(--primary-color);">security@doctory.com</strong>
+            </p>
+        </div>
+    </div>
+</section>
