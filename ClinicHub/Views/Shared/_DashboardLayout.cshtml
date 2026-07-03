@@ -26,24 +26,73 @@
                 </div>
             </div>
             <nav class="sidebar-menu">
-                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")" href="@AdminRoutes.Pages.Index()">
-                    <!-- Grid/Home SVG -->
+                @{
+                    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+                    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                    bool IsActive(string ctrl, string? action = null) =>
+                        currentController == ctrl && (action == null || currentAction == action);
+                }
+                <a class="sidebar-item @(IsActive("Admin", "Index") ? "active" : "")" asp-controller="Admin" asp-action="Index">
+                    <!-- Dashboard Grid SVG -->
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
                         <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
                         <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
                         <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
                     </svg>
-                    <span>لوحة التحكم الرئيسية</span>
+                    <span>لوحة التحكم</span>
                 </a>
-                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Clinic" ? "active" : "")" href="@ClinicRoutes.Pages.Index()">
+                <a class="sidebar-item @(IsActive("Admin", "Specializations") ? "active" : "")" asp-controller="Admin" asp-action="Specializations">
+                    <!-- Tags SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z" fill="currentColor"/>
+                    </svg>
+                    <span>التخصصات</span>
+                </a>
+                <a class="sidebar-item @(IsActive("Admin", "Clinics") ? "active" : "")" asp-controller="Admin" asp-action="Clinics">
+                    <!-- Building/Clinic SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
+                    </svg>
+                    <span>العيادات</span>
+                </a>
+                <a class="sidebar-item @(IsActive("Admin", "Doctors") ? "active" : "")" asp-controller="Admin" asp-action="Doctors">
+                    <!-- Stethoscope / Doctor SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2c0 1.654-1.346 3-3 3s-3-1.346-3-3V7z" fill="currentColor"/>
+                    </svg>
+                    <span>الأطباء</span>
+                </a>
+                <a class="sidebar-item @(IsActive("Admin", "Kpi") ? "active" : "")" asp-controller="Admin" asp-action="Kpi">
+                    <!-- Chart/Bar SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" fill="currentColor"/>
+                        <path d="M3 21h18v-2H3v2z" fill="currentColor"/>
+                    </svg>
+                    <span>مؤشرات الأداء</span>
+                </a>
+                <a class="sidebar-item @(IsActive("Admin", "Support") ? "active" : "")" asp-controller="Admin" asp-action="Support">
+                    <!-- Headset/Support SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 12v-2c0-3.866-3.134-7-7-7S5 6.134 5 10v2H3v7h3v-9c0-3.313 2.687-6 6-6s6 2.687 6 6v9h3v-7h-2zM7 15v2c0 1.103.897 2 2 2h2v-6H7v2zm8 0h-2v2h2c1.103 0 2-.897 2-2v-2h-2v2z" fill="currentColor"/>
+                    </svg>
+                    <span>الدعم الفني</span>
+                </a>
+                <a class="sidebar-item @(IsActive("Admin", "Ads") ? "active" : "")" asp-controller="Admin" asp-action="Ads">
+                    <!-- Megaphone/Ads SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 2.01L4 2v2h16V2.01zM4 22h16v-2H4v2zm-2-14h2v8H2V8zm18 0h2v8h-2V8zM9 6c-2.21 0-4 1.79-4 4 0 1.2.54 2.27 1.38 3H7v1c0 1.66 1.34 3 3 3s3-1.34 3-3v-1h.62c.84-.73 1.38-1.8 1.38-3 0-2.21-1.79-4-4-4z" fill="currentColor"/>
+                    </svg>
+                    <span>الإعلانات</span>
+                </a>
+                <a class="sidebar-item @(IsActive("Clinic") ? "active" : "")" asp-controller="Clinic" asp-action="Index">
                     <!-- Clinic Management SVG -->
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z" fill="currentColor"/>
                     </svg>
                     <span>إدارة العيادات</span>
                 </a>
-                <a class="sidebar-item" href="@HomeRoutes.Pages.Index()">
+                <a class="sidebar-item" asp-controller="Home" asp-action="Index">
                     <!-- Exit/Home SVG -->
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="currentColor"/>

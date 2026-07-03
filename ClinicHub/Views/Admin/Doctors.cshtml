@@ -1,0 +1,250 @@
+@{
+    ViewData["Title"] = "الأطباء";
+    Layout = "_DashboardLayout";
+}
+
+<div class="page-header">
+    <h2 class="page-title">إدارة الأطباء</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#doctorModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        إضافة طبيب
+    </button>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <input type="text" class="form-input" placeholder="بحث عن طبيب..." style="min-width: 200px;" />
+    <select class="form-select">
+        <option value="">جميع التخصصات</option>
+        <option value="cardio">القلب والأوعية الدموية</option>
+        <option value="neuro">الأمراض العصبية</option>
+        <option value="ortho">جراحة العظام</option>
+    </select>
+    <select class="form-select">
+        <option value="">جميع الحالات</option>
+        <option value="active">نشط</option>
+        <option value="inactive">غير نشط</option>
+    </select>
+</div>
+
+<!-- Doctors Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>الصورة</th>
+                    <th>الاسم</th>
+                    <th>التخصص</th>
+                    <th>العيادة</th>
+                    <th>الهاتف</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                            <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
+                            <circle cx="18" cy="14" r="6" fill="#66748C"/>
+                            <path d="M6 30c0-5.523 5.373-9 12-9s12 3.477 12 9" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </td>
+                    <td class="text-md-medium">د. عمار السيد</td>
+                    <td class="text-md">الأمراض الجلدية</td>
+                    <td class="text-md">عيادة الجلدية</td>
+                    <td class="text-md">+966 55 123 4567</td>
+                    <td class="text-md">ammar@clinic.com</td>
+                    <td><span class="badge badge-success">نشط</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                            <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
+                            <circle cx="18" cy="14" r="6" fill="#66748C"/>
+                            <path d="M6 30c0-5.523 5.373-9 12-9s12 3.477 12 9" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </td>
+                    <td class="text-md-medium">د. سارة أحمد</td>
+                    <td class="text-md">أمراض القلب</td>
+                    <td class="text-md">عيادة القلب</td>
+                    <td class="text-md">+966 55 234 5678</td>
+                    <td class="text-md">sara@clinic.com</td>
+                    <td><span class="badge badge-success">نشط</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                            <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
+                            <circle cx="18" cy="14" r="6" fill="#66748C"/>
+                            <path d="M6 30c0-5.523 5.373-9 12-9s12 3.477 12 9" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </td>
+                    <td class="text-md-medium">د. خالد الزهراني</td>
+                    <td class="text-md">جراحة العظام</td>
+                    <td class="text-md">عيادة العظام</td>
+                    <td class="text-md">+966 55 345 6789</td>
+                    <td class="text-md">khalid@clinic.com</td>
+                    <td><span class="badge badge-success">نشط</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                            <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
+                            <circle cx="18" cy="14" r="6" fill="#66748C"/>
+                            <path d="M6 30c0-5.523 5.373-9 12-9s12 3.477 12 9" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </td>
+                    <td class="text-md-medium">د. عبد الله ناصر</td>
+                    <td class="text-md">الأمراض العصبية</td>
+                    <td class="text-md">عيادة الأعصاب</td>
+                    <td class="text-md">+966 55 456 7890</td>
+                    <td class="text-md">abdullah@clinic.com</td>
+                    <td><span class="badge badge-warning">غير نشط</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تفعيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Doctor Modal -->
+<div class="modal fade" id="doctorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إضافة طبيب جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الاسم الكامل</label>
+                            <input type="text" class="form-input" placeholder="مثال: د. عمار السيد" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">التخصص</label>
+                            <select class="form-select">
+                                <option value="">اختر التخصص</option>
+                                <option>القلب والأوعية الدموية</option>
+                                <option>الأمراض العصبية</option>
+                                <option>جراحة العظام</option>
+                                <option>طب الأطفال</option>
+                                <option>النساء والولادة</option>
+                                <option>طب العيون</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">العيادة</label>
+                            <select class="form-select">
+                                <option value="">اختر العيادة</option>
+                                <option>عيادة القلب</option>
+                                <option>عيادة الأعصاب</option>
+                                <option>عيادة العظام</option>
+                                <option>عيادة الجلدية</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-input" placeholder="+966 5X XXX XXXX" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" class="form-input" placeholder="doctor@clinic.com" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الصورة الشخصية</label>
+                            <input type="file" class="form-input" accept="image/*" />
+                            <p class="form-hint">صور بصيغة JPG أو PNG</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-toggle">
+                        <input type="checkbox" checked />
+                        <span class="toggle-track"></span>
+                        <span class="toggle-label">الطبيب متاح ونشط</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>

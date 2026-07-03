@@ -410,3 +410,334 @@
   color: var(--clr-text-secondary);
   margin-bottom: 0;
 }
+
+/* ============================================================
+   Page Header (Title + Action Button Row)
+   ============================================================ */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.page-header .page-title {
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   Button System
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px 20px;
+  font-family: var(--ff-primary);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-base), box-shadow var(--transition-base);
+  text-decoration: none;
+  line-height: 1;
+}
+
+.btn-primary {
+  background-color: var(--clr-primary);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover {
+  background-color: var(--clr-primary-hover);
+  color: #FFFFFF;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--clr-text);
+  border: 1px solid var(--clr-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--clr-table-header);
+}
+
+.btn-danger {
+  background-color: transparent;
+  color: var(--clr-danger);
+  border: 1px solid transparent;
+}
+
+.btn-danger:hover {
+  background-color: #fce4ec;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  color: var(--clr-text-secondary);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.btn-icon:hover {
+  background-color: var(--clr-table-header);
+  color: var(--clr-text);
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================================
+   Form System
+   ============================================================ */
+
+.form-group {
+  margin-bottom: var(--space-5);
+}
+
+.form-label {
+  display: block;
+  font-family: var(--ff-primary);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--clr-text);
+  margin-bottom: 6px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: var(--ff-primary);
+  font-size: var(--fs-md);
+  color: var(--clr-text);
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 3px rgba(47, 156, 202, 0.1);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--clr-text-secondary);
+}
+
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2366748C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  padding-left: 32px;
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  margin-top: 4px;
+}
+
+/* Toggle Switch */
+.form-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.form-toggle .toggle-track {
+  width: 40px;
+  height: 22px;
+  background-color: var(--clr-border);
+  border-radius: 11px;
+  transition: background-color var(--transition-base);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.form-toggle .toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 16px;
+  height: 16px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  transition: transform var(--transition-base);
+}
+
+.form-toggle input:checked + .toggle-track {
+  background-color: var(--clr-primary);
+}
+
+.form-toggle input:checked + .toggle-track::after {
+  transform: translateX(18px);
+}
+
+.form-toggle .toggle-label {
+  font-size: var(--fs-md);
+  color: var(--clr-text);
+}
+
+/* ============================================================
+   Modal Custom Overrides (over Bootstrap modal)
+   ============================================================ */
+
+.modal-content-custom {
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header-custom {
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--clr-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header-custom .modal-title {
+  font-family: var(--ff-primary);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.modal-body-custom {
+  padding: var(--space-6);
+}
+
+.modal-footer-custom {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--clr-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ============================================================
+   Table Actions Column
+   ============================================================ */
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Filter Bar
+   ============================================================ */
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.filter-bar .form-input,
+.filter-bar .form-select {
+  width: auto;
+  min-width: 160px;
+}
+
+/* ============================================================
+   Status Indicators (for tables)
+   ============================================================ */
+
+.status-active {
+  color: var(--clr-success-text);
+  font-weight: 600;
+  font-size: var(--fs-md);
+}
+
+.status-inactive {
+  color: var(--clr-danger);
+  font-weight: 600;
+  font-size: var(--fs-md);
+}
+
+/* ============================================================
+   Priority Indicators for Support Tickets
+   ============================================================ */
+
+.priority-high {
+  color: var(--clr-danger);
+  font-weight: 600;
+}
+
+.priority-medium {
+  color: var(--clr-warning-text);
+  font-weight: 600;
+}
+
+.priority-low {
+  color: var(--clr-success-text);
+  font-weight: 600;
+}
+
+/* ============================================================
+   KPI Page Specific
+   ============================================================ */
+
+.kpi-section {
+  margin-bottom: var(--space-7);
+}
+
+.kpi-section-title {
+  font-family: var(--ff-primary);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--clr-text);
+  margin-bottom: var(--space-4);
+}
