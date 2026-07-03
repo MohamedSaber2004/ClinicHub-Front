@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ClinicHub</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <!-- Logo Vector SVG matching Figma "فقيه" -->
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="8" fill="#2F9CCA"/>
+                        <path d="M9 16C9 12.134 12.134 9 16 9C19.866 9 23 12.134 23 16C23 19.866 19.866 23 16 23V16H9Z" fill="white"/>
+                        <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
+                    </svg>
+                    <span class="logo-text">
+                        <span class="logo-brand-ar">فقيه</span> | Fakeeh Care
+                    </span>
+                </div>
+            </div>
+            <nav class="sidebar-menu">
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")" asp-controller="Admin" asp-action="Index">
+                    <!-- Grid/Home SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                    <span>لوحة التحكم الرئيسية</span>
+                </a>
+                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Clinic" ? "active" : "")" asp-controller="Clinic" asp-action="Index">
+                    <!-- Clinic Management SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z" fill="currentColor"/>
+                    </svg>
+                    <span>إدارة العيادات</span>
+                </a>
+                <a class="sidebar-item" asp-controller="Home" asp-action="Index">
+                    <!-- Exit/Home SVG -->
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="currentColor"/>
+                    </svg>
+                    <span>موقع العيادة الرئيسي</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-search">
+                    <select class="dept-dropdown" onchange="location.hash = this.value">
+                        <option value="">اختر القسم</option>
+                        <option value="cardio">قسم القلب</option>
+                        <option value="neuro">قسم الأعصاب</option>
+                        <option value="derm">قسم الجلدية</option>
+                    </select>
+                </div>
+                <div class="header-user">
+                    <div class="user-info">
+                        <span class="user-name">@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "المشرف العام" : "مدير العيادات")</span>
+                        <span class="user-role">@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "مدير النظام" : "طاقم الإدارة الطبية")</span>
+                    </div>
+                    <!-- Mock Admin Profile Image -->
+                    <svg class="user-avatar" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
+                        <circle cx="18" cy="14" r="6" fill="#66748C"/>
+                        <path d="M6 30C6 24.4772 11.3726 21 18 21C24.6274 21 30 24.4772 30 30" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </header>
+
+            <!-- Main Render Area -->
+            <main role="main" class="content-body">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

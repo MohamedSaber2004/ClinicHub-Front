@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <!-- Logo -->
+        <div class="auth-logo-section">
+            <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="8" fill="#2F9CCA"/>
+                <path d="M9 16C9 12.134 12.134 9 16 9C19.866 9 23 12.134 23 16C23 19.866 19.866 23 16 23V16H9Z" fill="white"/>
+                <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
+            </svg>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-dark);">مجموعة فقيه الطبية</span>
+        </div>
+
+        <h3 class="auth-title">تسجيل الدخول</h3>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success text-center" style="font-size: 14px; margin-bottom: 20px; padding: 10px; border-radius: 5px;">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <form asp-controller="Account" asp-action="Login" method="post">
+            <div class="text-danger" asp-validation-summary="ModelOnly" style="font-size: 14px; margin-bottom: 15px; text-align: center;"></div>
+            
+            <!-- Clinic Code -->
+            <div class="auth-input-group">
+                <label class="auth-form-label" for="clinicCode">كود العيادة</label>
+                <input class="auth-form-control" type="text" id="clinicCode" name="clinicCode" placeholder="أدخل كود العيادة الخاص بك" required autocomplete="off" />
+            </div>
+
+            <!-- Gmail -->
+            <div class="auth-input-group">
+                <label class="auth-form-label" for="email">البريد الإلكتروني (Gmail)</label>
+                <input class="auth-form-control" type="email" id="email" name="email" placeholder="example@gmail.com" required autocomplete="username" />
+            </div>
+
+            <!-- Password -->
+            <div class="auth-input-group">
+                <label class="auth-form-label" for="password">كلمة المرور</label>
+                <input class="auth-form-control" type="password" id="password" name="password" placeholder="أدخل كلمة المرور" required autocomplete="current-password" />
+            </div>
+
+            <button type="submit" class="auth-btn-primary">تسجيل الدخول</button>
+        </form>
+
+        <div class="auth-footer-links">
+            <a asp-controller="Account" asp-action="ForgotPassword" class="auth-link">نسيت كلمة المرور؟</a>
+            <a asp-controller="Home" asp-action="Index" class="auth-link">العودة للرئيسية</a>
+        </div>
+    </div>
+</div>
