@@ -1,7 +1,7 @@
 @using ClinicHub.Data
 @{
     ViewData["Title"] = "لوحة تحكم المدير";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
     var stats = ViewBag.Stats as List<MockStat> ?? new();
     var quickStatuses = ViewBag.QuickStatuses as List<MockQuickStatus> ?? new();
     var doctors = ViewBag.DoctorsOnDuty as List<MockTableRow> ?? new();

@@ -18,20 +18,19 @@
                     <path d="M9 16C9 12.134 12.134 9 16 9C19.866 9 23 12.134 23 16C23 19.866 19.866 23 16 23V16H9Z" fill="white"/>
                     <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
                 </svg>
-                <span class="logo-text" style="font-size: 18px; font-weight: 700;">
-                    <span class="logo-brand-ar">فقيه</span> | Fakeeh Care
+                <span class="logo-text" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">
+                    Doctory
                 </span>
             </div>
             
             <nav class="d-none d-md-flex gap-4">
-                <a asp-controller="Home" asp-action="Index" class="nav-link">الرئيسية</a>
-                <a href="#services" class="nav-link">الخدمات والعيادات</a>
-                <a href="#about" class="nav-link">من نحن</a>
-                <a asp-controller="Home" asp-action="Privacy" class="nav-link">سياسة الخصوصية</a>
+                <a href="@HomeRoutes.Pages.Index()" class="nav-link">الرئيسية</a>
+                <a href="@HomeRoutes.Pages.About()" class="nav-link">من نحن</a>
+                <a href="@HomeRoutes.Pages.Privacy()" class="nav-link">سياسة الخصوصية</a>
             </nav>
 
             <div class="d-flex gap-2">
-                <a asp-controller="Account" asp-action="Login" class="btn-primary-custom">
+                <a href="@HomeRoutes.Account.Login()" class="btn-primary-custom">
                     تسجيل الدخول
                 </a>
             </div>
@@ -46,8 +45,8 @@
     <!-- Public Footer -->
     <footer class="public-footer">
         <div class="container text-center">
-            <p class="public-footer-title">مجموعة فقيه الطبية - Fakeeh Care Group</p>
-            <p class="public-footer-copy">&copy; 2026 - ClinicHub. جميع الحقوق محفوظة.</p>
+            <p class="public-footer-title">منصة Doctory لإدارة وتشغيل العيادات</p>
+            <p class="public-footer-copy">&copy; 2026 - Doctory. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
 
