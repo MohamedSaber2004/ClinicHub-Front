@@ -17,7 +17,14 @@
     <!-- Detail Header -->
     <div class="detail-header">
         <div class="detail-header-info">
-            <h2 class="detail-title">معاملة @d.Code</h2>
+            <h2 class="detail-title">
+                <span class="page-title-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 18H6V4h7v5h5v11z" fill="currentColor"/>
+                    </svg>
+                </span>
+                معاملة @d.Code
+            </h2>
             <span class="detail-subtitle">@d.Date</span>
         </div>
         <div class="detail-header-amount">
@@ -29,7 +36,14 @@
     <!-- Two-column Info -->
     <div class="detail-grid">
         <div class="detail-card">
-            <h3 class="detail-card-title">معلومات الدافع</h3>
+            <h3 class="detail-card-title">
+                <span class="subtitle-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
+                    </svg>
+                </span>
+                معلومات الدافع
+            </h3>
             <div class="detail-info-list">
                 <div class="detail-info-row">
                     <span class="detail-info-label">الاسم</span>
@@ -50,7 +64,14 @@
             </div>
         </div>
         <div class="detail-card">
-            <h3 class="detail-card-title">تفاصيل المعاملة</h3>
+            <h3 class="detail-card-title">
+                <span class="subtitle-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 18H6V4h7v5h5v11z" fill="currentColor"/>
+                    </svg>
+                </span>
+                تفاصيل المعاملة
+            </h3>
             <div class="detail-info-list">
                 <div class="detail-info-row">
                     <span class="detail-info-label">ID المعاملة</span>
@@ -79,7 +100,14 @@
     <!-- Payment Items -->
     <div class="table-card" style="margin-bottom: var(--space-5);">
         <div class="table-card-header">
-            <h3 class="table-card-title">عناصر الدفع</h3>
+            <h3 class="table-card-title">
+                <span class="subtitle-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="currentColor"/>
+                    </svg>
+                </span>
+                عناصر الدفع
+            </h3>
         </div>
         <div class="table-responsive">
             <table class="custom-table">
@@ -105,7 +133,14 @@
 
     <!-- Status Timeline -->
     <div class="detail-card">
-        <h3 class="detail-card-title">سجل المعاملة</h3>
+        <h3 class="detail-card-title">
+            <span class="subtitle-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" fill="currentColor"/>
+                </svg>
+            </span>
+            سجل المعاملة
+        </h3>
         <div class="timeline">
             @foreach (var entry in d.Timeline)
             {
@@ -122,7 +157,14 @@
 
     <!-- Notes -->
     <div class="detail-card">
-        <h3 class="detail-card-title">ملاحظات</h3>
+        <h3 class="detail-card-title">
+            <span class="subtitle-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" fill="currentColor"/>
+                </svg>
+            </span>
+            ملاحظات
+        </h3>
         <div class="detail-notes">
             <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">@d.Notes</p>
         </div>

@@ -4,7 +4,14 @@
 }
 
 <div class="page-header">
-    <h2 class="page-title">إدارة الإعلانات والباقات الدعائية</h2>
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 2.01L4 2v2h16V2.01zM4 22h16v-2H4v22zm-2-14h2v8H2V8zm18 0h2v8h-2V8zM9 6c-2.21 0-4 1.79-4 4 0 1.2.54 2.27 1.38 3H7v1c0 1.66 1.34 3 3 3s3-1.34 3-3v-1h.62c.84-.73 1.38-1.8 1.38-3 0-2.21-1.79-4-4-4z" fill="currentColor"/>
+            </svg>
+        </span>
+        إدارة الإعلانات والباقات الدعائية
+    </h2>
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#adModal">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
@@ -19,7 +26,6 @@
     <select class="form-select">
         <option value="">جميع الأنواع</option>
         <option value="banner">بانر إعلاني</option>
-        <option value="promotion">عرض / خصم</option>
         <option value="featured_doctor">طبيب مميز</option>
         <option value="featured_clinic">عيادة مميزة</option>
     </select>
@@ -55,7 +61,7 @@
                             </svg>
                         </div>
                     </td>
-                    <td class="text-md-medium">عروض شهر يوليو - خصم 30%</td>
+                    <td class="text-md-medium">عروض شهر يوليو - عيادة متكاملة</td>
                     <td><span class="badge badge-info">بانر إعلاني</span></td>
                     <td class="text-md">2026-07-01</td>
                     <td class="text-md">2026-07-31</td>
@@ -134,35 +140,7 @@
                         </div>
                     </td>
                 </tr>
-                <tr>
-                    <td>
-                        <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #fbbf24, #f59e0b); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                            </svg>
-                        </div>
-                    </td>
-                    <td class="text-md-medium">خصم خاص على الكشف - 50%</td>
-                    <td><span class="badge badge-danger">عرض / خصم</span></td>
-                    <td class="text-md">2026-06-01</td>
-                    <td class="text-md">2026-06-30</td>
-                    <td class="text-md">4</td>
-                    <td><span class="badge badge-warning">منتهي</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تفعيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+
                 <tr>
                     <td>
                         <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #f472b6, #ec4899); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
@@ -175,7 +153,7 @@
                     <td><span class="badge badge-warning">طبيب مميز</span></td>
                     <td class="text-md">2026-07-10</td>
                     <td class="text-md">2026-08-10</td>
-                    <td class="text-md">5</td>
+                    <td class="text-md">4</td>
                     <td><span class="badge badge-info">مجدول</span></td>
                     <td>
                         <div class="table-actions">
@@ -210,7 +188,7 @@
                     <div class="col-md-8">
                         <div class="form-group">
                             <label class="form-label">عنوان الإعلان</label>
-                            <input type="text" class="form-input" placeholder="مثال: عروض شهر يوليو - خصم 30%" />
+                            <input type="text" class="form-input" placeholder="مثال: عروض شهر يوليو - عيادة متكاملة" />
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -218,7 +196,6 @@
                             <label class="form-label">النوع</label>
                             <select class="form-select">
                                 <option>بانر إعلاني</option>
-                                <option>عرض / خصم</option>
                                 <option>طبيب مميز</option>
                                 <option>عيادة مميزة</option>
                             </select>

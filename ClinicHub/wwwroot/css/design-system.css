@@ -211,6 +211,79 @@
 }
 
 /* ============================================================
+   Title & Row Icon Utilities
+   ============================================================ */
+
+.page-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: var(--space-2);
+  color: var(--clr-primary);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.page-title-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.subtitle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: var(--space-2);
+  color: var(--clr-primary);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.subtitle-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: var(--space-1);
+  color: var(--clr-text-secondary);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.row-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.profile-field-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--space-2);
+  color: var(--clr-primary);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.profile-field-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* ============================================================
    Shadow Utilities
    ============================================================ */
 
