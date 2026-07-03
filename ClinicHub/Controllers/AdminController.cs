@@ -19,21 +19,25 @@ namespace ClinicHub.Controllers
 
         public IActionResult Specializations()
         {
+            ViewBag.Specializations = MockData.GetSpecializations();
             return View();
         }
 
         public IActionResult Clinics()
         {
+            ViewBag.Clinics = MockData.GetClinics();
             return View();
         }
 
         public IActionResult Doctors()
         {
+            ViewBag.Doctors = MockData.GetDoctors();
             return View();
         }
 
         public IActionResult Support()
         {
+            ViewBag.Tickets = MockData.GetSupportTickets();
             return View();
         }
 

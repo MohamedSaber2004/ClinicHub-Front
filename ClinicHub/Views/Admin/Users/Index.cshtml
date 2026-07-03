@@ -11,11 +11,11 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-    <input type="text" class="form-input" placeholder="بحث عن مستخدم..." style="min-width: 200px;" />
-    <select class="form-select">
+    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن مستخدم..." />
+    <select id="filterStatus" class="form-select">
         <option value="">جميع الحالات</option>
-        <option value="active">نشط</option>
-        <option value="inactive">غير نشط</option>
+        <option value="نشط">نشط</option>
+        <option value="غير نشط">غير نشط</option>
     </select>
 </div>
 
@@ -75,3 +75,26 @@
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            function filterTable() {
+                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
+                var statusVal = document.getElementById('filterStatus').value;
+                var rows = document.querySelectorAll('.custom-table tbody tr');
+                rows.forEach(function(row) {
+                    var name = row.cells[0].textContent.trim().toLowerCase();
+                    var email = row.cells[1].textContent.trim().toLowerCase();
+                    var status = row.cells[4].textContent.trim();
+                    var matchSearch = !searchVal || name.indexOf(searchVal) !== -1 || email.indexOf(searchVal) !== -1;
+                    var matchStatus = !statusVal || status === statusVal;
+                    row.style.display = matchSearch && matchStatus ? '' : 'none';
+                });
+            }
+
+            document.getElementById('filterSearch').addEventListener('input', filterTable);
+            document.getElementById('filterStatus').addEventListener('change', filterTable);
+        })();
+    </script>
+}

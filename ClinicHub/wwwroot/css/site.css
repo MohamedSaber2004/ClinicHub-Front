@@ -687,6 +687,9 @@ body {
     color: var(--clr-text-secondary);
 }
 
+/* Emoji display in tables */
+.emoji-display { font-size: 24px; line-height: 1; }
+
 /* Star Rating */
 .star-rating {
     display: inline-flex;

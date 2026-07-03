@@ -385,6 +385,46 @@ namespace ClinicHub.Data
         };
 
         public static MockAd GetAdDetail(int id) => GetAds().FirstOrDefault(a => a.Id == id) ?? GetAds().First();
+
+        // ========== Specializations ==========
+        public static List<MockSpecialization> GetSpecializations() => new()
+        {
+            new() { Id = 1, Name = "القلب والأوعية الدموية", Description = "تشخيص وعلاج أمراض القلب والشرايين", Icon = "🫀", IsActive = true },
+            new() { Id = 2, Name = "الأمراض العصبية", Description = "تشخيص وعلاج اضطرابات الجهاز العصبي", Icon = "🧠", IsActive = true },
+            new() { Id = 3, Name = "جراحة العظام", Description = "جراحة وإصلاح كسور وإصابات العظام والمفاصل", Icon = "🦵", IsActive = true },
+            new() { Id = 4, Name = "طب الأطفال", Description = "رعاية صحة الأطفال من الولادة حتى المراهقة", Icon = "👶", IsActive = false },
+            new() { Id = 5, Name = "النساء والولادة", Description = "رعاية صحة المرأة ومتابعة الحمل والولادة", Icon = "🫃", IsActive = true },
+            new() { Id = 6, Name = "طب العيون", Description = "تشخيص وعلاج أمراض وجراحة العيون", Icon = "👁️", IsActive = true },
+        };
+
+        // ========== Clinics ==========
+        public static List<MockClinic> GetClinics() => new()
+        {
+            new() { Id = 1, Name = "عيادة القلب", Specialty = "القلب والأوعية الدموية", ResponsibleDoctor = "د. سارة أحمد", Location = "الطابق الثاني - غرفة 201", Phone = "+966 11 234 5678", IsActive = true },
+            new() { Id = 2, Name = "عيادة الأعصاب", Specialty = "الأمراض العصبية", ResponsibleDoctor = "د. عبد الله ناصر", Location = "الطابق الثالث - غرفة 305", Phone = "+966 11 345 6789", IsActive = true },
+            new() { Id = 3, Name = "عيادة العظام", Specialty = "جراحة العظام", ResponsibleDoctor = "د. خالد الزهراني", Location = "الطابق الأول - غرفة 104", Phone = "+966 11 456 7890", IsActive = true },
+            new() { Id = 4, Name = "عيادة الجلدية", Specialty = "الأمراض الجلدية", ResponsibleDoctor = "د. عمار السيد", Location = "الطابق الثاني - غرفة 210", Phone = "+966 11 567 8901", IsActive = true },
+            new() { Id = 5, Name = "عيادة الأطفال", Specialty = "طب الأطفال", ResponsibleDoctor = "—", Location = "الطابق الرابع - غرفة 402", Phone = "+966 11 678 9012", IsActive = false },
+        };
+
+        // ========== Doctors ==========
+        public static List<MockDoctor> GetDoctors() => new()
+        {
+            new() { Id = 1, Name = "د. عمار السيد", Specialty = "الأمراض الجلدية", Clinic = "عيادة الجلدية", Phone = "+966 55 123 4567", Email = "ammar@clinic.com", IsActive = true },
+            new() { Id = 2, Name = "د. سارة أحمد", Specialty = "أمراض القلب", Clinic = "عيادة القلب", Phone = "+966 55 234 5678", Email = "sara@clinic.com", IsActive = true },
+            new() { Id = 3, Name = "د. خالد الزهراني", Specialty = "جراحة العظام", Clinic = "عيادة العظام", Phone = "+966 55 345 6789", Email = "khalid@clinic.com", IsActive = true },
+            new() { Id = 4, Name = "د. عبد الله ناصر", Specialty = "الأمراض العصبية", Clinic = "عيادة الأعصاب", Phone = "+966 55 456 7890", Email = "abdullah@clinic.com", IsActive = false },
+        };
+
+        // ========== Support Tickets ==========
+        public static List<MockSupportTicket> GetSupportTickets() => new()
+        {
+            new() { Id = 1, Code = "#1024", Subject = "تعطل نظام تسجيل الدخول", Reporter = "عيادة السلام", Priority = "عالية", PriorityClass = "badge-danger", Status = "مفتوح", StatusClass = "badge-info", Date = "2026-07-03 09:15", HasAttachment = true, Description = "نواجه مشكلة في تسجيل الدخول إلى النظام منذ صباح اليوم. تظهر رسالة خطأ \"تعذر الاتصال بالخادم\" عند محاولة الدخول. الرجاء المساعدة في أقرب وقت ممكن حيث أن جميع العمليات متوقفة.", Attachments = new() { "screenshot_error.png", "error_log.txt" } },
+            new() { Id = 2, Code = "#1023", Subject = "استفسار عن فاتورة شهر يونيو", Reporter = "د. سارة أحمد", Priority = "متوسطة", PriorityClass = "badge-warning", Status = "قيد المعالجة", StatusClass = "badge-warning", Date = "2026-07-02 14:30", HasAttachment = false, Description = "أود الاستفسار عن تفاصيل فاتورة شهر يونيو الخاصة بعمليات الطبيب. يظهر مبلغ مختلف عن المتوقع. أرجو توضيح البنود.", Attachments = new() },
+            new() { Id = 3, Code = "#1022", Subject = "طلب إضافة تخصص جديد (جراحة التجميل)", Reporter = "مستشفى النور", Priority = "متوسطة", PriorityClass = "badge-warning", Status = "مفتوح", StatusClass = "badge-info", Date = "2026-07-02 10:00", HasAttachment = true, Description = "نرغب في إضافة تخصص جراحة التجميل إلى قائمة التخصصات المتاحة في النظام. المرفقات تحتوي على المستندات المطلوبة والموافقات.", Attachments = new() { "طلب_اضافة_تخصص.pdf" } },
+            new() { Id = 4, Code = "#1021", Subject = "مشكلة في عرض التقارير", Reporter = "عيادات التخصصات الدقيقة", Priority = "عالية", PriorityClass = "badge-danger", Status = "قيد المعالجة", StatusClass = "badge-warning", Date = "2026-07-01 16:45", HasAttachment = false, Description = "لا تظهر التقارير الإحصائية بشكل صحيح منذ تحديث النظام الأخير. بعض البيانات مفقودة والرسوم البيانية لا تعمل.", Attachments = new() },
+            new() { Id = 5, Code = "#1020", Subject = "اقتراح تحسين واجهة المستخدم", Reporter = "د. خالد الزهراني", Priority = "منخفضة", PriorityClass = "badge-success", Status = "تم الحل", StatusClass = "badge-success", Date = "2026-06-28 11:00", HasAttachment = false, Description = "اقتراح بإضافة زر للتبديل بين الوضع الفاتح والداكن في لوحة التحكم، وإمكانية تخصيص الألوان حسب كل عيادة.", Attachments = new() },
+        };
     }
 
     // ========== User Models ==========
@@ -439,6 +479,57 @@ namespace ClinicHub.Data
         public int ClinicCleanliness { get; set; }
         public double OverallRating => Math.Round((DoctorBehavior + ReceptionBehavior + ClinicCleanliness) / 3.0, 1);
         public string Comment { get; set; } = "";
+    }
+
+    // ========== Specializations Models ==========
+    public class MockSpecialization
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public bool IsActive { get; set; } = true;
+    }
+
+    // ========== Clinics Models ==========
+    public class MockClinic
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Specialty { get; set; } = "";
+        public string ResponsibleDoctor { get; set; } = "";
+        public string Location { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public bool IsActive { get; set; } = true;
+    }
+
+    // ========== Doctors Models ==========
+    public class MockDoctor
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Specialty { get; set; } = "";
+        public string Clinic { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Email { get; set; } = "";
+        public bool IsActive { get; set; } = true;
+    }
+
+    // ========== Support Tickets Models ==========
+    public class MockSupportTicket
+    {
+        public int Id { get; set; }
+        public string Code { get; set; } = "";
+        public string Subject { get; set; } = "";
+        public string Reporter { get; set; } = "";
+        public string Priority { get; set; } = "";
+        public string PriorityClass { get; set; } = "badge-warning";
+        public string Status { get; set; } = "";
+        public string StatusClass { get; set; } = "badge-info";
+        public string Date { get; set; } = "";
+        public bool HasAttachment { get; set; }
+        public string Description { get; set; } = "";
+        public List<string> Attachments { get; set; } = new();
     }
 
     // ========== Ads Models ==========
