@@ -1,0 +1,464 @@
+@{
+    ViewData["Title"] = "تفاصيل الطبيب";
+    Layout = "_DashboardLayout";
+    var doctor = ViewBag.Doctor as MockDoctor;
+    var clinics = ViewBag.Clinics as List<MockClinic> ?? new();
+    MockClinic? clinic = null;
+    List<MockClinicStaff> staff = new();
+    if (doctor != null && doctor.ClinicId.HasValue)
+    {
+        clinic = MockData.GetClinicById(doctor.ClinicId.Value);
+        staff = MockData.GetClinicStaff(doctor.ClinicId.Value);
+    }
+}
+
+@if (doctor == null)
+{
+    <div class="empty-state">
+        <h3>الطبيب غير موجود</h3>
+        <p>لم يتم العثور على الطبيب المطلوب.</p>
+        <a href="@AdminRoutes.Pages.Doctors()" class="btn btn-primary">العودة إلى قائمة الأطباء</a>
+    </div>
+}
+else
+{
+    var typeLabel = doctor.DoctorType switch
+    {
+        "Freelance" => "مستقل",
+        "OwnClinic" => "عيادة خاصة",
+        "InCenter" => "يعمل في مركز",
+        _ => doctor.DoctorType
+    };
+    var typeClass = doctor.DoctorType switch
+    {
+        "Freelance" => "badge badge-warning",
+        "OwnClinic" => "badge badge-success",
+        "InCenter" => "badge badge-info",
+        _ => "badge"
+    };
+
+    <!-- Doctor Header -->
+    <div class="doctor-detail-header">
+        <div class="dd-header-avatar">
+            @if (!string.IsNullOrEmpty(doctor.Photo))
+            {
+                <img src="@doctor.Photo" alt="@doctor.Name" />
+            }
+            else
+            {
+                <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+                    <circle cx="36" cy="36" r="36" fill="#F2F5F9"/>
+                    <circle cx="36" cy="28" r="12" fill="#66748C"/>
+                    <path d="M12 60c0-11.046 10.746-18 24-18s24 6.954 24 18" stroke="#66748C" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            }
+        </div>
+        <div class="dd-header-info">
+            <h3 class="dd-header-name">@doctor.Name</h3>
+            <div class="dd-header-meta">
+                <span class="@typeClass">@typeLabel</span>
+                <span class="degree-badge">@doctor.Degree</span>
+                @if (doctor.IsActive)
+                {
+                    <span class="badge badge-success">نشط</span>
+                }
+                else
+                {
+                    <span class="badge badge-danger">غير نشط</span>
+                }
+            </div>
+            <p class="dd-header-spec">@doctor.Specialty @if (!string.IsNullOrEmpty(doctor.WorkplaceName)) { <span>— @doctor.WorkplaceName</span> }</p>
+        </div>
+        <div class="dd-header-actions">
+            <a href="@AdminRoutes.Pages.Doctors()" class="btn btn-outline-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                العودة
+            </a>
+            <button class="btn btn-primary" id="editDoctorFromDetail">تعديل</button>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="detail-tabs mt-3">
+        <ul class="nav nav-tabs" id="doctorDetailTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#detailInfo" type="button" role="tab">المعلومات</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="clinic-tab" data-bs-toggle="tab" data-bs-target="#detailClinic" type="button" role="tab">العيادة والموظفين</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#detailDocuments" type="button" role="tab">المستندات</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#detailActivity" type="button" role="tab">النشاطات</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="doctorDetailContent">
+            <!-- Info Tab -->
+            <div class="tab-pane fade show active" id="detailInfo" role="tabpanel">
+                <div class="detail-card">
+                    <div class="detail-section-header">
+                        <h5>البيانات الشخصية</h5>
+                    </div>
+                    <div class="detail-grid-2col">
+                        <div class="detail-field">
+                            <span class="detail-field-label">الاسم الكامل</span>
+                            <span class="detail-field-value">@doctor.Name</span>
+                        </div>
+                        <div class="detail-field">
+                            <span class="detail-field-label">رقم الهاتف</span>
+                            <span class="detail-field-value">@doctor.Phone</span>
+                        </div>
+                        <div class="detail-field">
+                            <span class="detail-field-label">البريد الإلكتروني</span>
+                            <span class="detail-field-value">@doctor.Email</span>
+                        </div>
+                        <div class="detail-field">
+                            <span class="detail-field-label">الحالة</span>
+                            <span class="detail-field-value">@(doctor.IsActive ? "نشط" : "غير نشط")</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-card mt-2">
+                    <div class="detail-section-header">
+                        <h5>البيانات المهنية</h5>
+                    </div>
+                    <div class="detail-grid-2col">
+                        <div class="detail-field">
+                            <span class="detail-field-label">رقم عضوية النقابة</span>
+                            <span class="detail-field-value">@doctor.SyndicateId</span>
+                        </div>
+                        <div class="detail-field">
+                            <span class="detail-field-label">السجل الضريبي</span>
+                            <span class="detail-field-value">@doctor.TaxRegistry</span>
+                        </div>
+                        <div class="detail-field">
+                            <span class="detail-field-label">الدرجة العلمية</span>
+                            <span class="detail-field-value">@doctor.Degree</span>
+                        </div>
+                        <div class="detail-field">
+                            <span class="detail-field-label">التخصص</span>
+                            <span class="detail-field-value">@doctor.Specialty</span>
+                        </div>
+                        <div class="detail-field">
+                            <span class="detail-field-label">نوع الطبيب</span>
+                            <span class="detail-field-value"><span class="@typeClass">@typeLabel</span></span>
+                        </div>
+                        <div class="detail-field">
+                            <span class="detail-field-label">مكان العمل</span>
+                            <span class="detail-field-value">@doctor.WorkplaceName</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clinic & Staff Tab -->
+            <div class="tab-pane fade" id="detailClinic" role="tabpanel">
+                @if (clinic != null)
+                {
+                    <div class="detail-card">
+                        <div class="detail-section-header">
+                            <h5>بيانات العيادة</h5>
+                        </div>
+                        <div class="detail-grid-2col">
+                            <div class="detail-field">
+                                <span class="detail-field-label">اسم العيادة</span>
+                                <span class="detail-field-value">@clinic.Name</span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">التخصص</span>
+                                <span class="detail-field-value">@clinic.Specialty</span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">الموقع</span>
+                                <span class="detail-field-value">@clinic.Location</span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">الهاتف</span>
+                                <span class="detail-field-value">@clinic.Phone</span>
+                            </div>
+                            <div class="detail-field">
+                                <span class="detail-field-label">الطبيب المسؤول</span>
+                                <span class="detail-field-value">@clinic.ResponsibleDoctor</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card mt-2">
+                        <div class="detail-section-header">
+                            <h5>فريق العمل</h5>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#staffModal">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                                </svg>
+                                إضافة موظف
+                            </button>
+                        </div>
+                        @if (staff.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>الاسم</th>
+                                            <th>الدور</th>
+                                            <th>الهاتف</th>
+                                            <th>الحالة</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var s in staff)
+                                        {
+                                            <tr>
+                                                <td class="text-md-medium">@s.Name</td>
+                                                <td>
+                                                    @{
+                                                        var roleLabel = s.Role switch
+                                                        {
+                                                            "Reception" => "استقبال",
+                                                            "Cleaner" => "عامل نظافة",
+                                                            "Helper" => "مساعد",
+                                                            "Nurse" => "ممرض",
+                                                            _ => s.Role
+                                                        };
+                                                    }
+                                                    @roleLabel
+                                                </td>
+                                                <td class="text-md">@s.Phone</td>
+                                                <td>
+                                                    @if (s.IsActive)
+                                                    {
+                                                        <span class="badge badge-success">نشط</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-danger">غير نشط</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="table-actions">
+                                                        <button class="btn-icon btn-edit-staff" title="تعديل"
+                                                                data-id="@s.Id"
+                                                                data-name="@s.Name"
+                                                                data-role="@s.Role"
+                                                                data-phone="@s.Phone"
+                                                                data-active="@s.IsActive.ToString().ToLower()">
+                                                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                                            </svg>
+                                                        </button>
+                                                        <button class="btn-icon btn-delete-staff" title="حذف" data-id="@s.Id" data-name="@s.Name">
+                                                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mt-2">لا يوجد موظفين مسجلين لهذه العيادة.</p>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <p>هذا الطبيب لا يرتبط بعيادة محددة.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Documents Tab -->
+            <div class="tab-pane fade" id="detailDocuments" role="tabpanel">
+                <div class="detail-card">
+                    <div class="detail-section-header">
+                        <h5>المستندات المرفوعة</h5>
+                    </div>
+                    @if (doctor.Documents.Any())
+                    {
+                        <div class="documents-viewer">
+                            @foreach (var doc in doctor.Documents)
+                            {
+                                <div class="doc-viewer-item">
+                                    <div class="doc-viewer-icon">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--clr-primary)">
+                                            <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="doc-viewer-info">
+                                        <span class="doc-viewer-name">@doc</span>
+                                        <span class="doc-viewer-meta">PDF • 245 KB</span>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary" title="عرض">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                        </svg>
+                                        عرض
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" title="تحميل">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">لا توجد مستندات مرفوعة لهذا الطبيب.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Activity Tab -->
+            <div class="tab-pane fade" id="detailActivity" role="tabpanel">
+                <div class="detail-card">
+                    <div class="detail-section-header">
+                        <h5>سجل النشاطات</h5>
+                    </div>
+                    <div class="activity-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-dot timeline-dot-green"></div>
+                            <div class="timeline-content">
+                                <span class="timeline-title">تم تحديث بيانات الطبيب</span>
+                                <span class="timeline-date">2026-07-04 10:30 صباحاً</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot timeline-dot-blue"></div>
+                            <div class="timeline-content">
+                                <span class="timeline-title">تم التحقق من رقم النقابة</span>
+                                <span class="timeline-date">2026-07-04 10:15 صباحاً</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot timeline-dot-green"></div>
+                            <div class="timeline-content">
+                                <span class="timeline-title">تم تفعيل حساب الطبيب</span>
+                                <span class="timeline-date">2026-07-03 2:00 مساءً</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <span class="timeline-title">تم إنشاء حساب الطبيب</span>
+                                <span class="timeline-date">2026-07-01 9:00 صباحاً</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Add/Edit Modal -->
+    <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header-custom">
+                    <h5 class="modal-title" id="staffModalTitle">إضافة موظف جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body-custom">
+                    <input type="hidden" id="staffId" value="" />
+                    <div class="form-group">
+                        <label class="form-label" for="staffName">الاسم</label>
+                        <input type="text" id="staffName" class="form-input" placeholder="اسم الموظف" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="staffRole">الدور</label>
+                        <select id="staffRole" class="form-select">
+                            <option value="Reception">استقبال</option>
+                            <option value="Cleaner">عامل نظافة</option>
+                            <option value="Helper">مساعد</option>
+                            <option value="Nurse">ممرض</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="staffPhone">رقم الهاتف</label>
+                        <input type="text" id="staffPhone" class="form-input" placeholder="+966 5X XXX XXXX" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-toggle">
+                            <input type="checkbox" id="staffIsActive" checked />
+                            <span class="toggle-track"></span>
+                            <span class="toggle-label">الموظف نشط</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="saveStaffBtn" data-bs-dismiss="modal">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Staff Confirmation Modal -->
+    <div class="modal fade" id="deleteStaffModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header-custom">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body-custom">
+                    <p id="deleteStaffMsg">هل أنت متأكد من حذف هذا الموظف؟</p>
+                </div>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteStaff" data-bs-dismiss="modal">حذف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function() {
+            // Staff modal handling
+            var staffModal = new bootstrap.Modal(document.getElementById('staffModal'));
+            var deleteStaffModal = new bootstrap.Modal(document.getElementById('deleteStaffModal'));
+
+            document.querySelectorAll('.btn-edit-staff').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('staffModalTitle').textContent = 'تعديل بيانات الموظف';
+                    document.getElementById('staffId').value = btn.getAttribute('data-id');
+                    document.getElementById('staffName').value = btn.getAttribute('data-name');
+                    document.getElementById('staffRole').value = btn.getAttribute('data-role');
+                    document.getElementById('staffPhone').value = btn.getAttribute('data-phone');
+                    document.getElementById('staffIsActive').checked = btn.getAttribute('data-active') === 'true';
+                    staffModal.show();
+                });
+            });
+
+            document.querySelectorAll('.btn-delete-staff').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var name = btn.getAttribute('data-name');
+                    document.getElementById('deleteStaffMsg').textContent = 'هل أنت متأكد من حذف "' + name + '"؟';
+                    deleteStaffModal.show();
+                });
+            });
+
+            document.getElementById('saveStaffBtn').addEventListener('click', function() {
+                alert('✓ تم حفظ بيانات الموظف بنجاح.');
+            });
+
+            document.getElementById('confirmDeleteStaff').addEventListener('click', function() {
+                alert('✓ تم حذف الموظف بنجاح.');
+            });
+        })();
+    </script>
+}

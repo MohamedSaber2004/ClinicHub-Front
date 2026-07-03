@@ -1,0 +1,203 @@
+@{
+    ViewData["Title"] = "مركز التحقق";
+    Layout = "_DashboardLayout";
+    var requests = ViewBag.Requests as List<MockVerificationRequest> ?? new();
+}
+
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="currentColor"/>
+            </svg>
+        </span>
+        مركز التحقق من الأطباء
+    </h2>
+</div>
+
+@if (!requests.Any())
+{
+    <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--clr-text-light)">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        <h3 class="empty-title">لا توجد طلبات تحقق معلقة</h3>
+        <p class="empty-desc">جميع طلبات التحقق تمت معالجتها. سيتم إشعارك عند وجود طلبات جديدة.</p>
+    </div>
+}
+else
+{
+    <div class="verification-layout">
+        <!-- Requests List -->
+        <div class="verification-list">
+            <div class="list-header">
+                <h4 class="list-title">طلبات التحقق (@requests.Count)</h4>
+            </div>
+            <div class="list-body">
+                @foreach (var req in requests)
+                {
+                    <div class="verification-card" data-request-id="@req.Id">
+                        <div class="vc-header">
+                            <div class="vc-avatar">
+                                @if (!string.IsNullOrEmpty(req.Photo))
+                                {
+                                    <img src="@req.Photo" alt="@req.DoctorName" />
+                                }
+                                else
+                                {
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                        <circle cx="20" cy="20" r="20" fill="#F2F5F9"/>
+                                        <circle cx="20" cy="16" r="6" fill="#66748C"/>
+                                        <path d="M8 34c0-6.075 5.373-10 12-10s12 3.925 12 10" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                                    </svg>
+                                }
+                            </div>
+                            <div class="vc-info">
+                                <span class="vc-name">@req.DoctorName</span>
+                                <span class="vc-spec">@req.Specialty - @req.Degree</span>
+                                <span class="vc-date">@req.RequestDate</span>
+                            </div>
+                            <div class="vc-status">
+                                <span class="badge badge-warning">قيد الانتظار</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Detail Panel -->
+        <div class="verification-detail" id="verificationDetail">
+            @{
+                var first = requests.FirstOrDefault();
+            }
+            @if (first != null)
+            {
+                <div class="detail-header">
+                    <h4 class="detail-title">تفاصيل الطلب</h4>
+                    <span class="detail-id">#@first.Id</span>
+                </div>
+                <div class="detail-body">
+                    <div class="detail-section">
+                        <h5 class="section-title">المعلومات الشخصية</h5>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">الاسم</span>
+                                <span class="detail-value">@first.DoctorName</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">رقم النقابة</span>
+                                <span class="detail-value">@first.SyndicateId</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">السجل الضريبي</span>
+                                <span class="detail-value">@first.TaxRegistry</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">الدرجة</span>
+                                <span class="detail-value">@first.Degree</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">التخصص</span>
+                                <span class="detail-value">@first.Specialty</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">الهاتف</span>
+                                <span class="detail-value">@first.Phone</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">البريد الإلكتروني</span>
+                                <span class="detail-value">@first.Email</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h5 class="section-title">المستندات المرفوعة</h5>
+                        <div class="documents-grid">
+                            @foreach (var doc in first.Documents)
+                            {
+                                <div class="detail-doc">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--clr-primary)">
+                                        <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/>
+                                    </svg>
+                                    <span>@doc</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="detail-actions">
+                        <button type="button" class="btn btn-success" id="acceptRequestBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+                            </svg>
+                            قبول الطلب
+                        </button>
+                        <button type="button" class="btn btn-danger" id="rejectRequestBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
+                            </svg>
+                            رفض الطلب
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Accept/Reject Reason Modal -->
+<div class="modal fade" id="verificationActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title" id="actionModalTitle">تأكيد القرار</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="actionType" value="" />
+                <div class="form-group">
+                    <label class="form-label" for="actionReason">سبب الرفض (اختياري للقبول)</label>
+                    <textarea id="actionReason" class="form-input" rows="3" placeholder="اكتب سبب القرار..."></textarea>
+                </div>
+                <div class="action-confirm-message mt-2" id="actionConfirmMsg"></div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="confirmActionBtn" data-bs-dismiss="modal">تأكيد</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var actionModal = new bootstrap.Modal(document.getElementById('verificationActionModal'));
+
+            document.getElementById('acceptRequestBtn').addEventListener('click', function() {
+                document.getElementById('actionType').value = 'accept';
+                document.getElementById('actionModalTitle').textContent = 'قبول طلب التحقق';
+                document.getElementById('actionConfirmMsg').innerHTML = '<div class="alert alert-success">سيتم قبول الطلب وتفعيل حساب الطبيب.</div>';
+                actionModal.show();
+            });
+
+            document.getElementById('rejectRequestBtn').addEventListener('click', function() {
+                document.getElementById('actionType').value = 'reject';
+                document.getElementById('actionModalTitle').textContent = 'رفض طلب التحقق';
+                document.getElementById('actionConfirmMsg').innerHTML = '<div class="alert alert-danger">سيتم رفض الطلب مع إرسال سبب الرفض للطبيب.</div>';
+                actionModal.show();
+            });
+
+            document.getElementById('confirmActionBtn').addEventListener('click', function() {
+                var type = document.getElementById('actionType').value;
+                var reason = document.getElementById('actionReason').value;
+                if (type === 'accept') {
+                    alert('✓ تم قبول الطلب بنجاح.\n' + (reason ? 'ملاحظة: ' + reason : ''));
+                } else {
+                    alert('✗ تم رفض الطلب.\n' + (reason ? 'سبب الرفض: ' + reason : ''));
+                }
+                document.getElementById('actionReason').value = '';
+            });
+        })();
+    </script>
+}

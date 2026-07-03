@@ -44,27 +44,27 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-    <input type="text" class="form-input" placeholder="بحث عن معاملة..." style="min-width: 200px;" />
-    <select class="form-select">
+    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن معاملة..." />
+    <select id="filterType" class="form-select">
         <option value="">جميع الأنواع</option>
-        <option value="subscription">اشتراك عيادة</option>
-        <option value="commission">عمولة طبيب</option>
-        <option value="appointment">موعد مريض</option>
-        <option value="ad">خدمة إعلانية</option>
+        <option value="اشتراك عيادة">اشتراك عيادة</option>
+        <option value="عمولة طبيب">عمولة طبيب</option>
+        <option value="موعد مريض">موعد مريض</option>
+        <option value="خدمة إعلانية">خدمة إعلانية</option>
     </select>
-    <select class="form-select">
+    <select id="filterMethod" class="form-select">
         <option value="">جميع طرق الدفع</option>
-        <option value="paymob_card">Paymob - بطاقة ائتمان</option>
-        <option value="paymob_wallet">Paymob - محفظة إلكترونية</option>
-        <option value="transfer">تحويل بنكي</option>
-        <option value="cash">نقدي</option>
+        <option value="Paymob - بطاقة">Paymob - بطاقة ائتمان</option>
+        <option value="Paymob - محفظة">Paymob - محفظة إلكترونية</option>
+        <option value="تحويل بنكي">تحويل بنكي</option>
+        <option value="نقدي">نقدي</option>
     </select>
-    <select class="form-select">
+    <select id="filterStatus" class="form-select">
         <option value="">جميع الحالات</option>
-        <option value="success">ناجح</option>
-        <option value="pending">معلق</option>
-        <option value="failed">فاشل</option>
-        <option value="refunded">مسترد</option>
+        <option value="ناجح">ناجح</option>
+        <option value="معلق">معلق</option>
+        <option value="فاشل">فاشل</option>
+        <option value="مسترد">مسترد</option>
     </select>
 </div>
 
@@ -185,3 +185,34 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            function filterTable() {
+                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
+                var typeVal = document.getElementById('filterType').value;
+                var methodVal = document.getElementById('filterMethod').value;
+                var statusVal = document.getElementById('filterStatus').value;
+                var rows = document.querySelectorAll('.custom-table tbody tr');
+                rows.forEach(function(row) {
+                    var code = row.cells[0].textContent.trim().toLowerCase();
+                    var payer = row.cells[1].textContent.trim().toLowerCase();
+                    var type = row.cells[2].textContent.trim();
+                    var method = row.cells[4].textContent.trim();
+                    var status = row.cells[5].textContent.trim();
+                    var matchSearch = !searchVal || code.indexOf(searchVal) !== -1 || payer.indexOf(searchVal) !== -1;
+                    var matchType = !typeVal || type === typeVal;
+                    var matchMethod = !methodVal || method.indexOf(methodVal) !== -1;
+                    var matchStatus = !statusVal || status === statusVal;
+                    row.style.display = matchSearch && matchType && matchMethod && matchStatus ? '' : 'none';
+                });
+            }
+
+            document.getElementById('filterSearch').addEventListener('input', filterTable);
+            document.getElementById('filterType').addEventListener('change', filterTable);
+            document.getElementById('filterMethod').addEventListener('change', filterTable);
+            document.getElementById('filterStatus').addEventListener('change', filterTable);
+        })();
+    </script>
+}

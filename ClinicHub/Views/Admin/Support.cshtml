@@ -16,18 +16,18 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-    <input type="text" class="form-input" placeholder="بحث عن تذكرة..." style="min-width: 200px;" />
-    <select class="form-select">
+    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن تذكرة..." />
+    <select id="filterStatus" class="form-select">
         <option value="">جميع الحالات</option>
-        <option value="open">مفتوح</option>
-        <option value="progress">قيد المعالجة</option>
-        <option value="resolved">تم الحل</option>
+        <option value="مفتوح">مفتوح</option>
+        <option value="قيد المعالجة">قيد المعالجة</option>
+        <option value="تم الحل">تم الحل</option>
     </select>
-    <select class="form-select">
+    <select id="filterPriority" class="form-select">
         <option value="">جميع الأولويات</option>
-        <option value="high">عالية</option>
-        <option value="medium">متوسطة</option>
-        <option value="low">منخفضة</option>
+        <option value="عالية">عالية</option>
+        <option value="متوسطة">متوسطة</option>
+        <option value="منخفضة">منخفضة</option>
     </select>
 </div>
 
@@ -48,168 +48,66 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="text-md">#1024</td>
-                    <td class="text-md-medium">
-    <span class="row-icon" style="color: var(--clr-danger);">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-        </svg>
-    </span>
-    تعطل نظام تسجيل الدخول
-</td>
-                    <td class="text-md">عيادة السلام</td>
-                    <td><span class="badge badge-danger">عالية</span></td>
-                    <td><span class="badge badge-info">مفتوح</span></td>
-                    <td class="text-md">2026-07-03 09:15</td>
-                    <td class="text-md">
-                        <button class="btn-icon" title="مرفق">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
-                            </svg>
-                        </button>
-                    </td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="عرض التفاصيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                @{
+                    var tickets = ViewBag.Tickets as List<MockSupportTicket> ?? new();
+                }
+                @foreach (var t in tickets)
+                {
+                    <tr>
+                        <td class="text-md">@t.Code</td>
+                        <td class="text-md-medium">
+                            <span class="row-icon" style="color: @(t.Priority == "عالية" ? "var(--clr-danger)" : "var(--clr-text-secondary)");">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                                 </svg>
-                            </button>
-                            <button class="btn-icon" title="تعيين إلى">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-md">#1023</td>
-                    <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-        </svg>
-    </span>
-    استفسار عن فاتورة شهر يونيو
-</td>
-                    <td class="text-md">د. سارة أحمد</td>
-                    <td><span class="badge badge-warning">متوسطة</span></td>
-                    <td><span class="badge badge-warning">قيد المعالجة</span></td>
-                    <td class="text-md">2026-07-02 14:30</td>
-                    <td class="text-md">—</td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="عرض التفاصيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعيين إلى">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-md">#1022</td>
-                    <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-        </svg>
-    </span>
-    طلب إضافة تخصص جديد (جراحة التجميل)
-</td>
-                    <td class="text-md">مستشفى النور</td>
-                    <td><span class="badge badge-warning">متوسطة</span></td>
-                    <td><span class="badge badge-info">مفتوح</span></td>
-                    <td class="text-md">2026-07-02 10:00</td>
-                    <td class="text-md">
-                        <button class="btn-icon" title="مرفق">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
-                            </svg>
-                        </button>
-                    </td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="عرض التفاصيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعيين إلى">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-md">#1021</td>
-                    <td class="text-md-medium">
-    <span class="row-icon" style="color: var(--clr-danger);">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-        </svg>
-    </span>
-    مشكلة في عرض التقارير
-</td>
-                    <td class="text-md">عيادات التخصصات الدقيقة</td>
-                    <td><span class="badge badge-danger">عالية</span></td>
-                    <td><span class="badge badge-warning">قيد المعالجة</span></td>
-                    <td class="text-md">2026-07-01 16:45</td>
-                    <td class="text-md">—</td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="عرض التفاصيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعيين إلى">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-md">#1020</td>
-                    <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-        </svg>
-    </span>
-    اقتراح تحسين واجهة المستخدم
-</td>
-                    <td class="text-md">د. خالد الزهراني</td>
-                    <td><span class="badge badge-success">منخفضة</span></td>
-                    <td><span class="badge badge-success">تم الحل</span></td>
-                    <td class="text-md">2026-06-28 11:00</td>
-                    <td class="text-md">—</td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="عرض التفاصيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="إعادة فتح">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                            </span>
+                            @t.Subject
+                        </td>
+                        <td class="text-md">@t.Reporter</td>
+                        <td><span class="badge @t.PriorityClass">@t.Priority</span></td>
+                        <td><span class="badge @t.StatusClass">@t.Status</span></td>
+                        <td class="text-md">@t.Date</td>
+                        <td class="text-md">
+                            @if (t.HasAttachment)
+                            {
+                                <button class="btn-icon" title="مرفق">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/>
+                                    </svg>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-md">—</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon btn-view-ticket" title="عرض التفاصيل"
+                                        data-code="@t.Code"
+                                        data-subject="@t.Subject"
+                                        data-reporter="@t.Reporter"
+                                        data-priority="@t.Priority"
+                                        data-priority-class="@t.PriorityClass"
+                                        data-status="@t.Status"
+                                        data-status-class="@t.StatusClass"
+                                        data-date="@t.Date"
+                                        data-description="@t.Description"
+                                        data-has-attachment="@t.HasAttachment.ToString().ToLower()"
+                                        data-attachments="@string.Join(",", t.Attachments)">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                    </svg>
+                                </button>
+                                <button class="btn-icon" title="تعيين إلى">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
@@ -220,42 +118,39 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content modal-content-custom">
             <div class="modal-header-custom">
-                <h5 class="modal-title">تفاصيل التذكرة #1024</h5>
+                <h5 class="modal-title" id="ticketModalTitle">تفاصيل التذكرة</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
-            <div class="modal-body-custom">
+            <div class="modal-body-custom" id="ticketModalBody">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <p class="form-label">المبلغ:</p>
-                        <p class="text-md-medium">عيادة السلام</p>
+                        <p class="text-md-medium" id="ticketReporter"></p>
                     </div>
                     <div class="col-md-3">
                         <p class="form-label">الأولوية:</p>
-                        <span class="badge badge-danger">عالية</span>
+                        <span id="ticketPriority"></span>
                     </div>
                     <div class="col-md-3">
                         <p class="form-label">الحالة:</p>
-                        <span class="badge badge-info">مفتوح</span>
+                        <span id="ticketStatus"></span>
                     </div>
                 </div>
                 <div class="form-group">
                     <p class="form-label">الموضوع:</p>
-                    <p class="text-md-medium">تعطل نظام تسجيل الدخول</p>
+                    <p class="text-md-medium" id="ticketSubject"></p>
                 </div>
                 <div class="form-group">
                     <p class="form-label">الوصف:</p>
-                    <p class="text-md">نواجه مشكلة في تسجيل الدخول إلى النظام منذ صباح اليوم. تظهر رسالة خطأ "تعذر الاتصال بالخادم" عند محاولة الدخول. الرجاء المساعدة في أقرب وقت ممكن حيث أن جميع العمليات متوقفة.</p>
+                    <p class="text-md" id="ticketDescription"></p>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="ticketAttachmentsGroup" style="display:none;">
                     <p class="form-label">المرفقات:</p>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <span class="badge badge-info">screenshot_error.png</span>
-                        <span class="badge badge-info">error_log.txt</span>
-                    </div>
+                    <div id="ticketAttachments" style="display: flex; gap: 8px; align-items: center;"></div>
                 </div>
                 <div class="form-group">
                     <p class="form-label">تاريخ الإبلاغ:</p>
-                    <p class="text-md">2026-07-03 09:15</p>
+                    <p class="text-md" id="ticketDate"></p>
                 </div>
                 <hr />
                 <div class="form-group">
@@ -278,3 +173,68 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var ticketModal = new bootstrap.Modal(document.getElementById('ticketDetailModal'));
+
+            document.querySelectorAll('.btn-view-ticket').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('ticketModalTitle').textContent = 'تفاصيل التذكرة ' + btn.getAttribute('data-code');
+                    document.getElementById('ticketReporter').textContent = btn.getAttribute('data-reporter');
+                    document.getElementById('ticketSubject').textContent = btn.getAttribute('data-subject');
+                    document.getElementById('ticketDescription').textContent = btn.getAttribute('data-description');
+                    document.getElementById('ticketDate').textContent = btn.getAttribute('data-date');
+
+                    var priorityEl = document.getElementById('ticketPriority');
+                    priorityEl.innerHTML = '<span class="badge ' + btn.getAttribute('data-priority-class') + '">' + btn.getAttribute('data-priority') + '</span>';
+
+                    var statusEl = document.getElementById('ticketStatus');
+                    statusEl.innerHTML = '<span class="badge ' + btn.getAttribute('data-status-class') + '">' + btn.getAttribute('data-status') + '</span>';
+
+                    var hasAttachment = btn.getAttribute('data-has-attachment') === 'true';
+                    var attachmentsGroup = document.getElementById('ticketAttachmentsGroup');
+                    var attachmentsContainer = document.getElementById('ticketAttachments');
+                    if (hasAttachment) {
+                        attachmentsGroup.style.display = '';
+                        attachmentsContainer.innerHTML = '';
+                        var atts = btn.getAttribute('data-attachments').split(',');
+                        atts.forEach(function(a) {
+                            var span = document.createElement('span');
+                            span.className = 'badge badge-info';
+                            span.textContent = a.trim();
+                            attachmentsContainer.appendChild(span);
+                        });
+                    } else {
+                        attachmentsGroup.style.display = 'none';
+                    }
+
+                    ticketModal.show();
+                });
+            });
+
+            function filterTable() {
+                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
+                var statusVal = document.getElementById('filterStatus').value;
+                var priorityVal = document.getElementById('filterPriority').value;
+                var rows = document.querySelectorAll('.custom-table tbody tr');
+                rows.forEach(function(row) {
+                    var code = row.cells[0].textContent.trim().toLowerCase();
+                    var subject = row.cells[1].textContent.trim().toLowerCase();
+                    var reporter = row.cells[2].textContent.trim().toLowerCase();
+                    var priority = row.cells[3].textContent.trim();
+                    var status = row.cells[4].textContent.trim();
+                    var matchSearch = !searchVal || code.indexOf(searchVal) !== -1 || subject.indexOf(searchVal) !== -1 || reporter.indexOf(searchVal) !== -1;
+                    var matchStatus = !statusVal || status === statusVal;
+                    var matchPriority = !priorityVal || priority === priorityVal;
+                    row.style.display = matchSearch && matchStatus && matchPriority ? '' : 'none';
+                });
+            }
+
+            document.getElementById('filterSearch').addEventListener('input', filterTable);
+            document.getElementById('filterStatus').addEventListener('change', filterTable);
+            document.getElementById('filterPriority').addEventListener('change', filterTable);
+        })();
+    </script>
+}

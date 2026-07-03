@@ -19,21 +19,47 @@ namespace ClinicHub.Controllers
 
         public IActionResult Specializations()
         {
+            ViewBag.Specializations = MockData.GetSpecializations();
             return View();
         }
 
         public IActionResult Clinics()
         {
+            ViewBag.Clinics = MockData.GetClinics();
             return View();
         }
 
         public IActionResult Doctors()
         {
+            ViewBag.Doctors = MockData.GetDoctors();
+            ViewBag.Clinics = MockData.GetClinics();
             return View();
+        }
+
+        [Route("Admin/Doctors/Details/{id}")]
+        public IActionResult DoctorDetails(int id)
+        {
+            ViewBag.Doctor = MockData.GetDoctorById(id);
+            ViewBag.Clinics = MockData.GetClinics();
+            return View("DoctorDetails");
+        }
+
+        [Route("Admin/Verification")]
+        public IActionResult VerificationCenter()
+        {
+            ViewBag.Requests = MockData.GetPendingVerifications();
+            return View("VerificationCenter");
+        }
+
+        [Route("Admin/Subscriptions")]
+        public IActionResult Subscriptions()
+        {
+            return View("Subscriptions");
         }
 
         public IActionResult Support()
         {
+            ViewBag.Tickets = MockData.GetSupportTickets();
             return View();
         }
 

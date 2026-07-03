@@ -12,7 +12,7 @@
         </span>
         إدارة العيادات
     </h2>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clinicModal">
+    <button type="button" id="addClinicBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clinicModal">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
@@ -22,14 +22,16 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-    <input type="text" class="form-input" placeholder="بحث عن عيادة..." style="min-width: 200px;" />
-    <select class="form-select">
+    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن عيادة..." />
+    <select id="filterSpecialty" class="form-select">
         <option value="">جميع التخصصات</option>
-        <option value="cardio">القلب والأوعية الدموية</option>
-        <option value="neuro">الأمراض العصبية</option>
-        <option value="ortho">جراحة العظام</option>
+        <option value="القلب والأوعية الدموية">القلب والأوعية الدموية</option>
+        <option value="الأمراض العصبية">الأمراض العصبية</option>
+        <option value="جراحة العظام">جراحة العظام</option>
+        <option value="الأمراض الجلدية">الأمراض الجلدية</option>
+        <option value="طب الأطفال">طب الأطفال</option>
     </select>
-    <select class="form-select">
+    <select id="filterStatus" class="form-select">
         <option value="">جميع الحالات</option>
         <option value="active">نشط</option>
         <option value="inactive">غير نشط</option>
@@ -52,151 +54,48 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
-        </svg>
-    </span>
-    عيادة القلب
-</td>
-                    <td class="text-md">القلب والأوعية الدموية</td>
-                    <td class="text-md">د. سارة أحمد</td>
-                    <td class="text-md">الطابق الثاني - غرفة 201</td>
-                    <td class="text-md">+966 11 234 5678</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                @{
+                    var clinics = ViewBag.Clinics as List<MockClinic> ?? new();
+                }
+                @foreach (var c in clinics)
+                {
+                    <tr>
+                        <td class="text-md-medium">
+                            <span class="row-icon">
+                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
                                 </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
-        </svg>
-    </span>
-    عيادة الأعصاب
-</td>
-                    <td class="text-md">الأمراض العصبية</td>
-                    <td class="text-md">د. عبد الله ناصر</td>
-                    <td class="text-md">الطابق الثالث - غرفة 305</td>
-                    <td class="text-md">+966 11 345 6789</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
-        </svg>
-    </span>
-    عيادة العظام
-</td>
-                    <td class="text-md">جراحة العظام</td>
-                    <td class="text-md">د. خالد الزهراني</td>
-                    <td class="text-md">الطابق الأول - غرفة 104</td>
-                    <td class="text-md">+966 11 456 7890</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
-        </svg>
-    </span>
-    عيادة الجلدية
-</td>
-                    <td class="text-md">الأمراض الجلدية</td>
-                    <td class="text-md">د. عمار السيد</td>
-                    <td class="text-md">الطابق الثاني - غرفة 210</td>
-                    <td class="text-md">+966 11 567 8901</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
-        </svg>
-    </span>
-    عيادة الأطفال
-</td>
-                    <td class="text-md">طب الأطفال</td>
-                    <td class="text-md">—</td>
-                    <td class="text-md">الطابق الرابع - غرفة 402</td>
-                    <td class="text-md">+966 11 678 9012</td>
-                    <td><label class="toggle-switch"><input type="checkbox" /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تفعيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                            </span>
+                            @c.Name
+                        </td>
+                        <td class="text-md">@c.Specialty</td>
+                        <td class="text-md">@c.ResponsibleDoctor</td>
+                        <td class="text-md">@c.Location</td>
+                        <td class="text-md">@c.Phone</td>
+                        <td>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="clinic-toggle-input" @(c.IsActive ? "checked" : "") />
+                                <span class="toggle-track-sm"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon btn-edit-clinic" title="تعديل"
+                                        data-id="@c.Id"
+                                        data-name="@c.Name"
+                                        data-specialty="@c.Specialty"
+                                        data-doctor="@c.ResponsibleDoctor"
+                                        data-location="@c.Location"
+                                        data-phone="@c.Phone"
+                                        data-active="@c.IsActive.ToString().ToLower()">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
@@ -207,29 +106,31 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-content-custom">
             <div class="modal-header-custom">
-                <h5 class="modal-title">إضافة عيادة جديدة</h5>
+                <h5 class="modal-title" id="clinicModalTitle">إضافة عيادة جديدة</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body-custom">
+                <input type="hidden" id="clinicId" value="" />
                 <div class="form-group">
-                    <label class="form-label">اسم العيادة</label>
-                    <input type="text" class="form-input" placeholder="مثال: عيادة القلب" />
+                    <label class="form-label" for="clinicName">اسم العيادة</label>
+                    <input type="text" id="clinicName" name="Name" class="form-input" placeholder="مثال: عيادة القلب" />
                 </div>
                 <div class="form-group">
-                    <label class="form-label">التخصص</label>
-                    <select class="form-select">
+                    <label class="form-label" for="clinicSpecialty">التخصص</label>
+                    <select id="clinicSpecialty" name="Specialty" class="form-select">
                         <option value="">اختر التخصص</option>
                         <option>القلب والأوعية الدموية</option>
                         <option>الأمراض العصبية</option>
                         <option>جراحة العظام</option>
+                        <option>الأمراض الجلدية</option>
                         <option>طب الأطفال</option>
                         <option>النساء والولادة</option>
                         <option>طب العيون</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">الطبيب المسؤول</label>
-                    <select class="form-select">
+                    <label class="form-label" for="clinicDoctor">الطبيب المسؤول</label>
+                    <select id="clinicDoctor" name="ResponsibleDoctor" class="form-select">
                         <option value="">اختر الطبيب</option>
                         <option>د. عمار السيد</option>
                         <option>د. سارة أحمد</option>
@@ -240,20 +141,20 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الموقع / رقم الغرفة</label>
-                            <input type="text" class="form-input" placeholder="مثال: الطابق الثاني - غرفة 201" />
+                            <label class="form-label" for="clinicLocation">الموقع / رقم الغرفة</label>
+                            <input type="text" id="clinicLocation" name="Location" class="form-input" placeholder="مثال: الطابق الثاني - غرفة 201" />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">رقم الهاتف</label>
-                            <input type="text" class="form-input" placeholder="+966 11 XXX XXXX" />
+                            <label class="form-label" for="clinicPhone">رقم الهاتف</label>
+                            <input type="text" id="clinicPhone" name="Phone" class="form-input" placeholder="+966 11 XXX XXXX" />
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-toggle">
-                        <input type="checkbox" checked />
+                        <input type="checkbox" id="clinicIsActive" name="IsActive" checked />
                         <span class="toggle-track"></span>
                         <span class="toggle-label">العيادة نشطة</span>
                     </label>
@@ -261,8 +162,71 @@
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary">حفظ</button>
+                <button type="button" class="btn btn-primary" id="saveClinicBtn" data-bs-dismiss="modal">حفظ</button>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var modalEl = document.getElementById('clinicModal');
+            var titleEl = document.getElementById('clinicModalTitle');
+            var idInput = document.getElementById('clinicId');
+            var nameInput = document.getElementById('clinicName');
+            var specialtyInput = document.getElementById('clinicSpecialty');
+            var doctorInput = document.getElementById('clinicDoctor');
+            var locationInput = document.getElementById('clinicLocation');
+            var phoneInput = document.getElementById('clinicPhone');
+            var activeCheck = document.getElementById('clinicIsActive');
+
+            var clinicModal = new bootstrap.Modal(modalEl);
+
+            document.querySelectorAll('.btn-edit-clinic').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    titleEl.textContent = 'تعديل العيادة';
+                    idInput.value = btn.getAttribute('data-id');
+                    nameInput.value = btn.getAttribute('data-name');
+                    specialtyInput.value = btn.getAttribute('data-specialty');
+                    doctorInput.value = btn.getAttribute('data-doctor');
+                    locationInput.value = btn.getAttribute('data-location');
+                    phoneInput.value = btn.getAttribute('data-phone');
+                    activeCheck.checked = btn.getAttribute('data-active') === 'true';
+                    clinicModal.show();
+                });
+            });
+
+            document.getElementById('addClinicBtn').addEventListener('click', function() {
+                titleEl.textContent = 'إضافة عيادة جديدة';
+                idInput.value = '';
+                nameInput.value = '';
+                specialtyInput.value = '';
+                doctorInput.value = '';
+                locationInput.value = '';
+                phoneInput.value = '';
+                activeCheck.checked = true;
+            });
+
+            function filterTable() {
+                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
+                var specialtyVal = document.getElementById('filterSpecialty').value;
+                var statusVal = document.getElementById('filterStatus').value;
+                var rows = document.querySelectorAll('.custom-table tbody tr');
+                rows.forEach(function(row) {
+                    var name = row.querySelector('.text-md-medium').textContent.trim().toLowerCase();
+                    var spec = row.cells[1].textContent.trim();
+                    var isActive = row.querySelector('.clinic-toggle-input').checked;
+                    var matchSearch = !searchVal || name.indexOf(searchVal) !== -1;
+                    var matchSpecialty = !specialtyVal || spec === specialtyVal;
+                    var matchStatus = !statusVal || (statusVal === 'active' && isActive) || (statusVal === 'inactive' && !isActive);
+                    row.style.display = matchSearch && matchSpecialty && matchStatus ? '' : 'none';
+                });
+            }
+
+            document.getElementById('filterSearch').addEventListener('input', filterTable);
+            document.getElementById('filterSpecialty').addEventListener('change', filterTable);
+            document.getElementById('filterStatus').addEventListener('change', filterTable);
+        })();
+    </script>
+}

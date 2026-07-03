@@ -12,7 +12,7 @@
         </span>
         التخصصات الطبية
     </h2>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#specializationModal">
+    <button type="button" id="addSpecializationBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#specializationModal">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
@@ -22,8 +22,8 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-    <input type="text" class="form-input" placeholder="بحث عن تخصص..." style="min-width: 250px;" />
-    <select class="form-select">
+    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن تخصص..." />
+    <select id="filterStatus" class="form-select">
         <option value="">جميع الحالات</option>
         <option value="active">نشط</option>
         <option value="inactive">غير نشط</option>
@@ -44,126 +44,38 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td><span style="font-size: 24px;">🫀</span></td>
-                    <td class="text-md-medium">القلب والأوعية الدموية</td>
-                    <td class="text-md">تشخيص وعلاج أمراض القلب والشرايين</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span style="font-size: 24px;">🧠</span></td>
-                    <td class="text-md-medium">الأمراض العصبية</td>
-                    <td class="text-md">تشخيص وعلاج اضطرابات الجهاز العصبي</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span style="font-size: 24px;">🦵</span></td>
-                    <td class="text-md-medium">جراحة العظام</td>
-                    <td class="text-md">جراحة وإصلاح كسور وإصابات العظام والمفاصل</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span style="font-size: 24px;">👶</span></td>
-                    <td class="text-md-medium">طب الأطفال</td>
-                    <td class="text-md">رعاية صحة الأطفال من الولادة حتى المراهقة</td>
-                    <td><label class="toggle-switch"><input type="checkbox" /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تفعيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span style="font-size: 24px;">🫃</span></td>
-                    <td class="text-md-medium">النساء والولادة</td>
-                    <td class="text-md">رعاية صحة المرأة ومتابعة الحمل والولادة</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span style="font-size: 24px;">👁️</span></td>
-                    <td class="text-md-medium">طب العيون</td>
-                    <td class="text-md">تشخيص وعلاج أمراض وجراحة العيون</td>
-                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn-icon" title="تعديل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                </svg>
-                            </button>
-                            <button class="btn-icon" title="تعطيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                @{
+                    var specializations = ViewBag.Specializations as List<MockSpecialization> ?? new();
+                }
+                @foreach (var spec in specializations)
+                {
+                    <tr>
+                        <td><span class="emoji-display">@spec.Icon</span></td>
+                        <td class="text-md-medium">@spec.Name</td>
+                        <td class="text-md">@spec.Description</td>
+                        <td>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="spec-toggle-input" @(spec.IsActive ? "checked" : "") />
+                                <span class="toggle-track-sm"></span>
+                            </label>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon btn-edit-spec" title="تعديل"
+                                        data-id="@spec.Id"
+                                        data-name="@spec.Name"
+                                        data-description="@spec.Description"
+                                        data-icon="@spec.Icon"
+                                        data-active="@spec.IsActive.ToString().ToLower()">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
@@ -174,26 +86,27 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-content-custom">
             <div class="modal-header-custom">
-                <h5 class="modal-title">إضافة تخصص جديد</h5>
+                <h5 class="modal-title" id="specializationModalTitle">إضافة تخصص جديد</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body-custom">
+                <input type="hidden" id="specId" value="" />
                 <div class="form-group">
-                    <label class="form-label">اسم التخصص</label>
-                    <input type="text" class="form-input" placeholder="مثال: أمراض القلب" />
+                    <label class="form-label" for="specName">اسم التخصص</label>
+                    <input type="text" id="specName" name="Name" class="form-input" placeholder="مثال: أمراض القلب" />
                 </div>
                 <div class="form-group">
-                    <label class="form-label">الوصف</label>
-                    <textarea class="form-textarea" placeholder="وصف مختصر للتخصص..." rows="3"></textarea>
+                    <label class="form-label" for="specDescription">الوصف</label>
+                    <textarea id="specDescription" name="Description" class="form-textarea" placeholder="وصف مختصر للتخصص..." rows="3"></textarea>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">الأيقونة</label>
-                    <input type="text" class="form-input" placeholder="🫀 أو رمز إيموجي" />
+                    <label class="form-label" for="specIcon">الأيقونة</label>
+                    <input type="text" id="specIcon" name="Icon" class="form-input" placeholder="🫀 أو رمز إيموجي" />
                     <p class="form-hint">يمكنك استخدام إيموجي أو رمز تعبيري</p>
                 </div>
                 <div class="form-group">
                     <label class="form-toggle">
-                        <input type="checkbox" checked />
+                        <input type="checkbox" id="specIsActive" name="IsActive" checked />
                         <span class="toggle-track"></span>
                         <span class="toggle-label">التخصص نشط</span>
                     </label>
@@ -201,8 +114,61 @@
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary">حفظ</button>
+                <button type="button" class="btn btn-primary" id="saveSpecBtn" data-bs-dismiss="modal">حفظ</button>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var modalEl = document.getElementById('specializationModal');
+            var titleEl = document.getElementById('specializationModalTitle');
+            var idInput = document.getElementById('specId');
+            var nameInput = document.getElementById('specName');
+            var descInput = document.getElementById('specDescription');
+            var iconInput = document.getElementById('specIcon');
+            var activeCheck = document.getElementById('specIsActive');
+
+            var specializationModal = new bootstrap.Modal(modalEl);
+
+            document.querySelectorAll('.btn-edit-spec').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    titleEl.textContent = 'تعديل التخصص';
+                    idInput.value = btn.getAttribute('data-id');
+                    nameInput.value = btn.getAttribute('data-name');
+                    descInput.value = btn.getAttribute('data-description');
+                    iconInput.value = btn.getAttribute('data-icon');
+                    activeCheck.checked = btn.getAttribute('data-active') === 'true';
+                    specializationModal.show();
+                });
+            });
+
+            function filterTable() {
+                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
+                var statusVal = document.getElementById('filterStatus').value;
+                var rows = document.querySelectorAll('.custom-table tbody tr');
+                rows.forEach(function(row) {
+                    var name = row.querySelector('.text-md-medium').textContent.trim().toLowerCase();
+                    var isActive = row.querySelector('.spec-toggle-input').checked;
+                    var matchSearch = !searchVal || name.indexOf(searchVal) !== -1;
+                    var matchStatus = !statusVal || (statusVal === 'active' && isActive) || (statusVal === 'inactive' && !isActive);
+                    row.style.display = matchSearch && matchStatus ? '' : 'none';
+                });
+            }
+
+            document.getElementById('filterSearch').addEventListener('input', filterTable);
+            document.getElementById('filterStatus').addEventListener('change', filterTable);
+
+            document.getElementById('addSpecializationBtn').addEventListener('click', function() {
+                titleEl.textContent = 'إضافة تخصص جديد';
+                idInput.value = '';
+                nameInput.value = '';
+                descInput.value = '';
+                iconInput.value = '';
+                activeCheck.checked = true;
+            });
+        })();
+    </script>
+}
