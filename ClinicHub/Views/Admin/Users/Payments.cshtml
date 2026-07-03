@@ -1,7 +1,7 @@
 @using ClinicHub.Data
 @{
     ViewData["Title"] = "مدفوعات المستخدم";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
     ViewBag.SubSidebarSection = "payments";
     ViewBag.UserId = ViewBag.UserId as int? ?? 1;
     var payments = ViewBag.Payments as List<MockPayment> ?? new();

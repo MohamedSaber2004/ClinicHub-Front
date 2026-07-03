@@ -110,7 +110,16 @@
                             }
                             <span class="@typeClass">@typeLabel</span>
                         </td>
-                        <td class="text-md">@d.WorkplaceName</td>
+                        <td class="text-md">
+                            @if (d.ClinicId.HasValue)
+                            {
+                                <a href="@AdminRoutes.Pages.ClinicDetails(d.ClinicId.Value)" class="clinic-link">@d.WorkplaceName</a>
+                            }
+                            else
+                            {
+                                @d.WorkplaceName
+                            }
+                        </td>
                         <td class="text-md">@d.Phone</td>
                         <td class="text-md">@d.Email</td>
                         <td>

@@ -1,7 +1,7 @@
 @using ClinicHub.Data
 @{
     ViewData["Title"] = "نظرة عامة على المستخدم";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
     ViewBag.SubSidebarSection = "overview";
     var u = ViewBag.User as MockUserOverview ?? new();
     ViewBag.UserId = u.Id;

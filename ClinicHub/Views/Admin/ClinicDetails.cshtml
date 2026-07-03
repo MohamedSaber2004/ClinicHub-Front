@@ -1,0 +1,707 @@
+@{
+    ViewData["Title"] = "تفاصيل العيادة";
+    Layout = "_AdminLayout";
+    var clinic = ViewBag.Clinic as MockClinic;
+    var doctors = ViewBag.Doctors as List<MockDoctorClinicConfig> ?? new();
+    var staff = ViewBag.Staff as List<MockClinicStaff> ?? new();
+    var ratings = ViewBag.Ratings as List<MockPatientRating> ?? new();
+}
+
+@if (clinic == null)
+{
+    <div class="empty-state">
+        <h3>العيادة غير موجودة</h3>
+        <a href="@AdminRoutes.Pages.Clinics()" class="btn btn-primary">العودة</a>
+    </div>
+    return;
+}
+
+@{
+    var specs = clinic.Specializations.Any() ? clinic.Specializations : new() { clinic.Specialty };
+    var visibleSpecs = specs.Take(4).ToList();
+    var overflowCount = specs.Count - 4;
+    var avgRating = ratings.Any() ? ratings.Average(r => r.Rating) : 0;
+    var fullStars = (int)Math.Floor(avgRating);
+    var hasHalf = avgRating - fullStars >= 0.5;
+    var emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+}
+
+<!-- Clinic Header -->
+<div class="clinic-detail-header">
+    <div class="cdh-image">
+        @if (!string.IsNullOrEmpty(clinic.ImageUrl))
+        {
+            <img src="@clinic.ImageUrl" alt="@clinic.Name" />
+        }
+        else
+        {
+            <div class="cdh-image-placeholder">
+                <svg viewBox="0 0 24 24" fill="var(--clr-primary)">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/>
+                </svg>
+            </div>
+        }
+    </div>
+    <div class="cdh-info">
+        <h2 class="cdh-name">@clinic.Name</h2>
+        <div class="cdh-specs">
+            @for (int i = 0; i < visibleSpecs.Count; i++)
+            {
+                <span class="spec-pill">@visibleSpecs[i]</span>
+            }
+            @if (overflowCount > 0)
+            {
+                <span class="spec-pill spec-pill-overflow">+@overflowCount</span>
+            }
+        </div>
+        <div class="cdh-meta">
+            <div class="cdh-rating">
+                <div class="stars-inline">
+                    @for (int i = 0; i < fullStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                    @if (hasHalf) { <svg width="14" height="14" viewBox="0 0 24 24"><defs><clipPath id="h"><rect x="0" y="0" width="7" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#h)"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB" clip-path="url(#h)"/></svg> }
+                    @for (int i = 0; i < emptyStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                </div>
+                <span>@avgRating.ToString("F1") (@ratings.Count تقييم)</span>
+            </div>
+            <span class="cdh-status">
+                @if (clinic.IsActive) { <span class="badge badge-success">نشط</span> }
+                else { <span class="badge badge-danger">غير نشط</span> }
+            </span>
+        </div>
+        <p class="cdh-desc">@clinic.Description</p>
+        <div class="cdh-contact">
+            <span>@clinic.Location</span>
+            <span>@clinic.Phone</span>
+            <span>المدير: @clinic.ManagerName</span>
+        </div>
+    </div>
+    <div class="cdh-actions">
+        <a href="@AdminRoutes.Pages.Clinics()" class="btn btn-outline-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            العودة
+        </a>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="detail-tabs mt-3">
+    <ul class="nav nav-tabs" id="clinicTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" id="ov-tab" data-bs-toggle="tab" data-bs-target="#ov" type="button" role="tab">نظرة عامة</button></li>
+        <li class="nav-item"><button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs" type="button" role="tab">الأطباء (@doctors.Count)</button></li>
+        <li class="nav-item"><button class="nav-link" id="stf-tab" data-bs-toggle="tab" data-bs-target="#stf" type="button" role="tab">الموظفين (@staff.Count)</button></li>
+        <li class="nav-item"><button class="nav-link" id="ratings-tab" data-bs-toggle="tab" data-bs-target="#ratings" type="button" role="tab">التقييمات (@ratings.Count)</button></li>
+        <li class="nav-item"><button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">الإعدادات</button></li>
+    </ul>
+    <div class="tab-content" id="clinicTabContent">
+
+        <!-- ======== OVERVIEW TAB ======== -->
+        <div class="tab-pane fade show active" id="ov" role="tabpanel">
+            <div class="clinic-stats-row">
+                <div class="clinic-stat-card">
+                    <span class="clinic-stat-value">@doctors.Count</span>
+                    <span class="clinic-stat-label">الأطباء</span>
+                </div>
+                <div class="clinic-stat-card">
+                    <span class="clinic-stat-value">@staff.Count</span>
+                    <span class="clinic-stat-label">الموظفين</span>
+                </div>
+                <div class="clinic-stat-card">
+                    <span class="clinic-stat-value">@avgRating.ToString("F1")</span>
+                    <span class="clinic-stat-label">متوسط التقييم</span>
+                </div>
+                <div class="clinic-stat-card">
+                    <span class="clinic-stat-value">@ratings.Count</span>
+                    <span class="clinic-stat-label">إجمالي التقييمات</span>
+                </div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-section-header"><h5>التخصصات</h5></div>
+                <div class="cdh-specs" style="margin-top:0">
+                    @foreach (var s in specs) { <span class="spec-pill">@s</span> }
+                </div>
+            </div>
+            <div class="detail-card mt-2">
+                <div class="detail-section-header"><h5>أحدث التقييمات</h5></div>
+                @if (ratings.Any())
+                {
+                    foreach (var r in ratings.Take(3))
+                    {
+                        var rf = (int)Math.Floor((double)r.Rating);
+                        var re = 5 - rf;
+                        <div class="rating-preview-item">
+                            <div class="rp-avatar"><span>@r.PatientInitial</span></div>
+                            <div class="rp-content">
+                                <div class="rp-header">
+                                    <span class="rp-name">@r.PatientName</span>
+                                    <span class="rp-date">@r.Date</span>
+                                </div>
+                                <div class="stars-inline">
+                                    @for (int i = 0; i < rf; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                    @for (int i = 0; i < re; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                </div>
+                                <p class="rp-comment">@r.Comment</p>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">لا توجد تقييمات بعد.</p>
+                }
+            </div>
+        </div>
+
+        <!-- ======== DOCTORS TAB ======== -->
+        <div class="tab-pane fade" id="docs" role="tabpanel">
+            @if (!doctors.Any())
+            {
+                <div class="empty-state"><p>لا يوجد أطباء في هذه العيادة.</p></div>
+            }
+            else
+            {
+                foreach (var doc in doctors)
+                {
+                    var contractLabel = doc.ContractType switch
+                    {
+                        "FullTime" => "دوام كامل",
+                        "PartTime" => "دوام جزئي",
+                        "FixedContract" => "عقد محدد المدة",
+                        "Visits" => "زيارات",
+                        "RevenueShare" => "شراكة بنسبة",
+                        _ => doc.ContractType
+                    };
+                    <div class="doctor-config-card">
+                        <div class="dcc-header" data-toggle="dcc-@doc.DoctorId">
+                            <div class="dcc-avatar">
+                                @if (!string.IsNullOrEmpty(doc.Photo))
+                                { <img src="@doc.Photo" alt="@doc.DoctorName" /> }
+                                else
+                                {
+                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                                        <circle cx="20" cy="20" r="20" fill="#F2F5F9"/>
+                                        <circle cx="20" cy="16" r="6" fill="#66748C"/>
+                                        <path d="M8 34c0-6.075 5.373-10 12-10s12 3.925 12 10" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                                    </svg>
+                                }
+                            </div>
+                            <div class="dcc-info">
+                                <div class="dcc-name-row">
+                                    <span class="dcc-name">@doc.DoctorName</span>
+                                    @if (doc.IsPrimary) { <span class="badge badge-info">الطبيب المسؤول</span> }
+                                    <span class="degree-badge">@doc.Degree</span>
+                                </div>
+                                <span class="dcc-spec">@doc.Specialty</span>
+                            </div>
+                            <div class="dcc-status">
+                                <label class="toggle-switch" onclick="event.stopPropagation()">
+                                    <input type="checkbox" class="doc-config-toggle" @(doc.IsActive ? "checked" : "") />
+                                    <span class="toggle-track-sm"></span>
+                                </label>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary dcc-edit-btn" onclick="event.stopPropagation(); openConfigModal(@doc.DoctorId)" title="تعديل الإعدادات">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                الإعدادات
+                            </button>
+                            <button class="dcc-arrow" onclick="toggleConfig(this)">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                            </button>
+                        </div>
+                        <div class="dcc-body" id="dcc-@doc.DoctorId">
+                            <!-- Working Days -->
+                            <div class="dcc-section">
+                                <h6 class="dcc-section-title">أيام ومواعيد العمل</h6>
+                                <div class="wh-table">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>اليوم</th>
+                                                <th>متاح</th>
+                                                <th>بداية</th>
+                                                <th>نهاية</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var wd in doc.WorkingDays)
+                                            {
+                                                <tr class="@(wd.IsAvailable ? "" : "wh-unavailable")">
+                                                    <td>@wd.DayAr</td>
+                                                    <td>
+                                                        @if (wd.IsAvailable)
+                                                        {
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--clr-success)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                                                        }
+                                                        else
+                                                        {
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--clr-danger)"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                                                        }
+                                                    </td>
+                                                    <td>@wd.StartTime</td>
+                                                    <td>@wd.EndTime</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- Fees & Commission -->
+                            <div class="dcc-section">
+                                <h6 class="dcc-section-title">الرسوم والعمولات</h6>
+                                <div class="dcc-grid-4">
+                                    <div class="dcc-field">
+                                        <span class="dcc-label">رسوم الكشف</span>
+                                        <span class="dcc-value">@doc.ExaminationFee.ToString("N0") ج.م</span>
+                                    </div>
+                                    <div class="dcc-field">
+                                        <span class="dcc-label">رسوم المتابعة</span>
+                                        <span class="dcc-value">@doc.FollowUpFee.ToString("N0") ج.م</span>
+                                    </div>
+                                    <div class="dcc-field">
+                                        <span class="dcc-label">نسبة العمولة</span>
+                                        <span class="dcc-value">@doc.CommissionPercent%</span>
+                                    </div>
+                                    <div class="dcc-field">
+                                        <span class="dcc-label">عمولة ثابتة</span>
+                                        <span class="dcc-value">@doc.CommissionFixed.ToString("N0") ج.م</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Assignment & Contract -->
+                            <div class="dcc-section">
+                                <h6 class="dcc-section-title">التعيين والعقد</h6>
+                                <div class="dcc-grid-4">
+                                    <div class="dcc-field">
+                                        <span class="dcc-label">الغرفة</span>
+                                        <span class="dcc-value">@doc.RoomAssignment</span>
+                                    </div>
+                                    <div class="dcc-field">
+                                        <span class="dcc-label">نوع العقد</span>
+                                        <span class="dcc-value">@contractLabel</span>
+                                    </div>
+                                    <div class="dcc-field">
+                                        <span class="dcc-label">بداية العقد</span>
+                                        <span class="dcc-value">@doc.ContractStart</span>
+                                    </div>
+                                    <div class="dcc-field">
+                                        <span class="dcc-label">نهاية العقد</span>
+                                        <span class="dcc-value">@(!string.IsNullOrEmpty(doc.ContractEnd) ? doc.ContractEnd : "—")</span>
+                                    </div>
+                                </div>
+                                <div class="dcc-field" style="margin-top:8px">
+                                    <span class="dcc-label">الحد الأقصى للحجوزات اليومية</span>
+                                    <span class="dcc-value">@doc.SessionLimitPerDay مريض</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- ======== STAFF TAB ======== -->
+        <div class="tab-pane fade" id="stf" role="tabpanel">
+            <div class="detail-card">
+                <div class="detail-section-header">
+                    <h5>فريق العمل</h5>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#clinicStaffModal">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        إضافة موظف
+                    </button>
+                </div>
+                @if (staff.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr><th>الاسم</th><th>الدور</th><th>الهاتف</th><th>الحالة</th><th>الإجراءات</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in staff)
+                                {
+                                    var roleLabel = s.Role switch { "Reception" => "استقبال", "Cleaner" => "عامل نظافة", "Helper" => "مساعد", "Nurse" => "ممرض", _ => s.Role };
+                                    <tr>
+                                        <td class="text-md-medium">@s.Name</td>
+                                        <td>@roleLabel</td>
+                                        <td class="text-md">@s.Phone</td>
+                                        <td>@if (s.IsActive) { <span class="badge badge-success">نشط</span> } else { <span class="badge badge-danger">غير نشط</span> }</td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <button class="btn-icon btn-edit-cstaff" title="تعديل" data-id="@s.Id" data-name="@s.Name" data-role="@s.Role" data-phone="@s.Phone" data-active="@s.IsActive.ToString().ToLower()">
+                                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                                </button>
+                                                <button class="btn-icon btn-delete-cstaff" title="حذف" data-id="@s.Id" data-name="@s.Name">
+                                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else { <p class="text-muted">لا يوجد موظفين.</p> }
+            </div>
+        </div>
+
+        <!-- ======== RATINGS TAB ======== -->
+        <div class="tab-pane fade" id="ratings" role="tabpanel">
+            <div class="ratings-header-card">
+                <div class="rhc-score">
+                    <span class="rhc-number">@avgRating.ToString("F1")</span>
+                    <div class="stars-inline">
+                        @for (int i = 0; i < fullStars; i++) { <svg width="20" height="20" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                        @if (hasHalf) { <svg width="20" height="20" viewBox="0 0 24 24"><defs><clipPath id="h2"><rect x="0" y="0" width="10" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#h2)"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB" clip-path="url(#h2)"/></svg> }
+                        @for (int i = 0; i < emptyStars; i++) { <svg width="20" height="20" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                    </div>
+                    <span class="rhc-count">@ratings.Count تقييم</span>
+                </div>
+            </div>
+            @if (ratings.Any())
+            {
+                <div class="ratings-list">
+                    @foreach (var r in ratings.OrderByDescending(x => x.Date))
+                    {
+                        var rf = (int)Math.Floor((double)r.Rating);
+                        var re = 5 - rf;
+                        <div class="rating-full-card">
+                            <div class="rfc-avatar"><span>@r.PatientInitial</span></div>
+                            <div class="rfc-content">
+                                <div class="rfc-header">
+                                    <span class="rfc-name">@r.PatientName</span>
+                                    <span class="rfc-date">@r.Date</span>
+                                </div>
+                                <div class="stars-inline">
+                                    @for (int i = 0; i < rf; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                    @for (int i = 0; i < re; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                </div>
+                                @if (!string.IsNullOrEmpty(r.DoctorName) && r.DoctorName != "—")
+                                {
+                                    <span class="rfc-doctor">الطبيب: @r.DoctorName</span>
+                                }
+                                <p class="rfc-comment">@r.Comment</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state"><p>لا توجد تقييمات بعد.</p></div>
+            }
+        </div>
+
+        <!-- ======== SETTINGS TAB ======== -->
+        <div class="tab-pane fade" id="settings" role="tabpanel">
+            <div class="detail-card">
+                <div class="detail-section-header"><h5>إعدادات العيادة</h5></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">اسم العيادة</label>
+                            <input type="text" class="form-input" value="@clinic.Name" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">التخصص الرئيسي</label>
+                            <select class="form-select">
+                                <option>@clinic.Specialty</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الوصف</label>
+                    <textarea class="form-input form-textarea" rows="2">@clinic.Description</textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">الموقع</label>
+                            <input type="text" class="form-input" value="@clinic.Location" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-input" value="@clinic.Phone" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">مدير العيادة</label>
+                            <input type="text" class="form-input" value="@clinic.ManagerName" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">التخصصات (اختيار متعدد)</label>
+                    <div class="specs-multi-select">
+                        @foreach (var s in specs)
+                        {
+                            <span class="spec-pill">@s <button type="button" class="spec-pill-remove" onclick="this.parentElement.remove()">&times;</button></span>
+                        }
+                        <select class="form-select" style="width:auto;display:inline-block;min-width:140px" onchange="if(this.value){var p=document.createElement('span');p.className='spec-pill';p.innerHTML=this.value+' <button type=\\\"button\\\" class=\\\"spec-pill-remove\\\" onclick=\\\"this.parentElement.remove()\\\">&times;</button>';this.parentElement.insertBefore(p,this);this.value=''}">
+                            <option value="">+ إضافة تخصص</option>
+                            <option>القلب والأوعية الدموية</option>
+                            <option>جراحة القلب</option>
+                            <option>قسطرة القلب</option>
+                            <option>الأمراض العصبية</option>
+                            <option>جراحة المخ والأعصاب</option>
+                            <option>العلاج الطبيعي</option>
+                            <option>جراحة العظام</option>
+                            <option>طب الرياضة</option>
+                            <option>الأمراض الجلدية</option>
+                            <option>جراحة التجميل</option>
+                            <option>الليزر والعناية بالبشرة</option>
+                            <option>طب الأطفال</option>
+                            <option>حديثي الولادة</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-toggle">
+                        <input type="checkbox" @(clinic.IsActive ? "checked" : "") />
+                        <span class="toggle-track"></span>
+                        <span class="toggle-label">العيادة نشطة</span>
+                    </label>
+                </div>
+                <button type="button" class="btn btn-primary">حفظ الإعدادات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Doctor Config Modal -->
+<div class="modal fade" id="doctorConfigModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title" id="configModalTitle">إعدادات الطبيب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="configDoctorId" />
+                <h6 class="mb-3" id="configDoctorName"></h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="dcc-section-title">أيام ومواعيد العمل</h6>
+                        <div class="table-responsive">
+                            <table class="custom-table wh-edit-table">
+                                <thead><tr><th>اليوم</th><th>متاح</th><th>البداية</th><th>النهاية</th></tr></thead>
+                                <tbody id="configDaysBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="dcc-section-title">الرسوم والعمولات</h6>
+                        <div class="form-group">
+                            <label class="form-label">رسوم الكشف (ج.م)</label>
+                            <input type="number" id="cfgFeeExam" class="form-input" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">رسوم المتابعة (ج.م)</label>
+                            <input type="number" id="cfgFeeFollow" class="form-input" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">نسبة العمولة (%)</label>
+                                    <input type="number" id="cfgCommPct" class="form-input" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">عمولة ثابتة (ج.م)</label>
+                                    <input type="number" id="cfgCommFixed" class="form-input" />
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="dcc-section-title mt-3">التعيين والعقد</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">الغرفة</label>
+                                    <input type="text" id="cfgRoom" class="form-input" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">نوع العقد</label>
+                                    <select id="cfgContract" class="form-select">
+                                        <option value="FullTime">دوام كامل</option>
+                                        <option value="PartTime">دوام جزئي</option>
+                                        <option value="FixedContract">عقد محدد المدة</option>
+                                        <option value="Visits">زيارات</option>
+                                        <option value="RevenueShare">شراكة بنسبة</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">بداية العقد</label>
+                                    <input type="date" id="cfgContractStart" class="form-input" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">نهاية العقد</label>
+                                    <input type="date" id="cfgContractEnd" class="form-input" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">الحد الأقصى للحجوزات اليومية</label>
+                            <input type="number" id="cfgSessionLimit" class="form-input" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">حفظ الإعدادات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Staff Add/Edit Modal -->
+<div class="modal fade" id="clinicStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title" id="cstaffModalTitle">إضافة موظف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="cstaffId" />
+                <div class="form-group">
+                    <label class="form-label">الاسم</label>
+                    <input type="text" id="cstaffName" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الدور</label>
+                    <select id="cstaffRole" class="form-select">
+                        <option value="Reception">استقبال</option>
+                        <option value="Cleaner">عامل نظافة</option>
+                        <option value="Helper">مساعد</option>
+                        <option value="Nurse">ممرض</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الهاتف</label>
+                    <input type="text" id="cstaffPhone" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-toggle">
+                        <input type="checkbox" id="cstaffActive" checked />
+                        <span class="toggle-track"></span>
+                        <span class="toggle-label">نشط</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="saveCstaffBtn" data-bs-dismiss="modal">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Staff Modal -->
+<div class="modal fade" id="deleteCstaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">تأكيد الحذف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p id="deleteCstaffMsg">هل أنت متأكد؟</p>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteCstaff" data-bs-dismiss="modal">حذف</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            // Config data from server
+            var configData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(doctors));
+
+            // Toggle doctor config expansion
+            window.toggleConfig = function(btn) {
+                var body = btn.closest('.dcc-header').nextElementSibling;
+                var isOpen = body.style.display !== 'none';
+                body.style.display = isOpen ? 'none' : 'block';
+                btn.querySelector('svg').style.transform = isOpen ? '' : 'rotate(180deg)';
+            };
+
+            // Open config modal
+            window.openConfigModal = function(doctorId) {
+                var doc = configData.find(function(d) { return d.DoctorId === doctorId; });
+                if (!doc) return;
+                document.getElementById('configDoctorId').value = doc.DoctorId;
+                document.getElementById('configDoctorName').textContent = 'إعدادات: ' + doc.DoctorName;
+                document.getElementById('cfgFeeExam').value = doc.ExaminationFee;
+                document.getElementById('cfgFeeFollow').value = doc.FollowUpFee;
+                document.getElementById('cfgCommPct').value = doc.CommissionPercent;
+                document.getElementById('cfgCommFixed').value = doc.CommissionFixed;
+                document.getElementById('cfgRoom').value = doc.RoomAssignment;
+                document.getElementById('cfgContract').value = doc.ContractType;
+                document.getElementById('cfgContractStart').value = doc.ContractStart;
+                document.getElementById('cfgContractEnd').value = doc.ContractEnd || '';
+                document.getElementById('cfgSessionLimit').value = doc.SessionLimitPerDay;
+
+                var tbody = document.getElementById('configDaysBody');
+                tbody.innerHTML = '';
+                var days = doc.WorkingDays || [];
+                var dayNames = { 'Sunday': 'الأحد','Monday': 'الإثنين','Tuesday': 'الثلاثاء','Wednesday': 'الأربعاء','Thursday': 'الخميس','Friday': 'الجمعة','Saturday': 'السبت' };
+                days.forEach(function(wd, idx) {
+                    var tr = document.createElement('tr');
+                    tr.className = wd.IsAvailable ? '' : 'wh-unavailable';
+                    tr.innerHTML = '<td>' + wd.DayAr + '</td>' +
+                        '<td><input type="checkbox" class="cfg-day-chk" data-idx="' + idx + '" ' + (wd.IsAvailable ? 'checked' : '') + ' /></td>' +
+                        '<td><input type="time" class="cfg-day-start form-input" data-idx="' + idx + '" value="' + wd.StartTime + '" style="width:100px" /></td>' +
+                        '<td><input type="time" class="cfg-day-end form-input" data-idx="' + idx + '" value="' + wd.EndTime + '" style="width:100px" /></td>';
+                    tbody.appendChild(tr);
+                });
+
+                var modal = new bootstrap.Modal(document.getElementById('doctorConfigModal'));
+                modal.show();
+            };
+
+            // Staff modals
+            var cstaffModal = new bootstrap.Modal(document.getElementById('clinicStaffModal'));
+            var deleteCstaffModal = new bootstrap.Modal(document.getElementById('deleteCstaffModal'));
+
+            document.querySelectorAll('.btn-edit-cstaff').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('cstaffModalTitle').textContent = 'تعديل موظف';
+                    document.getElementById('cstaffId').value = btn.getAttribute('data-id');
+                    document.getElementById('cstaffName').value = btn.getAttribute('data-name');
+                    document.getElementById('cstaffRole').value = btn.getAttribute('data-role');
+                    document.getElementById('cstaffPhone').value = btn.getAttribute('data-phone');
+                    document.getElementById('cstaffActive').checked = btn.getAttribute('data-active') === 'true';
+                    cstaffModal.show();
+                });
+            });
+
+            document.querySelectorAll('.btn-delete-cstaff').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('deleteCstaffMsg').textContent = 'حذف "' + btn.getAttribute('data-name') + '"؟';
+                    deleteCstaffModal.show();
+                });
+            });
+
+            document.getElementById('saveCstaffBtn').addEventListener('click', function() { alert('تم حفظ الموظف.'); });
+            document.getElementById('confirmDeleteCstaff').addEventListener('click', function() { alert('تم حذف الموظف.'); });
+        })();
+    </script>
+}

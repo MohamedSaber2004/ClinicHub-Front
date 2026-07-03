@@ -1960,3 +1960,691 @@ body {
 .mt-2 { margin-top: 8px; }
 .mt-3 { margin-top: 12px; }
 .mt-4 { margin-top: 16px; }
+.mb-3 { margin-bottom: 12px; }
+
+/* ============================================================
+   Specialization Pills & Overflow
+   ============================================================ */
+
+.spec-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 12px;
+  background-color: var(--clr-primary-light);
+  color: var(--clr-primary);
+  white-space: nowrap;
+}
+
+.spec-pill-overflow {
+  background-color: var(--clr-table-header);
+  color: var(--clr-text-secondary);
+}
+
+.spec-pill-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 4px;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ============================================================
+   Clinic Cards Grid
+   ============================================================ */
+
+.clinic-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+@media (max-width: 1200px) {
+  .clinic-cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .clinic-cards-grid { grid-template-columns: 1fr; }
+}
+
+.clinic-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.clinic-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: inherit;
+}
+
+.clinic-card-inactive {
+  opacity: 0.65;
+}
+
+.cc-image {
+  height: 120px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--clr-primary-light), #e8f4fd);
+}
+
+.cc-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cc-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cc-image-placeholder svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.3;
+}
+
+.cc-status-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.cc-body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.cc-name {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.cc-desc {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc-specs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cc-meta {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.cc-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+}
+
+.cc-meta-item svg {
+  flex-shrink: 0;
+}
+
+.cc-rating {
+  margin-right: auto;
+}
+
+.stars-inline {
+  display: inline-flex;
+  gap: 1px;
+  direction: ltr;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.stars-inline svg {
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Clinic Detail Header
+   ============================================================ */
+
+.clinic-detail-header {
+  display: flex;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  align-items: flex-start;
+}
+
+.cdh-image {
+  width: 160px;
+  height: 120px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--clr-primary-light), #e8f4fd);
+}
+
+.cdh-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cdh-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cdh-image-placeholder svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.3;
+}
+
+.cdh-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cdh-name {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-h2);
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.cdh-specs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.cdh-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.cdh-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+}
+
+.cdh-status {
+  display: flex;
+  align-items: center;
+}
+
+.cdh-desc {
+  font-size: var(--fs-md);
+  color: var(--clr-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cdh-contact {
+  display: flex;
+  gap: var(--space-4);
+  font-size: 13px;
+  color: var(--clr-text-secondary);
+  flex-wrap: wrap;
+}
+
+.cdh-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .clinic-detail-header {
+    flex-direction: column;
+  }
+  .cdh-image {
+    width: 100%;
+    height: 160px;
+  }
+}
+
+/* ============================================================
+   Clinic Stat Cards (Overview)
+   ============================================================ */
+
+.clinic-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 768px) {
+  .clinic-stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+.clinic-stat-card {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+
+.clinic-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--clr-text);
+  line-height: 1.1;
+}
+
+.clinic-stat-label {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+}
+
+/* ============================================================
+   Rating Preview (Overview Tab)
+   ============================================================ */
+
+.rating-preview-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid #F1F3F5;
+}
+
+.rating-preview-item:last-child {
+  border-bottom: none;
+}
+
+.rp-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--clr-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: var(--fs-md);
+  color: var(--clr-primary);
+}
+
+.rp-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rp-name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.rp-date {
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+}
+
+.rp-comment {
+  font-size: 13px;
+  color: var(--clr-text-secondary);
+  margin: 0;
+}
+
+/* ============================================================
+   Doctor Config Cards (Doctors Tab)
+   ============================================================ */
+
+.doctor-config-card {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-3);
+  overflow: hidden;
+}
+
+.dcc-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.dcc-header:hover {
+  background-color: var(--clr-table-header);
+}
+
+.dcc-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.dcc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dcc-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dcc-name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.dcc-name {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.dcc-spec {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+}
+
+.dcc-status {
+  flex-shrink: 0;
+}
+
+.dcc-edit-btn {
+  flex-shrink: 0;
+}
+
+.dcc-arrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--clr-text-secondary);
+  transition: transform var(--transition-base);
+}
+
+.dcc-arrow svg {
+  transition: transform var(--transition-base);
+}
+
+.dcc-body {
+  display: none;
+  padding: var(--space-4);
+  border-top: 1px solid var(--clr-border);
+}
+
+.dcc-section {
+  margin-bottom: var(--space-4);
+}
+
+.dcc-section:last-child {
+  margin-bottom: 0;
+}
+
+.dcc-section-title {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.dcc-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .dcc-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+.dcc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dcc-label {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+}
+
+.dcc-value {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+/* Working Hours Table */
+.wh-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-md);
+}
+
+.wh-table th {
+  text-align: right;
+  padding: 6px 12px;
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+  border-bottom: 1px solid var(--clr-border);
+  font-size: 12px;
+}
+
+.wh-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid #F1F3F5;
+  color: var(--clr-text);
+}
+
+.wh-unavailable td {
+  color: var(--clr-text-secondary);
+  opacity: 0.6;
+}
+
+.wh-edit-table td {
+  vertical-align: middle;
+}
+
+.wh-edit-table input[type="checkbox"] {
+  accent-color: var(--clr-primary);
+}
+
+/* ============================================================
+   Ratings Tab
+   ============================================================ */
+
+.ratings-header-card {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-6);
+  text-align: center;
+  margin-bottom: var(--space-5);
+}
+
+.rhc-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rhc-number {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--clr-text);
+  line-height: 1;
+}
+
+.rhc-count {
+  font-size: var(--fs-md);
+  color: var(--clr-text-secondary);
+}
+
+.ratings-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.rating-full-card {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+}
+
+.rfc-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--clr-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: var(--clr-primary);
+}
+
+.rfc-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rfc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rfc-name {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.rfc-date {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+}
+
+.rfc-doctor {
+  font-size: 12px;
+  color: var(--clr-text-secondary);
+}
+
+.rfc-comment {
+  font-size: var(--fs-md);
+  color: var(--clr-text);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   Settings Tab - Multi-select Specializations
+   ============================================================ */
+
+.specs-multi-select {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ============================================================
+   Clinic link in doctors table
+   ============================================================ */
+
+.clinic-link {
+  color: var(--clr-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.clinic-link:hover {
+  text-decoration: underline;
+  color: var(--clr-primary-hover);
+}

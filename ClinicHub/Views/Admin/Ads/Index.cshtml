@@ -1,7 +1,7 @@
 @using ClinicHub.Data
 @{
     ViewData["Title"] = "الإعلانات";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
     var stats = ViewBag.Stats as List<MockStat> ?? new();
     var ads = ViewBag.Ads as List<MockAd> ?? new();
 }

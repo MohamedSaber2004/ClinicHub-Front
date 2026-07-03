@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "العيادات";
     Layout = "_AdminLayout";
+    var clinics = ViewBag.Clinics as List<MockClinic> ?? new();
 }
 
 <div class="page-header">
@@ -12,7 +13,7 @@
         </span>
         إدارة العيادات
     </h2>
-    <button type="button" id="addClinicBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clinicModal">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clinicModal">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
@@ -23,14 +24,6 @@
 <!-- Filter Bar -->
 <div class="filter-bar">
     <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن عيادة..." />
-    <select id="filterSpecialty" class="form-select">
-        <option value="">جميع التخصصات</option>
-        <option value="القلب والأوعية الدموية">القلب والأوعية الدموية</option>
-        <option value="الأمراض العصبية">الأمراض العصبية</option>
-        <option value="جراحة العظام">جراحة العظام</option>
-        <option value="الأمراض الجلدية">الأمراض الجلدية</option>
-        <option value="طب الأطفال">طب الأطفال</option>
-    </select>
     <select id="filterStatus" class="form-select">
         <option value="">جميع الحالات</option>
         <option value="active">نشط</option>
@@ -38,123 +31,118 @@
     </select>
 </div>
 
-<!-- Clinics Table -->
-<div class="table-card">
-    <div class="table-responsive">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>اسم العيادة</th>
-                    <th>التخصص</th>
-                    <th>الطبيب المسؤول</th>
-                    <th>الموقع</th>
-                    <th>رقم الهاتف</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    var clinics = ViewBag.Clinics as List<MockClinic> ?? new();
-                }
-                @foreach (var c in clinics)
-                {
-                    <tr>
-                        <td class="text-md-medium">
-                            <span class="row-icon">
-                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
-                                </svg>
-                            </span>
-                            @c.Name
-                        </td>
-                        <td class="text-md">@c.Specialty</td>
-                        <td class="text-md">@c.ResponsibleDoctor</td>
-                        <td class="text-md">@c.Location</td>
-                        <td class="text-md">@c.Phone</td>
-                        <td>
-                            <label class="toggle-switch">
-                                <input type="checkbox" class="clinic-toggle-input" @(c.IsActive ? "checked" : "") />
-                                <span class="toggle-track-sm"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <div class="table-actions">
-                                <button class="btn-icon btn-edit-clinic" title="تعديل"
-                                        data-id="@c.Id"
-                                        data-name="@c.Name"
-                                        data-specialty="@c.Specialty"
-                                        data-doctor="@c.ResponsibleDoctor"
-                                        data-location="@c.Location"
-                                        data-phone="@c.Phone"
-                                        data-active="@c.IsActive.ToString().ToLower()">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+<!-- Clinic Cards Grid -->
+<div class="clinic-cards-grid" id="clinicCards">
+    @foreach (var c in clinics)
+    {
+        var specs = c.Specializations.Any() ? c.Specializations : new() { c.Specialty };
+        var visibleSpecs = specs.Take(3).ToList();
+        var overflowCount = specs.Count - 3;
+        var doctorCount = MockData.GetClinicDoctors(c.Id).Count;
+        var staffCount = MockData.GetClinicStaff(c.Id).Count;
+        var rating = MockData.GetClinicAvgRating(c.Id);
+        var ratingCount = MockData.GetClinicRatings(c.Id).Count;
+        var fullStars = (int)Math.Floor(rating);
+        var hasHalf = rating - fullStars >= 0.5;
+        var emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+        <a href="@AdminRoutes.Pages.ClinicDetails(c.Id)" class="clinic-card @(!c.IsActive ? "clinic-card-inactive" : "")">
+            <div class="cc-image">
+                @if (!string.IsNullOrEmpty(c.ImageUrl)) { <img src="@c.ImageUrl" alt="@c.Name" /> }
+                else { <div class="cc-image-placeholder"><svg viewBox="0 0 24 24" fill="var(--clr-primary)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/></svg></div> }
+                <div class="cc-status-badge">
+                    @if (c.IsActive) { <span class="badge badge-success">نشط</span> }
+                    else { <span class="badge badge-danger">غير نشط</span> }
+                </div>
+            </div>
+            <div class="cc-body">
+                <h3 class="cc-name">@c.Name</h3>
+                <p class="cc-desc">@c.Description</p>
+                <div class="cc-specs">
+                    @for (int i = 0; i < visibleSpecs.Count; i++) { <span class="spec-pill">@visibleSpecs[i]</span> }
+                    @if (overflowCount > 0) { <span class="spec-pill spec-pill-overflow">+@overflowCount</span> }
+                </div>
+                <div class="cc-meta">
+                    <div class="cc-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--clr-text-secondary)"><path d="M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5z"/></svg><span>@doctorCount طبيب</span></div>
+                    <div class="cc-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--clr-text-secondary)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span>@staffCount موظف</span></div>
+                    <div class="cc-meta-item cc-rating">
+                        <div class="stars-inline">
+                            @for (int i = 0; i < fullStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                            @if (hasHalf) { <text>★</text> } @* half star placeholder *@
+                            @for (int i = 0; i < emptyStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                        </div>
+                        <span>@rating.ToString("F1") (@ratingCount)</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    }
 </div>
 
-<!-- Add/Edit Clinic Modal -->
+<!-- Add Clinic Modal -->
 <div class="modal fade" id="clinicModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content modal-content-custom">
             <div class="modal-header-custom">
-                <h5 class="modal-title" id="clinicModalTitle">إضافة عيادة جديدة</h5>
+                <h5 class="modal-title">إضافة عيادة جديدة</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body-custom">
-                <input type="hidden" id="clinicId" value="" />
-                <div class="form-group">
-                    <label class="form-label" for="clinicName">اسم العيادة</label>
-                    <input type="text" id="clinicName" name="Name" class="form-input" placeholder="مثال: عيادة القلب" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="clinicSpecialty">التخصص</label>
-                    <select id="clinicSpecialty" name="Specialty" class="form-select">
-                        <option value="">اختر التخصص</option>
-                        <option>القلب والأوعية الدموية</option>
-                        <option>الأمراض العصبية</option>
-                        <option>جراحة العظام</option>
-                        <option>الأمراض الجلدية</option>
-                        <option>طب الأطفال</option>
-                        <option>النساء والولادة</option>
-                        <option>طب العيون</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="clinicDoctor">الطبيب المسؤول</label>
-                    <select id="clinicDoctor" name="ResponsibleDoctor" class="form-select">
-                        <option value="">اختر الطبيب</option>
-                        <option>د. عمار السيد</option>
-                        <option>د. سارة أحمد</option>
-                        <option>د. خالد الزهراني</option>
-                        <option>د. عبد الله ناصر</option>
-                    </select>
-                </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label" for="clinicLocation">الموقع / رقم الغرفة</label>
-                            <input type="text" id="clinicLocation" name="Location" class="form-input" placeholder="مثال: الطابق الثاني - غرفة 201" />
+                            <label class="form-label">اسم العيادة</label>
+                            <input type="text" class="form-input" placeholder="مثال: مركز القلب التخصصي" />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label" for="clinicPhone">رقم الهاتف</label>
-                            <input type="text" id="clinicPhone" name="Phone" class="form-input" placeholder="+966 11 XXX XXXX" />
+                            <label class="form-label">التخصص الرئيسي</label>
+                            <select class="form-select">
+                                <option value="">اختر التخصص</option>
+                                <option>القلب والأوعية الدموية</option>
+                                <option>الأمراض العصبية</option>
+                                <option>جراحة العظام</option>
+                                <option>الأمراض الجلدية</option>
+                                <option>طب الأطفال</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">وصف العيادة</label>
+                    <textarea class="form-input form-textarea" rows="2" placeholder="وصف مختصر عن العيادة"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الموقع</label>
+                            <input type="text" class="form-input" placeholder="الطابق - الغرفة" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-input" placeholder="+966 11 XXX XXXX" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">مدير العيادة</label>
+                            <input type="text" class="form-input" placeholder="اسم المدير" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">صورة العيادة</label>
+                            <input type="file" class="form-input" accept="image/*" />
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-toggle">
-                        <input type="checkbox" id="clinicIsActive" name="IsActive" checked />
+                        <input type="checkbox" checked />
                         <span class="toggle-track"></span>
                         <span class="toggle-label">العيادة نشطة</span>
                     </label>
@@ -162,7 +150,7 @@
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary" id="saveClinicBtn" data-bs-dismiss="modal">حفظ</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">حفظ</button>
             </div>
         </div>
     </div>
@@ -171,62 +159,21 @@
 @section Scripts {
     <script>
         (function() {
-            var modalEl = document.getElementById('clinicModal');
-            var titleEl = document.getElementById('clinicModalTitle');
-            var idInput = document.getElementById('clinicId');
-            var nameInput = document.getElementById('clinicName');
-            var specialtyInput = document.getElementById('clinicSpecialty');
-            var doctorInput = document.getElementById('clinicDoctor');
-            var locationInput = document.getElementById('clinicLocation');
-            var phoneInput = document.getElementById('clinicPhone');
-            var activeCheck = document.getElementById('clinicIsActive');
-
-            var clinicModal = new bootstrap.Modal(modalEl);
-
-            document.querySelectorAll('.btn-edit-clinic').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    titleEl.textContent = 'تعديل العيادة';
-                    idInput.value = btn.getAttribute('data-id');
-                    nameInput.value = btn.getAttribute('data-name');
-                    specialtyInput.value = btn.getAttribute('data-specialty');
-                    doctorInput.value = btn.getAttribute('data-doctor');
-                    locationInput.value = btn.getAttribute('data-location');
-                    phoneInput.value = btn.getAttribute('data-phone');
-                    activeCheck.checked = btn.getAttribute('data-active') === 'true';
-                    clinicModal.show();
-                });
-            });
-
-            document.getElementById('addClinicBtn').addEventListener('click', function() {
-                titleEl.textContent = 'إضافة عيادة جديدة';
-                idInput.value = '';
-                nameInput.value = '';
-                specialtyInput.value = '';
-                doctorInput.value = '';
-                locationInput.value = '';
-                phoneInput.value = '';
-                activeCheck.checked = true;
-            });
-
-            function filterTable() {
+            function filterCards() {
                 var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
-                var specialtyVal = document.getElementById('filterSpecialty').value;
                 var statusVal = document.getElementById('filterStatus').value;
-                var rows = document.querySelectorAll('.custom-table tbody tr');
-                rows.forEach(function(row) {
-                    var name = row.querySelector('.text-md-medium').textContent.trim().toLowerCase();
-                    var spec = row.cells[1].textContent.trim();
-                    var isActive = row.querySelector('.clinic-toggle-input').checked;
+                var cards = document.querySelectorAll('.clinic-card');
+                cards.forEach(function(card) {
+                    var name = card.querySelector('.cc-name').textContent.trim().toLowerCase();
+                    var isActive = !card.classList.contains('clinic-card-inactive');
                     var matchSearch = !searchVal || name.indexOf(searchVal) !== -1;
-                    var matchSpecialty = !specialtyVal || spec === specialtyVal;
                     var matchStatus = !statusVal || (statusVal === 'active' && isActive) || (statusVal === 'inactive' && !isActive);
-                    row.style.display = matchSearch && matchSpecialty && matchStatus ? '' : 'none';
+                    card.style.display = matchSearch && matchStatus ? '' : 'none';
                 });
             }
 
-            document.getElementById('filterSearch').addEventListener('input', filterTable);
-            document.getElementById('filterSpecialty').addEventListener('change', filterTable);
-            document.getElementById('filterStatus').addEventListener('change', filterTable);
+            document.getElementById('filterSearch').addEventListener('input', filterCards);
+            document.getElementById('filterStatus').addEventListener('change', filterCards);
         })();
     </script>
 }
