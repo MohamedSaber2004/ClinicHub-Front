@@ -1,7 +1,7 @@
 @using ClinicHub.Data
 @{
     ViewData["Title"] = "الزيارات والتقييمات";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
     ViewBag.SubSidebarSection = "visits";
     ViewBag.UserId = ViewBag.UserId as int? ?? 1;
     var visits = ViewBag.Visits as List<MockUserVisit> ?? new();

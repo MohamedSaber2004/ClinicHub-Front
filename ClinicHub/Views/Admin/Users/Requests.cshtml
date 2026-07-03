@@ -1,7 +1,7 @@
 @using ClinicHub.Data
 @{
     ViewData["Title"] = "الطلبات";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
     ViewBag.SubSidebarSection = "requests";
     ViewBag.UserId = ViewBag.UserId as int? ?? 1;
     var requests = ViewBag.Requests as List<MockTableRow> ?? new();
