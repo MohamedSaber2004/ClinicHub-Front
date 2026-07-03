@@ -1,0 +1,99 @@
+@{
+    ViewData["Title"] = "إدارة المخزون - Doctory";
+    Layout = "_ClinicLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">إدارة المخزون الطبي (Inventory Management)</h2>
+    <button class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 20px; border-radius: 5px;">
+        <i class="bi bi-plus-circle me-1"></i> إضافة صنف جديد
+    </button>
+</div>
+
+<!-- Low stock alerts -->
+<div style="background-color: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px; padding: 16px; margin-bottom: 24px; display: flex; align-items: center; gap: 15px;">
+    <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
+    <div>
+        <strong style="color: #991b1b; font-size: 14px;">تنبيه: أصناف شارفت على النفاد!</strong>
+        <p style="color: #7f1d1d; font-size: 12px; margin: 2px 0 0 0;">كمامات طبية (متبقي 15 وحدة)، قفازات فحص مطاطية (متبقي 8 علب).</p>
+    </div>
+</div>
+
+<div class="table-card" style="padding: 24px;">
+    <h4 style="font-weight: 700; margin-bottom: 20px;">حالة المخزون الحالي</h4>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>كود الصنف</th>
+                    <th>اسم الصنف</th>
+                    <th>الفئة</th>
+                    <th>الكمية المتاحة</th>
+                    <th>الحد الأدنى للتنبيه</th>
+                    <th>الموقع</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#INV-MED-051</td>
+                    <td>كمامات طبية (3 طبقات)</td>
+                    <td>مستلزمات عامة</td>
+                    <td><strong style="color: #ef4444;">15 علبة</strong></td>
+                    <td>30 علبة</td>
+                    <td>مستودع أ</td>
+                    <td><span style="background-color: #fde8e8; color: #9b1c1c; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-dash-circle me-1"></i> منخفض جداً</span></td>
+                    <td>
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 11px;">
+                            <i class="bi bi-plus-slash-minus me-1"></i> تعديل الكمية
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#INV-MED-024</td>
+                    <td>قفازات فحص مطاطية (M)</td>
+                    <td>مستلزمات عامة</td>
+                    <td><strong style="color: #ef4444;">8 علب</strong></td>
+                    <td>20 علبة</td>
+                    <td>مستودع أ</td>
+                    <td><span style="background-color: #fde8e8; color: #9b1c1c; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-dash-circle me-1"></i> منخفض جداً</span></td>
+                    <td>
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 11px;">
+                            <i class="bi bi-plus-slash-minus me-1"></i> تعديل الكمية
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#INV-MED-089</td>
+                    <td>سرنجات سحب دم (5 مل)</td>
+                    <td>أدوات حقن وسحب</td>
+                    <td>250 وحدة</td>
+                    <td>100 وحدة</td>
+                    <td>مستودع ب</td>
+                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-check-circle me-1"></i> كافٍ</span></td>
+                    <td>
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 11px;">
+                            <i class="bi bi-plus-slash-minus me-1"></i> تعديل الكمية
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#INV-MED-104</td>
+                    <td>شرائط قياس السكر</td>
+                    <td>مستلزمات التشخيص</td>
+                    <td>85 علبة</td>
+                    <td>50 علبة</td>
+                    <td>مستودع أ</td>
+                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-check-circle me-1"></i> كافٍ</span></td>
+                    <td>
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 11px;">
+                            <i class="bi bi-plus-slash-minus me-1"></i> تعديل الكمية
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

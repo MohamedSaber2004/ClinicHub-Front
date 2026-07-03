@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "السجل الطبي الإلكتروني (EMR) - Doctory";
+    Layout = "_ClinicLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">السجل الطبي الإلكتروني (EMR)</h2>
+    <button class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 20px; border-radius: 5px;">
+        <i class="bi bi-file-earmark-medical me-1"></i> إنشاء سجل جديد
+    </button>
+</div>
+
+<!-- Search Panel -->
+<div class="table-card" style="padding: 20px; margin-bottom: 24px;">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" style="font-weight: 600; font-size: 13px;">بحث عن مريض (بالاسم، الرقم القومي، أو رقم الموبايل)</label>
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-end-0" style="border: 1px solid var(--border-color);"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" class="form-control auth-form-control border-start-0" placeholder="أدخل اسم المريض للبحث..." style="padding: 8px 12px 8px 36px; font-size: 13px;" />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" style="font-weight: 600; font-size: 13px;">العيادة</label>
+            <select class="form-select auth-form-control" style="padding: 8px 12px; font-size: 13px;">
+                <option value="">جميع العيادات</option>
+                <option>عيادة القلب</option>
+                <option>عيادة الأعصاب</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button class="btn" style="background-color: #384152; color: white; font-weight: 600; width: 100%; padding: 8px 12px;">
+                <i class="bi bi-funnel me-1"></i> تصفية النتائج
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- EMR Patients List -->
+<div class="table-card" style="padding: 24px;">
+    <h4 style="font-weight: 700; margin-bottom: 20px;">سجلات المرضى النشطة</h4>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>رقم السجل</th>
+                    <th>المريض</th>
+                    <th>العمر</th>
+                    <th>آخر زيارة</th>
+                    <th>التشخيص الأخير</th>
+                    <th>الروشتة الإلكترونية (e-Rx)</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#EMR-2041</td>
+                    <td><strong>عزير بن محمد</strong></td>
+                    <td>45 سنة</td>
+                    <td>اليوم، 10:00 ص</td>
+                    <td>ارتفاع طفيف في ضغط الدم</td>
+                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-file-earmark-check me-1"></i> نشطة - 2 دواء</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" style="font-size: 12px; border: 1px solid var(--primary-color); color: var(--primary-color);">
+                            <i class="bi bi-eye me-1"></i> عرض
+                        </button>
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 12px;">
+                            <i class="bi bi-pencil me-1"></i> تعديل
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#EMR-1985</td>
+                    <td><strong>حارس عبد الكريم</strong></td>
+                    <td>34 سنة</td>
+                    <td>اليوم، 11:30 ص</td>
+                    <td>صداع نصفي متكرر</td>
+                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-file-earmark-check me-1"></i> نشطة - 1 دواء</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" style="font-size: 12px; border: 1px solid var(--primary-color); color: var(--primary-color);">
+                            <i class="bi bi-eye me-1"></i> عرض
+                        </button>
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 12px;">
+                            <i class="bi bi-pencil me-1"></i> تعديل
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#EMR-1892</td>
+                    <td><strong>حمزة الرفاعي</strong></td>
+                    <td>29 سنة</td>
+                    <td>اليوم، 12:15 م</td>
+                    <td>متابعة دورية</td>
+                    <td><span style="background-color: #f1f3f4; color: #5f6368; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-file-earmark-x me-1"></i> لا توجد روشتة</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" style="font-size: 12px; border: 1px solid var(--primary-color); color: var(--primary-color);">
+                            <i class="bi bi-eye me-1"></i> عرض
+                        </button>
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 12px;">
+                            <i class="bi bi-pencil me-1"></i> تعديل
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#EMR-1754</td>
+                    <td><strong>سارة أحمد</strong></td>
+                    <td>26 سنة</td>
+                    <td>أمس</td>
+                    <td>حساسية جلدية شديدة</td>
+                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-file-earmark-check me-1"></i> نشطة - 3 أدوية</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" style="font-size: 12px; border: 1px solid var(--primary-color); color: var(--primary-color);">
+                            <i class="bi bi-eye me-1"></i> عرض
+                        </button>
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 12px;">
+                            <i class="bi bi-pencil me-1"></i> تعديل
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

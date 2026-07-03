@@ -1,9 +1,14 @@
 @{
-    ViewData["Title"] = "إدارة العيادات";
-    Layout = "_DashboardLayout";
+    ViewData["Title"] = "إدارة العيادات - Doctory";
+    Layout = "_ClinicLayout";
 }
 
-<h2 class="page-title">لوحة إدارة العيادات والتشغيل اليومي</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">لوحة إدارة وتشغيل العيادات اليومي</h2>
+    <div class="text-muted" style="font-size: 14px; font-weight: 500;">
+        <i class="bi bi-clock-history me-1"></i> آخر تحديث: اليوم، 05:48 م
+    </div>
+</div>
 
 <!-- Statistics Grid -->
 <div class="stats-grid">
@@ -73,8 +78,9 @@
 <div class="dashboard-tables-grid">
     <!-- Today's Appointments -->
     <div class="table-card">
-        <div class="table-card-header">
-            <h3 class="table-card-title">مواعيد العيادات اليوم</h3>
+        <div class="table-card-header d-flex justify-content-between align-items-center">
+            <h3 class="table-card-title mb-0">مواعيد العيادات اليوم</h3>
+            <a href="@ClinicRoutes.Pages.Appointments()" class="btn btn-sm btn-link" style="color: var(--primary-color); text-decoration: none; font-size: 13px; font-weight: 600;">عرض الكل <i class="bi bi-arrow-left"></i></a>
         </div>
         <div class="table-responsive">
             <table class="custom-table">
@@ -88,25 +94,25 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>عزير</td>
+                        <td><strong>عزير بن محمد</strong></td>
                         <td>عيادة القلب</td>
                         <td>10:00 ص</td>
                         <td><span class="badge badge-success">تم الكشف</span></td>
                     </tr>
                     <tr>
-                        <td>حارس</td>
+                        <td><strong>حارس عبد الكريم</strong></td>
                         <td>عيادة الأعصاب</td>
                         <td>11:30 ص</td>
                         <td><span class="badge badge-warning">قيد الانتظار</span></td>
                     </tr>
                     <tr>
-                        <td>حمزة</td>
+                        <td><strong>حمزة الرفاعي</strong></td>
                         <td>عيادة النساء والولادة</td>
                         <td>12:15 م</td>
                         <td><span class="badge badge-info">قيد الكشف</span></td>
                     </tr>
                     <tr>
-                        <td>سارة أحمد</td>
+                        <td><strong>سارة أحمد</strong></td>
                         <td>عيادة الجلدية</td>
                         <td>01:00 م</td>
                         <td><span class="badge badge-warning">قيد الانتظار</span></td>
@@ -119,7 +125,7 @@
     <!-- Active Clinics Status -->
     <div class="table-card">
         <div class="table-card-header">
-            <h3 class="table-card-title">حالة العيادات النشطة</h3>
+            <h3 class="table-card-title mb-0">حالة العيادات والتشغيل الفعلي</h3>
         </div>
         <div class="table-responsive">
             <table class="custom-table">
@@ -134,25 +140,25 @@
                 <tbody>
                     <tr>
                         <td>عيادة القلب</td>
-                        <td>د. سمير</td>
+                        <td><strong>د. سمير المنشاوي</strong></td>
                         <td>غرفة 101</td>
                         <td><span class="badge badge-success">مفتوح</span></td>
                     </tr>
                     <tr>
                         <td>عيادة الجلدية</td>
-                        <td>د. عمار</td>
+                        <td><strong>د. عمار السليمان</strong></td>
                         <td>غرفة 102</td>
                         <td><span class="badge badge-success">مفتوح</span></td>
                     </tr>
                     <tr>
                         <td>عيادة الأعصاب</td>
-                        <td>د. عبد الله</td>
+                        <td><strong>د. عبد الله الرويلي</strong></td>
                         <td>غرفة 103</td>
                         <td><span class="badge badge-warning">في استراحة</span></td>
                     </tr>
                     <tr>
                         <td>عيادة العظام</td>
-                        <td>د. خالد</td>
+                        <td><strong>د. خالد العتيبي</strong></td>
                         <td>غرفة 104</td>
                         <td><span class="badge badge-success">مفتوح</span></td>
                     </tr>

@@ -121,9 +121,9 @@ namespace ClinicHub.Data
 
         public static List<MockTableRow> GetNewPatients() => new()
         {
-            new() { Cells = new() { { "name", "عزير" }, { "dept", "القلب والأوعية الدموية" }, { "date", "3 مارس 2025" }, { "phone", "+0123456789" } } },
-            new() { Cells = new() { { "name", "حارس" }, { "dept", "أمراض الأعصاب" }, { "date", "4 مارس 2025" }, { "phone", "+0123456789" } } },
-            new() { Cells = new() { { "name", "حمزة" }, { "dept", "أمراض النساء" }, { "date", "5 مارس 2025" }, { "phone", "+0123456789" } } },
+            new() { Cells = new() { { "name", "عزير" }, { "dept", "القلب والأوعية الدموية" }, { "date", "3 مارس 2025" }, { "phone", "01012345678" } } },
+            new() { Cells = new() { { "name", "حارس" }, { "dept", "أمراض الأعصاب" }, { "date", "4 مارس 2025" }, { "phone", "01123456789" } } },
+            new() { Cells = new() { { "name", "حمزة" }, { "dept", "أمراض النساء" }, { "date", "5 مارس 2025" }, { "phone", "01234567890" } } },
         };
 
         // ========== Payments ==========
@@ -149,7 +149,7 @@ namespace ClinicHub.Data
             2 => new MockPaymentDetail
             {
                 Id = 2, Code = "#P-02", Payer = "د. عمار السيد", PayerType = "طبيب",
-                PayerEmail = "ammar@clinic.com", PayerPhone = "+966 55 123 4567",
+                PayerEmail = "ammar@clinic.com", PayerPhone = "01012345678",
                 Type = "عمولة طبيب", TypeClass = "badge-warning", Amount = "500",
                 Method = "تحويل بنكي", TransactionId = Guid.NewGuid().ToString("N").Substring(0, 12),
                 RefNumber = "PM-2026-002", Status = "معلق", StatusClass = "badge-warning",
@@ -164,7 +164,7 @@ namespace ClinicHub.Data
             3 => new MockPaymentDetail
             {
                 Id = 3, Code = "#P-03", Payer = "محمد عمر (مريض)", PayerType = "مريض",
-                PayerEmail = "mohamed@email.com", PayerPhone = "+966 50 111 2222",
+                PayerEmail = "mohamed@email.com", PayerPhone = "01111122222",
                 Type = "موعد مريض", TypeClass = "badge-success", Amount = "200",
                 Method = "Paymob - محفظة إلكترونية", TransactionId = Guid.NewGuid().ToString("N").Substring(0, 12),
                 RefNumber = "PM-2026-003", Status = "ناجح", StatusClass = "badge-success",
@@ -180,7 +180,7 @@ namespace ClinicHub.Data
             4 => new MockPaymentDetail
             {
                 Id = 4, Code = "#P-04", Payer = "مستشفى النور التخصصي", PayerType = "عيادة",
-                PayerEmail = "info@alnoor-hospital.com", PayerPhone = "+966 11 234 5678",
+                PayerEmail = "info@alnoor-hospital.com", PayerPhone = "01223456789",
                 Type = "اشتراك عيادة", TypeClass = "badge-info", Amount = "12,000",
                 Method = "تحويل بنكي", TransactionId = Guid.NewGuid().ToString("N").Substring(0, 12),
                 RefNumber = "PM-2026-004", Status = "فاشل", StatusClass = "badge-danger",
@@ -196,7 +196,7 @@ namespace ClinicHub.Data
             5 => new MockPaymentDetail
             {
                 Id = 5, Code = "#P-05", Payer = "عيادات التخصصات الدقيقة", PayerType = "عيادة",
-                PayerEmail = "info@specialized-clinic.com", PayerPhone = "+966 11 567 8901",
+                PayerEmail = "info@specialized-clinic.com", PayerPhone = "01512345678",
                 Type = "خدمة إعلانية", TypeClass = "badge-danger", Amount = "3,500",
                 Method = "Paymob - بطاقة ائتمان", TransactionId = Guid.NewGuid().ToString("N").Substring(0, 12),
                 RefNumber = "PM-2026-005", Status = "مسترد", StatusClass = "badge-info",
@@ -212,7 +212,7 @@ namespace ClinicHub.Data
             _ => new MockPaymentDetail
             {
                 Id = 1, Code = "#P-01", Payer = "مجمع عيادات السلام الطبي", PayerType = "عيادة",
-                PayerEmail = "info@alsalam-clinic.com", PayerPhone = "+966 11 234 5678",
+                PayerEmail = "info@alsalam-clinic.com", PayerPhone = "01223456789",
                 Type = "اشتراك عيادة", TypeClass = "badge-info", Amount = "5,000",
                 Method = "Paymob - بطاقة ائتمان", TransactionId = Guid.NewGuid().ToString("N").Substring(0, 12),
                 RefNumber = "PM-2026-001", Status = "ناجح", StatusClass = "badge-success",

@@ -1,7 +1,7 @@
 @using ClinicHub.Data
 @{
     ViewData["Title"] = "المدفوعات";
-    Layout = "_DashboardLayout";
+    Layout = "_AdminLayout";
     var stats = ViewBag.Stats as List<MockStat> ?? new();
     var payments = ViewBag.Payments as List<MockPayment> ?? new();
 }

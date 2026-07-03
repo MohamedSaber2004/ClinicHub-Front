@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Doctory</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="8" fill="var(--primary-color)"/>
+                        <path d="M9 16C9 12.134 12.134 9 16 9C19.866 9 23 12.134 23 16C23 19.866 19.866 23 16 23V16H9Z" fill="white"/>
+                        <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
+                    </svg>
+                    <span class="logo-text">
+                        <span class="logo-brand-ar" style="color: var(--primary-color); font-weight: 800;">Doctory</span>
+                    </span>
+                </div>
+            </div>
+            <nav class="sidebar-menu">
+                <div class="sidebar-nav-items">
+                    @{
+                        var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+                        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                        bool IsActive(string ctrl, string? action = null) =>
+                            currentController == ctrl && (action == null || currentAction == action);
+                    }
+                    <a class="sidebar-item @(IsActive("Clinic", "Index") ? "active" : "")" href="@ClinicRoutes.Pages.Index()">
+                        <i class="bi bi-hospital" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                        <span>لوحة تشغيل العيادات</span>
+                    </a>
+                    
+                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الخدمات التشغيلية</div>
+
+                    <a class="sidebar-item @(IsActive("Clinic", "Appointments") ? "active" : "")" href="@ClinicRoutes.Pages.Appointments()" style="padding-right: 20px;">
+                        <i class="bi bi-calendar3" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                        <span>نظام الحجز الذكي</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Clinic", "MedicalRecords") ? "active" : "")" href="@ClinicRoutes.Pages.MedicalRecords()" style="padding-right: 20px;">
+                        <i class="bi bi-folder2-open" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                        <span>السجل الطبي الإلكتروني</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Clinic", "Billing") ? "active" : "")" href="@ClinicRoutes.Pages.Billing()" style="padding-right: 20px;">
+                        <i class="bi bi-credit-card" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                        <span>الفواتير والمالية</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Clinic", "Inventory") ? "active" : "")" href="@ClinicRoutes.Pages.Inventory()" style="padding-right: 20px;">
+                        <i class="bi bi-box-seam" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                        <span>إدارة المخزون</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Clinic", "PatientPortal") ? "active" : "")" href="@ClinicRoutes.Pages.PatientPortal()" style="padding-right: 20px;">
+                        <i class="bi bi-people" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                        <span>بوابة المرضى</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Clinic", "Staff") ? "active" : "")" href="@ClinicRoutes.Pages.Staff()" style="padding-right: 20px;">
+                        <i class="bi bi-person-badge" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                        <span>إدارة الموظفين</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-bottom">
+                <hr style="width: 100%; border: none; border-top: 1px solid var(--clr-border); margin: 0; padding: 0;" />
+                <a class="sidebar-profile" style="cursor: default;">
+                    <div class="sidebar-profile-avatar">
+                        <span>ع</span>
+                    </div>
+                    <div class="sidebar-profile-info">
+                        <span class="sidebar-profile-name">عيادة الرحمة</span>
+                        <span class="sidebar-profile-role">إدارة العيادة</span>
+                    </div>
+                </a>
+                <a class="sidebar-item" href="@HomeRoutes.Pages.Index()">
+                    <i class="bi bi-house-door" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                    <span>موقع العيادة الرئيسي</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-search">
+                    <select class="dept-dropdown" onchange="location.hash = this.value">
+                        <option value="">اختر القسم</option>
+                        <option value="cardio">قسم القلب</option>
+                        <option value="neuro">قسم الأعصاب</option>
+                        <option value="derm">قسم الجلدية</option>
+                    </select>
+                </div>
+                <div class="header-user" style="cursor: default;">
+                    <div class="user-info">
+                        <span class="user-name">طاقم الإدارة الطبية</span>
+                        <span class="user-role">مدير العيادات</span>
+                    </div>
+                    <!-- Mock Admin Profile Image -->
+                    <svg class="user-avatar" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
+                        <circle cx="18" cy="14" r="6" fill="#66748C"/>
+                        <path d="M6 30C6 24.4772 11.3726 21 18 21C24.6274 21 30 24.4772 30 30" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </header>
+
+            <!-- Main Render Area -->
+            <main role="main" class="content-body">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

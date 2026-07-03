@@ -1,0 +1,117 @@
+@{
+    ViewData["Title"] = "الفواتير والمالية - Doctory";
+    Layout = "_ClinicLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">الفواتير والمالية (Billing & Finance)</h2>
+    <button class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 20px; border-radius: 5px;">
+        <i class="bi bi-file-earmark-plus me-1"></i> إنشاء فاتورة جديدة
+    </button>
+</div>
+
+<!-- Financial Stats Grid -->
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">1,450 ج.م</span>
+            <span class="stat-label">دخل اليوم الإجمالي</span>
+        </div>
+        <div class="stat-icon-wrapper" style="background-color: rgba(52, 211, 153, 0.1); color: #34d399;">
+            <i class="bi bi-cash-stack fs-3"></i>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">12</span>
+            <span class="stat-label">الفواتير المدفوعة</span>
+        </div>
+        <div class="stat-icon-wrapper" style="background-color: rgba(74, 144, 226, 0.1); color: var(--primary-color);">
+            <i class="bi bi-file-check fs-3"></i>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">3</span>
+            <span class="stat-label">الفواتير المعلقة</span>
+        </div>
+        <div class="stat-icon-wrapper" style="background-color: rgba(251, 191, 36, 0.1); color: #fbbf24;">
+            <i class="bi bi-hourglass-split fs-3"></i>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">85%</span>
+            <span class="stat-label">نسبة قبول التأمين</span>
+        </div>
+        <div class="stat-icon-wrapper" style="background-color: rgba(96, 165, 250, 0.1); color: #60a5fa;">
+            <i class="bi bi-shield-check fs-3"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Invoices List -->
+<div class="table-card" style="padding: 24px;">
+    <h4 style="font-weight: 700; margin-bottom: 20px;">سجل الفواتير والمعاملات</h4>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>رقم الفاتورة</th>
+                    <th>المريض</th>
+                    <th>العيادة</th>
+                    <th>طريقة الدفع</th>
+                    <th>المبلغ الإجمالي</th>
+                    <th>التأمين</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#INV-2026-003</td>
+                    <td><strong>عزير بن محمد</strong></td>
+                    <td>عيادة القلب</td>
+                    <td>نقداً</td>
+                    <td>350.00 ج.م</td>
+                    <td>لا يوجد</td>
+                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-check-circle me-1"></i> مدفوع</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" style="font-size: 11px; border: 1px solid var(--border-color);">
+                            <i class="bi bi-printer me-1"></i> طباعة
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#INV-2026-002</td>
+                    <td><strong>حارس عبد الكريم</strong></td>
+                    <td>عيادة الأعصاب</td>
+                    <td>بطاقة مدى</td>
+                    <td>450.00 ج.م</td>
+                    <td>بوبا للتأمين (مقبول)</td>
+                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-check-circle me-1"></i> مدفوع</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" style="font-size: 11px; border: 1px solid var(--border-color);">
+                            <i class="bi bi-printer me-1"></i> طباعة
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>#INV-2026-001</td>
+                    <td><strong>سارة أحمد</strong></td>
+                    <td>عيادة الجلدية</td>
+                    <td>بطاقة مدى</td>
+                    <td>200.00 ج.م</td>
+                    <td>التعاونية (قيد المراجعة)</td>
+                    <td><span style="background-color: #fef7e0; color: #b06000; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-hourglass me-1"></i> معلق</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" style="font-size: 11px; border: 1px solid var(--border-color);">
+                            <i class="bi bi-arrow-repeat me-1"></i> تحديث
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
