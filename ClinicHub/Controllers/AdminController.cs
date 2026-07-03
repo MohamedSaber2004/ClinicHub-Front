@@ -8,5 +8,40 @@ namespace ClinicHub.Controllers
         {
             return View();
         }
+
+        public IActionResult Specializations()
+        {
+            return View();
+        }
+
+        public IActionResult Clinics()
+        {
+            return View();
+        }
+
+        public IActionResult Doctors()
+        {
+            return View();
+        }
+
+        public IActionResult Kpi()
+        {
+            return View();
+        }
+
+        public IActionResult Support()
+        {
+            return View();
+        }
+
+        public IActionResult Ads()
+        {
+            return View();
+        }
+
+        public IActionResult Profile()
+        {
+            return View();
+        }
     }
 }
