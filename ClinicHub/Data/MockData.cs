@@ -407,13 +407,34 @@ namespace ClinicHub.Data
             new() { Id = 5, Name = "عيادة الأطفال", Specialty = "طب الأطفال", ResponsibleDoctor = "—", Location = "الطابق الرابع - غرفة 402", Phone = "+966 11 678 9012", IsActive = false },
         };
 
+        public static MockClinic? GetClinicById(int id) => GetClinics().FirstOrDefault(c => c.Id == id);
+
         // ========== Doctors ==========
         public static List<MockDoctor> GetDoctors() => new()
         {
-            new() { Id = 1, Name = "د. عمار السيد", Specialty = "الأمراض الجلدية", Clinic = "عيادة الجلدية", Phone = "+966 55 123 4567", Email = "ammar@clinic.com", IsActive = true },
-            new() { Id = 2, Name = "د. سارة أحمد", Specialty = "أمراض القلب", Clinic = "عيادة القلب", Phone = "+966 55 234 5678", Email = "sara@clinic.com", IsActive = true },
-            new() { Id = 3, Name = "د. خالد الزهراني", Specialty = "جراحة العظام", Clinic = "عيادة العظام", Phone = "+966 55 345 6789", Email = "khalid@clinic.com", IsActive = true },
-            new() { Id = 4, Name = "د. عبد الله ناصر", Specialty = "الأمراض العصبية", Clinic = "عيادة الأعصاب", Phone = "+966 55 456 7890", Email = "abdullah@clinic.com", IsActive = false },
+            new() { Id = 1, Name = "د. عمار السيد", SyndicateId = "123456", TaxRegistry = "789-123-456", Degree = "استشاري", Specialty = "الأمراض الجلدية", DoctorType = "OwnClinic", ClinicId = 4, WorkplaceName = "عيادة الجلدية", Phone = "+966 55 123 4567", Email = "ammar@clinic.com", Photo = "", Documents = new() { "syndicate_card_1.png", "cert_1.png" }, IsActive = true },
+            new() { Id = 2, Name = "د. سارة أحمد", SyndicateId = "234567", TaxRegistry = "789-234-567", Degree = "أخصائي", Specialty = "أمراض القلب", DoctorType = "InCenter", ClinicId = 1, WorkplaceName = "عيادة القلب", Phone = "+966 55 234 5678", Email = "sara@clinic.com", Photo = "", Documents = new() { "syndicate_card_2.png", "cert_2.png" }, IsActive = true },
+            new() { Id = 3, Name = "د. خالد الزهراني", SyndicateId = "345678", TaxRegistry = "789-345-678", Degree = "استشاري", Specialty = "جراحة العظام", DoctorType = "OwnClinic", ClinicId = 3, WorkplaceName = "عيادة العظام", Phone = "+966 55 345 6789", Email = "khalid@clinic.com", Photo = "", Documents = new() { "syndicate_card_3.png" }, IsActive = true },
+            new() { Id = 4, Name = "د. عبد الله ناصر", SyndicateId = "456789", TaxRegistry = "789-456-789", Degree = "أخصائي", Specialty = "الأمراض العصبية", DoctorType = "InCenter", ClinicId = 2, WorkplaceName = "عيادة الأعصاب", Phone = "+966 55 456 7890", Email = "abdullah@clinic.com", Photo = "", Documents = new(), IsActive = false },
+            new() { Id = 5, Name = "د. أحمد علي", SyndicateId = "567890", TaxRegistry = "789-567-890", Degree = "طبيب", Specialty = "طب الأطفال", DoctorType = "Freelance", Phone = "+966 55 567 8901", Email = "ahmed@clinic.com", Photo = "", Documents = new() { "syndicate_card_5.png" }, IsActive = true },
+            new() { Id = 6, Name = "د. ليلى محمود", SyndicateId = "678901", TaxRegistry = "789-678-901", Degree = "أخصائي", Specialty = "النساء والولادة", DoctorType = "Freelance", Phone = "+966 55 678 9012", Email = "layla@clinic.com", Photo = "", Documents = new() { "syndicate_card_6.png", "cert_6.png" }, IsActive = false },
+        };
+
+        public static MockDoctor? GetDoctorById(int id) => GetDoctors().FirstOrDefault(d => d.Id == id);
+
+        public static List<MockClinicStaff> GetClinicStaff(int clinicId) => clinicId switch
+        {
+            1 => new() { new() { Id = 1, Name = "محمد عمر", Role = "Reception", Phone = "+966 50 111 2222", IsActive = true }, new() { Id = 2, Name = "نورة حسن", Role = "Nurse", Phone = "+966 50 333 4444", IsActive = true } },
+            2 => new() { new() { Id = 3, Name = "علياء سعيد", Role = "Reception", Phone = "+966 50 555 6666", IsActive = true }, new() { Id = 4, Name = "سامي خالد", Role = "Cleaner", Phone = "+966 50 777 8888", IsActive = false } },
+            3 => new() { new() { Id = 5, Name = "فاطمة أحمد", Role = "Reception", Phone = "+966 50 999 0000", IsActive = true }, new() { Id = 6, Name = "هدى ناصر", Role = "Helper", Phone = "+966 51 111 2222", IsActive = true }, new() { Id = 7, Name = "مصطفى كريم", Role = "Nurse", Phone = "+966 51 333 4444", IsActive = true } },
+            4 => new() { new() { Id = 8, Name = "سارة علي", Role = "Reception", Phone = "+966 51 555 6666", IsActive = true }, new() { Id = 9, Name = "أحمد رضا", Role = "Cleaner", Phone = "+966 51 777 8888", IsActive = true } },
+            _ => new(),
+        };
+
+        public static List<MockVerificationRequest> GetPendingVerifications() => new()
+        {
+            new() { Id = 1, DoctorName = "د. أحمد علي", Phone = "+966 55 567 8901", Email = "ahmed@clinic.com", SyndicateId = "567890", TaxRegistry = "789-567-890", Degree = "طبيب", Specialty = "طب الأطفال", Photo = "", Documents = new() { "syndicate_card_5.png", "cert_5.png" }, Status = "pending", RequestDate = "2026-07-04" },
+            new() { Id = 2, DoctorName = "د. ليلى محمود", Phone = "+966 55 678 9012", Email = "layla@clinic.com", SyndicateId = "678901", TaxRegistry = "789-678-901", Degree = "أخصائي", Specialty = "النساء والولادة", Photo = "", Documents = new() { "syndicate_card_6.png" }, Status = "pending", RequestDate = "2026-07-03" },
         };
 
         // ========== Support Tickets ==========
@@ -508,11 +529,43 @@ namespace ClinicHub.Data
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
+        public string SyndicateId { get; set; } = "";
+        public string TaxRegistry { get; set; } = "";
+        public string Degree { get; set; } = "";
         public string Specialty { get; set; } = "";
-        public string Clinic { get; set; } = "";
+        public string DoctorType { get; set; } = ""; // Freelance / OwnClinic / InCenter
+        public int? ClinicId { get; set; } // if OwnClinic -> the clinic they own; if InCenter -> the center they work at
+        public string WorkplaceName { get; set; } = "";
         public string Phone { get; set; } = "";
         public string Email { get; set; } = "";
+        public string Photo { get; set; } = "";
+        public List<string> Documents { get; set; } = new();
         public bool IsActive { get; set; } = true;
+    }
+
+    public class MockClinicStaff
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Role { get; set; } = ""; // Reception, Cleaner, Helper, Nurse
+        public string Phone { get; set; } = "";
+        public bool IsActive { get; set; } = true;
+    }
+
+    public class MockVerificationRequest
+    {
+        public int Id { get; set; }
+        public string DoctorName { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string SyndicateId { get; set; } = "";
+        public string TaxRegistry { get; set; } = "";
+        public string Degree { get; set; } = "";
+        public string Specialty { get; set; } = "";
+        public string Photo { get; set; } = "";
+        public List<string> Documents { get; set; } = new();
+        public string Status { get; set; } = "pending"; // pending / approved / rejected
+        public string RequestDate { get; set; } = "";
     }
 
     // ========== Support Tickets Models ==========

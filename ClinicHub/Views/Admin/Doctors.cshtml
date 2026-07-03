@@ -1,6 +1,8 @@
 @{
     ViewData["Title"] = "الأطباء";
     Layout = "_DashboardLayout";
+    var doctors = ViewBag.Doctors as List<MockDoctor> ?? new();
+    var clinics = ViewBag.Clinics as List<MockClinic> ?? new();
 }
 
 <div class="page-header">
@@ -23,12 +25,21 @@
 <!-- Filter Bar -->
 <div class="filter-bar">
     <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن طبيب..." />
+    <select id="filterType" class="form-select">
+        <option value="">جميع الأنواع</option>
+        <option value="Freelance">مستقل</option>
+        <option value="OwnClinic">عيادة خاصة</option>
+        <option value="InCenter">يعمل في مركز</option>
+    </select>
     <select id="filterSpecialty" class="form-select">
         <option value="">جميع التخصصات</option>
         <option value="الأمراض الجلدية">الأمراض الجلدية</option>
         <option value="أمراض القلب">أمراض القلب</option>
         <option value="جراحة العظام">جراحة العظام</option>
         <option value="الأمراض العصبية">الأمراض العصبية</option>
+        <option value="طب الأطفال">طب الأطفال</option>
+        <option value="النساء والولادة">النساء والولادة</option>
+        <option value="طب العيون">طب العيون</option>
     </select>
     <select id="filterStatus" class="form-select">
         <option value="">جميع الحالات</option>
@@ -44,9 +55,12 @@
             <thead>
                 <tr>
                     <th>الصورة</th>
+                    <th>رقم النقابة</th>
                     <th>الاسم</th>
+                    <th>الدرجة</th>
                     <th>التخصص</th>
-                    <th>العيادة</th>
+                    <th>النوع</th>
+                    <th>مكان العمل</th>
                     <th>الهاتف</th>
                     <th>البريد الإلكتروني</th>
                     <th>الحالة</th>
@@ -54,22 +68,49 @@
                 </tr>
             </thead>
             <tbody>
-                @{
-                    var doctors = ViewBag.Doctors as List<MockDoctor> ?? new();
-                }
                 @foreach (var d in doctors)
                 {
                     <tr>
                         <td>
-                            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                                <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
-                                <circle cx="18" cy="14" r="6" fill="#66748C"/>
-                                <path d="M6 30c0-5.523 5.373-9 12-9s12 3.477 12 9" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
-                            </svg>
+                            @if (!string.IsNullOrEmpty(d.Photo))
+                            {
+                                <img src="@d.Photo" alt="@d.Name" class="doctor-avatar" />
+                            }
+                            else
+                            {
+                                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                                    <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
+                                    <circle cx="18" cy="14" r="6" fill="#66748C"/>
+                                    <path d="M6 30c0-5.523 5.373-9 12-9s12 3.477 12 9" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
+                                </svg>
+                            }
                         </td>
+                        <td class="text-md">@d.SyndicateId</td>
                         <td class="text-md-medium">@d.Name</td>
+                        <td class="text-md">
+                            <span class="degree-badge">@d.Degree</span>
+                        </td>
                         <td class="text-md">@d.Specialty</td>
-                        <td class="text-md">@d.Clinic</td>
+                        <td>
+                            @{
+                                var typeLabel = d.DoctorType switch
+                                {
+                                    "Freelance" => "مستقل",
+                                    "OwnClinic" => "عيادة خاصة",
+                                    "InCenter" => "يعمل في مركز",
+                                    _ => d.DoctorType
+                                };
+                                var typeClass = d.DoctorType switch
+                                {
+                                    "Freelance" => "badge badge-warning",
+                                    "OwnClinic" => "badge badge-success",
+                                    "InCenter" => "badge badge-info",
+                                    _ => "badge"
+                                };
+                            }
+                            <span class="@typeClass">@typeLabel</span>
+                        </td>
+                        <td class="text-md">@d.WorkplaceName</td>
                         <td class="text-md">@d.Phone</td>
                         <td class="text-md">@d.Email</td>
                         <td>
@@ -80,11 +121,21 @@
                         </td>
                         <td>
                             <div class="table-actions">
+                                <a href="@AdminRoutes.Pages.DoctorDetails(d.Id)" class="btn-icon" title="عرض التفاصيل">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                    </svg>
+                                </a>
                                 <button class="btn-icon btn-edit-doctor" title="تعديل"
                                         data-id="@d.Id"
                                         data-name="@d.Name"
+                                        data-syndicate="@d.SyndicateId"
+                                        data-tax="@d.TaxRegistry"
+                                        data-degree="@d.Degree"
                                         data-specialty="@d.Specialty"
-                                        data-clinic="@d.Clinic"
+                                        data-type="@d.DoctorType"
+                                        data-workplace="@d.WorkplaceName"
+                                        data-clinicid="@d.ClinicId"
                                         data-phone="@d.Phone"
                                         data-email="@d.Email"
                                         data-active="@d.IsActive.ToString().ToLower()">
@@ -103,7 +154,7 @@
 
 <!-- Add/Edit Doctor Modal -->
 <div class="modal fade" id="doctorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content modal-content-custom">
             <div class="modal-header-custom">
                 <h5 class="modal-title" id="doctorModalTitle">إضافة طبيب جديد</h5>
@@ -111,71 +162,266 @@
             </div>
             <div class="modal-body-custom">
                 <input type="hidden" id="doctorId" value="" />
-                <div class="row">
-                    <div class="col-md-6">
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs doctor-tabs" id="doctorFormTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">المعلومات الأساسية</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab">البيانات المهنية</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="placement-tab" data-bs-toggle="tab" data-bs-target="#placement" type="button" role="tab">النوع والمكان</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">المستندات</button>
+                    </li>
+                </ul>
+                <!-- Tabs Content -->
+                <div class="tab-content" id="doctorFormContent">
+                    <!-- Tab 1: Basic Info -->
+                    <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="doctorName">الاسم الكامل</label>
+                                    <input type="text" id="doctorName" class="form-input" placeholder="مثال: د. عمار السيد" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="doctorPhone">رقم الهاتف</label>
+                                    <input type="text" id="doctorPhone" class="form-input" placeholder="+966 5X XXX XXXX" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="doctorEmail">البريد الإلكتروني</label>
+                                    <input type="email" id="doctorEmail" class="form-input" placeholder="doctor@clinic.com" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">الصورة الشخصية</label>
+                                    <input type="file" id="doctorPhoto" class="form-input" accept="image/*" />
+                                    <p class="form-hint">صور بصيغة JPG أو PNG</p>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-group">
-                            <label class="form-label" for="doctorName">الاسم الكامل</label>
-                            <input type="text" id="doctorName" name="Name" class="form-input" placeholder="مثال: د. عمار السيد" />
+                            <label class="form-toggle">
+                                <input type="checkbox" id="doctorIsActive" checked />
+                                <span class="toggle-track"></span>
+                                <span class="toggle-label">الطبيب متاح ونشط</span>
+                            </label>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="doctorSpecialty">التخصص</label>
-                            <select id="doctorSpecialty" name="Specialty" class="form-select">
-                                <option value="">اختر التخصص</option>
-                                <option>الأمراض الجلدية</option>
-                                <option>أمراض القلب</option>
-                                <option>جراحة العظام</option>
-                                <option>الأمراض العصبية</option>
-                                <option>طب الأطفال</option>
-                                <option>النساء والولادة</option>
-                                <option>طب العيون</option>
-                            </select>
+                    <!-- Tab 2: Professional Data -->
+                    <div class="tab-pane fade" id="professional" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="doctorSyndicate">رقم عضوية النقابة</label>
+                                    <input type="text" id="doctorSyndicate" class="form-input" placeholder="مثال: 123456" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="doctorTax">السجل الضريبي</label>
+                                    <input type="text" id="doctorTax" class="form-input" placeholder="مثال: 789-123-456" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="doctorDegree">الدرجة العلمية</label>
+                                    <select id="doctorDegree" class="form-select">
+                                        <option value="">اختر الدرجة</option>
+                                        <option value="طبيب">طبيب</option>
+                                        <option value="أخصائي">أخصائي</option>
+                                        <option value="استشاري">استشاري</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="doctorSpecialty">التخصص</label>
+                                    <select id="doctorSpecialty" class="form-select">
+                                        <option value="">اختر التخصص</option>
+                                        <option>الأمراض الجلدية</option>
+                                        <option>أمراض القلب</option>
+                                        <option>جراحة العظام</option>
+                                        <option>الأمراض العصبية</option>
+                                        <option>طب الأطفال</option>
+                                        <option>النساء والولادة</option>
+                                        <option>طب العيون</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mt-2">
+                            <button type="button" class="btn btn-outline-primary" id="verifySyndicateBtn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+                                </svg>
+                                التحقق من النقابة
+                            </button>
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="doctorClinic">العيادة</label>
-                            <select id="doctorClinic" name="Clinic" class="form-select">
-                                <option value="">اختر العيادة</option>
-                                <option>عيادة القلب</option>
-                                <option>عيادة الأعصاب</option>
-                                <option>عيادة العظام</option>
-                                <option>عيادة الجلدية</option>
-                                <option>عيادة الأطفال</option>
-                            </select>
+                    <!-- Tab 3: Type & Placement -->
+                    <div class="tab-pane fade" id="placement" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">نوع الطبيب</label>
+                                    <div class="doctor-type-options">
+                                        <label class="type-radio-card">
+                                            <input type="radio" name="doctorType" value="Freelance" checked />
+                                            <span class="type-card-content">
+                                                <span class="type-card-icon">
+                                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5z"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="type-card-title">طبيب مستقل</span>
+                                                <span class="type-card-desc">يعمل لحسابه الخاص ويحتاج توثيق</span>
+                                            </span>
+                                        </label>
+                                        <label class="type-radio-card">
+                                            <input type="radio" name="doctorType" value="OwnClinic" />
+                                            <span class="type-card-content">
+                                                <span class="type-card-icon">
+                                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="type-card-title">يمتلك عيادة خاصة</span>
+                                                <span class="type-card-desc">لديه عيادة خاصة به ويدير فريق عمل</span>
+                                            </span>
+                                        </label>
+                                        <label class="type-radio-card">
+                                            <input type="radio" name="doctorType" value="InCenter" />
+                                            <span class="type-card-content">
+                                                <span class="type-card-icon">
+                                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="type-card-title">يعمل في مركز طبي</span>
+                                                <span class="type-card-desc">تابع لأحد المراكز الطبية أو العيادات</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Own Clinic Options (shown when OwnClinic selected) -->
+                        <div class="row own-clinic-options" style="display:none;">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">خيارات العيادة</label>
+                                    <div class="clinic-radio-options">
+                                        <label class="clinic-radio">
+                                            <input type="radio" name="clinicOption" value="new" checked />
+                                            <span>إنشاء عيادة جديدة</span>
+                                        </label>
+                                        <label class="clinic-radio">
+                                            <input type="radio" name="clinicOption" value="existing" />
+                                            <span>ربط بعيادة موجودة</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row own-clinic-new" style="display:none;">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="newClinicName">اسم العيادة</label>
+                                    <input type="text" id="newClinicName" class="form-input" placeholder="اسم العيادة الجديدة" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="newClinicLocation">الموقع</label>
+                                    <input type="text" id="newClinicLocation" class="form-input" placeholder="موقع العيادة" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row own-clinic-existing" style="display:none;">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="existingClinic">اختر العيادة</label>
+                                    <select id="existingClinic" class="form-select">
+                                        <option value="">اختر عيادة</option>
+                                        @foreach (var c in clinics)
+                                        {
+                                            <option value="@c.Id">@c.Name - @c.Specialty</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- In Center Options (shown when InCenter selected) -->
+                        <div class="row in-center-options" style="display:none;">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="centerClinic">المركز الطبي</label>
+                                    <select id="centerClinic" class="form-select">
+                                        <option value="">اختر المركز الطبي</option>
+                                        @foreach (var c in clinics)
+                                        {
+                                            <option value="@c.Id">@c.Name - @c.Specialty</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="doctorPhone">رقم الهاتف</label>
-                            <input type="text" id="doctorPhone" name="Phone" class="form-input" placeholder="+966 5X XXX XXXX" />
+                    <!-- Tab 4: Documents -->
+                    <div class="tab-pane fade" id="documents" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="docSyndicate">بطاقة النقابة</label>
+                                    <input type="file" id="docSyndicate" class="form-input" accept="image/*,.pdf" />
+                                    <p class="form-hint">صورة أو مسح ضوئي لبطاقة عضوية النقابة</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="docCert">شهادة التخرج</label>
+                                    <input type="file" id="docCert" class="form-input" accept="image/*,.pdf" />
+                                    <p class="form-hint">صورة أو مسح ضوئي لشهادة التخرج</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="docLicense">رخصة مزاولة المهنة</label>
+                                    <input type="file" id="docLicense" class="form-input" accept="image/*,.pdf" />
+                                    <p class="form-hint">رخصة مزاولة المهنة سارية المفعول</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="docOther">مستندات أخرى</label>
+                                    <input type="file" id="docOther" class="form-input" accept="image/*,.pdf" multiple />
+                                    <p class="form-hint">أي مستندات داعمة إضافية</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="document-preview-list mt-2">
+                            <span class="text-sm text-muted">المستندات المرفوعة حالياً:</span>
+                            <ul id="currentDocsList" class="list-unstyled mt-1">
+                                <li class="doc-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg> syndicate_card_1.png</li>
+                                <li class="doc-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg> cert_1.png</li>
+                            </ul>
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="doctorEmail">البريد الإلكتروني</label>
-                            <input type="email" id="doctorEmail" name="Email" class="form-input" placeholder="doctor@clinic.com" />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">الصورة الشخصية</label>
-                            <input type="file" class="form-input" accept="image/*" />
-                            <p class="form-hint">صور بصيغة JPG أو PNG</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-toggle">
-                        <input type="checkbox" id="doctorIsActive" name="IsActive" checked />
-                        <span class="toggle-track"></span>
-                        <span class="toggle-label">الطبيب متاح ونشط</span>
-                    </label>
                 </div>
             </div>
             <div class="modal-footer-custom">
@@ -193,24 +439,85 @@
             var titleEl = document.getElementById('doctorModalTitle');
             var idInput = document.getElementById('doctorId');
             var nameInput = document.getElementById('doctorName');
-            var specialtyInput = document.getElementById('doctorSpecialty');
-            var clinicInput = document.getElementById('doctorClinic');
             var phoneInput = document.getElementById('doctorPhone');
             var emailInput = document.getElementById('doctorEmail');
             var activeCheck = document.getElementById('doctorIsActive');
+            var syndicateInput = document.getElementById('doctorSyndicate');
+            var taxInput = document.getElementById('doctorTax');
+            var degreeSelect = document.getElementById('doctorDegree');
+            var specialtySelect = document.getElementById('doctorSpecialty');
+            var typeRadios = document.querySelectorAll('input[name="doctorType"]');
+            var clinicOptionRadios = document.querySelectorAll('input[name="clinicOption"]');
 
             var doctorModal = new bootstrap.Modal(modalEl);
+
+            function toggleTypeSections(type) {
+                document.querySelector('.own-clinic-options').style.display = type === 'OwnClinic' ? '' : 'none';
+                document.querySelector('.own-clinic-new').style.display = 'none';
+                document.querySelector('.own-clinic-existing').style.display = 'none';
+                document.querySelector('.in-center-options').style.display = type === 'InCenter' ? '' : 'none';
+                if (type === 'OwnClinic') {
+                    var selectedOption = document.querySelector('input[name="clinicOption"]:checked');
+                    if (selectedOption) {
+                        if (selectedOption.value === 'new') {
+                            document.querySelector('.own-clinic-new').style.display = '';
+                        } else {
+                            document.querySelector('.own-clinic-existing').style.display = '';
+                        }
+                    }
+                }
+            }
+
+            typeRadios.forEach(function(r) {
+                r.addEventListener('change', function() {
+                    toggleTypeSections(this.value);
+                });
+            });
+
+            clinicOptionRadios.forEach(function(r) {
+                r.addEventListener('change', function() {
+                    var type = document.querySelector('input[name="doctorType"]:checked');
+                    if (type && type.value === 'OwnClinic') {
+                        document.querySelector('.own-clinic-new').style.display = this.value === 'new' ? '' : 'none';
+                        document.querySelector('.own-clinic-existing').style.display = this.value === 'existing' ? '' : 'none';
+                    }
+                });
+            });
 
             document.querySelectorAll('.btn-edit-doctor').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     titleEl.textContent = 'تعديل الطبيب';
                     idInput.value = btn.getAttribute('data-id');
                     nameInput.value = btn.getAttribute('data-name');
-                    specialtyInput.value = btn.getAttribute('data-specialty');
-                    clinicInput.value = btn.getAttribute('data-clinic');
                     phoneInput.value = btn.getAttribute('data-phone');
                     emailInput.value = btn.getAttribute('data-email');
                     activeCheck.checked = btn.getAttribute('data-active') === 'true';
+                    syndicateInput.value = btn.getAttribute('data-syndicate') || '';
+                    taxInput.value = btn.getAttribute('data-tax') || '';
+                    degreeSelect.value = btn.getAttribute('data-degree') || '';
+                    specialtySelect.value = btn.getAttribute('data-specialty') || '';
+                    var type = btn.getAttribute('data-type') || 'Freelance';
+                    document.querySelector('input[name="doctorType"][value="' + type + '"]').checked = true;
+                    toggleTypeSections(type);
+                    if (type === 'OwnClinic') {
+                        var clinicId = btn.getAttribute('data-clinicid');
+                        if (clinicId) {
+                            document.querySelector('input[name="clinicOption"][value="existing"]').checked = true;
+                            document.getElementById('existingClinic').value = clinicId;
+                            document.querySelector('.own-clinic-new').style.display = 'none';
+                            document.querySelector('.own-clinic-existing').style.display = '';
+                        } else {
+                            document.querySelector('input[name="clinicOption"][value="new"]').checked = true;
+                            document.querySelector('.own-clinic-new').style.display = '';
+                            document.querySelector('.own-clinic-existing').style.display = 'none';
+                        }
+                    }
+                    if (type === 'InCenter') {
+                        var centerId = btn.getAttribute('data-clinicid');
+                        if (centerId) {
+                            document.getElementById('centerClinic').value = centerId;
+                        }
+                    }
                     doctorModal.show();
                 });
             });
@@ -219,32 +526,60 @@
                 titleEl.textContent = 'إضافة طبيب جديد';
                 idInput.value = '';
                 nameInput.value = '';
-                specialtyInput.value = '';
-                clinicInput.value = '';
                 phoneInput.value = '';
                 emailInput.value = '';
                 activeCheck.checked = true;
+                syndicateInput.value = '';
+                taxInput.value = '';
+                degreeSelect.value = '';
+                specialtySelect.value = '';
+                document.querySelector('input[name="doctorType"][value="Freelance"]').checked = true;
+                toggleTypeSections('Freelance');
+                document.getElementById('newClinicName').value = '';
+                document.getElementById('newClinicLocation').value = '';
+                document.getElementById('existingClinic').value = '';
+                document.getElementById('centerClinic').value = '';
+            });
+
+            // Verify Syndicate button
+            document.getElementById('verifySyndicateBtn').addEventListener('click', function() {
+                var syndicateVal = syndicateInput.value.trim();
+                if (!syndicateVal) {
+                    alert('يرجى إدخال رقم عضوية النقابة أولاً');
+                    return;
+                }
+                var mockResult = confirm('التحقق من رقم النقابة: ' + syndicateVal + '\n\nنتيجة التحقق (محاكاة):\nرقم عضوية صحيح ومعتمد من نقابة الأطباء.');
+                if (mockResult) {
+                    alert('✓ تم التحقق بنجاح: رقم العضوية ' + syndicateVal + ' مسجل ومعتمد.');
+                }
             });
 
             function filterTable() {
                 var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
+                var typeVal = document.getElementById('filterType').value;
                 var specialtyVal = document.getElementById('filterSpecialty').value;
                 var statusVal = document.getElementById('filterStatus').value;
                 var rows = document.querySelectorAll('.custom-table tbody tr');
                 rows.forEach(function(row) {
-                    var name = row.cells[1].textContent.trim().toLowerCase();
-                    var spec = row.cells[2].textContent.trim();
+                    var name = row.cells[2].textContent.trim().toLowerCase();
+                    var spec = row.cells[4].textContent.trim();
+                    var type = row.cells[5].textContent.trim();
                     var isActive = row.querySelector('.doctor-toggle-input').checked;
                     var matchSearch = !searchVal || name.indexOf(searchVal) !== -1;
+                    var matchType = !typeVal || type.indexOf(typeVal === 'Freelance' ? 'مستقل' : typeVal === 'OwnClinic' ? 'عيادة خاصة' : 'يعمل في مركز') !== -1;
                     var matchSpecialty = !specialtyVal || spec === specialtyVal;
                     var matchStatus = !statusVal || (statusVal === 'active' && isActive) || (statusVal === 'inactive' && !isActive);
-                    row.style.display = matchSearch && matchSpecialty && matchStatus ? '' : 'none';
+                    row.style.display = matchSearch && matchType && matchSpecialty && matchStatus ? '' : 'none';
                 });
             }
 
             document.getElementById('filterSearch').addEventListener('input', filterTable);
+            document.getElementById('filterType').addEventListener('change', filterTable);
             document.getElementById('filterSpecialty').addEventListener('change', filterTable);
             document.getElementById('filterStatus').addEventListener('change', filterTable);
+
+            // Initialize type sections
+            toggleTypeSections('Freelance');
         })();
     </script>
 }

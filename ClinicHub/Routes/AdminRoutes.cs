@@ -20,6 +20,9 @@ namespace ClinicHub.Routes
             public static string UsersVisits(int id) => $"{Base}/Users/Visits/{id}";
             public static string UsersRequests(int id) => $"{Base}/Users/Requests/{id}";
             public static string UsersPayments(int id) => $"{Base}/Users/Payments/{id}";
+            public static string DoctorDetails(int id) => $"{Base}/Doctors/Details/{id}";
+            public static string VerificationCenter() => $"{Base}/Verification";
+            public static string Subscriptions() => $"{Base}/Subscriptions";
             public static string Profile() => $"{Base}/Profile";
         }
     }
