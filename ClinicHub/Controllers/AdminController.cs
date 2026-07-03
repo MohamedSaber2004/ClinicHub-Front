@@ -29,6 +29,19 @@ namespace ClinicHub.Controllers
             return View();
         }
 
+        [Route("Admin/Clinics/Details/{id}")]
+        public IActionResult ClinicDetails(int id)
+        {
+            var clinic = MockData.GetClinicById(id);
+            if (clinic == null) return RedirectToAction("Clinics");
+            ViewBag.Clinic = clinic;
+            ViewBag.Doctors = MockData.GetClinicDoctors(id);
+            ViewBag.Staff = MockData.GetClinicStaff(id);
+            ViewBag.Ratings = MockData.GetClinicRatings(id);
+            ViewBag.AllClinics = MockData.GetClinics();
+            return View("ClinicDetails");
+        }
+
         public IActionResult Doctors()
         {
             ViewBag.Doctors = MockData.GetDoctors();

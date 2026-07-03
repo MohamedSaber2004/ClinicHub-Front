@@ -400,14 +400,179 @@ namespace ClinicHub.Data
         // ========== Clinics ==========
         public static List<MockClinic> GetClinics() => new()
         {
-            new() { Id = 1, Name = "عيادة القلب", Specialty = "القلب والأوعية الدموية", ResponsibleDoctor = "د. سارة أحمد", Location = "الطابق الثاني - غرفة 201", Phone = "+966 11 234 5678", IsActive = true },
-            new() { Id = 2, Name = "عيادة الأعصاب", Specialty = "الأمراض العصبية", ResponsibleDoctor = "د. عبد الله ناصر", Location = "الطابق الثالث - غرفة 305", Phone = "+966 11 345 6789", IsActive = true },
-            new() { Id = 3, Name = "عيادة العظام", Specialty = "جراحة العظام", ResponsibleDoctor = "د. خالد الزهراني", Location = "الطابق الأول - غرفة 104", Phone = "+966 11 456 7890", IsActive = true },
-            new() { Id = 4, Name = "عيادة الجلدية", Specialty = "الأمراض الجلدية", ResponsibleDoctor = "د. عمار السيد", Location = "الطابق الثاني - غرفة 210", Phone = "+966 11 567 8901", IsActive = true },
-            new() { Id = 5, Name = "عيادة الأطفال", Specialty = "طب الأطفال", ResponsibleDoctor = "—", Location = "الطابق الرابع - غرفة 402", Phone = "+966 11 678 9012", IsActive = false },
+            new() { Id = 1, Name = "مركز القلب التخصصي", Specialty = "القلب والأوعية الدموية", Specializations = new() { "القلب والأوعية الدموية", "جراحة القلب", "قسطرة القلب" }, Description = "مركز متخصص في تشخيص وعلاج أمراض القلب والشرايين، يضم أحدث الأجهزة الطبية وفريقاً من أطباء القلب المتميزين.", ResponsibleDoctor = "د. سارة أحمد", ManagerName = "أ. محمد عبد الرحمن", Location = "الطابق الثاني - غرفة 201", Phone = "+966 11 234 5678", ImageUrl = "", AvgRating = 4.5, RatingsCount = 28, IsActive = true },
+            new() { Id = 2, Name = "مركز الأعصاب والعمود الفقري", Specialty = "الأمراض العصبية", Specializations = new() { "الأمراض العصبية", "جراحة المخ والأعصاب", "العلاج الطبيعي" }, Description = "مركز رائد في تشخيص وعلاج اضطرابات الجهاز العصبي وجراحات العمود الفقري المتقدمة.", ResponsibleDoctor = "د. عبد الله ناصر", ManagerName = "د. هشام فؤاد", Location = "الطابق الثالث - غرفة 305", Phone = "+966 11 345 6789", ImageUrl = "", AvgRating = 4.2, RatingsCount = 19, IsActive = true },
+            new() { Id = 3, Name = "عيادة العظام والعلاج الطبيعي", Specialty = "جراحة العظام", Specializations = new() { "جراحة العظام", "العلاج الطبيعي", "طب الرياضة" }, Description = "عيادة متكاملة لجراحة العظام والمفاصل وإصابات الرياضة مع أحدث تقنيات العلاج الطبيعي.", ResponsibleDoctor = "د. خالد الزهراني", ManagerName = "د. خالد الزهراني", Location = "الطابق الأول - غرفة 104", Phone = "+966 11 456 7890", ImageUrl = "", AvgRating = 4.8, RatingsCount = 42, IsActive = true },
+            new() { Id = 4, Name = "عيادة الجلدية والتجميل", Specialty = "الأمراض الجلدية", Specializations = new() { "الأمراض الجلدية", "جراحة التجميل", "الليزر والعناية بالبشرة" }, Description = "عيادة متخصصة في الأمراض الجلدية وعلاجات التجميل بالليزر مع أحدث التقنيات العالمية.", ResponsibleDoctor = "د. عمار السيد", ManagerName = "د. عمار السيد", Location = "الطابق الثاني - غرفة 210", Phone = "+966 11 567 8901", ImageUrl = "", AvgRating = 4.6, RatingsCount = 35, IsActive = true },
+            new() { Id = 5, Name = "عيادة الأطفال", Specialty = "طب الأطفال", Specializations = new() { "طب الأطفال", "حديثي الولادة" }, Description = "عيادة متخصصة في رعاية الأطفال من حديثي الولادة حتى سن المراهقة مع متابعة دقيقة للنمو والتطور.", ResponsibleDoctor = "—", ManagerName = "—", Location = "الطابق الرابع - غرفة 402", Phone = "+966 11 678 9012", ImageUrl = "", AvgRating = 3.8, RatingsCount = 7, IsActive = false },
         };
 
         public static MockClinic? GetClinicById(int id) => GetClinics().FirstOrDefault(c => c.Id == id);
+
+        public static List<MockDoctorClinicConfig> GetClinicDoctors(int clinicId)
+        {
+            var allDoctors = new Dictionary<int, List<MockDoctorClinicConfig>>
+            {
+                [1] = new()
+                {
+                    new()
+                    {
+                        DoctorId = 2, DoctorName = "د. سارة أحمد", Specialty = "أمراض القلب", Degree = "أخصائي", Photo = "", IsActive = true, IsPrimary = true,
+                        WorkingDays = new()
+                        {
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "09:00", EndTime = "17:00", IsAvailable = true },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "09:00", EndTime = "17:00", IsAvailable = true },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
+                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "09:00", EndTime = "13:00", IsAvailable = true },
+                            new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
+                            new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
+                        },
+                        ExaminationFee = 300, FollowUpFee = 150, CommissionPercent = 25, CommissionFixed = 0,
+                        RoomAssignment = "غرفة 201", ContractType = "FullTime", ContractStart = "2025-01-01", SessionLimitPerDay = 20
+                    },
+                    new()
+                    {
+                        DoctorId = 7, DoctorName = "د. محمود حسن", Specialty = "جراحة القلب", Degree = "استشاري", Photo = "", IsActive = true, IsPrimary = false,
+                        WorkingDays = new()
+                        {
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", IsAvailable = false },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
+                            new() { Day = "Thursday", DayAr = "الخميس", IsAvailable = false },
+                            new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
+                            new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
+                        },
+                        ExaminationFee = 500, FollowUpFee = 250, CommissionPercent = 30, CommissionFixed = 0,
+                        RoomAssignment = "غرفة 203", ContractType = "Visits", ContractStart = "2026-03-01", SessionLimitPerDay = 10
+                    },
+                },
+                [2] = new()
+                {
+                    new()
+                    {
+                        DoctorId = 4, DoctorName = "د. عبد الله ناصر", Specialty = "الأمراض العصبية", Degree = "أخصائي", Photo = "", IsActive = false, IsPrimary = true,
+                        WorkingDays = new()
+                        {
+                            new() { Day = "Sunday", DayAr = "الأحد", IsAvailable = false },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "09:00", EndTime = "17:00", IsAvailable = true },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "09:00", EndTime = "17:00", IsAvailable = true },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
+                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
+                            new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
+                            new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
+                        },
+                        ExaminationFee = 250, FollowUpFee = 120, CommissionPercent = 20, CommissionFixed = 0,
+                        RoomAssignment = "غرفة 305", ContractType = "PartTime", ContractStart = "2025-06-01", SessionLimitPerDay = 15
+                    },
+                },
+                [3] = new()
+                {
+                    new()
+                    {
+                        DoctorId = 3, DoctorName = "د. خالد الزهراني", Specialty = "جراحة العظام", Degree = "استشاري", Photo = "", IsActive = true, IsPrimary = true,
+                        WorkingDays = new()
+                        {
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "10:00", EndTime = "18:00", IsAvailable = true },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "10:00", EndTime = "18:00", IsAvailable = true },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "10:00", EndTime = "18:00", IsAvailable = true },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "10:00", EndTime = "18:00", IsAvailable = true },
+                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
+                            new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
+                            new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
+                        },
+                        ExaminationFee = 400, FollowUpFee = 200, CommissionPercent = 35, CommissionFixed = 0,
+                        RoomAssignment = "غرفة 104", ContractType = "FullTime", ContractStart = "2024-01-01", SessionLimitPerDay = 25
+                    },
+                    new()
+                    {
+                        DoctorId = 8, DoctorName = "د. نورة السعيد", Specialty = "العلاج الطبيعي", Degree = "أخصائي", Photo = "", IsActive = true, IsPrimary = false,
+                        WorkingDays = new()
+                        {
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
+                            new() { Day = "Monday", DayAr = "الإثنين", IsAvailable = false },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", IsAvailable = false },
+                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
+                            new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
+                            new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
+                        },
+                        ExaminationFee = 150, FollowUpFee = 75, CommissionPercent = 40, CommissionFixed = 0,
+                        RoomAssignment = "غرفة 106 - العلاج الطبيعي", ContractType = "RevenueShare", ContractStart = "2026-02-01", SessionLimitPerDay = 12
+                    },
+                },
+                [4] = new()
+                {
+                    new()
+                    {
+                        DoctorId = 1, DoctorName = "د. عمار السيد", Specialty = "الأمراض الجلدية", Degree = "استشاري", Photo = "", IsActive = true, IsPrimary = true,
+                        WorkingDays = new()
+                        {
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "10:00", EndTime = "17:00", IsAvailable = true },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "10:00", EndTime = "17:00", IsAvailable = true },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "10:00", EndTime = "17:00", IsAvailable = true },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
+                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "10:00", EndTime = "17:00", IsAvailable = true },
+                            new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
+                            new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
+                        },
+                        ExaminationFee = 350, FollowUpFee = 175, CommissionPercent = 0, CommissionFixed = 0,
+                        RoomAssignment = "غرفة 210", ContractType = "FullTime", ContractStart = "2024-06-01", SessionLimitPerDay = 20
+                    },
+                },
+                [5] = new(),
+            };
+            return allDoctors.TryGetValue(clinicId, out var doctors) ? doctors : new();
+        }
+
+        public static List<MockPatientRating> GetClinicRatings(int clinicId)
+        {
+            var allRatings = new Dictionary<int, List<MockPatientRating>>
+            {
+                [1] = new()
+                {
+                    new() { Id = 1, ClinicId = 1, DoctorName = "د. سارة أحمد", PatientName = "أحمد عبد الله", PatientInitial = "أ", Rating = 5, Comment = "دكتورة ممتازة جداً، شرح وافي للحالة وعلاج فعال. أنصح بزيارتها.", Date = "2026-07-03" },
+                    new() { Id = 2, ClinicId = 1, DoctorName = "د. سارة أحمد", PatientName = "فاطمة الزهراء", PatientInitial = "ف", Rating = 4, Comment = "عيادة مرتبة ونظيفة، المواعيد دقيقة. تجربة جيدة.", Date = "2026-07-01" },
+                    new() { Id = 3, ClinicId = 1, DoctorName = "د. محمود حسن", PatientName = "سامي خالد", PatientInitial = "س", Rating = 5, Comment = "دكتور محمود استشاري رائع، العملية كانت ناجحة ولله الحمد.", Date = "2026-06-28" },
+                    new() { Id = 4, ClinicId = 1, DoctorName = "د. سارة أحمد", PatientName = "نورة علي", PatientInitial = "ن", Rating = 4, Comment = "التجربة جيدة، لكن الانتظار كان طويلاً بعض الشيء.", Date = "2026-06-25" },
+                },
+                [2] = new()
+                {
+                    new() { Id = 5, ClinicId = 2, DoctorName = "د. عبد الله ناصر", PatientName = "محمد عمر", PatientInitial = "م", Rating = 4, Comment = "دكتور ممتاز ومتابعة جيدة. شكراً على الاهتمام.", Date = "2026-07-02" },
+                    new() { Id = 6, ClinicId = 2, DoctorName = "د. عبد الله ناصر", PatientName = "سارة أحمد", PatientInitial = "س", Rating = 3, Comment = "المواعيد تحتاج تحسين، لكن التشخيص كان دقيقاً.", Date = "2026-06-30" },
+                },
+                [3] = new()
+                {
+                    new() { Id = 7, ClinicId = 3, DoctorName = "د. خالد الزهراني", PatientName = "عمر حسن", PatientInitial = "ع", Rating = 5, Comment = "أفضل دكتور عظام زرته. خبرة كبيرة وأسلوب رائع.", Date = "2026-07-04" },
+                    new() { Id = 8, ClinicId = 3, DoctorName = "د. خالد الزهراني", PatientName = "ليلى محمود", PatientInitial = "ل", Rating = 5, Comment = "الحمد لله تعافيت تماماً بعد العلاج. دكتور خالد متمكن جداً.", Date = "2026-07-02" },
+                    new() { Id = 9, ClinicId = 3, DoctorName = "د. نورة السعيد", PatientName = "هدى ناصر", PatientInitial = "ه", Rating = 4, Comment = "جلسات العلاج الطبيعي مفيدة جداً. دكتورة نورة محترفة.", Date = "2026-06-29" },
+                    new() { Id = 10, ClinicId = 3, DoctorName = "د. خالد الزهراني", PatientName = "أحمد رضا", PatientInitial = "أ", Rating = 5, Comment = "والله ما تقصرون، يديكم العافية على المجهود الرائع.", Date = "2026-06-27" },
+                },
+                [4] = new()
+                {
+                    new() { Id = 11, ClinicId = 4, DoctorName = "د. عمار السيد", PatientName = "نورة عبد الله", PatientInitial = "ن", Rating = 5, Comment = "دكتور عمار مبدع في عمله. نتائج الليزر رائعة جداً.", Date = "2026-07-01" },
+                    new() { Id = 12, ClinicId = 4, DoctorName = "د. عمار السيد", PatientName = "منى سعيد", PatientInitial = "م", Rating = 4, Comment = "عيادة نظيفة وفريق عمل محترف. سعيدة بالنتيجة.", Date = "2026-06-26" },
+                },
+                [5] = new()
+                {
+                    new() { Id = 13, ClinicId = 5, DoctorName = "—", PatientName = "خالد إبراهيم", PatientInitial = "خ", Rating = 3, Comment = "العيادة مغلقة معظم الأوقات، لكن الخدمة جيدة عند الزيارة.", Date = "2026-05-15" },
+                },
+            };
+            return allRatings.TryGetValue(clinicId, out var ratings) ? ratings : new();
+        }
+
+        public static double GetClinicAvgRating(int clinicId)
+        {
+            var ratings = GetClinicRatings(clinicId);
+            return ratings.Any() ? Math.Round(ratings.Average(r => r.Rating), 1) : 0;
+        }
+
+        public static decimal GetClinicTotalFees(int clinicId)
+        {
+            var doctors = GetClinicDoctors(clinicId);
+            return doctors.Sum(d => d.ExaminationFee + d.FollowUpFee);
+        }
 
         // ========== Doctors ==========
         public static List<MockDoctor> GetDoctors() => new()
@@ -518,10 +683,58 @@ namespace ClinicHub.Data
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Specialty { get; set; } = "";
+        public List<string> Specializations { get; set; } = new();
+        public string Description { get; set; } = "";
         public string ResponsibleDoctor { get; set; } = "";
+        public string ManagerName { get; set; } = "";
         public string Location { get; set; } = "";
         public string Phone { get; set; } = "";
+        public string ImageUrl { get; set; } = "";
+        public double AvgRating { get; set; }
+        public int RatingsCount { get; set; }
         public bool IsActive { get; set; } = true;
+    }
+
+    public class MockPatientRating
+    {
+        public int Id { get; set; }
+        public int ClinicId { get; set; }
+        public string DoctorName { get; set; } = "";
+        public string PatientName { get; set; } = "";
+        public string PatientInitial { get; set; } = "";
+        public int Rating { get; set; }
+        public string Comment { get; set; } = "";
+        public string Date { get; set; } = "";
+    }
+
+    public class MockWorkingDay
+    {
+        public string Day { get; set; } = "";
+        public string DayAr { get; set; } = "";
+        public string StartTime { get; set; } = "09:00";
+        public string EndTime { get; set; } = "17:00";
+        public bool IsAvailable { get; set; } = true;
+    }
+
+    public class MockDoctorClinicConfig
+    {
+        public int DoctorId { get; set; }
+        public string DoctorName { get; set; } = "";
+        public string Specialty { get; set; } = "";
+        public string Degree { get; set; } = "";
+        public string Photo { get; set; } = "";
+        public bool IsActive { get; set; } = true;
+        public bool IsPrimary { get; set; }
+        public List<MockWorkingDay> WorkingDays { get; set; } = new();
+        public decimal ExaminationFee { get; set; }
+        public decimal FollowUpFee { get; set; }
+        public double CommissionPercent { get; set; }
+        public decimal CommissionFixed { get; set; }
+        public string RoomAssignment { get; set; } = "";
+        public string ContractType { get; set; } = ""; // FullTime, PartTime, FixedContract, Visits, RevenueShare
+        public string ContractStart { get; set; } = "";
+        public string ContractEnd { get; set; } = "";
+        public int SessionLimitPerDay { get; set; }
     }
 
     // ========== Doctors Models ==========
