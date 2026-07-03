@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ClinicHub.Data;
 
 namespace ClinicHub.Controllers
 {
@@ -6,6 +7,13 @@ namespace ClinicHub.Controllers
     {
         public IActionResult Index()
         {
+            ViewBag.Stats = MockData.GetDashboardStats();
+            ViewBag.QuickStatuses = MockData.GetQuickStatuses();
+            ViewBag.DoctorsOnDuty = MockData.GetDoctorsOnDuty();
+            ViewBag.UrgentTickets = MockData.GetUrgentTickets();
+            ViewBag.Subscribers = MockData.GetSubscribers();
+            ViewBag.ActivityLog = MockData.GetActivityLog();
+            ViewBag.NewPatients = MockData.GetNewPatients();
             return View();
         }
 
@@ -36,12 +44,14 @@ namespace ClinicHub.Controllers
 
         public IActionResult Payments()
         {
+            ViewBag.Stats = MockData.GetPaymentStats();
+            ViewBag.Payments = MockData.GetPayments();
             return View();
         }
 
         public IActionResult PaymentsDetails(int id)
         {
-            ViewBag.PaymentId = id;
+            ViewBag.Detail = MockData.GetPaymentDetail(id);
             return View("PaymentsDetails");
         }
 

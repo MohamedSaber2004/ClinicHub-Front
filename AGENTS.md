@@ -5,10 +5,16 @@ This project is **design-only**. All work is strictly limited to:
 - CSS files (`wwwroot/css/*.css`)
 - CSHTML view files (`Views/**/*.cshtml`)
 - Design system files (`wwwroot/css/design-system.css`)
+- Data files (`Data/*.cs`) — mock data only, no business logic
+
+## Controller Usage (Limited)
+Controllers may be touched ONLY for:
+- Passing mock data from `Data/MockData.cs` to views via `ViewBag` / `ViewData`
+- **NO business logic** in controllers — routing and data passing only
+- When real backend is ready, controllers will use real services instead of mock data
 
 ## Never Touch
-- Controllers (`Controllers/*.cs`)
-- Models (`Models/*.cs`)
+- Models (`Models/*.cs`) — unless creating simple DTOs for mock data
 - Backend logic (`Program.cs`, `*.csproj`)
 - Configuration files (`appsettings*.json`, `launchSettings.json`)
 - JavaScript files (`wwwroot/js/*.js`)

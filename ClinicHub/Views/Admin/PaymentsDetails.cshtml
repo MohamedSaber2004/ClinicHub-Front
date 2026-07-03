@@ -1,17 +1,8 @@
+@using ClinicHub.Data
 @{
-    ViewData["Title"] = $"تفاصيل المعاملة #P-{ViewBag.PaymentId:D2}";
+    ViewData["Title"] = "تفاصيل المعاملة";
     Layout = "_DashboardLayout";
-    var id = ViewBag.PaymentId as int? ?? 1;
-    var status = id switch { 2 => "معلق", 4 => "فاشل", 5 => "مسترد", _ => "ناجح" };
-    var statusClass = id switch { 2 => "badge-warning", 4 => "badge-danger", 5 => "badge-info", _ => "badge-success" };
-    var payer = id switch { 2 => "د. عمار السيد", 3 => "محمد عمر (مريض)", 4 => "مستشفى النور التخصصي", 5 => "عيادات التخصصات الدقيقة", _ => "مجمع عيادات السلام الطبي" };
-    var payerType = id switch { 2 => "طبيب", 3 => "مريض", 4 => "عيادة", 5 => "عيادة", _ => "عيادة" };
-    var type = id switch { 2 => "عمولة طبيب", 3 => "موعد مريض", 4 => "اشتراك عيادة", 5 => "خدمة إعلانية", _ => "اشتراك عيادة" };
-    var typeClass = id switch { 2 => "badge-warning", 3 => "badge-success", 4 => "badge-info", 5 => "badge-danger", _ => "badge-info" };
-    var amount = id switch { 2 => "500", 3 => "200", 4 => "12,000", 5 => "3,500", _ => "5,000" };
-    var method = id switch { 2 => "تحويل بنكي", 3 => "Paymob - محفظة إلكترونية", 4 => "تحويل بنكي", 5 => "Paymob - بطاقة ائتمان", _ => "Paymob - بطاقة ائتمان" };
-    var refNum = $"PM-2026-{id:D3}";
-    var date = id switch { 2 => "2026-07-02", 3 => "2026-07-03", 4 => "2026-06-28", 5 => "2026-06-25", _ => "2026-07-01" };
+    var d = ViewBag.Detail as MockPaymentDetail ?? new();
 }
 
 <div class="detail-page">
@@ -26,12 +17,12 @@
     <!-- Detail Header -->
     <div class="detail-header">
         <div class="detail-header-info">
-            <h2 class="detail-title">معاملة #P-@($"{id:D2}")</h2>
-            <span class="detail-subtitle">@date</span>
+            <h2 class="detail-title">معاملة @d.Code</h2>
+            <span class="detail-subtitle">@d.Date</span>
         </div>
         <div class="detail-header-amount">
-            <span class="detail-amount">@amount ر.س</span>
-            <span class="badge @statusClass" style="font-size: 14px; padding: 4px 16px;">@status</span>
+            <span class="detail-amount">@d.Amount @MockData.CurrencySymbol</span>
+            <span class="badge @d.StatusClass" style="font-size: 14px; padding: 4px 16px;">@d.Status</span>
         </div>
     </div>
 
@@ -42,19 +33,19 @@
             <div class="detail-info-list">
                 <div class="detail-info-row">
                     <span class="detail-info-label">الاسم</span>
-                    <span class="detail-info-value">@payer</span>
+                    <span class="detail-info-value">@d.Payer</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">النوع</span>
-                    <span class="detail-info-value">@payerType</span>
+                    <span class="detail-info-value">@d.PayerType</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">البريد الإلكتروني</span>
-                    <span class="detail-info-value">info@clinic.com</span>
+                    <span class="detail-info-value">@d.PayerEmail</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">رقم الهاتف</span>
-                    <span class="detail-info-value">+966 11 XXX XXXX</span>
+                    <span class="detail-info-value">@d.PayerPhone</span>
                 </div>
             </div>
         </div>
@@ -63,30 +54,30 @@
             <div class="detail-info-list">
                 <div class="detail-info-row">
                     <span class="detail-info-label">ID المعاملة</span>
-                    <span class="detail-info-value">pay_@(Guid.NewGuid().ToString("N").Substring(0, 12))</span>
+                    <span class="detail-info-value">@d.TransactionId</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">النوع</span>
-                    <span class="detail-info-value"><span class="badge @typeClass">@type</span></span>
+                    <span class="detail-info-value"><span class="badge @d.TypeClass">@d.Type</span></span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">طريقة الدفع</span>
-                    <span class="detail-info-value">@method</span>
+                    <span class="detail-info-value">@d.Method</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">رقم المرجع</span>
-                    <span class="detail-info-value" style="direction: ltr; text-align: right;">@refNum</span>
+                    <span class="detail-info-value" style="direction: ltr; text-align: right;">@d.RefNumber</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">تاريخ الإنشاء</span>
-                    <span class="detail-info-value">@date 10:30</span>
+                    <span class="detail-info-value">@d.Date 10:30</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Payment Items -->
-    <div class="table-card">
+    <div class="table-card" style="margin-bottom: var(--space-5);">
         <div class="table-card-header">
             <h3 class="table-card-title">عناصر الدفع</h3>
         </div>
@@ -102,10 +93,10 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="text-md-medium">@(id switch { 2 => "عمولة كشوفات شهر يونيو", 3 => "كشف موعد", 4 => "اشتراك سنوي - 2026", 5 => "بانر إعلاني - شهرين", _ => "اشتراك شهري - يوليو 2026" })</td>
+                        <td class="text-md-medium">@d.ItemName</td>
                         <td class="text-md">1</td>
-                        <td class="text-md" style="direction: ltr; text-align: right;">@amount ر.س</td>
-                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@amount ر.س</td>
+                        <td class="text-md" style="direction: ltr; text-align: right;">@d.Amount @MockData.CurrencySymbol</td>
+                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@d.Amount @MockData.CurrencySymbol</td>
                     </tr>
                 </tbody>
             </table>
@@ -116,27 +107,16 @@
     <div class="detail-card">
         <h3 class="detail-card-title">سجل المعاملة</h3>
         <div class="timeline">
-            <div class="timeline-item">
-                <div class="timeline-marker timeline-marker--success"></div>
-                <div class="timeline-content">
-                    <span class="timeline-date">@date 10:32</span>
-                    <span class="timeline-text">تم تأكيد الدفع واستلام المبلغ</span>
+            @foreach (var entry in d.Timeline)
+            {
+                <div class="timeline-item">
+                    <div class="timeline-marker timeline-marker--@entry.Marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">@entry.Date</span>
+                        <span class="timeline-text">@entry.Text</span>
+                    </div>
                 </div>
-            </div>
-            <div class="timeline-item">
-                <div class="timeline-marker timeline-marker--success"></div>
-                <div class="timeline-content">
-                    <span class="timeline-date">@date 10:31</span>
-                    <span class="timeline-text">تم تأكيد الدفع عبر @(method.Contains("Paymob") ? "Paymob" : "التحويل البنكي")</span>
-                </div>
-            </div>
-            <div class="timeline-item">
-                <div class="timeline-marker timeline-marker--info"></div>
-                <div class="timeline-content">
-                    <span class="timeline-date">@date 10:30</span>
-                    <span class="timeline-text">تم إنشاء المعاملة</span>
-                </div>
-            </div>
+            }
         </div>
     </div>
 
@@ -144,20 +124,7 @@
     <div class="detail-card">
         <h3 class="detail-card-title">ملاحظات</h3>
         <div class="detail-notes">
-            <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">
-                @(id switch {
-                    2 => "في انتظار تأكيد المعاملة من البنك.",
-                    4 => "فشلت المعاملة بسبب خطأ في بيانات التحويل. يرجى مراجعة البيانات وإعادة المحاولة.",
-                    5 => "تم استرداد المبلغ بناءً على طلب العيادة.",
-                    _ => "لا توجد ملاحظات إضافية."
-                })
-            </p>
+            <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">@d.Notes</p>
         </div>
     </div>
 </div>
-
-<style>
-    .timeline-item:last-child .timeline-content {
-        border-bottom: none;
-    }
-</style>
