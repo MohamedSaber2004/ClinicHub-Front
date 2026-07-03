@@ -1,0 +1,77 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "المستخدمين";
+    Layout = "_DashboardLayout";
+    var users = ViewBag.Users as List<MockUser> ?? new();
+}
+
+<div class="page-header">
+    <h2 class="page-title">إدارة المستخدمين والمرضى</h2>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <input type="text" class="form-input" placeholder="بحث عن مستخدم..." style="min-width: 200px;" />
+    <select class="form-select">
+        <option value="">جميع الحالات</option>
+        <option value="active">نشط</option>
+        <option value="inactive">غير نشط</option>
+    </select>
+</div>
+
+<!-- Users Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>المستخدم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الهاتف</th>
+                    <th>تاريخ التسجيل</th>
+                    <th>الحالة</th>
+                    <th>الزيارات</th>
+                    <th>التقييم</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in users)
+                {
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                                <div class="sidebar-profile-avatar" style="width: 36px; height: 36px; background-color: var(--clr-primary);">
+                                    <span style="color: #FFFFFF; font-size: var(--fs-md); font-weight: var(--fw-bold);">@u.Initials</span>
+                                </div>
+                                <span class="text-md-medium">@u.Name</span>
+                            </div>
+                        </td>
+                        <td class="text-md">@u.Email</td>
+                        <td class="text-md">@u.Phone</td>
+                        <td class="text-md">@u.RegistrationDate</td>
+                        <td><span class="badge @u.StatusClass">@u.Status</span></td>
+                        <td class="text-md">@u.TotalVisits</td>
+                        <td>
+                            <div class="star-rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <svg viewBox="0 0 24 24" fill="@(i <= Math.Round(u.AvgRating) ? "#F59E0B" : "#D2D5DB")">
+                                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                    </svg>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <a class="btn-icon" href="@AdminRoutes.Pages.UsersOverview(u.Id)" title="عرض التفاصيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

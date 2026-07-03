@@ -1,0 +1,99 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "الزيارات والتقييمات";
+    Layout = "_DashboardLayout";
+    ViewBag.SubSidebarSection = "visits";
+    ViewBag.UserId = ViewBag.UserId as int? ?? 1;
+    var visits = ViewBag.Visits as List<MockUserVisit> ?? new();
+
+    string RenderStars(int rating)
+    {
+        var result = "";
+        for (int i = 1; i <= 5; i++)
+        {
+            var fill = i <= rating ? "#F59E0B" : "#D2D5DB";
+            result += $"<svg viewBox=\"0 0 24 24\" fill=\"{fill}\" width=\"12\" height=\"12\"><path d=\"M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z\"/></svg>";
+        }
+        return result;
+    }
+}
+
+<div class="user-detail-layout">
+    <partial name="_UserSubSidebar" />
+
+    <div class="user-detail-content">
+        <div class="page-header">
+            <h2 class="page-title">الزيارات والتقييمات</h2>
+        </div>
+
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>العيادة</th>
+                            <th>الطبيب</th>
+                            <th>التاريخ</th>
+                            <th>التشخيص</th>
+                            <th>التقييم</th>
+                            <th>الملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in visits)
+                        {
+                            <tr>
+                                <td class="text-md">@v.Id</td>
+                                <td class="text-md-medium">@v.Clinic</td>
+                                <td class="text-md">@v.Doctor</td>
+                                <td class="text-md">@v.Date</td>
+                                <td class="text-md">@v.Diagnosis</td>
+                                <td>
+                                    <div class="rating-detail">
+                                        <div class="rating-detail-row">
+                                            <span class="rating-detail-label">طبيب</span>
+                                            <span class="rating-detail-stars">@Html.Raw(RenderStars(v.DoctorBehavior))</span>
+                                        </div>
+                                        <div class="rating-detail-row">
+                                            <span class="rating-detail-label">استقبال</span>
+                                            <span class="rating-detail-stars">@Html.Raw(RenderStars(v.ReceptionBehavior))</span>
+                                        </div>
+                                        <div class="rating-detail-row">
+                                            <span class="rating-detail-label">نظافة</span>
+                                            <span class="rating-detail-stars">@Html.Raw(RenderStars(v.ClinicCleanliness))</span>
+                                        </div>
+                                        <div class="rating-detail-row rating-detail-overall">
+                                            <span class="rating-detail-label">عام</span>
+                                            <span class="rating-detail-stars">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    var fill = i <= Math.Round(v.OverallRating) ? "#F59E0B" : "#D2D5DB";
+                                                    <svg viewBox="0 0 24 24" fill="@fill" width="12" height="12"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-md">
+                                    @if (!string.IsNullOrEmpty(v.Comment))
+                                    {
+                                        <span class="visit-comment">@v.Comment</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(v.Notes))
+                                    {
+                                        <span class="visit-notes">@v.Notes</span>
+                                    }
+                                    @if (string.IsNullOrEmpty(v.Comment) && string.IsNullOrEmpty(v.Notes))
+                                    {
+                                        <span>—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

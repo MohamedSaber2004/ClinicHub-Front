@@ -1,0 +1,44 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "الطلبات";
+    Layout = "_DashboardLayout";
+    ViewBag.SubSidebarSection = "requests";
+    ViewBag.UserId = ViewBag.UserId as int? ?? 1;
+    var requests = ViewBag.Requests as List<MockTableRow> ?? new();
+}
+
+<div class="user-detail-layout">
+    <partial name="_UserSubSidebar" />
+
+    <div class="user-detail-content">
+        <div class="page-header">
+            <h2 class="page-title">طلبات المستخدم</h2>
+        </div>
+
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>نوع الطلب</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                            <th>ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in requests)
+                        {
+                            <tr>
+                                <td class="text-md-medium">@r.Cells["type"]</td>
+                                <td><span class="badge @r.Cells["statusClass"]">@r.Cells["status"]</span></td>
+                                <td class="text-md">@r.Cells["date"]</td>
+                                <td class="text-md">@r.Cells["notes"]</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

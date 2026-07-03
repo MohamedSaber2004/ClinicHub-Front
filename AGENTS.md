@@ -29,5 +29,8 @@ Use tokens from `wwwroot/css/design-system.css`:
 - `.badge` / `.badge-success` / `.badge-warning` / `.badge-info` / `.badge-danger` for status chips
 - `.icon-wrapper` / `.icon-wrapper--primary` / `--blue` / `--amber` / `--green` for icon containers
 
+## UI Simplicity Rule
+All UI designs must avoid complex business logic. Interactive elements must be straightforward to implement — if a feature requires complex backend processing (multi-step workflows, real-time updates, complex state management), simplify or remove it. Static data display is preferred.
+
 ## No Inline Styles
 Never use `style="..."` in CSHTML. Use CSS classes defined in `site.css` or `design-system.css`.
