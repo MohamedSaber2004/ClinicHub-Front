@@ -1,0 +1,172 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "المدفوعات";
+    Layout = "_DashboardLayout";
+    var stats = ViewBag.Stats as List<MockStat> ?? new();
+    var payments = ViewBag.Payments as List<MockPayment> ?? new();
+}
+
+<div class="page-header">
+    <h2 class="page-title">المدفوعات والمعاملات المالية</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manualPaymentModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        تسجيل دفعة يدوية
+    </button>
+</div>
+
+<!-- KPI Stat Cards -->
+<div class="stats-grid">
+    @foreach (var stat in stats)
+    {
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-value">@stat.Value</span>
+                <span class="stat-label">@stat.Label</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--@stat.IconColor">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="@stat.SvgPath"/>
+                </svg>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <input type="text" class="form-input" placeholder="بحث عن معاملة..." style="min-width: 200px;" />
+    <select class="form-select">
+        <option value="">جميع الأنواع</option>
+        <option value="subscription">اشتراك عيادة</option>
+        <option value="commission">عمولة طبيب</option>
+        <option value="appointment">موعد مريض</option>
+        <option value="ad">خدمة إعلانية</option>
+    </select>
+    <select class="form-select">
+        <option value="">جميع طرق الدفع</option>
+        <option value="paymob_card">Paymob - بطاقة ائتمان</option>
+        <option value="paymob_wallet">Paymob - محفظة إلكترونية</option>
+        <option value="transfer">تحويل بنكي</option>
+        <option value="cash">نقدي</option>
+    </select>
+    <select class="form-select">
+        <option value="">جميع الحالات</option>
+        <option value="success">ناجح</option>
+        <option value="pending">معلق</option>
+        <option value="failed">فاشل</option>
+        <option value="refunded">مسترد</option>
+    </select>
+</div>
+
+<!-- Payments Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الدافع</th>
+                    <th>النوع</th>
+                    <th>المبلغ</th>
+                    <th>طريقة الدفع</th>
+                    <th>الحالة</th>
+                    <th>التاريخ</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in payments)
+                {
+                    <tr>
+                        <td class="text-md">@p.Code</td>
+                        <td class="text-md-medium">@p.Payer</td>
+                        <td><span class="badge @p.TypeClass">@p.Type</span></td>
+                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@p.Amount @MockData.CurrencySymbol</td>
+                        <td class="text-md">@p.Method</td>
+                        <td><span class="badge @p.StatusClass">@p.Status</span></td>
+                        <td class="text-md">@p.Date</td>
+                        <td>
+                            <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(p.Id)" title="التفاصيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Manual Payment Modal -->
+<div class="modal fade" id="manualPaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">تسجيل دفعة يدوية</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الدافع</label>
+                            <select class="form-select">
+                                <option value="">اختر الدافع</option>
+                                <option>مجمع عيادات السلام الطبي</option>
+                                <option>مستشفى النور التخصصي</option>
+                                <option>د. عمار السيد</option>
+                                <option>د. سارة أحمد</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">نوع الدفعة</label>
+                            <select class="form-select">
+                                <option>اشتراك عيادة</option>
+                                <option>عمولة طبيب</option>
+                                <option>خدمة إعلانية</option>
+                                <option>أخرى</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المبلغ</label>
+                            <input type="number" class="form-input" placeholder="0.00 @MockData.CurrencySymbol" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">طريقة الدفع</label>
+                            <select class="form-select">
+                                <option>نقدي</option>
+                                <option>تحويل بنكي</option>
+                                <option>Paymob - بطاقة ائتمان</option>
+                                <option>Paymob - محفظة إلكترونية</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الوصف / ملاحظات</label>
+                    <textarea class="form-textarea" placeholder="وصف الدفعة..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">تاريخ الدفعة</label>
+                    <input type="date" class="form-input" />
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary">تسجيل الدفعة</button>
+            </div>
+        </div>
+    </div>
+</div>

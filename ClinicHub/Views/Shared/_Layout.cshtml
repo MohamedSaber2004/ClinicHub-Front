@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Doctory</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="public-body" style="height: auto; overflow: auto;">
     <!-- Public Navigation Header -->
-    <header class="public-header" style="background-color: #FFFFFF; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000;">
+    <header class="public-header">
         <div class="container d-flex justify-content-between align-items-center" style="height: 70px;">
             <div class="d-flex align-items-center">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 10px;">
@@ -19,18 +19,19 @@
                     <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
                 </svg>
                 <span class="logo-text" style="font-size: 18px; font-weight: 700;">
-                    <span class="logo-brand-ar" style="color: var(--primary-color); font-weight: 800; font-size: 20px;">Doctory</span>
+                    <span class="logo-brand-ar">فقيه</span> | Fakeeh Care
                 </span>
             </div>
             
             <nav class="d-none d-md-flex gap-4">
-                <a href="@HomeRoutes.Pages.Index()" style="color: var(--text-dark); text-decoration: none; font-weight: 500;">الرئيسية</a>
-                <a href="@HomeRoutes.Pages.About()" style="color: var(--text-dark); text-decoration: none; font-weight: 500;">من نحن</a>
-                <a href="@HomeRoutes.Pages.Privacy()" style="color: var(--text-dark); text-decoration: none; font-weight: 500;">سياسة الخصوصية</a>
+                <a asp-controller="Home" asp-action="Index" class="nav-link">الرئيسية</a>
+                <a href="#services" class="nav-link">الخدمات والعيادات</a>
+                <a href="#about" class="nav-link">من نحن</a>
+                <a asp-controller="Home" asp-action="Privacy" class="nav-link">سياسة الخصوصية</a>
             </nav>
 
             <div class="d-flex gap-2">
-                <a href="@HomeRoutes.Account.Login()" class="btn" style="background-color: var(--primary-color); color: #FFFFFF; font-weight: 500; font-size: 14px; padding: 8px 16px; border-radius: 5px; transition: background-color 0.2s;">
+                <a asp-controller="Account" asp-action="Login" class="btn-primary-custom">
                     تسجيل الدخول
                 </a>
             </div>
@@ -43,10 +44,10 @@
     </main>
 
     <!-- Public Footer -->
-    <footer style="background-color: #FFFFFF; border-top: 1px solid var(--border-color); padding: 30px 0; margin-top: 60px;">
+    <footer class="public-footer">
         <div class="container text-center">
-            <p style="margin-bottom: 10px; color: var(--text-dark); font-weight: 600;">Doctory Platform</p>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">&copy; 2026 - Doctory. جميع الحقوق محفوظة.</p>
+            <p class="public-footer-title">مجموعة فقيه الطبية - Fakeeh Care Group</p>
+            <p class="public-footer-copy">&copy; 2026 - ClinicHub. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
 

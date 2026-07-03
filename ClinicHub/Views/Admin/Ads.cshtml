@@ -1,0 +1,288 @@
+@{
+    ViewData["Title"] = "الإعلانات";
+    Layout = "_DashboardLayout";
+}
+
+<div class="page-header">
+    <h2 class="page-title">إدارة الإعلانات والباقات الدعائية</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#adModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        إضافة إعلان
+    </button>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <input type="text" class="form-input" placeholder="بحث عن إعلان..." style="min-width: 200px;" />
+    <select class="form-select">
+        <option value="">جميع الأنواع</option>
+        <option value="banner">بانر إعلاني</option>
+        <option value="promotion">عرض / خصم</option>
+        <option value="featured_doctor">طبيب مميز</option>
+        <option value="featured_clinic">عيادة مميزة</option>
+    </select>
+    <select class="form-select">
+        <option value="">جميع الحالات</option>
+        <option value="active">نشط</option>
+        <option value="inactive">غير نشط</option>
+    </select>
+</div>
+
+<!-- Ads Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>معاينة</th>
+                    <th>العنوان</th>
+                    <th>النوع</th>
+                    <th>تاريخ البدء</th>
+                    <th>تاريخ الانتهاء</th>
+                    <th>الترتيب</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #2F9CCA, #2385AF); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                            </svg>
+                        </div>
+                    </td>
+                    <td class="text-md-medium">عروض شهر يوليو - خصم 30%</td>
+                    <td><span class="badge badge-info">بانر إعلاني</span></td>
+                    <td class="text-md">2026-07-01</td>
+                    <td class="text-md">2026-07-31</td>
+                    <td class="text-md">1</td>
+                    <td><span class="badge badge-success">نشط</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #a78bfa, #7c3aed); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>
+                            </svg>
+                        </div>
+                    </td>
+                    <td class="text-md-medium">د. عمار السيد - استشاري جلدية</td>
+                    <td><span class="badge badge-warning">طبيب مميز</span></td>
+                    <td class="text-md">2026-06-15</td>
+                    <td class="text-md">2026-07-15</td>
+                    <td class="text-md">2</td>
+                    <td><span class="badge badge-success">نشط</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #34d399, #059669); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/>
+                            </svg>
+                        </div>
+                    </td>
+                    <td class="text-md-medium">عيادة القلب - فريق متكامل</td>
+                    <td><span class="badge badge-success">عيادة مميزة</span></td>
+                    <td class="text-md">2026-07-01</td>
+                    <td class="text-md">2026-09-30</td>
+                    <td class="text-md">3</td>
+                    <td><span class="badge badge-success">نشط</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #fbbf24, #f59e0b); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                            </svg>
+                        </div>
+                    </td>
+                    <td class="text-md-medium">خصم خاص على الكشف - 50%</td>
+                    <td><span class="badge badge-danger">عرض / خصم</span></td>
+                    <td class="text-md">2026-06-01</td>
+                    <td class="text-md">2026-06-30</td>
+                    <td class="text-md">4</td>
+                    <td><span class="badge badge-warning">منتهي</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تفعيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #f472b6, #ec4899); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>
+                            </svg>
+                        </div>
+                    </td>
+                    <td class="text-md-medium">د. سارة أحمد - استشارية قلب</td>
+                    <td><span class="badge badge-warning">طبيب مميز</span></td>
+                    <td class="text-md">2026-07-10</td>
+                    <td class="text-md">2026-08-10</td>
+                    <td class="text-md">5</td>
+                    <td><span class="badge badge-info">مجدول</span></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تفعيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Ad Modal -->
+<div class="modal fade" id="adModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إضافة إعلان جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label class="form-label">عنوان الإعلان</label>
+                            <input type="text" class="form-input" placeholder="مثال: عروض شهر يوليو - خصم 30%" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">النوع</label>
+                            <select class="form-select">
+                                <option>بانر إعلاني</option>
+                                <option>عرض / خصم</option>
+                                <option>طبيب مميز</option>
+                                <option>عيادة مميزة</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">تاريخ البدء</label>
+                            <input type="date" class="form-input" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">تاريخ الانتهاء</label>
+                            <input type="date" class="form-input" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">ترتيب العرض</label>
+                            <input type="number" class="form-input" placeholder="1" min="1" />
+                            <p class="form-hint">الأرقام الأقل تظهر أولاً</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">صورة الإعلان</label>
+                    <div style="border: 2px dashed var(--clr-border); border-radius: var(--radius-sm); padding: var(--space-8); text-align: center; cursor: pointer; transition: border-color var(--transition-base);">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--clr-text-secondary)">
+                            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                        </svg>
+                        <p style="color: var(--clr-text-secondary); margin-top: var(--space-2);">اسحب وأفلت الصورة هنا أو انقر لاختيار ملف</p>
+                        <p class="form-hint">يفضل صورة بحجم 1200x400 بكسل بصيغة JPG أو PNG</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">رابط الوجهة (اختياري)</label>
+                            <input type="url" class="form-input" placeholder="https://..." />
+                            <p class="form-hint">عند النقر على الإعلان، إلى أين يذهب المستخدم</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">معرّف الطبيب/العيادة (اختياري)</label>
+                            <input type="text" class="form-input" placeholder="معرّف إضافي للربط" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-toggle">
+                        <input type="checkbox" checked />
+                        <span class="toggle-track"></span>
+                        <span class="toggle-label">نشط — يظهر في التطبيق</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary">حفظ الإعلان</button>
+            </div>
+        </div>
+    </div>
+</div>

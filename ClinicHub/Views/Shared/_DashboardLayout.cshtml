@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Doctory</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
@@ -26,50 +26,84 @@
                 </div>
             </div>
             <nav class="sidebar-menu">
-                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")" href="@AdminRoutes.Pages.Index()">
-                    <i class="bi bi-speedometer2" style="font-size: 1.1rem; margin-left: 10px;"></i>
-                    <span>لوحة التحكم الرئيسية</span>
+                <div class="sidebar-nav-items">
+                    @{
+                        var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+                        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                        bool IsActive(string ctrl, string? action = null) =>
+                            currentController == ctrl && (action == null || currentAction == action);
+                    }
+                    <a class="sidebar-item @(IsActive("Admin", "Index") ? "active" : "")" href="@AdminRoutes.Pages.Index()">
+                        <!-- Dashboard Grid SVG -->
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                        <span>لوحة التحكم</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Admin", "Specializations") ? "active" : "")" href="@AdminRoutes.Pages.Specializations()">
+                        <!-- Tags SVG -->
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z" fill="currentColor"/>
+                        </svg>
+                        <span>التخصصات</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Admin", "Clinics") ? "active" : "")" href="@AdminRoutes.Pages.Clinics()">
+                        <!-- Building/Clinic SVG -->
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" fill="currentColor"/>
+                        </svg>
+                        <span>العيادات</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Admin", "Doctors") ? "active" : "")" href="@AdminRoutes.Pages.Doctors()">
+                        <!-- Stethoscope / Doctor SVG -->
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2c0 1.654-1.346 3-3 3s-3-1.346-3-3V7z" fill="currentColor"/>
+                        </svg>
+                        <span>الأطباء</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Admin", "Support") ? "active" : "")" href="@AdminRoutes.Pages.Support()">
+                        <!-- Headset/Support SVG -->
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 12v-2c0-3.866-3.134-7-7-7S5 6.134 5 10v2H3v7h3v-9c0-3.313 2.687-6 6-6s6 2.687 6 6v9h3v-7h-2zM7 15v2c0 1.103.897 2 2 2h2v-6H7v2zm8 0h-2v2h2c1.103 0 2-.897 2-2v-2h-2v2z" fill="currentColor"/>
+                        </svg>
+                        <span>الدعم الفني</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Admin", "Ads") ? "active" : "")" href="@AdminRoutes.Pages.Ads()">
+                        <!-- Megaphone/Ads SVG -->
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 2.01L4 2v2h16V2.01zM4 22h16v-2H4v2zm-2-14h2v8H2V8zm18 0h2v8h-2V8zM9 6c-2.21 0-4 1.79-4 4 0 1.2.54 2.27 1.38 3H7v1c0 1.66 1.34 3 3 3s3-1.34 3-3v-1h.62c.84-.73 1.38-1.8 1.38-3 0-2.21-1.79-4-4-4z" fill="currentColor"/>
+                        </svg>
+                        <span>الإعلانات</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Admin", "Payments") ? "active" : "")" href="@AdminRoutes.Pages.Payments()">
+                        <!-- Card/Money SVG -->
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" fill="currentColor"/>
+                            <circle cx="15.5" cy="13.5" r="2.5" fill="currentColor"/>
+                        </svg>
+                        <span>المدفوعات</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-bottom">
+                <hr style="width: 100%; border: none; border-top: 1px solid var(--clr-border); margin: 0; padding: 0;" />
+                <a class="sidebar-profile" href="@AdminRoutes.Pages.Profile()">
+                    <div class="sidebar-profile-avatar">
+                        <span>أ</span>
+                    </div>
+                    <div class="sidebar-profile-info">
+                        <span class="sidebar-profile-name">أحمد</span>
+                        <span class="sidebar-profile-role">المشرف العام</span>
+                    </div>
                 </a>
-                <a class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Clinic" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" href="@ClinicRoutes.Pages.Index()">
-                    <i class="bi bi-hospital" style="font-size: 1.1rem; margin-left: 10px;"></i>
-                    <span>إدارة وتشغيل العيادات</span>
-                </a>
-
-                @if (ViewContext.RouteData.Values["Controller"]?.ToString() == "Clinic")
-                {
-                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الخدمات التشغيلية</div>
-
-                    <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Appointments" ? "active" : "")" href="@ClinicRoutes.Pages.Appointments()" style="padding-right: 20px;">
-                        <i class="bi bi-calendar3" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>نظام الحجز الذكي</span>
-                    </a>
-                    <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "MedicalRecords" ? "active" : "")" href="@ClinicRoutes.Pages.MedicalRecords()" style="padding-right: 20px;">
-                        <i class="bi bi-folder2-open" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>السجل الطبي الإلكتروني</span>
-                    </a>
-                    <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Billing" ? "active" : "")" href="@ClinicRoutes.Pages.Billing()" style="padding-right: 20px;">
-                        <i class="bi bi-credit-card" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>الفواتير والمالية</span>
-                    </a>
-                    <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Inventory" ? "active" : "")" href="@ClinicRoutes.Pages.Inventory()" style="padding-right: 20px;">
-                        <i class="bi bi-box-seam" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>إدارة المخزون</span>
-                    </a>
-                    <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "PatientPortal" ? "active" : "")" href="@ClinicRoutes.Pages.PatientPortal()" style="padding-right: 20px;">
-                        <i class="bi bi-people" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>بوابة المرضى</span>
-                    </a>
-                    <a class="sidebar-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Staff" ? "active" : "")" href="@ClinicRoutes.Pages.Staff()" style="padding-right: 20px;">
-                        <i class="bi bi-person-badge" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>إدارة الموظفين</span>
-                    </a>
-                }
-
                 <a class="sidebar-item" href="@HomeRoutes.Pages.Index()">
                     <i class="bi bi-house-door" style="font-size: 1.1rem; margin-left: 10px;"></i>
                     <span>موقع العيادة الرئيسي</span>
                 </a>
-            </nav>
+            </div>
         </aside>
 
         <!-- Main Content Area -->
@@ -84,7 +118,7 @@
                         <option value="derm">قسم الجلدية</option>
                     </select>
                 </div>
-                <div class="header-user">
+                <a class="header-user" href="@AdminRoutes.Pages.Profile()">
                     <div class="user-info">
                         <span class="user-name">@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "المشرف العام" : "مدير العيادات")</span>
                         <span class="user-role">@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "مدير النظام" : "طاقم الإدارة الطبية")</span>
@@ -95,7 +129,7 @@
                         <circle cx="18" cy="14" r="6" fill="#66748C"/>
                         <path d="M6 30C6 24.4772 11.3726 21 18 21C24.6274 21 30 24.4772 30 30" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
-                </div>
+                </a>
             </header>
 
             <!-- Main Render Area -->

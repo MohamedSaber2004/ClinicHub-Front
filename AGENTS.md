@@ -1,29 +1,33 @@
-# ClinicHub (Doctory)
+# ClinicHub Design Rules
 
-## What this is
-Unified clinic management system (Arabic/RTL) — an ASP.NET Core 8 MVC intermediary platform connecting hospital/clinic administrators with clinic owners. Branded as **"Doctory"** internally.
+## Scope Restriction
+This project is **design-only**. All work is strictly limited to:
+- CSS files (`wwwroot/css/*.css`)
+- CSHTML view files (`Views/**/*.cshtml`)
+- Design system files (`wwwroot/css/design-system.css`)
+- Data files (`Data/*.cs`) — mock data only, no business logic
 
-## Tech stack
-- .NET 8, ASP.NET Core MVC, Serilog (Console + File + Seq)
-- Bootstrap 5 RTL, jQuery, no JS framework
-- `.slnx` solution format (new VS XML-based)
+## Controller Usage (Limited)
+Controllers may be touched ONLY for:
+- Passing mock data from `Data/MockData.cs` to views via `ViewBag` / `ViewData`
+- **NO business logic** in controllers — routing and data passing only
+- When real backend is ready, controllers will use real services instead of mock data
 
-## Key architecture
-- Route helper classes in `Routes/` used in views avoid magic strings — always use `@AdminRoutes.Pages.Index()` etc.
-- Two layouts: `_Layout.cshtml` (public) and `_DashboardLayout.cshtml` (admin/clinic dashboards)
-- Two dashboards: `/Admin` (general manager) and `/Clinic` (daily operations)
-- No real auth middleware — `AccountController` uses TempData-based dummy flow
-- `Routes/Api/` are empty stubs, not wired up
-- UI is fully Arabic RTL (`lang="ar" dir="rtl"`)
-- Figma design tokens in `prompts/prompt.txt`
+## Never Touch
+- Models (`Models/*.cs`) — unless creating simple DTOs for mock data
+- Backend logic (`Program.cs`, `*.csproj`)
+- Configuration files (`appsettings*.json`, `launchSettings.json`)
+- JavaScript files (`wwwroot/js/*.js`)
+- Library files (`wwwroot/lib/**`)
 
-## Commands
-```powershell
-dotnet run --project ClinicHub --launch-profile https
-dotnet build ClinicHub\ClinicHub.csproj
-```
+## Design System Reference
+Use tokens from `wwwroot/css/design-system.css`:
+- `var(--clr-*)` for colors
+- `var(--space-*)` for spacing
+- `var(--fs-*)` / `var(--fw-*)` for typography
+- `var(--radius-*)` for border radius
+- `.badge` / `.badge-success` / `.badge-warning` / `.badge-info` / `.badge-danger` for status chips
+- `.icon-wrapper` / `.icon-wrapper--primary` / `--blue` / `--amber` / `--green` for icon containers
 
-## Environment
-- Dev server at `http://localhost:5046` / `https://localhost:7044`
-- Env config via `appsettings.{env}.json` (Live, Production)
-- No test project exists
+## No Inline Styles
+Never use `style="..."` in CSHTML. Use CSS classes defined in `site.css` or `design-system.css`.

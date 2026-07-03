@@ -1,0 +1,130 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "تفاصيل المعاملة";
+    Layout = "_DashboardLayout";
+    var d = ViewBag.Detail as MockPaymentDetail ?? new();
+}
+
+<div class="detail-page">
+    <!-- Back Link -->
+    <a href="@AdminRoutes.Pages.Payments()" class="detail-back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
+        العودة إلى القائمة
+    </a>
+
+    <!-- Detail Header -->
+    <div class="detail-header">
+        <div class="detail-header-info">
+            <h2 class="detail-title">معاملة @d.Code</h2>
+            <span class="detail-subtitle">@d.Date</span>
+        </div>
+        <div class="detail-header-amount">
+            <span class="detail-amount">@d.Amount @MockData.CurrencySymbol</span>
+            <span class="badge @d.StatusClass" style="font-size: 14px; padding: 4px 16px;">@d.Status</span>
+        </div>
+    </div>
+
+    <!-- Two-column Info -->
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h3 class="detail-card-title">معلومات الدافع</h3>
+            <div class="detail-info-list">
+                <div class="detail-info-row">
+                    <span class="detail-info-label">الاسم</span>
+                    <span class="detail-info-value">@d.Payer</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">النوع</span>
+                    <span class="detail-info-value">@d.PayerType</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">البريد الإلكتروني</span>
+                    <span class="detail-info-value">@d.PayerEmail</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">رقم الهاتف</span>
+                    <span class="detail-info-value">@d.PayerPhone</span>
+                </div>
+            </div>
+        </div>
+        <div class="detail-card">
+            <h3 class="detail-card-title">تفاصيل المعاملة</h3>
+            <div class="detail-info-list">
+                <div class="detail-info-row">
+                    <span class="detail-info-label">ID المعاملة</span>
+                    <span class="detail-info-value">@d.TransactionId</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">النوع</span>
+                    <span class="detail-info-value"><span class="badge @d.TypeClass">@d.Type</span></span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">طريقة الدفع</span>
+                    <span class="detail-info-value">@d.Method</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">رقم المرجع</span>
+                    <span class="detail-info-value" style="direction: ltr; text-align: right;">@d.RefNumber</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">تاريخ الإنشاء</span>
+                    <span class="detail-info-value">@d.Date 10:30</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Items -->
+    <div class="table-card" style="margin-bottom: var(--space-5);">
+        <div class="table-card-header">
+            <h3 class="table-card-title">عناصر الدفع</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>العنصر</th>
+                        <th>العدد</th>
+                        <th>السعر</th>
+                        <th>المجموع</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-md-medium">@d.ItemName</td>
+                        <td class="text-md">1</td>
+                        <td class="text-md" style="direction: ltr; text-align: right;">@d.Amount @MockData.CurrencySymbol</td>
+                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@d.Amount @MockData.CurrencySymbol</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="detail-card">
+        <h3 class="detail-card-title">سجل المعاملة</h3>
+        <div class="timeline">
+            @foreach (var entry in d.Timeline)
+            {
+                <div class="timeline-item">
+                    <div class="timeline-marker timeline-marker--@entry.Marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">@entry.Date</span>
+                        <span class="timeline-text">@entry.Text</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="detail-card">
+        <h3 class="detail-card-title">ملاحظات</h3>
+        <div class="detail-notes">
+            <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">@d.Notes</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,226 @@
+@{
+    ViewData["Title"] = "العيادات";
+    Layout = "_DashboardLayout";
+}
+
+<div class="page-header">
+    <h2 class="page-title">إدارة العيادات</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#clinicModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        إضافة عيادة
+    </button>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <input type="text" class="form-input" placeholder="بحث عن عيادة..." style="min-width: 200px;" />
+    <select class="form-select">
+        <option value="">جميع التخصصات</option>
+        <option value="cardio">القلب والأوعية الدموية</option>
+        <option value="neuro">الأمراض العصبية</option>
+        <option value="ortho">جراحة العظام</option>
+    </select>
+    <select class="form-select">
+        <option value="">جميع الحالات</option>
+        <option value="active">نشط</option>
+        <option value="inactive">غير نشط</option>
+    </select>
+</div>
+
+<!-- Clinics Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>اسم العيادة</th>
+                    <th>التخصص</th>
+                    <th>الطبيب المسؤول</th>
+                    <th>الموقع</th>
+                    <th>رقم الهاتف</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-md-medium">عيادة القلب</td>
+                    <td class="text-md">القلب والأوعية الدموية</td>
+                    <td class="text-md">د. سارة أحمد</td>
+                    <td class="text-md">الطابق الثاني - غرفة 201</td>
+                    <td class="text-md">+966 11 234 5678</td>
+                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-md-medium">عيادة الأعصاب</td>
+                    <td class="text-md">الأمراض العصبية</td>
+                    <td class="text-md">د. عبد الله ناصر</td>
+                    <td class="text-md">الطابق الثالث - غرفة 305</td>
+                    <td class="text-md">+966 11 345 6789</td>
+                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-md-medium">عيادة العظام</td>
+                    <td class="text-md">جراحة العظام</td>
+                    <td class="text-md">د. خالد الزهراني</td>
+                    <td class="text-md">الطابق الأول - غرفة 104</td>
+                    <td class="text-md">+966 11 456 7890</td>
+                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-md-medium">عيادة الجلدية</td>
+                    <td class="text-md">الأمراض الجلدية</td>
+                    <td class="text-md">د. عمار السيد</td>
+                    <td class="text-md">الطابق الثاني - غرفة 210</td>
+                    <td class="text-md">+966 11 567 8901</td>
+                    <td><label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-track-sm"></span></label></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تعطيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-md-medium">عيادة الأطفال</td>
+                    <td class="text-md">طب الأطفال</td>
+                    <td class="text-md">—</td>
+                    <td class="text-md">الطابق الرابع - غرفة 402</td>
+                    <td class="text-md">+966 11 678 9012</td>
+                    <td><label class="toggle-switch"><input type="checkbox" /><span class="toggle-track-sm"></span></label></td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-icon" title="تعديل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="تفعيل">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Clinic Modal -->
+<div class="modal fade" id="clinicModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إضافة عيادة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="form-group">
+                    <label class="form-label">اسم العيادة</label>
+                    <input type="text" class="form-input" placeholder="مثال: عيادة القلب" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">التخصص</label>
+                    <select class="form-select">
+                        <option value="">اختر التخصص</option>
+                        <option>القلب والأوعية الدموية</option>
+                        <option>الأمراض العصبية</option>
+                        <option>جراحة العظام</option>
+                        <option>طب الأطفال</option>
+                        <option>النساء والولادة</option>
+                        <option>طب العيون</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الطبيب المسؤول</label>
+                    <select class="form-select">
+                        <option value="">اختر الطبيب</option>
+                        <option>د. عمار السيد</option>
+                        <option>د. سارة أحمد</option>
+                        <option>د. خالد الزهراني</option>
+                        <option>د. عبد الله ناصر</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الموقع / رقم الغرفة</label>
+                            <input type="text" class="form-input" placeholder="مثال: الطابق الثاني - غرفة 201" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-input" placeholder="+966 11 XXX XXXX" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-toggle">
+                        <input type="checkbox" checked />
+                        <span class="toggle-track"></span>
+                        <span class="toggle-label">العيادة نشطة</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
