@@ -1,0 +1,163 @@
+@{
+    ViewData["Title"] = $"تفاصيل المعاملة #P-{ViewBag.PaymentId:D2}";
+    Layout = "_DashboardLayout";
+    var id = ViewBag.PaymentId as int? ?? 1;
+    var status = id switch { 2 => "معلق", 4 => "فاشل", 5 => "مسترد", _ => "ناجح" };
+    var statusClass = id switch { 2 => "badge-warning", 4 => "badge-danger", 5 => "badge-info", _ => "badge-success" };
+    var payer = id switch { 2 => "د. عمار السيد", 3 => "محمد عمر (مريض)", 4 => "مستشفى النور التخصصي", 5 => "عيادات التخصصات الدقيقة", _ => "مجمع عيادات السلام الطبي" };
+    var payerType = id switch { 2 => "طبيب", 3 => "مريض", 4 => "عيادة", 5 => "عيادة", _ => "عيادة" };
+    var type = id switch { 2 => "عمولة طبيب", 3 => "موعد مريض", 4 => "اشتراك عيادة", 5 => "خدمة إعلانية", _ => "اشتراك عيادة" };
+    var typeClass = id switch { 2 => "badge-warning", 3 => "badge-success", 4 => "badge-info", 5 => "badge-danger", _ => "badge-info" };
+    var amount = id switch { 2 => "500", 3 => "200", 4 => "12,000", 5 => "3,500", _ => "5,000" };
+    var method = id switch { 2 => "تحويل بنكي", 3 => "Paymob - محفظة إلكترونية", 4 => "تحويل بنكي", 5 => "Paymob - بطاقة ائتمان", _ => "Paymob - بطاقة ائتمان" };
+    var refNum = $"PM-2026-{id:D3}";
+    var date = id switch { 2 => "2026-07-02", 3 => "2026-07-03", 4 => "2026-06-28", 5 => "2026-06-25", _ => "2026-07-01" };
+}
+
+<div class="detail-page">
+    <!-- Back Link -->
+    <a href="@AdminRoutes.Pages.Payments()" class="detail-back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
+        العودة إلى القائمة
+    </a>
+
+    <!-- Detail Header -->
+    <div class="detail-header">
+        <div class="detail-header-info">
+            <h2 class="detail-title">معاملة #P-@($"{id:D2}")</h2>
+            <span class="detail-subtitle">@date</span>
+        </div>
+        <div class="detail-header-amount">
+            <span class="detail-amount">@amount ر.س</span>
+            <span class="badge @statusClass" style="font-size: 14px; padding: 4px 16px;">@status</span>
+        </div>
+    </div>
+
+    <!-- Two-column Info -->
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h3 class="detail-card-title">معلومات الدافع</h3>
+            <div class="detail-info-list">
+                <div class="detail-info-row">
+                    <span class="detail-info-label">الاسم</span>
+                    <span class="detail-info-value">@payer</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">النوع</span>
+                    <span class="detail-info-value">@payerType</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">البريد الإلكتروني</span>
+                    <span class="detail-info-value">info@clinic.com</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">رقم الهاتف</span>
+                    <span class="detail-info-value">+966 11 XXX XXXX</span>
+                </div>
+            </div>
+        </div>
+        <div class="detail-card">
+            <h3 class="detail-card-title">تفاصيل المعاملة</h3>
+            <div class="detail-info-list">
+                <div class="detail-info-row">
+                    <span class="detail-info-label">ID المعاملة</span>
+                    <span class="detail-info-value">pay_@(Guid.NewGuid().ToString("N").Substring(0, 12))</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">النوع</span>
+                    <span class="detail-info-value"><span class="badge @typeClass">@type</span></span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">طريقة الدفع</span>
+                    <span class="detail-info-value">@method</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">رقم المرجع</span>
+                    <span class="detail-info-value" style="direction: ltr; text-align: right;">@refNum</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">تاريخ الإنشاء</span>
+                    <span class="detail-info-value">@date 10:30</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Items -->
+    <div class="table-card">
+        <div class="table-card-header">
+            <h3 class="table-card-title">عناصر الدفع</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>العنصر</th>
+                        <th>العدد</th>
+                        <th>السعر</th>
+                        <th>المجموع</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-md-medium">@(id switch { 2 => "عمولة كشوفات شهر يونيو", 3 => "كشف موعد", 4 => "اشتراك سنوي - 2026", 5 => "بانر إعلاني - شهرين", _ => "اشتراك شهري - يوليو 2026" })</td>
+                        <td class="text-md">1</td>
+                        <td class="text-md" style="direction: ltr; text-align: right;">@amount ر.س</td>
+                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@amount ر.س</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="detail-card">
+        <h3 class="detail-card-title">سجل المعاملة</h3>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-marker timeline-marker--success"></div>
+                <div class="timeline-content">
+                    <span class="timeline-date">@date 10:32</span>
+                    <span class="timeline-text">تم تأكيد الدفع واستلام المبلغ</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-marker timeline-marker--success"></div>
+                <div class="timeline-content">
+                    <span class="timeline-date">@date 10:31</span>
+                    <span class="timeline-text">تم تأكيد الدفع عبر @(method.Contains("Paymob") ? "Paymob" : "التحويل البنكي")</span>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-marker timeline-marker--info"></div>
+                <div class="timeline-content">
+                    <span class="timeline-date">@date 10:30</span>
+                    <span class="timeline-text">تم إنشاء المعاملة</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="detail-card">
+        <h3 class="detail-card-title">ملاحظات</h3>
+        <div class="detail-notes">
+            <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">
+                @(id switch {
+                    2 => "في انتظار تأكيد المعاملة من البنك.",
+                    4 => "فشلت المعاملة بسبب خطأ في بيانات التحويل. يرجى مراجعة البيانات وإعادة المحاولة.",
+                    5 => "تم استرداد المبلغ بناءً على طلب العيادة.",
+                    _ => "لا توجد ملاحظات إضافية."
+                })
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-item:last-child .timeline-content {
+        border-bottom: none;
+    }
+</style>

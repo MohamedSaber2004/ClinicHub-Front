@@ -43,14 +43,6 @@
                         </svg>
                         <span>لوحة التحكم</span>
                     </a>
-                    <a class="sidebar-item @(IsActive("Admin", "Kpi") ? "active" : "")" href="@AdminRoutes.Pages.Kpi()">
-                        <!-- Chart/Bar SVG -->
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z" fill="currentColor"/>
-                            <path d="M3 21h18v-2H3v2z" fill="currentColor"/>
-                        </svg>
-                        <span>مؤشرات الأداء</span>
-                    </a>
                     <a class="sidebar-item @(IsActive("Admin", "Specializations") ? "active" : "")" href="@AdminRoutes.Pages.Specializations()">
                         <!-- Tags SVG -->
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -85,6 +77,14 @@
                             <path d="M20 2.01L4 2v2h16V2.01zM4 22h16v-2H4v2zm-2-14h2v8H2V8zm18 0h2v8h-2V8zM9 6c-2.21 0-4 1.79-4 4 0 1.2.54 2.27 1.38 3H7v1c0 1.66 1.34 3 3 3s3-1.34 3-3v-1h.62c.84-.73 1.38-1.8 1.38-3 0-2.21-1.79-4-4-4z" fill="currentColor"/>
                         </svg>
                         <span>الإعلانات</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Admin", "Payments") ? "active" : "")" href="@AdminRoutes.Pages.Payments()">
+                        <!-- Card/Money SVG -->
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" fill="currentColor"/>
+                            <circle cx="15.5" cy="13.5" r="2.5" fill="currentColor"/>
+                        </svg>
+                        <span>المدفوعات</span>
                     </a>
                 </div>
             </nav>

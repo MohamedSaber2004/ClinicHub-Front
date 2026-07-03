@@ -24,11 +24,6 @@ namespace ClinicHub.Controllers
             return View();
         }
 
-        public IActionResult Kpi()
-        {
-            return View();
-        }
-
         public IActionResult Support()
         {
             return View();
@@ -37,6 +32,17 @@ namespace ClinicHub.Controllers
         public IActionResult Ads()
         {
             return View();
+        }
+
+        public IActionResult Payments()
+        {
+            return View();
+        }
+
+        public IActionResult PaymentsDetails(int id)
+        {
+            ViewBag.PaymentId = id;
+            return View("PaymentsDetails");
         }
 
         public IActionResult Profile()

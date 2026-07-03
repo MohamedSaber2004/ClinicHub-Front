@@ -1,0 +1,260 @@
+@{
+    ViewData["Title"] = "المدفوعات";
+    Layout = "_DashboardLayout";
+}
+
+<div class="page-header">
+    <h2 class="page-title">المدفوعات والمعاملات المالية</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manualPaymentModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        تسجيل دفعة يدوية
+    </button>
+</div>
+
+<!-- KPI Stat Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">284,700</span>
+            <span class="stat-label">إجمالي الإيرادات</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">45,200</span>
+            <span class="stat-label">مدفوعات هذا الشهر</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--blue">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">3</span>
+            <span class="stat-label">معاملات معلقة</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--amber">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">12%</span>
+            <span class="stat-label">نسبة العمولات</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--green">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 10l5 5 5-5z"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <input type="text" class="form-input" placeholder="بحث عن معاملة..." style="min-width: 200px;" />
+    <select class="form-select">
+        <option value="">جميع الأنواع</option>
+        <option value="subscription">اشتراك عيادة</option>
+        <option value="commission">عمولة طبيب</option>
+        <option value="appointment">موعد مريض</option>
+        <option value="ad">خدمة إعلانية</option>
+    </select>
+    <select class="form-select">
+        <option value="">جميع طرق الدفع</option>
+        <option value="paymob_card">Paymob - بطاقة ائتمان</option>
+        <option value="paymob_wallet">Paymob - محفظة إلكترونية</option>
+        <option value="transfer">تحويل بنكي</option>
+        <option value="cash">نقدي</option>
+    </select>
+    <select class="form-select">
+        <option value="">جميع الحالات</option>
+        <option value="success">ناجح</option>
+        <option value="pending">معلق</option>
+        <option value="failed">فاشل</option>
+        <option value="refunded">مسترد</option>
+    </select>
+</div>
+
+<!-- Payments Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الدافع</th>
+                    <th>النوع</th>
+                    <th>المبلغ</th>
+                    <th>طريقة الدفع</th>
+                    <th>الحالة</th>
+                    <th>التاريخ</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-md">#P-01</td>
+                    <td class="text-md-medium">مجمع عيادات السلام الطبي</td>
+                    <td><span class="badge badge-info">اشتراك عيادة</span></td>
+                    <td class="text-md-medium" style="direction: ltr; text-align: right;">5,000 ر.س</td>
+                    <td class="text-md">Paymob - بطاقة</td>
+                    <td><span class="badge badge-success">ناجح</span></td>
+                    <td class="text-md">2026-07-01</td>
+                    <td>
+                        <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(1)" title="التفاصيل">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-md">#P-02</td>
+                    <td class="text-md-medium">د. عمار السيد</td>
+                    <td><span class="badge badge-warning">عمولة طبيب</span></td>
+                    <td class="text-md-medium" style="direction: ltr; text-align: right;">500 ر.س</td>
+                    <td class="text-md">تحويل بنكي</td>
+                    <td><span class="badge badge-warning">معلق</span></td>
+                    <td class="text-md">2026-07-02</td>
+                    <td>
+                        <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(2)" title="التفاصيل">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-md">#P-03</td>
+                    <td class="text-md-medium">محمد عمر (مريض)</td>
+                    <td><span class="badge badge-success">موعد مريض</span></td>
+                    <td class="text-md-medium" style="direction: ltr; text-align: right;">200 ر.س</td>
+                    <td class="text-md">Paymob - محفظة</td>
+                    <td><span class="badge badge-success">ناجح</span></td>
+                    <td class="text-md">2026-07-03</td>
+                    <td>
+                        <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(3)" title="التفاصيل">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-md">#P-04</td>
+                    <td class="text-md-medium">مستشفى النور التخصصي</td>
+                    <td><span class="badge badge-info">اشتراك عيادة</span></td>
+                    <td class="text-md-medium" style="direction: ltr; text-align: right;">12,000 ر.س</td>
+                    <td class="text-md">تحويل بنكي</td>
+                    <td><span class="badge badge-danger">فاشل</span></td>
+                    <td class="text-md">2026-06-28</td>
+                    <td>
+                        <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(4)" title="التفاصيل">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-md">#P-05</td>
+                    <td class="text-md-medium">عيادات التخصصات الدقيقة</td>
+                    <td><span class="badge badge-danger">خدمة إعلانية</span></td>
+                    <td class="text-md-medium" style="direction: ltr; text-align: right;">3,500 ر.س</td>
+                    <td class="text-md">Paymob - بطاقة</td>
+                    <td><span class="badge badge-info">مسترد</span></td>
+                    <td class="text-md">2026-06-25</td>
+                    <td>
+                        <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(5)" title="التفاصيل">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Manual Payment Modal -->
+<div class="modal fade" id="manualPaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">تسجيل دفعة يدوية</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الدافع</label>
+                            <select class="form-select">
+                                <option value="">اختر الدافع</option>
+                                <option>مجمع عيادات السلام الطبي</option>
+                                <option>مستشفى النور التخصصي</option>
+                                <option>د. عمار السيد</option>
+                                <option>د. سارة أحمد</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">نوع الدفعة</label>
+                            <select class="form-select">
+                                <option>اشتراك عيادة</option>
+                                <option>عمولة طبيب</option>
+                                <option>خدمة إعلانية</option>
+                                <option>أخرى</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المبلغ</label>
+                            <input type="number" class="form-input" placeholder="0.00 ر.س" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">طريقة الدفع</label>
+                            <select class="form-select">
+                                <option>نقدي</option>
+                                <option>تحويل بنكي</option>
+                                <option>Paymob - بطاقة ائتمان</option>
+                                <option>Paymob - محفظة إلكترونية</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الوصف / ملاحظات</label>
+                    <textarea class="form-textarea" placeholder="وصف الدفعة..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">تاريخ الدفعة</label>
+                    <input type="date" class="form-input" />
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary">تسجيل الدفعة</button>
+            </div>
+        </div>
+    </div>
+</div>

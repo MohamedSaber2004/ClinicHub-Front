@@ -3,71 +3,105 @@
     Layout = "_DashboardLayout";
 }
 
-<h2 class="page-title">لوحة التحكم (المدير العام)</h2>
+<h2 class="page-title">لوحة التحكم - نظرة عامة</h2>
 
-<!-- Statistics Grid -->
+<!-- KPI Stat Cards -->
 <div class="stats-grid">
-    <!-- Card 1: Doctors -->
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">12</span>
-            <span class="stat-label">الأطباء</span>
+            <span class="stat-value">156</span>
+            <span class="stat-label">إجمالي الأطباء</span>
         </div>
-        <div class="stat-icon-wrapper icon-wrapper icon-wrapper--primary">
-            <!-- Doctor SVG -->
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C9.243 2 7 4.243 7 7V9C7 11.206 8.794 13 11 13V15.184C8.196 15.602 6.006 17.801 6.006 20.5V22H8.006V20.5C8.006 18.294 9.799 16.5 12 16.5C14.201 16.5 15.994 18.294 15.994 20.5V22H17.994V20.5C17.994 17.801 15.804 15.602 13 15.184V13C15.206 13 17 11.206 17 9V7C17 4.243 14.757 2 12 2ZM9 7C9 5.346 10.346 4 12 4C13.654 4 15 5.346 15 7V9C15 10.654 13.654 12 12 12C10.346 12 9 10.654 9 9V7Z" fill="currentColor"/>
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2c0 1.654-1.346 3-3 3s-3-1.346-3-3V7z"/>
             </svg>
         </div>
     </div>
-
-    <!-- Card 2: Nurses -->
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">32</span>
-            <span class="stat-label">التمريض</span>
+            <span class="stat-value">24</span>
+            <span class="stat-label">العيادات النشطة</span>
         </div>
-        <div class="stat-icon-wrapper icon-wrapper icon-wrapper--primary">
-            <!-- Nurse Cap SVG -->
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18.994 15.626C18.423 15.18 17.712 14.887 17 14.686V13C18.665 11.602 19.5 9.771 19.5 8C19.5 6.619 18.381 5.5 17 5.5H16C16 3.514 14.486 2 12.5 2H11.5C9.514 2 8 3.514 8 5.5H7C5.619 5.5 4.5 6.619 4.5 8C4.5 9.771 5.335 11.602 7 13V14.686C6.288 14.887 5.577 15.18 5.006 15.626C3.766 16.592 3 18.067 3 19.641V22H5V19.641C5 18.729 5.485 17.871 6.257 17.371L7.545 16.533C8.426 15.961 9.479 15.663 10.536 15.663H13.464C14.521 15.663 15.574 15.961 16.455 16.533L17.743 17.371C18.515 17.871 19 18.729 19 19.641V22H21V19.641C21 18.067 20.234 16.592 18.994 15.626ZM10 5.5H14V7.5H10V5.5ZM12.5 11C11.673 11 11 10.327 11 9.5C11 8.673 11.673 8 12.5 8C13.327 8 14 8.673 14 9.5C14 10.327 13.327 11 12.5 11Z" fill="currentColor"/>
+        <div class="icon-wrapper icon-wrapper--blue">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/>
             </svg>
         </div>
     </div>
-
-    <!-- Card 3: Patients -->
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">99</span>
-            <span class="stat-label">المرضى</span>
+            <span class="stat-value">6</span>
+            <span class="stat-label">التخصصات الطبية</span>
         </div>
-        <div class="stat-icon-wrapper icon-wrapper icon-wrapper--primary">
-            <!-- Patient SVG -->
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+        <div class="icon-wrapper icon-wrapper--green">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
             </svg>
         </div>
     </div>
-
-    <!-- Card 4: Rooms -->
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">109</span>
-            <span class="stat-label">الغرف</span>
+            <span class="stat-value">48</span>
+            <span class="stat-label">المشتركين</span>
         </div>
-        <div class="stat-icon-wrapper icon-wrapper icon-wrapper--primary">
-            <!-- Room SVG -->
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 2H5C3.9 2 3 2.9 3 4V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V4C21 2.9 20.1 2 19 2ZM19 20H5V4H19V20ZM11 10H13V12H11V10Z" fill="currentColor"/>
+        <div class="icon-wrapper icon-wrapper--amber">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">2,847</span>
+            <span class="stat-label">إجمالي المرضى</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">3</span>
+            <span class="stat-label">تذاكر مفتوحة</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 12v-2c0-3.866-3.134-7-7-7S5 6.134 5 10v2H3v7h3v-9c0-3.313 2.687-6 6-6s6 2.687 6 6v9h3v-7h-2zM7 15v2c0 1.103.897 2 2 2h2v-6H7v2zm8 0h-2v2h2c1.103 0 2-.897 2-2v-2h-2v2z"/>
             </svg>
         </div>
     </div>
 </div>
 
-<!-- Tables Layout -->
+<!-- Quick Status Row -->
+<div class="quick-status-row">
+    <div class="quick-status-item quick-status--success">
+        <span class="quick-status-dot"></span>
+        <span class="quick-status-text">12 تخصص نشط</span>
+    </div>
+    <div class="quick-status-item quick-status--warning">
+        <span class="quick-status-dot"></span>
+        <span class="quick-status-text">3 تذاكر قيد المعالجة</span>
+    </div>
+    <div class="quick-status-item quick-status--info">
+        <span class="quick-status-dot"></span>
+        <span class="quick-status-text">5 إعلانات مجدولة</span>
+    </div>
+    <div class="quick-status-item quick-status--danger">
+        <span class="quick-status-dot"></span>
+        <span class="quick-status-text">2 اشتراك منتهي</span>
+    </div>
+    <div class="quick-status-item quick-status--success">
+        <span class="quick-status-dot"></span>
+        <span class="quick-status-text">4 أطباء مناوبون</span>
+    </div>
+</div>
+
+<!-- 2-Column Tables Row 1 -->
 <div class="dashboard-tables-grid">
-    <!-- Left Table: Doctors on Duty -->
-    <div class="table-card" id="doctors">
+    <div class="table-card" id="doctors-on-duty">
         <div class="table-card-header">
             <h3 class="table-card-title">الأطباء المناوبون</h3>
         </div>
@@ -105,43 +139,198 @@
             </table>
         </div>
     </div>
-
-    <!-- Right Table: New Admitted Patients -->
-    <div class="table-card" id="patients">
+    <div class="table-card" id="urgent-tickets">
         <div class="table-card-header">
-            <h3 class="table-card-title">المرضى المقبولين الجدد</h3>
+            <h3 class="table-card-title">تذاكر الدعم العاجلة</h3>
         </div>
         <div class="table-responsive">
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th>الاسم</th>
-                        <th>القسم</th>
+                        <th>#</th>
+                        <th>الموضوع</th>
+                        <th>المبلغ</th>
+                        <th>الأولوية</th>
                         <th>التاريخ</th>
-                        <th>رقم الهاتف</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>عزير</td>
-                        <td>القلب والأوعية الدموية</td>
-                        <td>3 مارس 2025</td>
-                        <td>+0123456789</td>
+                        <td class="text-md">#1024</td>
+                        <td class="text-md-medium">تعطل نظام تسجيل الدخول</td>
+                        <td class="text-md">عيادة السلام</td>
+                        <td><span class="badge badge-danger">عالية</span></td>
+                        <td class="text-md">2026-07-03</td>
                     </tr>
                     <tr>
-                        <td>حارس</td>
-                        <td>أمراض الأعصاب</td>
-                        <td>4 مارس 2025</td>
-                        <td>+0123456789</td>
+                        <td class="text-md">#1021</td>
+                        <td class="text-md-medium">مشكلة في عرض التقارير</td>
+                        <td class="text-md">عيادات التخصصات الدقيقة</td>
+                        <td><span class="badge badge-danger">عالية</span></td>
+                        <td class="text-md">2026-07-01</td>
                     </tr>
                     <tr>
-                        <td>حمزة</td>
-                        <td>أمراض النساء</td>
-                        <td>5 مارس 2025</td>
-                        <td>+0123456789</td>
+                        <td class="text-md">#1023</td>
+                        <td class="text-md-medium">استفسار عن فاتورة شهر يونيو</td>
+                        <td class="text-md">د. سارة أحمد</td>
+                        <td><span class="badge badge-warning">متوسطة</span></td>
+                        <td class="text-md">2026-07-02</td>
                     </tr>
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<!-- 2-Column Tables Row 2 -->
+<div class="dashboard-tables-grid">
+    <div class="table-card" id="subscriptions">
+        <div class="table-card-header">
+            <h3 class="table-card-title">المشتركون في النظام</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>اسم العيادة</th>
+                        <th>تاريخ الاشتراك</th>
+                        <th>تاريخ الانتهاء</th>
+                        <th>الباقة</th>
+                        <th>عدد الأطباء</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-md-medium">مجمع عيادات السلام الطبي</td>
+                        <td class="text-md">1 يناير 2026</td>
+                        <td class="text-md">31 ديسمبر 2026</td>
+                        <td><span class="badge badge-info">باقة متقدمة</span></td>
+                        <td class="text-md">15</td>
+                        <td><span class="badge badge-success">نشط</span></td>
+                    </tr>
+                    <tr>
+                        <td class="text-md-medium">مستشفى النور التخصصي</td>
+                        <td class="text-md">15 فبراير 2026</td>
+                        <td class="text-md">14 فبراير 2027</td>
+                        <td><span class="badge badge-info">باقة متقدمة</span></td>
+                        <td class="text-md">32</td>
+                        <td><span class="badge badge-success">نشط</span></td>
+                    </tr>
+                    <tr>
+                        <td class="text-md-medium">عيادات الدكتور سمير</td>
+                        <td class="text-md">1 مارس 2026</td>
+                        <td class="text-md">30 سبتمبر 2026</td>
+                        <td><span class="badge badge-success">باقة أساسية</span></td>
+                        <td class="text-md">5</td>
+                        <td><span class="badge badge-success">نشط</span></td>
+                    </tr>
+                    <tr>
+                        <td class="text-md-medium">مركز رعاية اليوم الواحد</td>
+                        <td class="text-md">1 يناير 2025</td>
+                        <td class="text-md">31 ديسمبر 2025</td>
+                        <td><span class="badge badge-success">باقة أساسية</span></td>
+                        <td class="text-md">8</td>
+                        <td><span class="badge badge-danger">منتهي</span></td>
+                    </tr>
+                    <tr>
+                        <td class="text-md-medium">عيادات التخصصات الدقيقة</td>
+                        <td class="text-md">1 أبريل 2026</td>
+                        <td class="text-md">31 مارس 2027</td>
+                        <td><span class="badge badge-info">باقة متقدمة</span></td>
+                        <td class="text-md">22</td>
+                        <td><span class="badge badge-success">نشط</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="table-card" id="activity-log">
+        <div class="table-card-header">
+            <h3 class="table-card-title">سجل العمليات والنشاطات</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>الإجراء</th>
+                        <th>المستخدم</th>
+                        <th>التفاصيل</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-md">2026-07-03 14:30</td>
+                        <td class="text-md-medium">إضافة طبيب جديد</td>
+                        <td class="text-md">المشرف العام</td>
+                        <td class="text-md">تم إضافة د. أحمد علي إلى عيادة القلب</td>
+                    </tr>
+                    <tr>
+                        <td class="text-md">2026-07-03 11:15</td>
+                        <td class="text-md-medium">تفعيل اشتراك</td>
+                        <td class="text-md">مدير النظام</td>
+                        <td class="text-md">تم تفعيل اشتراك عيادات السلام حتى 2027-01-01</td>
+                    </tr>
+                    <tr>
+                        <td class="text-md">2026-07-02 09:45</td>
+                        <td class="text-md-medium">تحديث بيانات عيادة</td>
+                        <td class="text-md">المشرف العام</td>
+                        <td class="text-md">تم تحديث معلومات عيادة العظام</td>
+                    </tr>
+                    <tr>
+                        <td class="text-md">2026-07-01 16:00</td>
+                        <td class="text-md-medium">تسجيل مريض جديد</td>
+                        <td class="text-md">طاقم الاستقبال</td>
+                        <td class="text-md">تم تسجيل المريض محمد عمر في قسم القلب</td>
+                    </tr>
+                    <tr>
+                        <td class="text-md">2026-06-30 13:20</td>
+                        <td class="text-md-medium">إلغاء موعد</td>
+                        <td class="text-md">د. سارة أحمد</td>
+                        <td class="text-md">تم إلغاء موعد المريض فهد الشمري</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Full-width Patients Table -->
+<div class="table-card" id="new-patients" style="margin-top: var(--space-6);">
+    <div class="table-card-header">
+        <h3 class="table-card-title">المرضى المقبولين الجدد</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>القسم</th>
+                    <th>التاريخ</th>
+                    <th>رقم الهاتف</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>عزير</td>
+                    <td>القلب والأوعية الدموية</td>
+                    <td>3 مارس 2025</td>
+                    <td>+0123456789</td>
+                </tr>
+                <tr>
+                    <td>حارس</td>
+                    <td>أمراض الأعصاب</td>
+                    <td>4 مارس 2025</td>
+                    <td>+0123456789</td>
+                </tr>
+                <tr>
+                    <td>حمزة</td>
+                    <td>أمراض النساء</td>
+                    <td>5 مارس 2025</td>
+                    <td>+0123456789</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
