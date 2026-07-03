@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Watch (Hot Reload)" type="RunDotNetWatch" factoryName="RunDotNetWatch">
+    <option name="exePath" value="$PROJECT_DIR$/ClinicHub/bin/Debug/net8.0/ClinicHub.exe" />
+    <option name="programParameters" value="" />
+    <option name="projectFilePath" value="$PROJECT_DIR$/ClinicHub/ClinicHub.csproj" />
+    <option name="projectTfm" value="net8.0" />
+    <option name="terminalMode" value="Auto" />
+    <option name="watchParameters" value="" />
+    <option name="workingDirectory" value="$PROJECT_DIR$/ClinicHub" />
+    <method v="2" />
+  </configuration>
+</component>
