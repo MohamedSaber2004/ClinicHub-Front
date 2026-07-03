@@ -1,0 +1,48 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "مدفوعات المستخدم";
+    Layout = "_DashboardLayout";
+    ViewBag.SubSidebarSection = "payments";
+    ViewBag.UserId = ViewBag.UserId as int? ?? 1;
+    var payments = ViewBag.Payments as List<MockPayment> ?? new();
+}
+
+<div class="user-detail-layout">
+    <partial name="_UserSubSidebar" />
+
+    <div class="user-detail-content">
+        <div class="page-header">
+            <h2 class="page-title">مدفوعات المستخدم</h2>
+        </div>
+
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>النوع</th>
+                            <th>المبلغ</th>
+                            <th>طريقة الدفع</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in payments)
+                        {
+                            <tr>
+                                <td class="text-md">@p.Code</td>
+                                <td><span class="badge @p.TypeClass">@p.Type</span></td>
+                                <td class="text-md-medium" style="direction: ltr; text-align: right;">@p.Amount @MockData.CurrencySymbol</td>
+                                <td class="text-md">@p.Method</td>
+                                <td><span class="badge @p.StatusClass">@p.Status</span></td>
+                                <td class="text-md">@p.Date</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

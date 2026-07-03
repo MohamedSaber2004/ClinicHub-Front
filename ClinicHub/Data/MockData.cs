@@ -226,5 +226,247 @@ namespace ClinicHub.Data
                 }
             },
         };
+
+        // ========== Users ==========
+        public static List<MockUser> GetUsers() => new()
+        {
+            new() { Id = 1, Name = "محمد عمر", Email = "mohamed@email.com", Phone = "+966 50 111 2222", Initials = "مع", RegistrationDate = "15 يناير 2025", Status = "نشط", StatusClass = "badge-success", TotalVisits = 24, AvgRating = 4.5, TotalSpent = "12,450" },
+            new() { Id = 2, Name = "سارة أحمد", Email = "sara@email.com", Phone = "+966 55 333 4444", Initials = "سأ", RegistrationDate = "3 مارس 2025", Status = "نشط", StatusClass = "badge-success", TotalVisits = 15, AvgRating = 4.8, TotalSpent = "8,200" },
+            new() { Id = 3, Name = "خالد الزهراني", Email = "khalid@email.com", Phone = "+966 50 555 6666", Initials = "خز", RegistrationDate = "20 يونيو 2025", Status = "نشط", StatusClass = "badge-success", TotalVisits = 8, AvgRating = 3.9, TotalSpent = "3,600" },
+            new() { Id = 4, Name = "فاطمة الناصر", Email = "fatima@email.com", Phone = "+966 55 777 8888", Initials = "فن", RegistrationDate = "1 أبريل 2026", Status = "نشط", StatusClass = "badge-success", TotalVisits = 3, AvgRating = 5.0, TotalSpent = "600" },
+            new() { Id = 5, Name = "عبد الله السعيد", Email = "abdullah@email.com", Phone = "+966 50 999 0000", Initials = "عس", RegistrationDate = "10 فبراير 2025", Status = "غير نشط", StatusClass = "badge-warning", TotalVisits = 2, AvgRating = 3.0, TotalSpent = "400" },
+        };
+
+        public static MockUserOverview GetUserOverview(int id) => id switch
+        {
+            2 => new MockUserOverview
+            {
+                Id = 2, Name = "سارة أحمد", Initials = "سأ", Email = "sara@email.com", Phone = "+966 55 333 4444",
+                RegistrationDate = "3 مارس 2025", Status = "نشط", StatusClass = "badge-success",
+                TotalVisits = 15, AvgRating = 4.8, TotalSpent = "8,200",
+                Activity = new()
+                {
+                    new() { Date = "2026-07-02", Text = "قامت بتقييم زيارة عيادة القلب", Icon = "star" },
+                    new() { Date = "2026-06-28", Text = "قامت بحجز موعد في عيادة الجلدية", Icon = "calendar" },
+                    new() { Date = "2026-06-20", Text = "قامت بالتعليق على منشور العيادة", Icon = "comment" },
+                    new() { Date = "2026-06-15", Text = "قامت بتحديث الملف الشخصي", Icon = "edit" },
+                    new() { Date = "2026-06-10", Text = "تم إلغاء موعد - عيادة العظام", Icon = "cancel" },
+                }
+            },
+            3 => new MockUserOverview
+            {
+                Id = 3, Name = "خالد الزهراني", Initials = "خز", Email = "khalid@email.com", Phone = "+966 50 555 6666",
+                RegistrationDate = "20 يونيو 2025", Status = "نشط", StatusClass = "badge-success",
+                TotalVisits = 8, AvgRating = 3.9, TotalSpent = "3,600",
+                Activity = new()
+                {
+                    new() { Date = "2026-07-01", Text = "قام بحجز موعد في عيادة العظام", Icon = "calendar" },
+                    new() { Date = "2026-06-25", Text = "قام بتقييم زيارة عيادة الأعصاب", Icon = "star" },
+                    new() { Date = "2026-06-10", Text = "قام بتحديث الملف الشخصي", Icon = "edit" },
+                }
+            },
+            4 => new MockUserOverview
+            {
+                Id = 4, Name = "فاطمة الناصر", Initials = "فن", Email = "fatima@email.com", Phone = "+966 55 777 8888",
+                RegistrationDate = "1 أبريل 2026", Status = "نشط", StatusClass = "badge-success",
+                TotalVisits = 3, AvgRating = 5.0, TotalSpent = "600",
+                Activity = new()
+                {
+                    new() { Date = "2026-06-15", Text = "قامت بتقييم زيارة عيادة الأطفال", Icon = "star" },
+                    new() { Date = "2026-06-01", Text = "قامت بحجز أول موعد", Icon = "calendar" },
+                }
+            },
+            5 => new MockUserOverview
+            {
+                Id = 5, Name = "عبد الله السعيد", Initials = "عس", Email = "abdullah@email.com", Phone = "+966 50 999 0000",
+                RegistrationDate = "10 فبراير 2025", Status = "غير نشط", StatusClass = "badge-warning",
+                TotalVisits = 2, AvgRating = 3.0, TotalSpent = "400",
+                Activity = new()
+                {
+                    new() { Date = "2026-03-01", Text = "آخر زيارة - عيادة القلب", Icon = "calendar" },
+                    new() { Date = "2025-12-15", Text = "قام بتقييم زيارة عيادة القلب", Icon = "star" },
+                }
+            },
+            _ => new MockUserOverview
+            {
+                Id = 1, Name = "محمد عمر", Initials = "مع", Email = "mohamed@email.com", Phone = "+966 50 111 2222",
+                RegistrationDate = "15 يناير 2025", Status = "نشط", StatusClass = "badge-success",
+                TotalVisits = 24, AvgRating = 4.5, TotalSpent = "12,450",
+                Activity = new()
+                {
+                    new() { Date = "2026-07-03", Text = "قام بتقييم زيارة عيادة القلب", Icon = "star" },
+                    new() { Date = "2026-07-01", Text = "قام بحجز موعد في عيادة العظام", Icon = "calendar" },
+                    new() { Date = "2026-06-28", Text = "قام بالتعليق على منشور العيادة", Icon = "comment" },
+                    new() { Date = "2026-06-20", Text = "قام بإلغاء موعد - عيادة الجلدية", Icon = "cancel" },
+                    new() { Date = "2026-06-15", Text = "قام بتحديث الملف الشخصي", Icon = "edit" },
+                    new() { Date = "2026-06-10", Text = "تم تأكيد موعد في عيادة الأعصاب", Icon = "calendar" },
+                    new() { Date = "2026-06-05", Text = "قام بدفع فاتورة الاشتراك", Icon = "payment" },
+                }
+            },
+        };
+
+        public static List<MockUserVisit> GetUserVisits(int id) => id switch
+        {
+            2 => new()
+            {
+                new() { Id = 1, Clinic = "عيادة القلب", Doctor = "د. سارة أحمد", Date = "2026-07-02", Diagnosis = "فحص دوري للقلب", Notes = "النتائج مطمئنة", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 5, Comment = "تعامل رائع من الطبيب والاستقبال" },
+                new() { Id = 2, Clinic = "عيادة الجلدية", Doctor = "د. عمار السيد", Date = "2026-06-20", Diagnosis = "حساسية جلدية", Notes = "تم وصف كريم موضعي", DoctorBehavior = 5, ReceptionBehavior = 4, ClinicCleanliness = 5 },
+                new() { Id = 3, Clinic = "عيادة العيون", Doctor = "د. علي الناصر", Date = "2026-05-10", Diagnosis = "فحص نظر", Notes = "نظر سليم", DoctorBehavior = 4, ReceptionBehavior = 4, ClinicCleanliness = 5 },
+                new() { Id = 4, Clinic = "عيادة الأعصاب", Doctor = "د. عبد الله ناصر", Date = "2026-04-15", Diagnosis = "صداع نصفي", Notes = "تحسن بعد العلاج", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 5, Comment = "أطباء ممتازين" },
+                new() { Id = 5, Clinic = "عيادة العظام", Doctor = "د. خالد الزهراني", Date = "2026-03-05", Diagnosis = "آلام الركبة", Notes = "", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 4 },
+            },
+            3 => new()
+            {
+                new() { Id = 1, Clinic = "عيادة العظام", Doctor = "د. خالد الزهراني", Date = "2026-07-01", Diagnosis = "متابعة كسر", Notes = "التئام جيد", DoctorBehavior = 4, ReceptionBehavior = 3, ClinicCleanliness = 4, Comment = "الاستقبال كان بطيئًا" },
+                new() { Id = 2, Clinic = "عيادة الأعصاب", Doctor = "د. عبد الله ناصر", Date = "2026-06-25", Diagnosis = "تنميل الأطراف", Notes = "طلب فحوصات إضافية", DoctorBehavior = 3, ReceptionBehavior = 3, ClinicCleanliness = 4 },
+                new() { Id = 3, Clinic = "عيادة القلب", Doctor = "د. سارة أحمد", Date = "2026-05-20", Diagnosis = "فحص ضغط الدم", Notes = "الضغط مرتفع قليلاً", DoctorBehavior = 4, ReceptionBehavior = 4, ClinicCleanliness = 4 },
+            },
+            4 => new()
+            {
+                new() { Id = 1, Clinic = "عيادة الأطفال", Doctor = "د. أحمد علي", Date = "2026-06-15", Diagnosis = "متابعة نمو", Notes = "الطفل بصحة جيدة", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 5, Comment = "ممتاز جدًا" },
+                new() { Id = 2, Clinic = "عيادة القلب", Doctor = "د. سارة أحمد", Date = "2026-06-01", Diagnosis = "فحص أولي", Notes = "", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 5 },
+                new() { Id = 3, Clinic = "عيادة الجلدية", Doctor = "د. عمار السيد", Date = "2026-04-20", Diagnosis = "طفح جلدي", Notes = "تم وصف علاج", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 5 },
+            },
+            5 => new()
+            {
+                new() { Id = 1, Clinic = "عيادة القلب", Doctor = "د. سارة أحمد", Date = "2026-03-01", Diagnosis = "فحص قلب", Notes = "", DoctorBehavior = 3, ReceptionBehavior = 3, ClinicCleanliness = 3 },
+                new() { Id = 2, Clinic = "عيادة العظام", Doctor = "د. خالد الزهراني", Date = "2025-10-10", Diagnosis = "آلام الظهر", Notes = "تم تحويله للعلاج الطبيعي", DoctorBehavior = 3, ReceptionBehavior = 3, ClinicCleanliness = 3 },
+            },
+            _ => new()
+            {
+                new() { Id = 1, Clinic = "عيادة القلب", Doctor = "د. سارة أحمد", Date = "2026-07-03", Diagnosis = "فحص دوري للقلب", Notes = "نتائج سليمة", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 5, Comment = "تجربة ممتازة" },
+                new() { Id = 2, Clinic = "عيادة العظام", Doctor = "د. خالد الزهراني", Date = "2026-06-28", Diagnosis = "آلام الرقبة", Notes = "تم وصف مسكنات", DoctorBehavior = 4, ReceptionBehavior = 4, ClinicCleanliness = 4 },
+                new() { Id = 3, Clinic = "عيادة الجلدية", Doctor = "د. عمار السيد", Date = "2026-06-15", Diagnosis = "فحص شامة", Notes = "حميدة", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 5 },
+                new() { Id = 4, Clinic = "عيادة الأعصاب", Doctor = "د. عبد الله ناصر", Date = "2026-05-20", Diagnosis = "صداع", Notes = "إجهاد", DoctorBehavior = 4, ReceptionBehavior = 4, ClinicCleanliness = 4 },
+                new() { Id = 5, Clinic = "عيادة العيون", Doctor = "د. علي الناصر", Date = "2026-04-10", Diagnosis = "التهاب العين", Notes = "قطرات مضاد حيوي", DoctorBehavior = 5, ReceptionBehavior = 5, ClinicCleanliness = 4 },
+                new() { Id = 6, Clinic = "عيادة القلب", Doctor = "د. سارة أحمد", Date = "2026-03-15", Diagnosis = "متابعة ضغط الدم", Notes = "", DoctorBehavior = 4, ReceptionBehavior = 4, ClinicCleanliness = 4 },
+            },
+        };
+
+        public static List<MockTableRow> GetUserRequests(int id)
+        {
+            var baseRequests = new List<MockTableRow>
+            {
+                new() { Cells = new() { { "type", "حجز موعد" }, { "status", "مؤكد" }, { "statusClass", "badge-success" }, { "date", "2026-07-01" }, { "notes", "عيادة العظام - د. خالد الزهراني" } } },
+                new() { Cells = new() { { "type", "إلغاء موعد" }, { "status", "مكتمل" }, { "statusClass", "badge-info" }, { "date", "2026-06-20" }, { "notes", "عيادة الجلدية - تعارض مواعيد" } } },
+                new() { Cells = new() { { "type", "إعادة جدولة" }, { "status", "مؤكد" }, { "statusClass", "badge-success" }, { "date", "2026-06-10" }, { "notes", "تم تغيير الموعد من 15/6 إلى 20/6" } } },
+                new() { Cells = new() { { "type", "طلب تقرير طبي" }, { "status", "قيد المعالجة" }, { "statusClass", "badge-warning" }, { "date", "2026-06-05" }, { "notes", "تقرير فحص القلب" } } },
+                new() { Cells = new() { { "type", "شكوى" }, { "status", "تم الحل" }, { "statusClass", "badge-success" }, { "date", "2026-05-15" }, { "notes", "تأخر الموعد" } } },
+            };
+            return baseRequests;
+        }
+
+        public static List<MockPayment> GetUserPayments(int userId) => new()
+        {
+            new() { Id = 100, Code = "#P-010", Payer = "محمد عمر", Type = "موعد مريض", TypeClass = "badge-success", Amount = "200", Method = "Paymob - محفظة", Status = "ناجح", StatusClass = "badge-success", Date = "2026-07-03" },
+            new() { Id = 101, Code = "#P-009", Payer = "محمد عمر", Type = "موعد مريض", TypeClass = "badge-success", Amount = "200", Method = "Paymob - بطاقة", Status = "ناجح", StatusClass = "badge-success", Date = "2026-06-28" },
+            new() { Id = 102, Code = "#P-008", Payer = "محمد عمر", Type = "موعد مريض", TypeClass = "badge-success", Amount = "200", Method = "نقدي", Status = "ناجح", StatusClass = "badge-success", Date = "2026-06-15" },
+            new() { Id = 103, Code = "#P-007", Payer = "محمد عمر", Type = "خدمة إعلانية", TypeClass = "badge-danger", Amount = "500", Method = "Paymob - بطاقة", Status = "مسترد", StatusClass = "badge-info", Date = "2026-06-10" },
+            new() { Id = 104, Code = "#P-006", Payer = "محمد عمر", Type = "موعد مريض", TypeClass = "badge-success", Amount = "200", Method = "تحويل بنكي", Status = "معلق", StatusClass = "badge-warning", Date = "2026-06-05" },
+        };
+
+        // ========== Ads ==========
+        public static List<MockStat> GetAdStats() => new()
+        {
+            new() { Value = "6", Label = "إجمالي الإعلانات", IconColor = "primary", SvgPath = "M20 2.01L4 2v2h16V2.01zM4 22h16v-2H4v22zm-2-14h2v8H2V8zm18 0h2v8h-2V8zM9 6c-2.21 0-4 1.79-4 4 0 1.2.54 2.27 1.38 3H7v1c0 1.66 1.34 3 3 3s3-1.34 3-3v-1h.62c.84-.73 1.38-1.8 1.38-3 0-2.21-1.79-4-4-4z" },
+            new() { Value = "3", Label = "نشط حاليًا", IconColor = "green", SvgPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" },
+            new() { Value = "85,420", Label = "إجمالي مرات الظهور", IconColor = "blue", SvgPath = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" },
+            new() { Value = "1,280", Label = "إجمالي النقرات", IconColor = "amber", SvgPath = "M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" },
+        };
+
+        public static List<MockAd> GetAds() => new()
+        {
+            new() { Id = 1, Title = "عروض شهر يوليو - عيادة متكاملة", Type = "بانر إعلاني", TypeClass = "badge-info", Status = "نشط", StatusClass = "badge-success", StartDate = "2026-07-01", EndDate = "2026-07-31", SortOrder = 1, Gradient = "linear-gradient(135deg, #2F9CCA, #2385AF)", SvgPath = "M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z", ImageUrl = "", TargetUrl = "https://clinic.com/offers/july", Placement = "الصفحة الرئيسية - أعلى", Impressions = 45200, Clicks = 890, CostPerDay = "250", TotalBudget = "7,750", Notes = "إعلان ترويجي لجميع العيادات بمناسبة شهر يوليو.", Timeline = new() { new() { Date = "2026-07-01 00:00", Text = "تم تفعيل الإعلان", Marker = "success" }, new() { Date = "2026-06-28 14:00", Text = "تمت الموافقة على الإعلان", Marker = "success" }, new() { Date = "2026-06-25 10:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
+            new() { Id = 2, Title = "د. عمار السيد - استشاري جلدية", Type = "طبيب مميز", TypeClass = "badge-warning", Status = "نشط", StatusClass = "badge-success", StartDate = "2026-06-15", EndDate = "2026-07-15", SortOrder = 2, Gradient = "linear-gradient(135deg, #a78bfa, #7c3aed)", SvgPath = "M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z", LinkedEntityId = "2", LinkedEntityName = "د. عمار السيد", LinkedEntityDetail = "استشاري أمراض جلدية - 15 سنة خبرة", Placement = "صفحة الأطباء - المميزون", Impressions = 28400, Clicks = 320, CostPerDay = "180", TotalBudget = "5,400", Notes = "ترويج لطبيب مميز في قسم الجلدية.", Timeline = new() { new() { Date = "2026-06-15 00:00", Text = "تم تفعيل الإعلان", Marker = "success" }, new() { Date = "2026-06-12 11:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
+            new() { Id = 3, Title = "عيادة القلب - فريق متكامل", Type = "عيادة مميزة", TypeClass = "badge-success", Status = "نشط", StatusClass = "badge-success", StartDate = "2026-07-01", EndDate = "2026-09-30", SortOrder = 3, Gradient = "linear-gradient(135deg, #34d399, #059669)", SvgPath = "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z", LinkedEntityId = "3", LinkedEntityName = "عيادة القلب", LinkedEntityDetail = "فريق طبي متكامل - د. سارة أحمد و د. علي الناصر", Placement = "صفحة العيادات - المميزة", Impressions = 11820, Clicks = 70, CostPerDay = "300", TotalBudget = "27,000", Notes = "إعلان موسمي لعيادة القلب لمدة 3 أشهر.", Timeline = new() { new() { Date = "2026-07-01 00:00", Text = "تم تفعيل الإعلان", Marker = "success" }, new() { Date = "2026-06-28 15:00", Text = "تمت الموافقة على الإعلان", Marker = "success" }, new() { Date = "2026-06-25 09:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
+            new() { Id = 4, Title = "د. سارة أحمد - استشارية قلب", Type = "طبيب مميز", TypeClass = "badge-warning", Status = "مجدول", StatusClass = "badge-info", StartDate = "2026-07-10", EndDate = "2026-08-10", SortOrder = 4, Gradient = "linear-gradient(135deg, #f472b6, #ec4899)", SvgPath = "M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z", LinkedEntityId = "1", LinkedEntityName = "د. سارة أحمد", LinkedEntityDetail = "استشارية أمراض القلب - 10 سنة خبرة", Placement = "صفحة الأطباء - المميزون", Impressions = 0, Clicks = 0, CostPerDay = "200", TotalBudget = "6,200", Notes = "سيتم التفعيل تلقائيًا في 10 يوليو.", Timeline = new() { new() { Date = "2026-07-05 10:00", Text = "تم جدولة الإعلان", Marker = "info" }, new() { Date = "2026-07-01 14:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
+            new() { Id = 5, Title = "خصومات الصيف - عروض حصرية", Type = "بانر إعلاني", TypeClass = "badge-info", Status = "غير نشط", StatusClass = "badge-warning", StartDate = "2026-08-01", EndDate = "2026-08-31", SortOrder = 5, Gradient = "linear-gradient(135deg, #fb923c, #ea580c)", SvgPath = "M20 2.01L4 2v2h16V2.01zM4 22h16v-2H4v22zm-2-14h2v8H2V8zm18 0h2v8h-2V8zM9 6c-2.21 0-4 1.79-4 4 0 1.2.54 2.27 1.38 3H7v1c0 1.66 1.34 3 3 3s3-1.34 3-3v-1h.62c.84-.73 1.38-1.8 1.38-3 0-2.21-1.79-4-4-4z", ImageUrl = "", TargetUrl = "https://clinic.com/summer-offers", Placement = "الصفحة الرئيسية - أعلى", Impressions = 0, Clicks = 0, CostPerDay = "250", TotalBudget = "7,750", Notes = "إعلان صيفي - غير مفعل حاليًا، سينطلق في أغسطس.", Timeline = new() { new() { Date = "2026-07-03 16:00", Text = "تم إيقاف الإعلان", Marker = "warning" }, new() { Date = "2026-06-30 10:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
+            new() { Id = 6, Title = "مجمع عيادات السلام الطبي", Type = "عيادة مميزة", TypeClass = "badge-success", Status = "منتهي", StatusClass = "badge-danger", StartDate = "2026-04-01", EndDate = "2026-06-30", SortOrder = 6, Gradient = "linear-gradient(135deg, #14b8a6, #0d9488)", SvgPath = "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z", LinkedEntityId = "5", LinkedEntityName = "مجمع عيادات السلام الطبي", LinkedEntityDetail = "أكبر مجمع طبي في المنطقة - 15 عيادة", Placement = "صفحة العيادات - المميزة", Impressions = 72000, Clicks = 1450, CostPerDay = "400", TotalBudget = "36,000", Notes = "انتهت مدة الإعلان. يمكن تجديده.", Timeline = new() { new() { Date = "2026-06-30 23:59", Text = "انتهت صلاحية الإعلان", Marker = "danger" }, new() { Date = "2026-04-01 00:00", Text = "تم تفعيل الإعلان", Marker = "success" }, new() { Date = "2026-03-28 11:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
+        };
+
+        public static MockAd GetAdDetail(int id) => GetAds().FirstOrDefault(a => a.Id == id) ?? GetAds().First();
+    }
+
+    // ========== User Models ==========
+    public class MockUser
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string RegistrationDate { get; set; } = "";
+        public string Status { get; set; } = "";
+        public string StatusClass { get; set; } = "badge-success";
+        public int TotalVisits { get; set; }
+        public double AvgRating { get; set; }
+        public string TotalSpent { get; set; } = "";
+    }
+
+    public class MockUserOverview
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Initials { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string RegistrationDate { get; set; } = "";
+        public string Status { get; set; } = "";
+        public string StatusClass { get; set; } = "badge-success";
+        public int TotalVisits { get; set; }
+        public double AvgRating { get; set; }
+        public string TotalSpent { get; set; } = "";
+        public List<MockActivity> Activity { get; set; } = new();
+    }
+
+    public class MockActivity
+    {
+        public string Date { get; set; } = "";
+        public string Text { get; set; } = "";
+        public string Icon { get; set; } = "calendar";
+    }
+
+    public class MockUserVisit
+    {
+        public int Id { get; set; }
+        public string Clinic { get; set; } = "";
+        public string Doctor { get; set; } = "";
+        public string Date { get; set; } = "";
+        public string Diagnosis { get; set; } = "";
+        public string Notes { get; set; } = "";
+        public int DoctorBehavior { get; set; }
+        public int ReceptionBehavior { get; set; }
+        public int ClinicCleanliness { get; set; }
+        public double OverallRating => Math.Round((DoctorBehavior + ReceptionBehavior + ClinicCleanliness) / 3.0, 1);
+        public string Comment { get; set; } = "";
+    }
+
+    // ========== Ads Models ==========
+    public class MockAd
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string Type { get; set; } = "";
+        public string TypeClass { get; set; } = "badge-info";
+        public string Status { get; set; } = "";
+        public string StatusClass { get; set; } = "badge-success";
+        public string StartDate { get; set; } = "";
+        public string EndDate { get; set; } = "";
+        public int SortOrder { get; set; }
+        public string Gradient { get; set; } = "linear-gradient(135deg, #2F9CCA, #2385AF)";
+        public string SvgPath { get; set; } = "";
+        public string ImageUrl { get; set; } = "";
+        public string TargetUrl { get; set; } = "";
+        public string LinkedEntityId { get; set; } = "";
+        public string LinkedEntityName { get; set; } = "";
+        public string LinkedEntityDetail { get; set; } = "";
+        public string Placement { get; set; } = "";
+        public int Impressions { get; set; }
+        public int Clicks { get; set; }
+        public double CTR => Clicks > 0 ? Math.Round((double)Clicks / Impressions * 100, 2) : 0;
+        public string CostPerDay { get; set; } = "";
+        public string TotalBudget { get; set; } = "";
+        public string Notes { get; set; } = "";
+        public List<MockTimelineEntry> Timeline { get; set; } = new();
     }
 }
