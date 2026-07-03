@@ -1,0 +1,327 @@
+@{
+    ViewData["Title"] = "نظام الحجز الذكي والتذكيرات - Doctory";
+    Layout = "_DashboardLayout";
+}
+
+<style>
+    .nav-tabs .nav-link {
+        color: var(--text-muted);
+        border: none;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        padding: 12px 24px;
+        font-weight: 700;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .nav-tabs .nav-link:hover {
+        color: var(--primary-color);
+        border-bottom: 3px solid var(--border-color);
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--primary-color) !important;
+        border-bottom: 3px solid var(--primary-color) !important;
+        background-color: transparent !important;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">نظام الحجز الذكي وإدارة التذكيرات</h2>
+    <span style="font-size: 13px; color: var(--text-muted); background: #FFFFFF; border: 1px solid var(--border-color); padding: 5px 12px; border-radius: 5px;">
+        بوابة خادم البريد (SMTP): <strong style="color: #10b981;"><i class="bi bi-cloud-check-fill me-1"></i> متصل</strong>
+    </span>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs mb-4" id="appointmentTabs" role="tablist" style="border-bottom: 2px solid var(--border-color);">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-content" type="button" role="tab" aria-controls="calendar-content" aria-selected="true">
+            <i class="bi bi-calendar3 me-1"></i> جدول المواعيد والرزنامة
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="reminders-tab" data-bs-toggle="tab" data-bs-target="#reminders-content" type="button" role="tab" aria-controls="reminders-content" aria-selected="false">
+            <i class="bi bi-envelope-check me-1"></i> إعدادات تذكيرات البريد الإلكتروني
+        </button>
+    </li>
+</ul>
+
+<!-- Tabs Content -->
+<div class="tab-content" id="appointmentTabsContent">
+    
+    <!-- Tab 1: Calendar Content -->
+    <div class="tab-pane fade show active" id="calendar-content" role="tabpanel" aria-labelledby="calendar-tab">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 style="font-weight: 700; margin: 0; color: var(--text-dark);">مخطط المواعيد والعمليات</h4>
+            <button class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 8px 16px; border-radius: 5px; font-size: 13px;">
+                <i class="bi bi-calendar-plus me-1"></i> حجز موعد جديد
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="table-card" style="padding: 20px; margin-bottom: 24px;">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label" style="font-weight: 600; font-size: 13px;">تصفية حسب الطبيب</label>
+                    <select class="form-select auth-form-control" style="padding: 8px 12px; font-size: 13px;">
+                        <option value="">جميع الأطباء</option>
+                        <option value="1">د. سمير (القلب)</option>
+                        <option value="2">د. عمار (الجلدية)</option>
+                        <option value="3">د. عبد الله (الأعصاب)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" style="font-weight: 600; font-size: 13px;">تصفية حسب العيادة</label>
+                    <select class="form-select auth-form-control" style="padding: 8px 12px; font-size: 13px;">
+                        <option value="">جميع العيادات</option>
+                        <option value="cardio">عيادة القلب</option>
+                        <option value="derm">عيادة الجلدية</option>
+                        <option value="neuro">عيادة الأعصاب</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" style="font-weight: 600; font-size: 13px;">التاريخ</label>
+                    <input type="date" class="form-control auth-form-control" value="2026-07-03" style="padding: 8px 12px; font-size: 13px;" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Calendar View -->
+            <div class="col-lg-8">
+                <div class="table-card" style="padding: 24px;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 style="font-weight: 700; margin: 0;">يوليو 2026</h4>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" style="border: 1px solid var(--border-color); font-size: 13px; padding: 5px 12px;">اليوم</button>
+                            <button class="btn btn-sm btn-outline-secondary" style="border: 1px solid var(--border-color); font-size: 13px; padding: 5px 12px;">أسبوع</button>
+                            <button class="btn btn-sm btn-outline-secondary" style="border: 1px solid var(--border-color); font-size: 13px; padding: 5px 12px; background-color: var(--primary-color); color: white;">شهر</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Mock Calendar Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; text-align: center;">
+                        <!-- Header Days -->
+                        <div style="background-color: var(--bg-color); padding: 10px; font-weight: 700; font-size: 12px; border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color);">السبت</div>
+                        <div style="background-color: var(--bg-color); padding: 10px; font-weight: 700; font-size: 12px; border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color);">الأحد</div>
+                        <div style="background-color: var(--bg-color); padding: 10px; font-weight: 700; font-size: 12px; border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color);">الإثنين</div>
+                        <div style="background-color: var(--bg-color); padding: 10px; font-weight: 700; font-size: 12px; border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color);">الثلاثاء</div>
+                        <div style="background-color: var(--bg-color); padding: 10px; font-weight: 700; font-size: 12px; border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color);">الأربعاء</div>
+                        <div style="background-color: var(--bg-color); padding: 10px; font-weight: 700; font-size: 12px; border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color);">الخميس</div>
+                        <div style="background-color: var(--bg-color); padding: 10px; font-weight: 700; font-size: 12px; border-bottom: 1px solid var(--border-color);">الجمعة</div>
+
+                        <!-- Calendar Cells -->
+                        @for (int i = 28; i <= 31; i++)
+                        {
+                            <div style="padding: 15px 5px; font-size: 13px; color: #b9bec7; border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color); min-height: 90px; text-align: right; padding-right: 10px;">@i</div>
+                        }
+                        @for (int i = 1; i <= 31; i++)
+                        {
+                            var isToday = i == 3;
+                            var borderLeft = (i + 4) % 7 == 0 ? "" : "border-left: 1px solid var(--border-color);";
+                            <div style="padding: 15px 5px; font-size: 13px; border-bottom: 1px solid var(--border-color); @borderLeft min-height: 90px; text-align: right; padding-right: 10px; background-color: @(isToday ? "rgba(74, 144, 226, 0.05)" : "transparent"); position: relative;">
+                                <span style="font-weight: @(isToday ? "700" : "400"); color: @(isToday ? "var(--primary-color)" : "inherit");">@i</span>
+                                
+                                @if (i == 3)
+                                {
+                                    <div style="background-color: var(--primary-color); color: white; font-size: 10px; border-radius: 3px; padding: 2px 4px; margin-top: 5px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;" title="مريض: عزير - 10:00 ص">
+                                        <i class="bi bi-person me-1"></i> عزير (القلب)
+                                    </div>
+                                    <div style="background-color: #fbbf24; color: white; font-size: 10px; border-radius: 3px; padding: 2px 4px; margin-top: 3px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;" title="مريض: حارس - 11:30 ص">
+                                        <i class="bi bi-person me-1"></i> حارس (الأعصاب)
+                                    </div>
+                                }
+                                @if (i == 5)
+                                {
+                                    <div style="background-color: #34d399; color: white; font-size: 10px; border-radius: 3px; padding: 2px 4px; margin-top: 5px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;">
+                                        <i class="bi bi-check-circle me-1"></i> موعد مؤكد (4)
+                                    </div>
+                                }
+                            </div>
+                        }
+                        @for (int i = 1; i <= 3; i++)
+                        {
+                            var borderLeft = (i + 3) % 7 == 0 ? "" : "border-left: 1px solid var(--border-color);";
+                            <div style="padding: 15px 5px; font-size: 13px; color: #b9bec7; @borderLeft min-height: 90px; text-align: right; padding-right: 10px;">@i</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drag & Drop Side Panel / Quick Details -->
+            <div class="col-lg-4">
+                <div class="table-card" style="padding: 24px; margin-bottom: 24px;">
+                    <h4 style="font-weight: 700; margin-bottom: 15px;">
+                        <i class="bi bi-hourglass-split text-warning me-1"></i> طلبات الحجز المعلقة
+                    </h4>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; cursor: grab; background: #fafafa;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong style="font-size: 14px;">سهام خالد</strong>
+                                <span style="font-size: 11px; color: var(--primary-color); font-weight: 700; background: rgba(74, 144, 226, 0.1); padding: 2px 6px; border-radius: 4px;">جلدية</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">التاريخ المفضل: الأحد القادم (صباحاً)</p>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 11px; padding: 3px 8px;">قبول</button>
+                                <button class="btn btn-sm btn-outline-danger" style="font-size: 11px; padding: 3px 8px; border: 1px solid #ef4444; color: #ef4444;">رفض</button>
+                            </div>
+                        </div>
+
+                        <div style="border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; cursor: grab; background: #fafafa;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong style="font-size: 14px;">رائد يوسف</strong>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: 700; background: rgba(239, 68, 68, 0.1); padding: 2px 6px; border-radius: 4px;">عظام</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">التاريخ المفضل: غداً 10:00 ص</p>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 11px; padding: 3px 8px;">قبول</button>
+                                <button class="btn btn-sm btn-outline-danger" style="font-size: 11px; padding: 3px 8px; border: 1px solid #ef4444; color: #ef4444;">رفض</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-card" style="padding: 24px;">
+                    <h4 style="font-weight: 700; margin-bottom: 15px;">التذكيرات التلقائية المرسلة</h4>
+                    <div style="display: flex; align-items: center; gap: 10px; background: rgba(52, 211, 153, 0.1); border: 1px solid #34d399; border-radius: 5px; padding: 12px; font-size: 13px;">
+                        <i class="bi bi-chat-left-dots-fill text-success fs-4"></i>
+                        <span style="color: #065f46; font-weight: 600;">تم إرسال 18 رسالة تذكيرية بنجاح لمرضى الغد.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: Email Reminders Content -->
+    <div class="tab-pane fade" id="reminders-content" role="tabpanel" aria-labelledby="reminders-tab">
+        <div class="row g-4">
+            <!-- Configuration & Editor (Left Column) -->
+            <div class="col-lg-7">
+                <div class="table-card" style="padding: 24px; margin-bottom: 24px;">
+                    <h4 style="font-weight: 700; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                        <i class="bi bi-gear-fill text-primary me-1"></i> إعدادات إرسال تذكيرات البريد
+                    </h4>
+                    
+                    <form onsubmit="event.preventDefault(); alert('تم حفظ إعدادات البريد بنجاح!');">
+                        <!-- Enable toggle -->
+                        <div class="form-check form-switch mb-4 d-flex align-items-center gap-3" style="padding-right: 0;">
+                            <input class="form-check-input" type="checkbox" id="enableEmailReminders" checked style="width: 45px; height: 22px; cursor: pointer; float: right; margin-left: 10px;" />
+                            <label class="form-check-label" for="enableEmailReminders" style="font-weight: 700; font-size: 14px; cursor: pointer; color: var(--text-dark);">
+                                تفعيل التذكير التلقائي بالبريد الإلكتروني للمرضى
+                            </label>
+                        </div>
+
+                        <!-- Timing Select -->
+                        <div class="mb-4">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--text-dark);">وقت إرسال رسالة التذكير قبل الموعد</label>
+                            <select class="form-select auth-form-control" style="padding: 8px 12px; font-size: 13px;">
+                                <option value="24">قبل الموعد بـ 24 ساعة (موصى به)</option>
+                                <option value="48">قبل الموعد بـ 48 ساعة</option>
+                                <option value="12">قبل الموعد بـ 12 ساعة</option>
+                                <option value="2">قبل الموعد بـ ساعتين</option>
+                            </select>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="mb-4">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--text-dark);">عنوان رسالة البريد (Subject Line)</label>
+                            <input type="text" class="form-control auth-form-control" value="تذكير بموعدك الطبي لدى منصة {ClinicName}" style="padding: 8px 12px; font-size: 13px;" required />
+                        </div>
+
+                        <!-- Template Body -->
+                        <div class="mb-4">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; color: var(--text-dark);">نص الرسالة الإلكترونية (Email Body Template)</label>
+                            <textarea class="form-control auth-form-control" rows="6" style="font-size: 13px; padding: 12px; line-height: 1.7;" required>مرحباً {PatientName}،
+
+نود تذكيرك بموعدك الطبي القادم:
+- العيادة: {ClinicName}
+- الطبيب المعالج: {DoctorName}
+- التاريخ والوقت: {AppointmentTime}
+
+يرجى الحضور قبل الموعد بـ 10 دقائق. في حال رغبتكم في التأجيل أو الإلغاء، يرجى تسجيل الدخول لحسابكم أو التواصل معنا.
+
+نتمنى لكم دوام الصحة والعافية،
+إدارة عيادات {ClinicName}</textarea>
+                        </div>
+
+                        <!-- Placeholders Helper -->
+                        <div style="background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 24px;">
+                            <strong style="font-size: 12px; color: var(--text-dark); display: block; margin-bottom: 8px;">الرموز المتاحة للاستخدام في القالب (النسخ واللصق):</strong>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span style="background: #FFFFFF; border: 1px solid var(--border-color); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-family: monospace;">{PatientName}</span>
+                                <span style="background: #FFFFFF; border: 1px solid var(--border-color); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-family: monospace;">{ClinicName}</span>
+                                <span style="background: #FFFFFF; border: 1px solid var(--border-color); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-family: monospace;">{DoctorName}</span>
+                                <span style="background: #FFFFFF; border: 1px solid var(--border-color); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-family: monospace;">{AppointmentTime}</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 25px; border-radius: 5px;">
+                            <i class="bi bi-save me-1"></i> حفظ القالب والإعدادات
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Stats & Sent Logs (Right Column) -->
+            <div class="col-lg-5">
+                <!-- Stats Card -->
+                <div class="table-card" style="padding: 24px; margin-bottom: 24px;">
+                    <h4 style="font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                        <i class="bi bi-bar-chart-fill text-success me-1"></i> إحصائيات حملة البريد الشهرية
+                    </h4>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">
+                        <span style="font-size: 13px; color: var(--text-muted);"><i class="bi bi-send me-1"></i> إجمالي البريد المرسل</span>
+                        <strong style="font-size: 14px;">1,842 رسالة</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">
+                        <span style="font-size: 13px; color: var(--text-muted);"><i class="bi bi-check-circle me-1"></i> نسبة تسليم البريد الناجحة</span>
+                        <strong style="font-size: 14px; color: #10b981;">99.1%</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">
+                        <span style="font-size: 13px; color: var(--text-muted);"><i class="bi bi-envelope-open me-1"></i> نسبة فتح البريد (Open Rate)</span>
+                        <strong style="font-size: 14px; color: var(--primary-color);">72.4%</strong>
+                    </div>
+                </div>
+
+                <!-- Recent Logs Card -->
+                <div class="table-card" style="padding: 24px;">
+                    <h4 style="font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                        <i class="bi bi-clock-history me-1"></i> سجل الإرسال الأخير
+                    </h4>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong style="font-size: 13px;">عزير بن محمد</strong>
+                                <span style="font-size: 11px; color: #10b981; font-weight: 600;"><i class="bi bi-envelope-open-fill me-1"></i> تم الفتح</span>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted); display: block;">uzair@example.com</span>
+                            <span style="font-size: 11px; color: var(--text-muted);"><i class="bi bi-clock"></i> منذ 20 دقيقة</span>
+                        </div>
+
+                        <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong style="font-size: 13px;">حارس عبد الكريم</strong>
+                                <span style="font-size: 11px; color: var(--primary-color); font-weight: 600;"><i class="bi bi-envelope-fill me-1"></i> تم الإرسال</span>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted); display: block;">haris@example.com</span>
+                            <span style="font-size: 11px; color: var(--text-muted);"><i class="bi bi-clock"></i> منذ ساعتين</span>
+                        </div>
+
+                        <div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong style="font-size: 13px;">سارة أحمد</strong>
+                                <span style="font-size: 11px; color: #ef4444; font-weight: 600;"><i class="bi bi-envelope-slash-fill me-1"></i> فشل الإرسال</span>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted); display: block;">sara@example.com</span>
+                            <span style="font-size: 11px; color: var(--text-muted);"><i class="bi bi-clock"></i> منذ 4 ساعات</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

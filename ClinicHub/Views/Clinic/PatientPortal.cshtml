@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "بوابة المرضى - Doctory";
+    Layout = "_DashboardLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">بوابة المرضى وإدارتها (Patient Portal Admin)</h2>
+    <span style="font-size: 13px; color: var(--text-muted); background: #FFFFFF; border: 1px solid var(--border-color); padding: 5px 12px; border-radius: 5px;">
+        الحالة العامة للمنصة: <strong style="color: #10b981;"><i class="bi bi-check-circle-fill me-1"></i> نشط</strong>
+    </span>
+</div>
+
+<div class="row g-4">
+    <!-- Chats & Communications -->
+    <div class="col-lg-7">
+        <div class="table-card" style="padding: 24px;">
+            <h4 style="font-weight: 700; margin-bottom: 20px;">الرسائل والدردشات النشطة مع المرضى</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <strong>سليمان أحمد (مريض)</strong>
+                        <span style="font-size: 11px; color: var(--text-muted);"><i class="bi bi-clock me-1"></i> منذ 10 دقائق</span>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">"السلام عليكم دكتور، هل يمكنني الاستفسار عن مواعيد عيادة القلب للغد؟"</p>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" class="form-control auth-form-control" placeholder="اكتب ردك هنا..." style="padding: 5px 10px; font-size: 12px;" />
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 12px; padding: 5px 15px;">
+                            <i class="bi bi-send me-1"></i> إرسال
+                        </button>
+                    </div>
+                </div>
+
+                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <strong>هدى عمر (مريض)</strong>
+                        <span style="font-size: 11px; color: var(--text-muted);"><i class="bi bi-clock me-1"></i> منذ ساعتين</span>
+                    </div>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">"لقد تم إرسال ملف التحاليل الخاصة بي عبر البوابة، أرجو تأكيد الاستلام."</p>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" class="form-control auth-form-control" placeholder="اكتب ردك هنا..." style="padding: 5px 10px; font-size: 12px;" />
+                        <button class="btn btn-sm" style="background-color: var(--primary-color); color: white; font-size: 12px; padding: 5px 15px;">
+                            <i class="bi bi-send me-1"></i> إرسال
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Portal Settings & Stats -->
+    <div class="col-lg-5">
+        <div class="table-card" style="padding: 24px; margin-bottom: 24px;">
+            <h4 style="font-weight: 700; margin-bottom: 15px;">إحصائيات استخدام البوابة</h4>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">
+                <span style="font-size: 13px; color: var(--text-muted);"><i class="bi bi-people me-1"></i> المرضى النشطين على التطبيق</span>
+                <strong style="font-size: 14px;">1,240 مريض</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">
+                <span style="font-size: 13px; color: var(--text-muted);"><i class="bi bi-file-earmark-arrow-up me-1"></i> التحاليل المرفوعة الكترونياً</span>
+                <strong style="font-size: 14px;">348 ملف</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">
+                <span style="font-size: 13px; color: var(--text-muted);"><i class="bi bi-star me-1"></i> التقييمات الإيجابية للخدمة</span>
+                <strong style="font-size: 14px; color: #10b981;">94.2%</strong>
+            </div>
+        </div>
+
+        <div class="table-card" style="padding: 24px;">
+            <h4 style="font-weight: 700; margin-bottom: 15px;">تفعيل خدمات البوابة للمرضى</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" checked style="width: 16px; height: 16px;" />
+                    <span>تفعيل عرض الروشتات الطبية الإلكترونية</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" checked style="width: 16px; height: 16px;" />
+                    <span>تفعيل المحادثات المباشرة مع العيادات</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer;">
+                    <input type="checkbox" checked style="width: 16px; height: 16px;" />
+                    <span>السماح للمريض بتحميل نتائج المعامل والأشعة</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
