@@ -7,7 +7,7 @@
         <!-- Logo -->
         <div class="auth-logo-section">
             <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="8" fill="#2F9CCA"/>
+                <rect width="32" height="32" rx="8" fill="var(--primary-color)"/>
                 <path d="M9 16C9 12.134 12.134 9 16 9C19.866 9 23 12.134 23 16C23 19.866 19.866 23 16 23V16H9Z" fill="white"/>
                 <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
             </svg>
@@ -48,8 +48,8 @@
         </form>
 
         <div class="auth-footer-links">
-            <a asp-controller="Account" asp-action="ForgotPassword" class="auth-link">نسيت كلمة المرور؟</a>
-            <a asp-controller="Home" asp-action="Index" class="auth-link">العودة للرئيسية</a>
+            <a href="@HomeRoutes.Account.ForgotPassword()" class="auth-link">نسيت كلمة المرور؟</a>
+            <a href="@HomeRoutes.Pages.Index()" class="auth-link">العودة للرئيسية</a>
         </div>
     </div>
 </div>

@@ -1,0 +1,60 @@
+@{
+    ViewData["Title"] = "تحقق من الرمز - Doctory";
+    var email = TempData["Email"]?.ToString() ?? "البريد الإلكتروني";
+    var code = TempData["VerificationCode"]?.ToString();
+    // Keep TempData so it survives the form post if validation fails
+    TempData.Keep("Email");
+    TempData.Keep("VerificationCode");
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <!-- Logo -->
+        <div class="auth-logo-section">
+            <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="8" fill="var(--primary-color)"/>
+                <path d="M9 16C9 12.134 12.134 9 16 9C19.866 9 23 12.134 23 16C23 19.866 19.866 23 16 23V16H9Z" fill="white"/>
+                <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
+            </svg>
+            <span style="font-size: 16px; font-weight: 700; color: var(--text-dark);">Doctory</span>
+        </div>
+
+        <h3 class="auth-title">رمز التحقق</h3>
+        
+        <p style="font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 20px; line-height: 1.6;">
+            تم إرسال رمز التحقق إلى: <br />
+            <strong style="color: var(--text-dark);">@email</strong>
+        </p>
+
+        @if (!string.IsNullOrEmpty(code))
+        {
+            <div style="background-color: rgba(47, 156, 202, 0.1); border: 1px dashed var(--primary-color); border-radius: 5px; padding: 10px; margin-bottom: 20px; text-align: center;">
+                <span style="font-size: 13px; color: var(--primary-hover); font-weight: 600;">
+                    رمز التحقق التجريبي الخاص بك هو: <strong style="font-size: 16px; letter-spacing: 2px;">@code</strong>
+                </span>
+            </div>
+        }
+
+        <form action="@HomeRoutes.Account.VerifyCode()" method="post">
+            <div class="text-danger" asp-validation-summary="ModelOnly" style="font-size: 14px; margin-bottom: 15px; text-align: center;"></div>
+            
+            <!-- Hidden input to preserve email -->
+            <input type="hidden" name="email" value="@email" />
+
+            <!-- Code Input -->
+            <div class="auth-input-group">
+                <label class="auth-form-label" for="verificationCode" style="text-align: center; display: block;">أدخل رمز التحقق المكون من 6 أرقام</label>
+                <input class="auth-form-control" type="text" id="verificationCode" name="verificationCode" placeholder="••••••" 
+                       required maxlength="6" pattern="\d{6}" autocomplete="off" 
+                       style="text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: 700; padding: 8px;" />
+            </div>
+
+            <button type="submit" class="auth-btn-primary">تحقق من الرمز</button>
+        </form>
+
+        <div class="auth-footer-links">
+            <a href="@HomeRoutes.Account.ForgotPassword()" class="auth-link">تغيير البريد الإلكتروني</a>
+            <a href="@HomeRoutes.Account.Login()" class="auth-link">العودة لتسجيل الدخول</a>
+        </div>
+    </div>
+</div>
