@@ -426,8 +426,8 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="form-label">الموقع</label>
-                            <input type="text" class="form-input" value="@clinic.Location" />
+                            <label class="form-label">الموقع (الغرفة)</label>
+                            <input type="text" class="form-input" id="editClinicLocation" value="@clinic.Location" />
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -441,6 +441,19 @@
                             <label class="form-label">مدير العيادة</label>
                             <input type="text" class="form-input" value="@clinic.ManagerName" />
                         </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الموقع على الخريطة</label>
+                    <input type="hidden" id="editClinicLat" value="@clinic.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+                    <input type="hidden" id="editClinicLng" value="@clinic.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+                    <div id="editClinicMap" style="height: 280px; border-radius: var(--radius-md); border: 1px solid var(--clr-border); margin-bottom: 8px;"></div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="editMyLocationBtn" style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+                            موقعي الحالي
+                        </button>
+                        <span class="text-muted" style="font-size: var(--fs-sm);" id="editCoordsDisplay">@clinic.Latitude.ToString("F4", System.Globalization.CultureInfo.InvariantCulture), @clinic.Longitude.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)</span>
                     </div>
                 </div>
                 <div class="form-group">
@@ -909,6 +922,49 @@
                 document.getElementById('acdTax').value = '';
                 document.getElementById('acdDegree').value = '';
                 document.getElementById('acdSpecialty').value = '';
+            });
+
+            // Map for Edit Clinic settings
+            var editLat = parseFloat(document.getElementById('editClinicLat').value) || 31.0409;
+            var editLng = parseFloat(document.getElementById('editClinicLng').value) || 31.3785;
+            var editMap = L.map('editClinicMap').setView([editLat, editLng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap',
+                maxZoom: 18
+            }).addTo(editMap);
+
+            var editMarker = L.marker([editLat, editLng], { draggable: false }).addTo(editMap);
+
+            function updateEditCoords(lat, lng) {
+                document.getElementById('editClinicLat').value = lat.toFixed(6);
+                document.getElementById('editClinicLng').value = lng.toFixed(6);
+                document.getElementById('editCoordsDisplay').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+            }
+
+            editMap.on('click', function(e) {
+                editMarker.setLatLng(e.latlng);
+                updateEditCoords(e.latlng.lat, e.latlng.lng);
+            });
+
+            document.getElementById('editMyLocationBtn').addEventListener('click', function() {
+                if (!navigator.geolocation) {
+                    alert('الموقع غير مدعوم في متصفحك.');
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    var lat = pos.coords.latitude;
+                    var lng = pos.coords.longitude;
+                    editMap.setView([lat, lng], 15);
+                    editMarker.setLatLng([lat, lng]);
+                    updateEditCoords(lat, lng);
+                }, function() {
+                    alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
+                });
+            });
+
+            // Fix map when settings tab is shown
+            document.querySelector('a[data-bs-toggle="tab"][href="#settings"]').addEventListener('shown.bs.tab', function() {
+                setTimeout(function() { editMap.invalidateSize(); }, 100);
             });
         })();
     </script>

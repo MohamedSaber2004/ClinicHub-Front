@@ -54,6 +54,19 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label class="form-label">الموقع على الخريطة</label>
+                        <input type="hidden" id="registerLat" name="Latitude" value="31.0409" />
+                        <input type="hidden" id="registerLng" name="Longitude" value="31.3785" />
+                        <div id="registerClinicMap" style="height: 300px; border-radius: var(--radius-md); border: 1px solid var(--clr-border); margin-bottom: 8px;"></div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="registerMyLocationBtn" style="display: inline-flex; align-items: center; gap: 4px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+                                موقعي الحالي
+                            </button>
+                            <span class="text-muted" style="font-size: var(--fs-sm);" id="registerCoordsDisplay">31.0409, 31.3785</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="register-form-section">
@@ -153,6 +166,42 @@
                     previewCurrency.textContent = plan.Currency || '';
                     preview.style.display = 'block';
                 }
+            });
+
+            // Map for Clinic Registration
+            var regMap = L.map('registerClinicMap').setView([31.0409, 31.3785], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap',
+                maxZoom: 18
+            }).addTo(regMap);
+
+            var regMarker = L.marker([31.0409, 31.3785], { draggable: false }).addTo(regMap);
+
+            function updateRegCoords(lat, lng) {
+                document.getElementById('registerLat').value = lat.toFixed(6);
+                document.getElementById('registerLng').value = lng.toFixed(6);
+                document.getElementById('registerCoordsDisplay').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+            }
+
+            regMap.on('click', function(e) {
+                regMarker.setLatLng(e.latlng);
+                updateRegCoords(e.latlng.lat, e.latlng.lng);
+            });
+
+            document.getElementById('registerMyLocationBtn').addEventListener('click', function() {
+                if (!navigator.geolocation) {
+                    alert('الموقع غير مدعوم في متصفحك.');
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    var lat = pos.coords.latitude;
+                    var lng = pos.coords.longitude;
+                    regMap.setView([lat, lng], 15);
+                    regMarker.setLatLng([lat, lng]);
+                    updateRegCoords(lat, lng);
+                }, function() {
+                    alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
+                });
             });
         })();
     </script>

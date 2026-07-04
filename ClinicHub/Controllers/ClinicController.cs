@@ -1,3 +1,4 @@
+using ClinicHub.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicHub.Controllers
@@ -36,6 +37,12 @@ namespace ClinicHub.Controllers
 
         public IActionResult Staff()
         {
+            return View();
+        }
+
+        public IActionResult Settings()
+        {
+            ViewBag.Clinic = MockData.GetClinicById(1);
             return View();
         }
     }

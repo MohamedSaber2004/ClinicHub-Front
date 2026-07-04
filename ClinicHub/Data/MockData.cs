@@ -84,6 +84,8 @@ namespace ClinicHub.Data
         public string Email { get; set; } = "";
         public string Phone { get; set; } = "";
         public string Address { get; set; } = "";
+        public double Latitude { get; set; } = 31.0409;
+        public double Longitude { get; set; } = 31.3785;
         public string ResponsibleDoctor { get; set; } = "";
         public string LicenseNumber { get; set; } = "";
         public int PackageId { get; set; }
@@ -636,11 +638,11 @@ namespace ClinicHub.Data
         // ========== Clinics ==========
         public static List<MockClinic> GetClinics() => new()
         {
-            new() { Id = 1, Name = "مركز القلب التخصصي", Specialty = "القلب والأوعية الدموية", Specializations = new() { "القلب والأوعية الدموية", "جراحة القلب", "قسطرة القلب" }, Description = "مركز متخصص في تشخيص وعلاج أمراض القلب والشرايين، يضم أحدث الأجهزة الطبية وفريقاً من أطباء القلب المتميزين.", ResponsibleDoctor = "د. سارة أحمد", ManagerName = "أ. محمد عبد الرحمن", Location = "الطابق الثاني - غرفة 201", Phone = "+966 11 234 5678", ImageUrl = "", AvgRating = 4.5, RatingsCount = 28, IsActive = true },
-            new() { Id = 2, Name = "مركز الأعصاب والعمود الفقري", Specialty = "الأمراض العصبية", Specializations = new() { "الأمراض العصبية", "جراحة المخ والأعصاب", "العلاج الطبيعي" }, Description = "مركز رائد في تشخيص وعلاج اضطرابات الجهاز العصبي وجراحات العمود الفقري المتقدمة.", ResponsibleDoctor = "د. عبد الله ناصر", ManagerName = "د. هشام فؤاد", Location = "الطابق الثالث - غرفة 305", Phone = "+966 11 345 6789", ImageUrl = "", AvgRating = 4.2, RatingsCount = 19, IsActive = true },
-            new() { Id = 3, Name = "عيادة العظام والعلاج الطبيعي", Specialty = "جراحة العظام", Specializations = new() { "جراحة العظام", "العلاج الطبيعي", "طب الرياضة" }, Description = "عيادة متكاملة لجراحة العظام والمفاصل وإصابات الرياضة مع أحدث تقنيات العلاج الطبيعي.", ResponsibleDoctor = "د. خالد الزهراني", ManagerName = "د. خالد الزهراني", Location = "الطابق الأول - غرفة 104", Phone = "+966 11 456 7890", ImageUrl = "", AvgRating = 4.8, RatingsCount = 42, IsActive = true },
-            new() { Id = 4, Name = "عيادة الجلدية والتجميل", Specialty = "الأمراض الجلدية", Specializations = new() { "الأمراض الجلدية", "جراحة التجميل", "الليزر والعناية بالبشرة" }, Description = "عيادة متخصصة في الأمراض الجلدية وعلاجات التجميل بالليزر مع أحدث التقنيات العالمية.", ResponsibleDoctor = "د. عمار السيد", ManagerName = "د. عمار السيد", Location = "الطابق الثاني - غرفة 210", Phone = "+966 11 567 8901", ImageUrl = "", AvgRating = 4.6, RatingsCount = 35, IsActive = true },
-            new() { Id = 5, Name = "عيادة الأطفال", Specialty = "طب الأطفال", Specializations = new() { "طب الأطفال", "حديثي الولادة" }, Description = "عيادة متخصصة في رعاية الأطفال من حديثي الولادة حتى سن المراهقة مع متابعة دقيقة للنمو والتطور.", ResponsibleDoctor = "—", ManagerName = "—", Location = "الطابق الرابع - غرفة 402", Phone = "+966 11 678 9012", ImageUrl = "", AvgRating = 3.8, RatingsCount = 7, IsActive = false },
+            new() { Id = 1, Name = "مركز القلب التخصصي", Specialty = "القلب والأوعية الدموية", Specializations = new() { "القلب والأوعية الدموية", "جراحة القلب", "قسطرة القلب" }, Description = "مركز متخصص في تشخيص وعلاج أمراض القلب والشرايين، يضم أحدث الأجهزة الطبية وفريقاً من أطباء القلب المتميزين.", ResponsibleDoctor = "د. سارة أحمد", ManagerName = "أ. محمد عبد الرحمن", Location = "الطابق الثاني - غرفة 201", Latitude = 31.0435, Longitude = 31.3752, Phone = "+966 11 234 5678", ImageUrl = "", AvgRating = 4.5, RatingsCount = 28, IsActive = true },
+            new() { Id = 2, Name = "مركز الأعصاب والعمود الفقري", Specialty = "الأمراض العصبية", Specializations = new() { "الأمراض العصبية", "جراحة المخ والأعصاب", "العلاج الطبيعي" }, Description = "مركز رائد في تشخيص وعلاج اضطرابات الجهاز العصبي وجراحات العمود الفقري المتقدمة.", ResponsibleDoctor = "د. عبد الله ناصر", ManagerName = "د. هشام فؤاد", Location = "الطابق الثالث - غرفة 305", Latitude = 31.0382, Longitude = 31.3801, Phone = "+966 11 345 6789", ImageUrl = "", AvgRating = 4.2, RatingsCount = 19, IsActive = true },
+            new() { Id = 3, Name = "عيادة العظام والعلاج الطبيعي", Specialty = "جراحة العظام", Specializations = new() { "جراحة العظام", "العلاج الطبيعي", "طب الرياضة" }, Description = "عيادة متكاملة لجراحة العظام والمفاصل وإصابات الرياضة مع أحدث تقنيات العلاج الطبيعي.", ResponsibleDoctor = "د. خالد الزهراني", ManagerName = "د. خالد الزهراني", Location = "الطابق الأول - غرفة 104", Latitude = 31.0420, Longitude = 31.3820, Phone = "+966 11 456 7890", ImageUrl = "", AvgRating = 4.8, RatingsCount = 42, IsActive = true },
+            new() { Id = 4, Name = "عيادة الجلدية والتجميل", Specialty = "الأمراض الجلدية", Specializations = new() { "الأمراض الجلدية", "جراحة التجميل", "الليزر والعناية بالبشرة" }, Description = "عيادة متخصصة في الأمراض الجلدية وعلاجات التجميل بالليزر مع أحدث التقنيات العالمية.", ResponsibleDoctor = "د. عمار السيد", ManagerName = "د. عمار السيد", Location = "الطابق الثاني - غرفة 210", Latitude = 31.0395, Longitude = 31.3760, Phone = "+966 11 567 8901", ImageUrl = "", AvgRating = 4.6, RatingsCount = 35, IsActive = true },
+            new() { Id = 5, Name = "عيادة الأطفال", Specialty = "طب الأطفال", Specializations = new() { "طب الأطفال", "حديثي الولادة" }, Description = "عيادة متخصصة في رعاية الأطفال من حديثي الولادة حتى سن المراهقة مع متابعة دقيقة للنمو والتطور.", ResponsibleDoctor = "—", ManagerName = "—", Location = "الطابق الرابع - غرفة 402", Latitude = 31.0418, Longitude = 31.3798, Phone = "+966 11 678 9012", ImageUrl = "", AvgRating = 3.8, RatingsCount = 7, IsActive = false },
         };
 
         public static MockClinic? GetClinicById(int id) => GetClinics().FirstOrDefault(c => c.Id == id);
@@ -924,6 +926,8 @@ namespace ClinicHub.Data
         public string ResponsibleDoctor { get; set; } = "";
         public string ManagerName { get; set; } = "";
         public string Location { get; set; } = "";
+        public double Latitude { get; set; } = 31.0409;
+        public double Longitude { get; set; } = 31.3785;
         public string Phone { get; set; } = "";
         public string ImageUrl { get; set; } = "";
         public double AvgRating { get; set; }

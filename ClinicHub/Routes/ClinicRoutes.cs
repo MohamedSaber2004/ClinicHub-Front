@@ -13,6 +13,7 @@ namespace ClinicHub.Routes
             public static string Inventory() => $"{Base}/Inventory";
             public static string PatientPortal() => $"{Base}/PatientPortal";
             public static string Staff() => $"{Base}/Staff";
+            public static string Settings() => $"{Base}/Settings";
         }
     }
 }
