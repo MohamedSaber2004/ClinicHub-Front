@@ -34,54 +34,75 @@
                         var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
                         bool IsActive(string ctrl, string? action = null) =>
                             currentController == ctrl && (action == null || currentAction == action);
+                        var _user = ViewBag.CurrentUser as CurrentUserContext;
                     }
-                    <a class="sidebar-item @(IsActive("Clinic", "Index") ? "active" : "")" href="@ClinicRoutes.Pages.Index()">
-                        <i class="bi bi-hospital" style="font-size: 1.1rem; margin-left: 10px;"></i>
-                        <span>لوحة تشغيل العيادات</span>
-                    </a>
+                    @if (_user?.Has(Permission.ViewClinicDashboard) == true)
+                    {
+                        <a class="sidebar-item @(IsActive("Clinic", "Index") ? "active" : "")" href="@ClinicRoutes.Pages.Index()">
+                            <i class="bi bi-hospital" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                            <span>لوحة تشغيل العيادات</span>
+                        </a>
+                    }
                     
-                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الخدمات التشغيلية</div>
+                    @if (_user?.Has(Permission.ManageAppointments) == true || _user?.Has(Permission.ManageMedicalRecords) == true || _user?.Has(Permission.ManageBilling) == true || _user?.Has(Permission.ManageInventory) == true || _user?.Has(Permission.ManageClinicStaff) == true)
+                    {
+                        <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الخدمات التشغيلية</div>
+                    }
 
-                    <a class="sidebar-item @(IsActive("Clinic", "Appointments") ? "active" : "")" href="@ClinicRoutes.Pages.Appointments()" style="padding-right: 20px;">
-                        <i class="bi bi-calendar3" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>نظام الحجز الذكي</span>
-                    </a>
-                    <a class="sidebar-item @(IsActive("Clinic", "MedicalRecords") ? "active" : "")" href="@ClinicRoutes.Pages.MedicalRecords()" style="padding-right: 20px;">
-                        <i class="bi bi-folder2-open" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>السجل الطبي الإلكتروني</span>
-                    </a>
-                    <a class="sidebar-item @(IsActive("Clinic", "Billing") ? "active" : "")" href="@ClinicRoutes.Pages.Billing()" style="padding-right: 20px;">
-                        <i class="bi bi-credit-card" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>الفواتير والمالية</span>
-                    </a>
-                    <a class="sidebar-item @(IsActive("Clinic", "Inventory") ? "active" : "")" href="@ClinicRoutes.Pages.Inventory()" style="padding-right: 20px;">
-                        <i class="bi bi-box-seam" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>إدارة المخزون</span>
-                    </a>
-                    @* <a class="sidebar-item @(IsActive("Clinic", "PatientPortal") ? "active" : "")" href="@ClinicRoutes.Pages.PatientPortal()" style="padding-right: 20px;">
-                        <i class="bi bi-people" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>بوابة المرضى</span>
-                    </a> *@
-                    <a class="sidebar-item @(IsActive("Clinic", "Staff") ? "active" : "")" href="@ClinicRoutes.Pages.Staff()" style="padding-right: 20px;">
-                        <i class="bi bi-person-badge" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>إدارة الموظفين</span>
-                    </a>
-                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الإعدادات</div>
-                    <a class="sidebar-item @(IsActive("Clinic", "Settings") ? "active" : "")" href="@ClinicRoutes.Pages.Settings()" style="padding-right: 20px;">
-                        <i class="bi bi-gear" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
-                        <span>إعدادات العيادة</span>
-                    </a>
+                    @if (_user?.Has(Permission.ManageAppointments) == true)
+                    {
+                        <a class="sidebar-item @(IsActive("Clinic", "Appointments") ? "active" : "")" href="@ClinicRoutes.Pages.Appointments()" style="padding-right: 20px;">
+                            <i class="bi bi-calendar3" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                            <span>نظام الحجز الذكي</span>
+                        </a>
+                    }
+                    @if (_user?.Has(Permission.ManageMedicalRecords) == true)
+                    {
+                        <a class="sidebar-item @(IsActive("Clinic", "MedicalRecords") ? "active" : "")" href="@ClinicRoutes.Pages.MedicalRecords()" style="padding-right: 20px;">
+                            <i class="bi bi-folder2-open" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                            <span>السجل الطبي الإلكتروني</span>
+                        </a>
+                    }
+                    @if (_user?.Has(Permission.ManageBilling) == true)
+                    {
+                        <a class="sidebar-item @(IsActive("Clinic", "Billing") ? "active" : "")" href="@ClinicRoutes.Pages.Billing()" style="padding-right: 20px;">
+                            <i class="bi bi-credit-card" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                            <span>الفواتير والمالية</span>
+                        </a>
+                    }
+                    @if (_user?.Has(Permission.ManageInventory) == true)
+                    {
+                        <a class="sidebar-item @(IsActive("Clinic", "Inventory") ? "active" : "")" href="@ClinicRoutes.Pages.Inventory()" style="padding-right: 20px;">
+                            <i class="bi bi-box-seam" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                            <span>إدارة المخزون</span>
+                        </a>
+                    }
+                    @if (_user?.Has(Permission.ManageClinicStaff) == true)
+                    {
+                        <a class="sidebar-item @(IsActive("Clinic", "Staff") ? "active" : "")" href="@ClinicRoutes.Pages.Staff()" style="padding-right: 20px;">
+                            <i class="bi bi-person-badge" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                            <span>إدارة الموظفين</span>
+                        </a>
+                    }
+                    @if (_user?.Has(Permission.ManageClinicSettings) == true)
+                    {
+                        <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الإعدادات</div>
+                        <a class="sidebar-item @(IsActive("Clinic", "Settings") ? "active" : "")" href="@ClinicRoutes.Pages.Settings()" style="padding-right: 20px;">
+                            <i class="bi bi-gear" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
+                            <span>إعدادات العيادة</span>
+                        </a>
+                    }
                 </div>
             </nav>
             <div class="sidebar-bottom">
                 <hr style="width: 100%; border: none; border-top: 1px solid var(--clr-border); margin: 0; padding: 0;" />
                 <a class="sidebar-profile" style="cursor: default;">
                     <div class="sidebar-profile-avatar">
-                        <span>ع</span>
+                        <span>@(_user?.Role switch { UserRole.ClinicOwner => "م", UserRole.ClinicManager => "م", UserRole.Doctor => "ط", UserRole.ClinicStaff => "م", _ => "ع" })</span>
                     </div>
                     <div class="sidebar-profile-info">
-                        <span class="sidebar-profile-name">عيادة الرحمة</span>
-                        <span class="sidebar-profile-role">إدارة العيادة</span>
+                        <span class="sidebar-profile-name">@(_user?.Role == UserRole.ClinicOwner ? "عيادة الرحمة" : "عيادة")</span>
+                        <span class="sidebar-profile-role">@(_user?.Role switch { UserRole.ClinicOwner => "إدارة العيادة", UserRole.ClinicManager => "مدير العيادة", UserRole.Doctor => "طبيب", UserRole.ClinicStaff => "طاقم طبي", _ => "إدارة العيادة" })</span>
                     </div>
                 </a>
                 <a class="sidebar-item" href="@HomeRoutes.Pages.Index()">
@@ -97,10 +118,9 @@
             <header class="top-header">
                 <div class="header-user" style="cursor: default;">
                     <div class="user-info">
-                        <span class="user-name">طاقم الإدارة الطبية</span>
-                        <span class="user-role">مدير العيادات</span>
+                        <span class="user-name">@(_user?.Role switch { UserRole.ClinicOwner => "مدير العيادة", UserRole.ClinicManager => "مدير العيادة", UserRole.Doctor => "طبيب", UserRole.ClinicStaff => "طاقم طبي", _ => "طاقم الإدارة الطبية" })</span>
+                        <span class="user-role">@(_user?.Role switch { UserRole.ClinicOwner => "مالك عيادة", UserRole.ClinicManager => "مدير عيادة", UserRole.Doctor => "دكتور", UserRole.ClinicStaff => "موظف", _ => "مدير العيادات" })</span>
                     </div>
-                    <!-- Mock Admin Profile Image -->
                     <svg class="user-avatar" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
                         <circle cx="18" cy="14" r="6" fill="#66748C"/>

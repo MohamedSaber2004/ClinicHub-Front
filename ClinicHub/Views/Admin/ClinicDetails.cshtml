@@ -326,7 +326,7 @@
                             <tbody>
                                 @foreach (var s in staff)
                                 {
-                                    var roleLabel = s.Role switch { "Reception" => "استقبال", "Cleaner" => "عامل نظافة", "Helper" => "مساعد", "Nurse" => "ممرض", _ => s.Role };
+                                    var roleLabel = s.Role switch { ClinicStaffRole.Reception => "استقبال", ClinicStaffRole.Cleaner => "عامل نظافة", ClinicStaffRole.Helper => "مساعد", ClinicStaffRole.Nurse => "ممرض", _ => "" };
                                     <tr>
                                         <td class="text-md-medium">@s.Name</td>
                                         <td>@roleLabel</td>

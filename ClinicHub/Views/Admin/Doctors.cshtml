@@ -95,16 +95,16 @@
                             @{
                                 var typeLabel = d.DoctorType switch
                                 {
-                                    "Freelance" => "مستقل",
-                                    "OwnClinic" => "عيادة خاصة",
-                                    "InCenter" => "يعمل في مركز",
-                                    _ => d.DoctorType
+                                    DoctorEmploymentType.Freelance => "مستقل",
+                                    DoctorEmploymentType.OwnClinic => "عيادة خاصة",
+                                    DoctorEmploymentType.InCenter => "يعمل في مركز",
+                                    _ => ""
                                 };
                                 var typeClass = d.DoctorType switch
                                 {
-                                    "Freelance" => "badge badge-warning",
-                                    "OwnClinic" => "badge badge-success",
-                                    "InCenter" => "badge badge-info",
+                                    DoctorEmploymentType.Freelance => "badge badge-warning",
+                                    DoctorEmploymentType.OwnClinic => "badge badge-success",
+                                    DoctorEmploymentType.InCenter => "badge badge-info",
                                     _ => "badge"
                                 };
                             }

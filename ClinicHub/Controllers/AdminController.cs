@@ -5,6 +5,21 @@ namespace ClinicHub.Controllers
 {
     public class AdminController : Controller
     {
+        public AdminController()
+        {
+            // TODO: Remove hardcoded role — temporary for development testing
+            if (CurrentUserContext.Current == null)
+            {
+                CurrentUserContext.Current = new CurrentUserContext
+                {
+                    Id = 0,
+                    Role = UserRole.SystemAdmin,
+                    Permissions = RolePermissions.For(UserRole.SystemAdmin)
+                };
+            }
+            ViewBag.CurrentUser = CurrentUserContext.Current;
+        }
+
         public IActionResult Index()
         {
             ViewBag.Stats = MockData.GetDashboardStats();
