@@ -153,9 +153,18 @@
 
         <!-- ======== DOCTORS TAB ======== -->
         <div class="tab-pane fade" id="docs" role="tabpanel">
+            <div class="detail-card" style="margin-bottom:var(--space-4)">
+                <div class="detail-section-header">
+                    <h5>الأطباء (@doctors.Count)</h5>
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addClinicDoctorModal">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        إضافة طبيب
+                    </button>
+                </div>
+            </div>
             @if (!doctors.Any())
             {
-                <div class="empty-state"><p>لا يوجد أطباء في هذه العيادة.</p></div>
+                <div class="empty-state"><p>لا يوجد أطباء في هذه العيادة بعد.</p></div>
             }
             else
             {
@@ -472,6 +481,191 @@
     </div>
 </div>
 
+<!-- Add Clinic Doctor Modal (adapted 4-tab form) -->
+<div class="modal fade" id="addClinicDoctorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إضافة طبيب إلى العيادة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <ul class="nav nav-tabs doctor-tabs" id="addClinicDocTabs" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" id="acd-basic-tab" data-bs-toggle="tab" data-bs-target="#acd-basic" type="button" role="tab">المعلومات الأساسية</button></li>
+                    <li class="nav-item"><button class="nav-link" id="acd-prof-tab" data-bs-toggle="tab" data-bs-target="#acd-prof" type="button" role="tab">البيانات المهنية</button></li>
+                    <li class="nav-item"><button class="nav-link" id="acd-place-tab" data-bs-toggle="tab" data-bs-target="#acd-place" type="button" role="tab">النوع والمكان</button></li>
+                    <li class="nav-item"><button class="nav-link" id="acd-docs-tab" data-bs-toggle="tab" data-bs-target="#acd-docs" type="button" role="tab">المستندات</button></li>
+                </ul>
+                <div class="tab-content">
+                    <!-- Tab 1: Basic Info -->
+                    <div class="tab-pane fade show active" id="acd-basic" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">الاسم الكامل</label>
+                                    <input type="text" id="acdName" class="form-input" placeholder="مثال: د. عمار السيد" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">رقم الهاتف</label>
+                                    <input type="text" id="acdPhone" class="form-input" placeholder="+966 5X XXX XXXX" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">البريد الإلكتروني</label>
+                                    <input type="email" id="acdEmail" class="form-input" placeholder="doctor@clinic.com" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">الصورة الشخصية</label>
+                                    <input type="file" class="form-input" accept="image/*" />
+                                    <p class="form-hint">JPG أو PNG</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-toggle">
+                                <input type="checkbox" id="acdActive" checked />
+                                <span class="toggle-track"></span>
+                                <span class="toggle-label">الطبيب متاح ونشط</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Tab 2: Professional Data -->
+                    <div class="tab-pane fade" id="acd-prof" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">رقم عضوية النقابة</label>
+                                    <input type="text" id="acdSyndicate" class="form-input" placeholder="مثال: 123456" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">السجل الضريبي</label>
+                                    <input type="text" id="acdTax" class="form-input" placeholder="مثال: 789-123-456" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">الدرجة العلمية</label>
+                                    <select id="acdDegree" class="form-select">
+                                        <option value="">اختر الدرجة</option>
+                                        <option value="طبيب">طبيب</option>
+                                        <option value="أخصائي">أخصائي</option>
+                                        <option value="استشاري">استشاري</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">التخصص</label>
+                                    <select id="acdSpecialty" class="form-select">
+                                        <option value="">اختر التخصص</option>
+                                        @foreach (var s in clinic.Specializations)
+                                        {
+                                            <option value="@s" selected="@(s == clinic.Specialty ? "selected" : null)">@s</option>
+                                        }
+                                        <option>النساء والولادة</option>
+                                        <option>طب العيون</option>
+                                        <option>القلب والأوعية الدموية</option>
+                                        <option>جراحة العظام</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mt-2">
+                            <button type="button" class="btn btn-outline-primary" onclick="alert('التحقق من رقم النقابة: (محاكاة)\n✓ رقم عضوية صحيح ومعتمد.');">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                                التحقق من النقابة
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Tab 3: Type & Placement (clinic-context adapted) -->
+                    <div class="tab-pane fade" id="acd-place" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">نوع الطبيب في هذه العيادة</label>
+                                    <div class="doctor-type-options">
+                                        <label class="type-radio-card">
+                                            <input type="radio" name="acdDoctorType" value="InCenter" checked />
+                                            <span class="type-card-content">
+                                                <span class="type-card-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg></span>
+                                                <span class="type-card-title">يعمل في هذا المركز</span>
+                                                <span class="type-card-desc">طبيب تابع للعيادة - @clinic.Name</span>
+                                            </span>
+                                        </label>
+                                        <label class="type-radio-card">
+                                            <input type="radio" name="acdDoctorType" value="OwnClinic" />
+                                            <span class="type-card-content">
+                                                <span class="type-card-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/></svg></span>
+                                                <span class="type-card-title">يمتلك هذه العيادة</span>
+                                                <span class="type-card-desc">الطبيب هو المالك والمسؤول عن @clinic.Name</span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-card" style="background:var(--clr-table-header)">
+                            <div class="dcc-field">
+                                <span class="dcc-label">العيادة / المركز</span>
+                                <span class="dcc-value" style="font-size:var(--fs-lg)">@clinic.Name — @clinic.Specialty</span>
+                                <p class="form-hint">سيتم ربط الطبيب بهذه العيادة مباشرة</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tab 4: Documents -->
+                    <div class="tab-pane fade" id="acd-docs" role="tabpanel">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">بطاقة النقابة</label>
+                                    <input type="file" class="form-input" accept="image/*,.pdf" />
+                                    <p class="form-hint">صورة بطاقة عضوية النقابة</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">شهادة التخرج</label>
+                                    <input type="file" class="form-input" accept="image/*,.pdf" />
+                                    <p class="form-hint">صورة شهادة التخرج</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">رخصة مزاولة المهنة</label>
+                                    <input type="file" class="form-input" accept="image/*,.pdf" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">مستندات أخرى</label>
+                                    <input type="file" class="form-input" accept="image/*,.pdf" multiple />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="saveClinicDoctorBtn" data-bs-dismiss="modal">إضافة الطبيب</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Doctor Config Modal -->
 <div class="modal fade" id="doctorConfigModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -702,6 +896,20 @@
 
             document.getElementById('saveCstaffBtn').addEventListener('click', function() { alert('تم حفظ الموظف.'); });
             document.getElementById('confirmDeleteCstaff').addEventListener('click', function() { alert('تم حذف الموظف.'); });
+
+            // Add Clinic Doctor save
+            document.getElementById('saveClinicDoctorBtn').addEventListener('click', function() {
+                var name = document.getElementById('acdName').value.trim();
+                if (!name) { alert('يرجى إدخال اسم الطبيب.'); return; }
+                alert('✓ تم إضافة "' + name + '" إلى العيادة بنجاح.\nسيظهر الطبيب في قائمة الأطباء مع الإعدادات الافتراضية.');
+                document.getElementById('acdName').value = '';
+                document.getElementById('acdPhone').value = '';
+                document.getElementById('acdEmail').value = '';
+                document.getElementById('acdSyndicate').value = '';
+                document.getElementById('acdTax').value = '';
+                document.getElementById('acdDegree').value = '';
+                document.getElementById('acdSpecialty').value = '';
+            });
         })();
     </script>
 }
