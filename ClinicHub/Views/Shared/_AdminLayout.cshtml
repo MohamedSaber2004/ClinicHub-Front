@@ -85,16 +85,6 @@
                 </div>
             </nav>
             <div class="sidebar-bottom">
-                <hr style="width: 100%; border: none; border-top: 1px solid var(--clr-border); margin: 0; padding: 0;" />
-                <a class="sidebar-profile" href="@AdminRoutes.Pages.Profile()">
-                    <div class="sidebar-profile-avatar">
-                        <span>أ</span>
-                    </div>
-                    <div class="sidebar-profile-info">
-                        <span class="sidebar-profile-name">أحمد</span>
-                        <span class="sidebar-profile-role">المشرف العام</span>
-                    </div>
-                </a>
                 <a class="sidebar-item" href="@HomeRoutes.Pages.Index()">
                     <i class="bi bi-house-door" style="font-size: 1.1rem; margin-left: 10px;"></i>
                     <span>موقع العيادة الرئيسي</span>
@@ -106,25 +96,15 @@
         <div class="main-content">
             <!-- Top Header -->
             <header class="top-header">
-                <div class="header-search">
-                    <select class="dept-dropdown" onchange="location.hash = this.value">
-                        <option value="">اختر القسم</option>
-                        <option value="cardio">قسم القلب</option>
-                        <option value="neuro">قسم الأعصاب</option>
-                        <option value="derm">قسم الجلدية</option>
-                    </select>
-                </div>
+                <div style="flex:1"></div>
                 <a class="header-user" href="@AdminRoutes.Pages.Profile()">
                     <div class="user-info">
-                        <span class="user-name">المشرف العام</span>
-                        <span class="user-role">مدير النظام</span>
+                        <span class="user-name">أحمد</span>
+                        <span class="user-role">المشرف العام</span>
                     </div>
-                    <!-- Mock Admin Profile Image -->
-                    <svg class="user-avatar" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
-                        <circle cx="18" cy="14" r="6" fill="#66748C"/>
-                        <path d="M6 30C6 24.4772 11.3726 21 18 21C24.6274 21 30 24.4772 30 30" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
-                    </svg>
+                    <div class="sidebar-profile-avatar" style="width:36px;height:36px;">
+                        <span>أ</span>
+                    </div>
                 </a>
             </header>
 
