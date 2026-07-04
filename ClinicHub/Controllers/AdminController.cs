@@ -67,7 +67,16 @@ namespace ClinicHub.Controllers
         [Route("Admin/Subscriptions")]
         public IActionResult Subscriptions()
         {
+            ViewBag.SubscriptionPlans = MockData.GetAllSubscriptionPlans();
             return View("Subscriptions");
+        }
+
+        [Route("Admin/PendingClinics")]
+        public IActionResult PendingClinics()
+        {
+            ViewBag.Registrations = MockData.GetAllClinicRegistrations();
+            ViewBag.PendingCount = MockData.GetPendingClinicRegistrationsCount();
+            return View("PendingClinics");
         }
 
         public IActionResult Support()

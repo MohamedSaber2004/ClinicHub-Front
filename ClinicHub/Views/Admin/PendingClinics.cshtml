@@ -1,0 +1,330 @@
+@{
+    ViewData["Title"] = "طلبات تسجيل العيادات";
+    Layout = "_AdminLayout";
+    var registrations = ViewBag.Registrations as List<MockClinicRegistration> ?? new();
+    var pendingCount = ViewBag.PendingCount as int? ?? 0;
+}
+
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z" fill="currentColor"/>
+            </svg>
+        </span>
+        طلبات تسجيل العيادات
+        @if (pendingCount > 0)
+        {
+            <span class="badge badge-warning" style="margin-right: var(--space-3); font-size: var(--fs-sm);">@pendingCount طلب معلق</span>
+        }
+    </h2>
+</div>
+
+<!-- Status Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value">@registrations.Count</div>
+            <div class="stat-label">إجمالي الطلبات</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--clr-warning);">@registrations.Count(r => r.Status == "pending")</div>
+            <div class="stat-label">بانتظار المراجعة</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--clr-success);">@registrations.Count(r => r.Status == "approved")</div>
+            <div class="stat-label">تم الاعتماد</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--clr-danger);">@registrations.Count(r => r.Status == "rejected")</div>
+            <div class="stat-label">مرفوض</div>
+        </div>
+    </div>
+</div>
+
+<!-- Registrations Table -->
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم العيادة</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الباقة</th>
+                    <th>تاريخ التقديم</th>
+                    <th>المستندات</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (registrations.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-4);">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--clr-text-secondary)"/>
+                            </svg>
+                            <p style="font-size: var(--fs-lg); margin-bottom: 0;">لا توجد طلبات تسجيل</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var reg in registrations.OrderByDescending(r => r.Status == "pending").ThenByDescending(r => r.SubmittedAt))
+                    {
+                        <tr>
+                            <td class="text-md-medium">@reg.Id</td>
+                            <td>
+                                <div class="text-md-medium">@reg.ClinicName</div>
+                                <div class="text-muted" style="font-size: var(--fs-sm);">@reg.ResponsibleDoctor</div>
+                            </td>
+                            <td class="text-md">@reg.Email</td>
+                            <td><span class="badge badge-info">@reg.PackageName</span></td>
+                            <td class="text-md">@reg.SubmittedAt</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary view-docs-btn" data-id="@reg.Id" title="عرض المستندات">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+                                    </svg>
+                                    @reg.Documents.Count ملف
+                                </button>
+                            </td>
+                            <td>
+                                @if (reg.Status == "pending")
+                                {
+                                    <span class="badge badge-warning">بانتظار المراجعة</span>
+                                }
+                                else if (reg.Status == "approved")
+                                {
+                                    <span class="badge badge-success">تم الاعتماد</span>
+                                }
+                                else if (reg.Status == "rejected")
+                                {
+                                    <span class="badge badge-danger">مرفوض</span>
+                                }
+                                else if (reg.Status == "paid")
+                                {
+                                    <span class="badge badge-success" style="background: var(--clr-primary);">مفعل</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-icon btn-review" title="مراجعة الطلب"
+                                            data-id="@reg.Id"
+                                            data-clinic="@reg.ClinicName"
+                                            data-email="@reg.Email"
+                                            data-phone="@reg.Phone"
+                                            data-address="@reg.Address"
+                                            data-doctor="@reg.ResponsibleDoctor"
+                                            data-license="@reg.LicenseNumber"
+                                            data-package="@reg.PackageName"
+                                            data-status="@reg.Status"
+                                            data-adminnotes="@reg.AdminNotes"
+                                            data-docs='@System.Text.Json.JsonSerializer.Serialize(reg.Documents)'>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                        </svg>
+                                    </button>
+                                    @if (reg.Status == "pending")
+                                    {
+                                        <button class="btn-icon btn-approve" title="اعتماد الطلب" data-id="@reg.Id" data-clinic="@reg.ClinicName">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/>
+                                            </svg>
+                                        </button>
+                                        <button class="btn-icon btn-reject" title="رفض الطلب" data-id="@reg.Id" data-clinic="@reg.ClinicName">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="var(--clr-danger)"/>
+                                            </svg>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Review Detail Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">تفاصيل طلب التسجيل</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="review-detail-grid">
+                    <div class="review-detail-item">
+                        <span class="review-detail-label">اسم العيادة</span>
+                        <span class="review-detail-value" id="reviewClinic"></span>
+                    </div>
+                    <div class="review-detail-item">
+                        <span class="review-detail-label">الطبيب المسؤول</span>
+                        <span class="review-detail-value" id="reviewDoctor"></span>
+                    </div>
+                    <div class="review-detail-item">
+                        <span class="review-detail-label">البريد الإلكتروني</span>
+                        <span class="review-detail-value" id="reviewEmail"></span>
+                    </div>
+                    <div class="review-detail-item">
+                        <span class="review-detail-label">رقم الهاتف</span>
+                        <span class="review-detail-value" id="reviewPhone"></span>
+                    </div>
+                    <div class="review-detail-item">
+                        <span class="review-detail-label">العنوان</span>
+                        <span class="review-detail-value" id="reviewAddress"></span>
+                    </div>
+                    <div class="review-detail-item">
+                        <span class="review-detail-label">رقم الترخيص</span>
+                        <span class="review-detail-value" id="reviewLicense"></span>
+                    </div>
+                    <div class="review-detail-item">
+                        <span class="review-detail-label">الباقة المطلوبة</span>
+                        <span class="review-detail-value" id="reviewPackage"></span>
+                    </div>
+                    <div class="review-detail-item">
+                        <span class="review-detail-label">الحالة</span>
+                        <span class="review-detail-value" id="reviewStatus"></span>
+                    </div>
+                </div>
+                <div class="review-docs-section">
+                    <h5>المستندات المرفقة</h5>
+                    <div id="reviewDocsList" class="review-docs-list"></div>
+                </div>
+                <div class="review-notes-section" id="reviewNotesSection" style="display: none;">
+                    <h5>ملاحظات المشرف</h5>
+                    <p id="reviewAdminNotes" class="review-admin-notes"></p>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve/Reject Modal -->
+<div class="modal fade" id="actionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body-custom text-center" style="padding: var(--space-7);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-4);" id="actionModalIcon">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="var(--clr-success)"/>
+                </svg>
+                <h5 style="margin-bottom: var(--space-2);" id="actionModalTitle">اعتماد الطلب</h5>
+                <p style="color: var(--clr-text-secondary); margin-bottom: 0;" id="actionModalMessage">هل أنت متأكد من اعتماد هذا الطلب؟</p>
+                <div class="form-group" style="margin-top: var(--space-4); text-align: right;">
+                    <label class="form-label" for="actionAdminNotes">ملاحظات (اختياري)</label>
+                    <textarea id="actionAdminNotes" class="form-textarea" rows="3" placeholder="أي ملاحظات للمتقدم..."></textarea>
+                </div>
+                <input type="hidden" id="actionPlanId" value="" />
+                <input type="hidden" id="actionType" value="" />
+            </div>
+            <div class="modal-footer-custom" style="justify-content: center; gap: var(--space-3);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-success" id="confirmActionBtn">تأكيد</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+            var actionModal = new bootstrap.Modal(document.getElementById('actionModal'));
+
+            // View review detail
+            document.querySelectorAll('.btn-review').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('reviewClinic').textContent = btn.getAttribute('data-clinic');
+                    document.getElementById('reviewDoctor').textContent = btn.getAttribute('data-doctor');
+                    document.getElementById('reviewEmail').textContent = btn.getAttribute('data-email');
+                    document.getElementById('reviewPhone').textContent = btn.getAttribute('data-phone');
+                    document.getElementById('reviewAddress').textContent = btn.getAttribute('data-address');
+                    document.getElementById('reviewLicense').textContent = btn.getAttribute('data-license');
+                    document.getElementById('reviewPackage').textContent = btn.getAttribute('data-package');
+
+                    var status = btn.getAttribute('data-status');
+                    var statusLabels = { pending: 'بانتظار المراجعة', approved: 'تم الاعتماد', rejected: 'مرفوض', paid: 'مفعل' };
+                    var statusClasses = { pending: 'badge-warning', approved: 'badge-success', rejected: 'badge-danger', paid: 'badge-success' };
+                    document.getElementById('reviewStatus').innerHTML = '<span class="badge ' + (statusClasses[status] || 'badge-warning') + '">' + (statusLabels[status] || status) + '</span>';
+
+                    // Docs
+                    var docsList = document.getElementById('reviewDocsList');
+                    var docs = JSON.parse(btn.getAttribute('data-docs') || '[]');
+                    docsList.innerHTML = docs.map(function(doc) {
+                        var icon = doc.endsWith('.pdf') ? '📄' : '🖼️';
+                        return '<div class="review-doc-item"><span>' + icon + ' ' + doc + '</span></div>';
+                    }).join('');
+
+                    // Admin notes
+                    var notes = btn.getAttribute('data-adminnotes');
+                    var notesSection = document.getElementById('reviewNotesSection');
+                    if (notes) {
+                        document.getElementById('reviewAdminNotes').textContent = notes;
+                        notesSection.style.display = 'block';
+                    } else {
+                        notesSection.style.display = 'none';
+                    }
+
+                    reviewModal.show();
+                });
+            });
+
+            // View docs tooltip
+            document.querySelectorAll('.view-docs-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var reviewBtn = btn.closest('tr').querySelector('.btn-review');
+                    if (reviewBtn) reviewBtn.click();
+                });
+            });
+
+            // Approve button
+            document.querySelectorAll('.btn-approve').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('actionPlanId').value = btn.getAttribute('data-id');
+                    document.getElementById('actionType').value = 'approve';
+                    document.getElementById('actionModalTitle').textContent = 'اعتماد طلب التسجيل';
+                    document.getElementById('actionModalMessage').textContent = 'هل أنت متأكد من اعتماد طلب "' + btn.getAttribute('data-clinic') + '"؟';
+                    document.getElementById('actionModalIcon').innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="var(--clr-success)"/>';
+                    document.getElementById('confirmActionBtn').className = 'btn btn-success';
+                    document.getElementById('confirmActionBtn').textContent = 'اعتماد';
+                    document.getElementById('actionAdminNotes').value = '';
+                    actionModal.show();
+                });
+            });
+
+            // Reject button
+            document.querySelectorAll('.btn-reject').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('actionPlanId').value = btn.getAttribute('data-id');
+                    document.getElementById('actionType').value = 'reject';
+                    document.getElementById('actionModalTitle').textContent = 'رفض طلب التسجيل';
+                    document.getElementById('actionModalMessage').textContent = 'هل أنت متأكد من رفض طلب "' + btn.getAttribute('data-clinic') + '"؟';
+                    document.getElementById('actionModalIcon').innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="var(--clr-danger)"/>';
+                    document.getElementById('confirmActionBtn').className = 'btn btn-danger';
+                    document.getElementById('confirmActionBtn').textContent = 'رفض';
+                    actionModal.show();
+                });
+            });
+
+            // Confirm action
+            document.getElementById('confirmActionBtn').addEventListener('click', function() {
+                actionModal.hide();
+            });
+        })();
+    </script>
+}

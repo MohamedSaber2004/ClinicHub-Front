@@ -9,6 +9,9 @@ namespace ClinicHub.Routes
             public static string Index() => "/";
             public static string Privacy() => $"{Base}/Privacy";
             public static string About() => $"{Base}/About";
+            public static string Subscriptions() => $"{Base}/Subscriptions";
+            public static string ClinicRegister() => $"{Base}/ClinicRegister";
+            public static string RegistrationSubmitted() => $"{Base}/RegistrationSubmitted";
         }
 
         public static class Account

@@ -1,0 +1,157 @@
+@{
+    ViewData["Title"] = "تم تقديم الطلب - Doctory";
+}
+
+<section class="submitted-section">
+    <div class="container">
+        <div class="submitted-card">
+            <div class="submitted-icon-circle">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
+                </svg>
+            </div>
+            <h1 class="text-h1">تم استلام طلبك بنجاح</h1>
+            <p class="submitted-desc">
+                شكراً لتقديم طلب الاشتراك في منصة Doctory. سيتم مراجعة بياناتك والمستندات المرفقة من قبل فريقنا خلال 24-48 ساعة.
+            </p>
+            <div class="submitted-steps">
+                <div class="submitted-step">
+                    <div class="submitted-step-icon submitted-step-active">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
+                        </svg>
+                    </div>
+                    <div class="submitted-step-content">
+                        <h4>تقديم الطلب</h4>
+                        <p>تم تقديم بيانات العيادة والمستندات بنجاح</p>
+                    </div>
+                </div>
+                <div class="submitted-step">
+                    <div class="submitted-step-icon submitted-step-pending">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="white"/>
+                        </svg>
+                    </div>
+                    <div class="submitted-step-content">
+                        <h4>مراجعة الطلب</h4>
+                        <p>يقوم فريقنا بمراجعة المستندات والتحقق من البيانات</p>
+                    </div>
+                </div>
+                <div class="submitted-step">
+                    <div class="submitted-step-icon submitted-step-pending">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
+                        </svg>
+                    </div>
+                    <div class="submitted-step-content">
+                        <h4>اعتماد الطلب</h4>
+                        <p>بعد الموافقة، سيتم إشعارك لإتمام عملية الدفع</p>
+                    </div>
+                </div>
+                <div class="submitted-step">
+                    <div class="submitted-step-icon submitted-step-pending">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="white"/>
+                        </svg>
+                    </div>
+                    <div class="submitted-step-content">
+                        <h4>تفعيل الاشتراك</h4>
+                        <p>بعد الدفع، يتم تفعيل العيادة في المنصة ويمكنكم البدء فوراً</p>
+                    </div>
+                </div>
+            </div>
+            <div class="submitted-actions">
+                <a href="@HomeRoutes.Pages.Index()" class="btn btn-primary btn-lg">العودة إلى الصفحة الرئيسية</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .submitted-section {
+        padding: var(--space-10) 0;
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+    }
+    .submitted-card {
+        max-width: 700px;
+        margin: 0 auto;
+        background: var(--clr-surface);
+        border: 1px solid var(--clr-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-8);
+        text-align: center;
+    }
+    .submitted-icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: var(--clr-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-5);
+    }
+    .submitted-desc {
+        font-size: var(--fs-base);
+        color: var(--clr-text-secondary);
+        max-width: 500px;
+        margin: var(--space-3) auto var(--space-7);
+        line-height: 1.8;
+    }
+    .submitted-steps {
+        text-align: right;
+        max-width: 480px;
+        margin: 0 auto var(--space-7);
+    }
+    .submitted-step {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-3);
+        padding: var(--space-3) 0;
+        position: relative;
+    }
+    .submitted-step + .submitted-step::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 19px;
+        width: 2px;
+        height: 100%;
+        background: var(--clr-border);
+    }
+    .submitted-step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+    .submitted-step-active {
+        background: var(--clr-success);
+    }
+    .submitted-step-pending {
+        background: var(--clr-text-secondary);
+    }
+    .submitted-step-content {
+        text-align: right;
+    }
+    .submitted-step-content h4 {
+        font-size: var(--fs-base);
+        font-weight: var(--fw-semibold);
+        margin: 0 0 var(--space-1);
+    }
+    .submitted-step-content p {
+        font-size: var(--fs-sm);
+        color: var(--clr-text-secondary);
+        margin: 0;
+    }
+    .submitted-actions {
+        margin-top: var(--space-6);
+    }
+</style>

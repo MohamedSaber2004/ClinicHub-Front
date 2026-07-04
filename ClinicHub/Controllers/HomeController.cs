@@ -1,3 +1,4 @@
+using ClinicHub.Data;
 using ClinicHub.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -24,6 +25,23 @@ namespace ClinicHub.Controllers
         }
 
         public IActionResult About()
+        {
+            return View();
+        }
+
+        public IActionResult Subscriptions()
+        {
+            ViewBag.Plans = MockData.GetActiveSubscriptionPlans();
+            return View();
+        }
+
+        public IActionResult ClinicRegister()
+        {
+            ViewBag.Plans = MockData.GetActiveSubscriptionPlans();
+            return View();
+        }
+
+        public IActionResult RegistrationSubmitted()
         {
             return View();
         }

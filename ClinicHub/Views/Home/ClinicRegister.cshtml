@@ -1,0 +1,159 @@
+@{
+    ViewData["Title"] = "تسجيل العيادة - Doctory";
+    var plans = ViewBag.Plans as List<MockSubscriptionPlan> ?? new();
+}
+
+<section class="register-hero">
+    <div class="container text-center">
+        <h1 class="text-h1">تسجيل عيادتك في Doctory</h1>
+        <p class="register-hero-desc">املأ البيانات أدناه للتقديم على الاشتراك. سيتم مراجعة طلبك من قبل فريقنا.</p>
+    </div>
+</section>
+
+<section class="register-section">
+    <div class="container">
+        <div class="register-form-card">
+            <form method="post" action="@HomeRoutes.Pages.RegistrationSubmitted()" enctype="multipart/form-data">
+                <div class="register-form-section">
+                    <h3 class="register-form-title">بيانات العيادة</h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="clinicName">اسم العيادة <span class="text-danger">*</span></label>
+                                <input type="text" id="clinicName" name="ClinicName" class="form-input" placeholder="مثال: مجمع عيادات السلام الطبي" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="responsibleDoctor">الطبيب المسؤول <span class="text-danger">*</span></label>
+                                <input type="text" id="responsibleDoctor" name="ResponsibleDoctor" class="form-input" placeholder="مثال: د. أحمد السعيد" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="email">البريد الإلكتروني <span class="text-danger">*</span></label>
+                                <input type="email" id="email" name="Email" class="form-input" placeholder="info@clinic.com" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="phone">رقم الهاتف <span class="text-danger">*</span></label>
+                                <input type="tel" id="phone" name="Phone" class="form-input" placeholder="05xxxxxxxx" required />
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="form-label" for="address">العنوان <span class="text-danger">*</span></label>
+                                <input type="text" id="address" name="Address" class="form-input" placeholder="الرياض - حي النور - شارع الملك عبد الله" required />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label" for="licenseNumber">رقم الترخيص <span class="text-danger">*</span></label>
+                                <input type="text" id="licenseNumber" name="LicenseNumber" class="form-input" placeholder="LIC-2026-XXXX" required />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="register-form-section">
+                    <h3 class="register-form-title">الباقة المطلوبة</h3>
+                    <div class="form-group">
+                        <label class="form-label" for="packageId">اختر الباقة <span class="text-danger">*</span></label>
+                        <select id="packageId" name="PackageId" class="form-select" required>
+                            <option value="">-- اختر الباقة --</option>
+                            @foreach (var plan in plans.OrderBy(p => p.Id))
+                            {
+                                <option value="@plan.Id" data-price="@plan.Price" data-currency="@plan.Currency">
+                                    @plan.Name — @(string.IsNullOrEmpty(plan.Price) ? "مجاناً" : plan.Price + " " + plan.Currency)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div id="selectedPlanPreview" class="register-plan-preview" style="display: none;">
+                        <div class="plan-card plan-free">
+                            <div class="plan-header">
+                                <h3 class="plan-name" id="previewPlanName"></h3>
+                                <p class="plan-duration" id="previewPlanDuration"></p>
+                                <p class="plan-price">
+                                    <span id="previewPlanPrice"></span>
+                                    <span class="plan-currency" id="previewPlanCurrency"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="register-form-section">
+                    <h3 class="register-form-title">المستندات المطلوبة</h3>
+                    <p class="register-form-desc">يرجى رفع المستندات التالية لإتمام عملية التحقق. الصيغ المدعومة: PDF, JPG, PNG</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="licenseFile">صورة رخصة العيادة <span class="text-danger">*</span></label>
+                                <input type="file" id="licenseFile" name="documents" class="form-input" accept="image/*,.pdf" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="doctorCertFile">شهادة الطبيب المسؤول <span class="text-danger">*</span></label>
+                                <input type="file" id="doctorCertFile" name="documents" class="form-input" accept="image/*,.pdf" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="clinicPhotoFile">صورة واجهة العيادة</label>
+                                <input type="file" id="clinicPhotoFile" name="documents" class="form-input" accept="image/*" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="otherFile">مستندات إضافية</label>
+                                <input type="file" id="otherFile" name="documents" class="form-input" accept="image/*,.pdf" multiple />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="register-form-actions">
+                    <p class="register-form-note">بتقديم هذا الطلب، أنت توافق على <a href="@HomeRoutes.Pages.Privacy()">شروط وأحكام المنصة</a>.</p>
+                    <div class="register-form-buttons">
+                        <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-secondary">رجوع</a>
+                        <button type="submit" class="btn btn-primary btn-lg">تقديم الطلب</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (function() {
+            var packageSelect = document.getElementById('packageId');
+            var preview = document.getElementById('selectedPlanPreview');
+            var previewName = document.getElementById('previewPlanName');
+            var previewDuration = document.getElementById('previewPlanDuration');
+            var previewPrice = document.getElementById('previewPlanPrice');
+            var previewCurrency = document.getElementById('previewPlanCurrency');
+
+            var plansData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(plans));
+
+            packageSelect.addEventListener('change', function() {
+                var selectedId = parseInt(this.value);
+                if (!selectedId) {
+                    preview.style.display = 'none';
+                    return;
+                }
+                var plan = plansData.find(function(p) { return p.Id === selectedId; });
+                if (plan) {
+                    previewName.textContent = plan.Name;
+                    previewDuration.textContent = plan.Duration;
+                    previewPrice.textContent = plan.Price || 'مجاناً';
+                    previewCurrency.textContent = plan.Currency || '';
+                    preview.style.display = 'block';
+                }
+            });
+        })();
+    </script>
+}
