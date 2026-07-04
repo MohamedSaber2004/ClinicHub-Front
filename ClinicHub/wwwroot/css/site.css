@@ -3287,3 +3287,74 @@ body {
   animation: fadeIn 0.3s ease-out;
 }
 
+/* ============================================================
+   Error Modal
+   ============================================================ */
+
+.error-modal-content {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-6);
+}
+
+.error-modal-body {
+  text-align: center;
+  padding: var(--space-5);
+}
+
+.error-modal-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--space-5);
+  border-radius: var(--radius-full);
+  background-color: var(--clr-danger);
+  color: #FFFFFF;
+}
+
+.error-modal-title {
+  font-size: 20px;
+  font-weight: var(--fw-h2);
+  color: var(--clr-text);
+  margin-bottom: var(--space-2);
+}
+
+.error-modal-msg {
+  font-size: var(--fs-md);
+  color: var(--clr-text-secondary);
+  line-height: 1.8;
+  margin-bottom: var(--space-6);
+}
+
+.error-modal-msg ul {
+  text-align: right;
+  padding-right: var(--space-5);
+  margin: 0;
+}
+
+.error-modal-msg li {
+  margin-bottom: var(--space-1);
+}
+
+.error-modal-msg li:last-child {
+  margin-bottom: 0;
+}
+
+.error-modal-btn {
+  background-color: var(--clr-primary);
+  color: #FFFFFF;
+  font-weight: var(--fw-md-bold);
+  padding: var(--space-2) 40px;
+  border-radius: var(--radius-sm);
+  border: none;
+  transition: background-color var(--transition-base);
+}
+
+.error-modal-btn:hover {
+  background-color: var(--clr-primary-hover);
+  color: #FFFFFF;
+}
+

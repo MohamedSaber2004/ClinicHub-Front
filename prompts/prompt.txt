@@ -1,86 +1,90 @@
-feature 1) make a view in landing page a subscription plans in navbar and and build that page where there have three plans plan1 for 1 year, plan2 for 2 years, and plan3 for 4 years
+namespace ClinicHub.Application.Common.Models
+{
+    /// <summary>
+    /// Represents the response of an API call.
+    /// </summary>
+    /// <typeparam name="TData">The type of the data returned by the API call.</typeparam>
+    public record ApiResponse<TData>
+    {
+        /// <summary>
+        /// Indicating whether the API call was successful.
+        /// </summary>
+        public bool Success { get; set; }
 
-This is the prompt below that needs to be executed, building a complete subscription plans feature:
+        /// <summary>
+        /// A collection of error messages returned by the API call.
+        /// </summary>
+        public IDictionary<string, string[]> Errors { get; set; } = new Dictionary<string, string[]>();
 
----
+        /// <summary>
+        /// The data returned by the API call.
+        /// </summary>
+        public TData? Data { get; set; }
 
-**Task: Subscription Plans Landing Page**
+        /// <summary>
+        /// The message associated with the API call result.
+        /// </summary>
+        public string? Message { get; set; }
 
-Add a subscription plans link in the landing page navbar and build the subscription plans page with 3 plans (1 year, 2 years, 4 years).
+        /// <summary>
+        /// The status code associated with the API call result.
+        /// </summary>
+        public int StatusCode { get; set; }
 
-**Files to edit:**
+        /// <summary>
+        /// Creates a new instance of the <see cref="ApiResponse{TData}"/> class with a successful result.
+        /// </summary>
+        /// <param name="data">The data returned by the API call.</param>
+        /// <param name="message">The message associated with the API call result.</param>
+        /// <param name="statusCode">The status code associated with the API call result.</param>
+        /// <returns>A new instance of the <see cref="ApiResponse{TData}"/> class with a successful result.</returns>
+        public static ApiResponse<TData> Ok(TData? data, string? message = null, int statusCode = 200)
+        {
+            return new ApiResponse<TData>
+            {
+                Success = true,
+                Errors = new Dictionary<string, string[]>(),
+                Data = data,
+                Message = message,
+                StatusCode = statusCode
+            };
+        }
 
-1. **`Routes/HomeRoutes.cs`** — Add `Subscriptions()` route:
-   ```csharp
-   public static string Subscriptions() => $"{Base}/Subscriptions";
-   ```
+        /// <summary>
+        /// Creates a new instance of the <see cref="ApiResponse{TData}"/> class with an error result.
+        /// </summary>
+        /// <param name="errors">The collection of error messages returned by the API call.</param>
+        /// <param name="message">The message associated with the API call result.</param>
+        /// <param name="statusCode">The status code associated with the API call result.</param>
+        /// <returns>A new instance of the <see cref="ApiResponse{TData}"/> class with an error result.</returns>
+        public static ApiResponse<TData> Error(IDictionary<string, string[]>? errors = default, string? message = null, int statusCode = 400)
+        {
+            return new ApiResponse<TData>
+            {
+                Success = false,
+                Errors = errors!,
+                Data = default,
+                Message = message,
+                StatusCode = statusCode
+            };
+        }
 
-2. **`Controllers/HomeController.cs`** — Add action:
-   ```csharp
-   public IActionResult Subscriptions()
-   {
-       ViewBag.Plans = MockData.GetSubscriptionPlans();
-       return View();
-   }
-   ```
-
-3. **`Data/MockData.cs`** — Add model class `MockSubscriptionPlan` and static method `GetSubscriptionPlans()` returning 3 plans:
-
-   | Plan | Duration | Price | Doctors | Clinics | Support | Reports | Analytics |
-   |------|----------|-------|---------|---------|---------|---------|-----------|
-   | الباقة الأساسية | 1 year | 2,999 ريال | 5 أطباء | عيادة واحدة | دعم عادي | تقارير أساسية | — |
-   | الباقة المتقدمة | 2 years | 4,999 ريال | 15 طبيب | 3 عيادات | دعم ذو أولوية | تقارير متقدمة | تحليلات مدمجة |
-   | الباقة الاحترافية | 4 years | 7,999 ريال | غير محدود | غير محدود | دعم VIP 24/7 | تقارير شاملة | ذكاء اصطناعي متكامل |
-
-   Add at bottom of MockData.cs:
-   ```csharp
-   public class MockSubscriptionPlan
-   {
-       public string Name { get; set; } = "";
-       public string Duration { get; set; } = "";
-       public string Price { get; set; } = "";
-       public string Currency { get; set; } = "ريال";
-       public string Badge { get; set; } = "";
-       public string PlanClass { get; set; } = "";
-       public string[] Features { get; set; } = Array.Empty<string>();
-       public bool[] FeatureEnabled { get; set; } = Array.Empty<bool>();
-   }
-
-   public static List<MockSubscriptionPlan> GetSubscriptionPlans() => new()
-   {
-       new()
-       {
-           Name = "الباقة الأساسية", Duration = "سنة واحدة", Price = "2,999", Currency = "ريال / سنوياً",
-           Badge = "", PlanClass = "plan-free",
-           Features = new[] { "حتى 5 أطباء", "عيادة واحدة", "دعم فني عادي", "تقارير أساسية", "تحليلات وإحصائيات" },
-           FeatureEnabled = new[] { true, true, true, true, false }
-       },
-       new()
-       {
-           Name = "الباقة المتقدمة", Duration = "سنتان", Price = "4,999", Currency = "ريال / سنوياً",
-           Badge = "الأكثر طلباً", PlanClass = "plan-standard",
-           Features = new[] { "حتى 15 طبيب", "حتى 3 عيادات", "دعم ذو أولوية", "تقارير متقدمة", "تحليلات مدمجة" },
-           FeatureEnabled = new[] { true, true, true, true, true }
-       },
-       new()
-       {
-           Name = "الباقة الاحترافية", Duration = "4 سنوات", Price = "7,999", Currency = "ريال / سنوياً",
-           Badge = "أفضل قيمة", PlanClass = "plan-premium",
-           Features = new[] { "أطباء غير محدود", "عيادات غير محدود", "دعم VIP على مدار الساعة", "تقارير شاملة", "ذكاء اصطناعي متكامل" },
-           FeatureEnabled = new[] { true, true, true, true, true }
-       },
-   };
-   ```
-
-4. **`Views/Shared/_Layout.cshtml`** — Add navbar link after the "سياسة الخصوصية" link (line ~29):
-   ```html
-   <a href="@HomeRoutes.Pages.Subscriptions()" class="nav-link">الباقات</a>
-   ```
-
-5. **Create `Views/Home/Subscriptions.cshtml`** — The subscription plans page. Use the existing CSS classes from `site.css` (`.subscription-plans`, `.plan-card`, `.plan-free`, `.plan-standard`, `.plan-premium`, `.plan-badge`, `.plan-header`, `.plan-name`, `.plan-price`, `.plan-currency`, `.plan-body`, `.plan-features`, `.plan-footer`, `.plan-current`). Design tokens from `design-system.css` (`--clr-*`, `--space-*`, `--radius-*`, `--fs-*`).
-
-   Layout should be a hero section + plan cards grid + feature comparison table. Use `.btn-primary` for CTA buttons, `.badge` / `.badge-success` / `.badge-warning` / `.badge-info` for status badges, `.icon-wrapper` / `.icon-wrapper--primary` / `--blue` / `--green` / `--amber` for icons.
-
-   The page should be in RTL Arabic, matching the landing page design. Static data display — no complex interactive logic. Each plan card should have a "اشترك الآن" (Subscribe Now) button linking to the Account/Register page.
-
-**Important:** No inline styles. No JavaScript. All styling via CSS classes.
+        /// <summary>
+        /// Creates a new instance of the <see cref="ApiResponse{TData}"/> class with an error result.
+        /// </summary>
+        /// <param name="error">The error message returned by the API call.</param>
+        /// <param name="message">The message associated with the API call result.</param>
+        /// <param name="statusCode">The status code associated with the API call result.</param>
+        /// <returns>A new instance of the <see cref="ApiResponse{TData}"/> class with an error result.</returns>
+        public static ApiResponse<TData> Error(string? message = null, int statusCode = 400)
+        {
+            return new ApiResponse<TData>
+            {
+                Success = false,
+                Data = default,
+                Message = message,
+                StatusCode = statusCode
+            };
+        }
+    }
+}

@@ -23,14 +23,8 @@
             </div>
         }
 
-        <form asp-controller="Account" asp-action="Login" method="post">
+        <form asp-controller="Account" asp-action="Login" method="post" data-ajax="true">
             <div class="text-danger auth-alert" asp-validation-summary="ModelOnly"></div>
-            
-            <!-- Clinic Code -->
-            <div class="auth-input-group">
-                <label class="auth-form-label" for="clinicCode">كود العيادة</label>
-                <input class="auth-form-control" type="text" id="clinicCode" name="clinicCode" placeholder="أدخل كود العيادة الخاص بك" required autocomplete="off" />
-            </div>
 
             <!-- Gmail -->
             <div class="auth-input-group">

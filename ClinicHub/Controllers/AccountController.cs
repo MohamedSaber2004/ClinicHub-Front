@@ -1,9 +1,21 @@
+using ClinicHub.Services.Contracts;
+using ClinicHub.Services.Enums;
+using ClinicHub.Services.RequestModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicHub.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly IAuthService _authService;
+
+        public AccountController(IAuthService authService)
+        {
+            _authService = authService;
+        }
+
+        private bool IsAjaxRequest => Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -11,16 +23,40 @@ namespace ClinicHub.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(string clinicCode, string email, string password)
+        public async Task<IActionResult> Login(string email, string password)
         {
-            // Dummy authentication for demo purposes
-            if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
+            try
             {
-                // Redirect to Admin dashboard
-                return RedirectToAction("Index", "Admin");
+                var result = await _authService.LoginAsync(new LoginRequest(email, password));
+
+                TempData["UserId"] = result.Id.ToString();
+                TempData["Role"] = result.Roles;
+                TempData["ClinicId"] = result.ClinicId?.ToString();
+
+                var redirectUrl = result.Roles.Contains(UserType.SuperAdmin.ToString())
+                    ? Url.Action("Index", "Admin")
+                    : result.Roles.Contains(UserType.ClinicOwner.ToString())
+                        ? Url.Action("Index", "Clinic")
+                        : Url.Action("Index", "Admin");
+
+                if (IsAjaxRequest)
+                    return Json(new { redirectUrl });
+
+                return Redirect(redirectUrl!);
             }
-            ModelState.AddModelError("", "خطأ في البريد الإلكتروني أو كلمة المرور");
-            return View();
+            catch (Exception ex)
+            {
+                var errors = new List<string> { ex.Message };
+
+                if (IsAjaxRequest)
+                {
+                    Response.StatusCode = 400;
+                    return Json(new { errors });
+                }
+
+                ModelState.AddModelError("", ex.Message);
+                return View();
+            }
         }
 
         [HttpGet]
@@ -34,6 +70,11 @@ namespace ClinicHub.Controllers
         {
             if (string.IsNullOrEmpty(email))
             {
+                if (IsAjaxRequest)
+                {
+                    Response.StatusCode = 400;
+                    return Json(new { errors = new List<string> { "يرجى إدخال البريد الإلكتروني." } });
+                }
                 ModelState.AddModelError("", "يرجى إدخال البريد الإلكتروني.");
                 return View();
             }
@@ -43,7 +84,10 @@ namespace ClinicHub.Controllers
             
             TempData["Email"] = email;
             TempData["VerificationCode"] = randomCode;
-            
+
+            if (IsAjaxRequest)
+                return Json(new { redirectUrl = Url.Action("VerifyCode") });
+
             return RedirectToAction("VerifyCode");
         }
 
@@ -68,6 +112,9 @@ namespace ClinicHub.Controllers
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(expectedCode))
             {
+                if (IsAjaxRequest)
+                    return Json(new { redirectUrl = Url.Action("ForgotPassword") });
+
                 ModelState.AddModelError("", "انتهت صلاحية الجلسة، يرجى المحاولة مرة أخرى.");
                 return RedirectToAction("ForgotPassword");
             }
@@ -76,7 +123,17 @@ namespace ClinicHub.Controllers
             {
                 TempData["Email"] = email;
                 TempData["CodeVerified"] = "true";
+
+                if (IsAjaxRequest)
+                    return Json(new { redirectUrl = Url.Action("ResetPassword") });
+
                 return RedirectToAction("ResetPassword");
+            }
+
+            if (IsAjaxRequest)
+            {
+                Response.StatusCode = 400;
+                return Json(new { errors = new List<string> { "رمز التحقق غير صحيح، يرجى المحاولة مرة أخرى." } });
             }
 
             ModelState.AddModelError("", "رمز التحقق غير صحيح، يرجى المحاولة مرة أخرى.");
@@ -103,11 +160,20 @@ namespace ClinicHub.Controllers
             var email = TempData["Email"]?.ToString();
             if (string.IsNullOrEmpty(email))
             {
+                if (IsAjaxRequest)
+                    return Json(new { redirectUrl = Url.Action("ForgotPassword") });
+
                 return RedirectToAction("ForgotPassword");
             }
 
             if (newPassword != confirmPassword)
             {
+                if (IsAjaxRequest)
+                {
+                    Response.StatusCode = 400;
+                    return Json(new { errors = new List<string> { "كلمة المرور الجديدة غير متطابقة." } });
+                }
+
                 ModelState.AddModelError("", "كلمة المرور الجديدة غير متطابقة.");
                 TempData.Keep("Email");
                 return View();
@@ -115,6 +181,10 @@ namespace ClinicHub.Controllers
 
             // Simulated success
             TempData["SuccessMessage"] = "تم إعادة تعيين كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.";
+
+            if (IsAjaxRequest)
+                return Json(new { redirectUrl = Url.Action("Login") });
+
             return RedirectToAction("Login");
         }
     }

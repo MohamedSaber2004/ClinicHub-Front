@@ -35,7 +35,7 @@
             </div>
         }
 
-        <form action="@HomeRoutes.Account.VerifyCode()" method="post">
+        <form action="@HomeRoutes.Account.VerifyCode()" method="post" data-ajax="true">
             <div class="text-danger" asp-validation-summary="ModelOnly" style="font-size: 14px; margin-bottom: 15px; text-align: center;"></div>
             
             <!-- Hidden input to preserve email -->

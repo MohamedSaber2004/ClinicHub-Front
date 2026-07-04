@@ -1,0 +1,30 @@
+@{
+    ViewData["Title"] = "الخدمة غير متاحة";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card" style="text-align: center; padding: 60px 40px;">
+        <div class="icon-wrapper icon-wrapper--amber" style="width: 80px; height: 80px; margin: 0 auto 24px; border-radius: 50%;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+            </svg>
+        </div>
+
+        <h1 class="text-h1" style="color: var(--text-dark); margin-bottom: 12px;">
+            الخدمة غير متاحة الآن
+        </h1>
+
+        <p class="text-body" style="color: var(--text-muted); max-width: 400px; margin: 0 auto 32px; line-height: 1.8;">
+            عذراً، هذه الخدمة غير متاحة حالياً. يرجى المحاولة لاحقاً أو الاتصال بفريق الدعم الفني.
+        </p>
+
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="@HomeRoutes.Pages.Index()" class="btn" style="background-color: var(--primary-color); color: #FFFFFF; font-weight: 600; padding: 12px 30px; border-radius: 5px;">
+                العودة للرئيسية
+            </a>
+            <a href="javascript:location.reload()" class="btn" style="background-color: #FFFFFF; color: var(--primary-color); border: 2px solid var(--primary-color); font-weight: 600; padding: 12px 30px; border-radius: 5px;">
+                إعادة المحاولة
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,3 +1,5 @@
+using ClinicHub.Services;
+using ClinicHub.Services.Options;
 using Serilog;
 using System.Reflection;
 
@@ -33,13 +35,19 @@ namespace ClinicHub
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddOptions();
+
+            builder.Services.AddHttpClient();
+
+            builder.Services.Configure<Doctory>(builder.Configuration.GetSection("Doctory"));
+            builder.Services.AddServices();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 

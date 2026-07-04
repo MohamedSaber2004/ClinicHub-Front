@@ -109,9 +109,57 @@
         </div>
     </div>
 
+    <partial name="_ErrorModal" />
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/scroll-animations.js" asp-append-version="true"></script>
+    <script>
+        @if (TempData["UserId"] != null)
+        {
+            <text>
+                localStorage.setItem("userId", "@TempData["UserId"]");
+                localStorage.setItem("role", "@TempData["Role"]");
+                localStorage.setItem("clinicId", "@TempData["ClinicId"]");
+            </text>
+        }
+
+        $(document).ajaxError(function (event, jqxhr) {
+            var msg = 'عذراً، حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.';
+            if (jqxhr.status === 500) {
+                msg = 'الخدمة غير متاحة الآن. يرجى المحاولة لاحقاً أو الاتصال بفريق الدعم الفني.';
+            }
+            try {
+                var resp = JSON.parse(jqxhr.responseText);
+                if (resp.message) msg = resp.message;
+                else if (resp.title) msg = resp.title;
+            } catch (e) {}
+            showErrorModal(msg);
+        });
+
+        (function () {
+            var origFetch = window.fetch;
+            window.fetch = function () {
+                return origFetch.apply(this, arguments).then(function (response) {
+                    if (response.status >= 400) {
+                        response.clone().text().then(function (text) {
+                            var msg = 'عذراً، حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.';
+                            if (response.status === 500) {
+                                msg = 'الخدمة غير متاحة الآن. يرجى المحاولة لاحقاً أو الاتصال بفريق الدعم الفني.';
+                            }
+                            try {
+                                var resp = JSON.parse(text);
+                                if (resp.message) msg = resp.message;
+                                else if (resp.title) msg = resp.title;
+                            } catch (e) {}
+                            setTimeout(function () { showErrorModal(msg); }, 100);
+                        });
+                    }
+                    return response;
+                });
+            };
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

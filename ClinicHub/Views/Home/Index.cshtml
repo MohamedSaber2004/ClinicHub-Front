@@ -11,12 +11,9 @@
         <p style="font-size: 18px; color: var(--text-muted); max-width: 700px; margin: 0 auto 40px; line-height: 1.8;">
             أهلاً بكم في منصة Doctory - المنصة التشغيلية والوسيطة المتكاملة لربط مدراء النظام بملاك العيادات. نعمل كحلقة وصل إدارية متقدمة لتنظيم العمل الطبي بكافة تفاصيله.
         </p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="@AdminRoutes.Pages.Index()" class="btn btn-lg" style="background-color: var(--primary-color); color: #FFFFFF; font-weight: 600; padding: 12px 30px; border-radius: 5px; box-shadow: 0 4px 10px rgba(47, 156, 202, 0.2); transition: all 0.2s;">
-                لوحة التحكم الإدارية (Admin)
-            </a>
-            <a href="@ClinicRoutes.Pages.Index()" class="btn btn-lg" style="background-color: #FFFFFF; color: var(--primary-color); border: 2px solid var(--primary-color); font-weight: 600; padding: 12px 30px; border-radius: 5px; transition: all 0.2s;">
-                إدارة تشغيل العيادات (Management)
+        <div class="d-flex justify-content-center">
+            <a href="@HomeRoutes.Account.Login()" class="btn btn-lg" style="background-color: var(--primary-color); color: #FFFFFF; font-weight: 600; padding: 12px 40px; border-radius: 5px; box-shadow: 0 4px 10px rgba(47, 156, 202, 0.2); transition: all 0.2s;">
+                تسجيل الدخول
             </a>
         </div>
     </div>
@@ -140,10 +137,9 @@
             <div class="col-lg-6">
                 <div style="background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
                     <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">بوابة الإدارة الرقمية</h3>
-                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;">يمكنك الدخول مباشرة إلى لوحة التحكم الخاصة بك للبدء في إدارة تشغيل العيادات والموظفين فوراً.</p>
-                    <div class="d-grid gap-3">
-                        <a href="@AdminRoutes.Pages.Index()" class="btn" style="background-color: var(--primary-color); color: white; padding: 10px; font-weight: 600; font-size: 14px; border-radius: 5px;">الدخول للوحة المدير (Admin Portal)</a>
-                        <a href="@ClinicRoutes.Pages.Index()" class="btn" style="background-color: #384152; color: white; padding: 10px; font-weight: 600; font-size: 14px; border-radius: 5px;">الدخول لإدارة العيادات (Clinic Portal)</a>
+                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;">يمكنك الدخول إلى حسابك للبدء في إدارة تشغيل العيادات والموظفين فوراً.</p>
+                    <div class="d-grid">
+                        <a href="@HomeRoutes.Account.Login()" class="btn" style="background-color: var(--primary-color); color: white; padding: 10px; font-weight: 600; font-size: 14px; border-radius: 5px;">تسجيل الدخول</a>
                     </div>
                 </div>
             </div>

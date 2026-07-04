@@ -1,0 +1,24 @@
+<div class="modal fade" id="globalErrorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content error-modal-content">
+            <div class="modal-body error-modal-body">
+                <div class="error-modal-icon-wrapper">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
+                    </svg>
+                </div>
+                <h3 class="error-modal-title">خطأ</h3>
+                <div id="globalErrorMsg" class="error-modal-msg"></div>
+                <button type="button" class="btn error-modal-btn" data-bs-dismiss="modal">حسناً</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showErrorModal(message) {
+        var msgEl = $('#globalErrorMsg');
+        msgEl.html(message);
+        $('#globalErrorModal').modal('show');
+    }
+</script>

@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="ClinicHub.Services/ClinicHub.Services.csproj" Id="ae4cf25f-da0e-4afe-87c3-32b2fbb4e4f3" />
   <Project Path="ClinicHub/ClinicHub.csproj" />
 </Solution>
