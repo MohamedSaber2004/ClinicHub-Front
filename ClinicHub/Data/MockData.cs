@@ -63,6 +63,39 @@ namespace ClinicHub.Data
         public string Marker { get; set; } = "info";
     }
 
+    public class MockSubscriptionPlan
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Duration { get; set; } = "";
+        public string Price { get; set; } = "";
+        public string Currency { get; set; } = "ريال";
+        public string Badge { get; set; } = "";
+        public string PlanClass { get; set; } = "";
+        public string[] Features { get; set; } = Array.Empty<string>();
+        public bool[] FeatureEnabled { get; set; } = Array.Empty<bool>();
+        public bool IsActive { get; set; } = true;
+    }
+
+    public class MockClinicRegistration
+    {
+        public int Id { get; set; }
+        public string ClinicName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Address { get; set; } = "";
+        public string ResponsibleDoctor { get; set; } = "";
+        public string LicenseNumber { get; set; } = "";
+        public int PackageId { get; set; }
+        public string PackageName { get; set; } = "";
+        public List<string> Documents { get; set; } = new();
+        public string Status { get; set; } = "pending"; // pending, approved, rejected
+        public string StatusClass { get; set; } = "badge-warning";
+        public string SubmittedAt { get; set; } = "";
+        public string? ReviewedAt { get; set; }
+        public string? AdminNotes { get; set; }
+    }
+
     public static class MockData
     {
         public const string CurrencySymbol = "ج.م";
@@ -109,6 +142,213 @@ namespace ClinicHub.Data
             new() { Cells = new() { { "name", "مركز رعاية اليوم الواحد" }, { "start", "1 يناير 2025" }, { "end", "31 ديسمبر 2025" }, { "package", "باقة أساسية" }, { "packageClass", "badge-success" }, { "doctors", "8" }, { "status", "منتهي" }, { "statusClass", "badge-danger" } } },
             new() { Cells = new() { { "name", "عيادات التخصصات الدقيقة" }, { "start", "1 أبريل 2026" }, { "end", "31 مارس 2027" }, { "package", "باقة متقدمة" }, { "packageClass", "badge-info" }, { "doctors", "22" }, { "status", "نشط" }, { "statusClass", "badge-success" } } },
         };
+
+        // ========== Subscription Plans ==========
+        public static List<MockSubscriptionPlan> GetActiveSubscriptionPlans() =>
+            GetAllSubscriptionPlans().Where(p => p.IsActive).ToList();
+
+        public static List<MockSubscriptionPlan> GetAllSubscriptionPlans() => new()
+        {
+            new()
+            {
+                Id = 1,
+                Name = "الباقة الأساسية",
+                Duration = "شهرياً",
+                Price = "999",
+                Currency = "ريال / شهرياً",
+                Badge = "",
+                PlanClass = "plan-free",
+                IsActive = true,
+                Features = new[]
+                {
+                    "إدراج العيادة في المنصة",
+                    "إدارة حتى 5 أطباء",
+                    "لوحة تحكم بسيطة",
+                    "دعم فني عبر البريد الإلكتروني",
+                    "تقرير شهري واحد",
+                },
+                FeatureEnabled = new[] { true, true, true, true, false }
+            },
+            new()
+            {
+                Id = 2,
+                Name = "الباقة المتقدمة",
+                Duration = "شهرياً",
+                Price = "2,499",
+                Currency = "ريال / شهرياً",
+                Badge = "الأكثر طلباً",
+                PlanClass = "plan-standard",
+                IsActive = true,
+                Features = new[]
+                {
+                    "إدراج العيادة في المنصة",
+                    "إدارة حتى 15 طبيب",
+                    "لوحة تحكم متكاملة",
+                    "إدارة المواعيد والحجوزات",
+                    "تقارير وإحصائيات متقدمة",
+                    "دعم فني عبر الهاتف والبريد",
+                    "إعلانات ترويجية مجانية",
+                },
+                FeatureEnabled = new[] { true, true, true, true, true, true, false }
+            },
+            new()
+            {
+                Id = 3,
+                Name = "الباقة الاحترافية",
+                Duration = "سنوياً",
+                Price = "19,999",
+                Currency = "ريال / سنوياً",
+                Badge = "وفر 33%",
+                PlanClass = "plan-premium",
+                IsActive = true,
+                Features = new[]
+                {
+                    "إدراج العيادة في المنصة",
+                    "عدد غير محدود من الأطباء",
+                    "لوحة تحكم متكاملة",
+                    "إدارة المواعيد والحجوزات",
+                    "تقارير وإحصائيات متقدمة",
+                    "السجلات الطبية الإلكترونية",
+                    "إعلانات ترويجية مُمولة",
+                    "دعم فني على مدار الساعة",
+                    "مدير حساب مخصص",
+                },
+                FeatureEnabled = new[] { true, true, true, true, true, true, true, true, true }
+            },
+            new()
+            {
+                Id = 4,
+                Name = "الباقة التجريبية",
+                Duration = "شهر واحد",
+                Price = "",
+                Currency = "",
+                Badge = "تجربة مجانية",
+                PlanClass = "plan-free",
+                IsActive = true,
+                Features = new[]
+                {
+                    "إدراج العيادة في المنصة",
+                    "إدارة حتى 3 أطباء",
+                    "جميع ميزات الباقة الأساسية",
+                },
+                FeatureEnabled = new[] { true, true, true }
+            },
+            new()
+            {
+                Id = 5,
+                Name = "الباقة القديمة",
+                Duration = "شهرياً",
+                Price = "1,499",
+                Currency = "ريال / شهرياً",
+                Badge = "",
+                PlanClass = "plan-free",
+                IsActive = false,
+                Features = new[]
+                {
+                    "إدراج العيادة في المنصة",
+                    "إدارة حتى 10 أطباء",
+                    "لوحة تحكم متكاملة",
+                },
+                FeatureEnabled = new[] { true, true, true }
+            },
+        };
+
+        // ========== Clinic Registrations ==========
+        public static List<MockClinicRegistration> GetAllClinicRegistrations() => new()
+        {
+            new()
+            {
+                Id = 1,
+                ClinicName = "مجمع عيادات النور الطبي",
+                Email = "info@alnoor-clinic.com",
+                Phone = "0501234567",
+                Address = "الرياض - حي النور - شارع الملك عبد الله",
+                ResponsibleDoctor = "د. أحمد السعيد",
+                LicenseNumber = "LIC-2026-00421",
+                PackageId = 2,
+                PackageName = "الباقة المتقدمة",
+                Documents = new() { "license_scan.pdf", "clinic_photo_1.jpg", "doctor_cert.pdf" },
+                Status = "pending",
+                StatusClass = "badge-warning",
+                SubmittedAt = "2026-07-02",
+            },
+            new()
+            {
+                Id = 2,
+                ClinicName = "عيادات الدكتور فهد التخصصية",
+                Email = "info@drfahad-clinic.com",
+                Phone = "0559876543",
+                Address = "جدة - حي الشاطئ - طريق الكورنيش",
+                ResponsibleDoctor = "د. فهد العتيبي",
+                LicenseNumber = "LIC-2026-00389",
+                PackageId = 1,
+                PackageName = "الباقة الأساسية",
+                Documents = new() { "license_scan.pdf", "partnership_deed.pdf" },
+                Status = "pending",
+                StatusClass = "badge-warning",
+                SubmittedAt = "2026-07-01",
+            },
+            new()
+            {
+                Id = 3,
+                ClinicName = "مركز إشراق الطبي",
+                Email = "info@eshraq-med.com",
+                Phone = "0591122334",
+                Address = "الدمام - حي الفيصلية - شارع 14",
+                ResponsibleDoctor = "د. ليلى الشمري",
+                LicenseNumber = "LIC-2026-00345",
+                PackageId = 3,
+                PackageName = "الباقة الاحترافية",
+                Documents = new() { "license_scan.pdf", "clinic_photo_1.jpg", "clinic_photo_2.jpg", "doctor_cert.pdf", "lab_license.pdf" },
+                Status = "approved",
+                StatusClass = "badge-success",
+                SubmittedAt = "2026-06-28",
+                ReviewedAt = "2026-06-30",
+                AdminNotes = "تم مراجعة المستندات واعتمادها. في انتظار الدفع لتفعيل الاشتراك.",
+            },
+            new()
+            {
+                Id = 4,
+                ClinicName = "عيادات التخصصات الدقيقة",
+                Email = "info@specialized-clinic.com",
+                Phone = "0588776655",
+                Address = "مكة المكرمة - حي العزيزية",
+                ResponsibleDoctor = "د. عبد الرحمن القحطاني",
+                LicenseNumber = "LIC-2026-00210",
+                PackageId = 2,
+                PackageName = "الباقة المتقدمة",
+                Documents = new() { "license_scan.pdf", "doctor_cert.pdf" },
+                Status = "rejected",
+                StatusClass = "badge-danger",
+                SubmittedAt = "2026-06-25",
+                ReviewedAt = "2026-06-27",
+                AdminNotes = "المستندات المقدمة غير مكتملة. يرجى التواصل مع العيادة لإعادة التقديم.",
+            },
+            new()
+            {
+                Id = 5,
+                ClinicName = "عيادة الأمل للأطفال",
+                Email = "info@alamal-pediatrics.com",
+                Phone = "0566554433",
+                Address = "الخبر - حي العقربية",
+                ResponsibleDoctor = "د. مريم الحسن",
+                LicenseNumber = "LIC-2026-00512",
+                PackageId = 3,
+                PackageName = "الباقة الاحترافية",
+                Documents = new() { "license_scan.pdf", "clinic_photo_1.jpg", "doctor_cert.pdf", "insurance_doc.pdf" },
+                Status = "paid",
+                StatusClass = "badge-success",
+                SubmittedAt = "2026-06-20",
+                ReviewedAt = "2026-06-22",
+                AdminNotes = "تم اعتماد الطلب واستلام الدفع. تم تفعيل العيادة في النظام.",
+            },
+        };
+
+        public static List<MockClinicRegistration> GetPendingClinicRegistrations() =>
+            GetAllClinicRegistrations().Where(r => r.Status == "pending").ToList();
+
+        public static int GetPendingClinicRegistrationsCount() =>
+            GetAllClinicRegistrations().Count(r => r.Status == "pending");
 
         public static List<MockTableRow> GetActivityLog() => new()
         {

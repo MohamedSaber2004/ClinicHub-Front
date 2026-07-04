@@ -56,10 +56,10 @@
                         <i class="bi bi-box-seam" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
                         <span>إدارة المخزون</span>
                     </a>
-                    <a class="sidebar-item @(IsActive("Clinic", "PatientPortal") ? "active" : "")" href="@ClinicRoutes.Pages.PatientPortal()" style="padding-right: 20px;">
+                    @* <a class="sidebar-item @(IsActive("Clinic", "PatientPortal") ? "active" : "")" href="@ClinicRoutes.Pages.PatientPortal()" style="padding-right: 20px;">
                         <i class="bi bi-people" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
                         <span>بوابة المرضى</span>
-                    </a>
+                    </a> *@
                     <a class="sidebar-item @(IsActive("Clinic", "Staff") ? "active" : "")" href="@ClinicRoutes.Pages.Staff()" style="padding-right: 20px;">
                         <i class="bi bi-person-badge" style="font-size: 1rem; margin-left: 10px; color: var(--primary-color);"></i>
                         <span>إدارة الموظفين</span>
@@ -88,14 +88,6 @@
         <div class="main-content">
             <!-- Top Header -->
             <header class="top-header">
-                <div class="header-search">
-                    <select class="dept-dropdown" onchange="location.hash = this.value">
-                        <option value="">اختر القسم</option>
-                        <option value="cardio">قسم القلب</option>
-                        <option value="neuro">قسم الأعصاب</option>
-                        <option value="derm">قسم الجلدية</option>
-                    </select>
-                </div>
                 <div class="header-user" style="cursor: default;">
                     <div class="user-info">
                         <span class="user-name">طاقم الإدارة الطبية</span>
