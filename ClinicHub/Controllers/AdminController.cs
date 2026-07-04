@@ -1,23 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
 
 namespace ClinicHub.Controllers
 {
-    public class AdminController : Controller
+    public class AdminController : BaseController
     {
-        public AdminController()
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
-            // TODO: Remove hardcoded role — temporary for development testing
-            if (CurrentUserContext.Current == null)
+            CurrentUser = new CurrentUserContext
             {
-                CurrentUserContext.Current = new CurrentUserContext
-                {
-                    Id = 0,
-                    Role = UserRole.SystemAdmin,
-                    Permissions = RolePermissions.For(UserRole.SystemAdmin)
-                };
-            }
-            ViewBag.CurrentUser = CurrentUserContext.Current;
+                Id = 0,
+                Role = UserRole.SystemAdmin,
+                Permissions = RolePermissions.For(UserRole.SystemAdmin)
+            };
+            base.OnActionExecuting(context);
         }
 
         public IActionResult Index()

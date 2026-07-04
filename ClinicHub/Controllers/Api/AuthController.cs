@@ -10,7 +10,7 @@ namespace ClinicHub.Controllers.Api
         [HttpGet("me")]
         public IActionResult Me()
         {
-            var ctx = CurrentUserContext.Current ?? new CurrentUserContext
+            var ctx = new CurrentUserContext
             {
                 Id = 6,
                 Role = UserRole.ClinicOwner,

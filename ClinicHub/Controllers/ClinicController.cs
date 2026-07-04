@@ -1,23 +1,20 @@
-using ClinicHub.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using ClinicHub.Data;
 
 namespace ClinicHub.Controllers
 {
-    public class ClinicController : Controller
+    public class ClinicController : BaseController
     {
-        public ClinicController()
+        public override void OnActionExecuting(ActionExecutingContext context)
         {
-            // TODO: Remove hardcoded role — temporary for development testing
-            if (CurrentUserContext.Current == null)
+            CurrentUser = new CurrentUserContext
             {
-                CurrentUserContext.Current = new CurrentUserContext
-                {
-                    Id = 6,
-                    Role = UserRole.ClinicOwner,
-                    Permissions = RolePermissions.For(UserRole.ClinicOwner)
-                };
-            }
-            ViewBag.CurrentUser = CurrentUserContext.Current;
+                Id = 6,
+                Role = UserRole.ClinicOwner,
+                Permissions = RolePermissions.For(UserRole.ClinicOwner)
+            };
+            base.OnActionExecuting(context);
         }
 
         public IActionResult Index()
@@ -57,7 +54,7 @@ namespace ClinicHub.Controllers
 
         public IActionResult Settings()
         {
-            var user = CurrentUserContext.Current;
+            var user = CurrentUser;
             var clinic = MockData.GetClinics().FirstOrDefault(c => c.OwnerUserId == user?.Id);
             ViewBag.Clinic = clinic ?? MockData.GetClinics().FirstOrDefault();
             return View();
