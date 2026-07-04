@@ -2994,3 +2994,250 @@ body {
   text-decoration: underline;
   color: var(--clr-primary-hover);
 }
+
+/* ============================================================
+   Global Animations
+   ============================================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Page content entrance */
+.content-body {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.public-body {
+  animation: fadeIn 0.35s ease-out;
+}
+
+.public-main {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.public-header {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.public-footer {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Table rows staggered entrance */
+.table-card tbody tr {
+  animation: fadeInUp 0.35s ease-out both;
+}
+
+.table-card tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.table-card tbody tr:nth-child(2) { animation-delay: 0.06s; }
+.table-card tbody tr:nth-child(3) { animation-delay: 0.1s; }
+.table-card tbody tr:nth-child(4) { animation-delay: 0.14s; }
+.table-card tbody tr:nth-child(5) { animation-delay: 0.18s; }
+.table-card tbody tr:nth-child(6) { animation-delay: 0.22s; }
+.table-card tbody tr:nth-child(7) { animation-delay: 0.26s; }
+.table-card tbody tr:nth-child(8) { animation-delay: 0.3s; }
+.table-card tbody tr:nth-child(9) { animation-delay: 0.34s; }
+.table-card tbody tr:nth-child(10) { animation-delay: 0.38s; }
+
+/* Stats cards staggered entrance */
+.row.g-3 > [class*="col-"] {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.row.g-3 > [class*="col-"]:nth-child(1) { animation-delay: 0.05s; }
+.row.g-3 > [class*="col-"]:nth-child(2) { animation-delay: 0.1s; }
+.row.g-3 > [class*="col-"]:nth-child(3) { animation-delay: 0.15s; }
+.row.g-3 > [class*="col-"]:nth-child(4) { animation-delay: 0.2s; }
+.row.g-3 > [class*="col-"]:nth-child(5) { animation-delay: 0.25s; }
+.row.g-3 > [class*="col-"]:nth-child(6) { animation-delay: 0.3s; }
+
+/* Utility classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideInRight 0.35s ease-out;
+}
+
+/* Card hover lift */
+.card-hover-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar items hover transition */
+.sidebar-item {
+  transition: background-color 0.2s ease, padding-right 0.2s ease;
+}
+
+/* Button hover scale */
+.btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Modal entrance */
+.modal.fade .modal-dialog {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.modal.fade.show .modal-dialog {
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* Page header / title entrance */
+.page-header {
+  animation: fadeInUp 0.35s ease-out;
+}
+
+/* Hero sections on landing/subscription pages */
+.subscription-hero,
+.register-hero {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.subscription-benefits {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.benefits-grid .benefit-card {
+  animation: fadeInUp 0.45s ease-out both;
+}
+
+.benefits-grid .benefit-card:nth-child(1) { animation-delay: 0.05s; }
+.benefits-grid .benefit-card:nth-child(2) { animation-delay: 0.1s; }
+.benefits-grid .benefit-card:nth-child(3) { animation-delay: 0.15s; }
+.benefits-grid .benefit-card:nth-child(4) { animation-delay: 0.2s; }
+.benefits-grid .benefit-card:nth-child(5) { animation-delay: 0.25s; }
+.benefits-grid .benefit-card:nth-child(6) { animation-delay: 0.3s; }
+
+.subscription-cta-section {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Form cards entrance */
+.register-form-card,
+.submitted-card {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Modal backdrop fade */
+.modal-backdrop {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Sidebar entrance */
+.sidebar {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Stat cards in admin dashboard */
+.stat-card {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.card-wrapper .stat-card:nth-child(1),
+.row.g-3 > [class*="col-"]:nth-child(1) .stat-card { animation-delay: 0.05s; }
+.card-wrapper .stat-card:nth-child(2),
+.row.g-3 > [class*="col-"]:nth-child(2) .stat-card { animation-delay: 0.1s; }
+.card-wrapper .stat-card:nth-child(3),
+.row.g-3 > [class*="col-"]:nth-child(3) .stat-card { animation-delay: 0.15s; }
+.card-wrapper .stat-card:nth-child(4),
+.row.g-3 > [class*="col-"]:nth-child(4) .stat-card { animation-delay: 0.2s; }
+.card-wrapper .stat-card:nth-child(5),
+.row.g-3 > [class*="col-"]:nth-child(5) .stat-card { animation-delay: 0.25s; }
+.card-wrapper .stat-card:nth-child(6),
+.row.g-3 > [class*="col-"]:nth-child(6) .stat-card { animation-delay: 0.3s; }
+
+/* Quick status badges entrance */
+.quick-statuses .badge {
+  animation: fadeInUp 0.35s ease-out both;
+}
+
+.quick-statuses .badge:nth-child(1) { animation-delay: 0.05s; }
+.quick-statuses .badge:nth-child(2) { animation-delay: 0.1s; }
+.quick-statuses .badge:nth-child(3) { animation-delay: 0.15s; }
+.quick-statuses .badge:nth-child(4) { animation-delay: 0.2s; }
+.quick-statuses .badge:nth-child(5) { animation-delay: 0.25s; }
+
+/* Page header icons and buttons entrance */
+.page-header .btn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Table card wrapper entrance */
+.table-card {
+  animation: fadeInUp 0.35s ease-out;
+}
+
+/* Badge subtle pulse for active status */
+.badge-success:not(.badge-static) {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Plan cards entrance */
+.subscription-plans .plan-card {
+  animation: fadeInUp 0.45s ease-out both;
+}
+
+.subscription-plans .plan-card:nth-child(1) { animation-delay: 0.05s; }
+.subscription-plans .plan-card:nth-child(2) { animation-delay: 0.15s; }
+.subscription-plans .plan-card:nth-child(3) { animation-delay: 0.25s; }
+.subscription-plans .plan-card:nth-child(4) { animation-delay: 0.35s; }
+
+
