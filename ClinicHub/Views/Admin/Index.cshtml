@@ -3,12 +3,9 @@
     ViewData["Title"] = "لوحة تحكم المدير";
     Layout = "_AdminLayout";
     var stats = ViewBag.Stats as List<MockStat> ?? new();
-    var quickStatuses = ViewBag.QuickStatuses as List<MockQuickStatus> ?? new();
-    var doctors = ViewBag.DoctorsOnDuty as List<MockTableRow> ?? new();
     var tickets = ViewBag.UrgentTickets as List<MockTableRow> ?? new();
     var subscribers = ViewBag.Subscribers as List<MockTableRow> ?? new();
     var activityLog = ViewBag.ActivityLog as List<MockTableRow> ?? new();
-    var newPatients = ViewBag.NewPatients as List<MockTableRow> ?? new();
 }
 
 <h2 class="page-title">
@@ -41,53 +38,7 @@
     }
 </div>
 
-<!-- Quick Status Row -->
-<div class="quick-status-row">
-    @foreach (var qs in quickStatuses)
-    {
-        <div class="quick-status-item quick-status--@qs.Color">
-            <span class="quick-status-dot"></span>
-            <span class="quick-status-text">@qs.Text</span>
-        </div>
-    }
-</div>
-
-<!-- 2-Column Tables Row 1 -->
-<div class="dashboard-tables-grid">
-    <div class="table-card" id="doctors-on-duty">
-        <div class="table-card-header">
-            <h3 class="table-card-title">
-    <span class="subtitle-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2c0 1.654-1.346 3-3 3s-3-1.346-3-3V7z" fill="currentColor"/>
-        </svg>
-    </span>
-    الأطباء المناوبون
-</h3>
-        </div>
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>الاسم</th>
-                        <th>الدور</th>
-                        <th>التخصص</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var row in doctors)
-                    {
-                        <tr>
-                            <td>@row.Cells["name"]</td>
-                            <td>@row.Cells["role"]</td>
-                            <td>@row.Cells["specialty"]</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="table-card" id="urgent-tickets">
+<div class="table-card" id="urgent-tickets">
         <div class="table-card-header">
             <h3 class="table-card-title">
     <span class="subtitle-icon">
@@ -124,11 +75,8 @@
             </table>
         </div>
     </div>
-</div>
 
-<!-- 2-Column Tables Row 2 -->
-<div class="dashboard-tables-grid">
-    <div class="table-card" id="subscriptions">
+<div class="table-card" id="subscriptions">
         <div class="table-card-header">
             <h3 class="table-card-title">
     <span class="subtitle-icon">
@@ -202,41 +150,5 @@
             </table>
         </div>
     </div>
-</div>
 
-<!-- Full-width Patients Table -->
-<div class="table-card" id="new-patients" style="margin-top: var(--space-6);">
-    <div class="table-card-header">
-        <h3 class="table-card-title">
-    <span class="subtitle-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 14c-2.67 0-8 1.33-8 4v2h16v-2c0-2.67-5.33-4-8-4zm-9-4V7H4v3H1v2h3v3h2v-3h3v-2H6zm9-4c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="currentColor"/>
-        </svg>
-    </span>
-    المرضى المقبولين الجدد
-</h3>
-    </div>
-    <div class="table-responsive">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>الاسم</th>
-                    <th>القسم</th>
-                    <th>التاريخ</th>
-                    <th>رقم الهاتف</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var row in newPatients)
-                {
-                    <tr>
-                        <td>@row.Cells["name"]</td>
-                        <td>@row.Cells["dept"]</td>
-                        <td>@row.Cells["date"]</td>
-                        <td>@row.Cells["phone"]</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+
