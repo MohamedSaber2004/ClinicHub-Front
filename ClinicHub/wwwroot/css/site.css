@@ -3240,4 +3240,50 @@ body {
 .subscription-plans .plan-card:nth-child(3) { animation-delay: 0.25s; }
 .subscription-plans .plan-card:nth-child(4) { animation-delay: 0.35s; }
 
+/* ============================================================
+   Verification Center Tabs
+   ============================================================ */
+
+.verification-tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
+  border-bottom: 2px solid var(--clr-border);
+  padding: 0;
+  list-style: none;
+}
+
+.verification-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  cursor: pointer;
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  color: var(--clr-text-secondary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.verification-tab:hover {
+  color: var(--clr-text);
+}
+
+.verification-tab.active {
+  color: var(--clr-primary);
+  border-bottom-color: var(--clr-primary);
+}
+
+.verification-tab svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.verification-tab-content {
+  animation: fadeIn 0.3s ease-out;
+}
 

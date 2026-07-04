@@ -61,6 +61,8 @@ namespace ClinicHub.Controllers
         public IActionResult VerificationCenter()
         {
             ViewBag.Requests = MockData.GetPendingVerifications();
+            ViewBag.Registrations = MockData.GetAllClinicRegistrations();
+            ViewBag.PendingCount = MockData.GetPendingClinicRegistrationsCount();
             return View("VerificationCenter");
         }
 
@@ -69,14 +71,6 @@ namespace ClinicHub.Controllers
         {
             ViewBag.SubscriptionPlans = MockData.GetAllSubscriptionPlans();
             return View("Subscriptions");
-        }
-
-        [Route("Admin/PendingClinics")]
-        public IActionResult PendingClinics()
-        {
-            ViewBag.Registrations = MockData.GetAllClinicRegistrations();
-            ViewBag.PendingCount = MockData.GetPendingClinicRegistrationsCount();
-            return View("PendingClinics");
         }
 
         public IActionResult Support()
