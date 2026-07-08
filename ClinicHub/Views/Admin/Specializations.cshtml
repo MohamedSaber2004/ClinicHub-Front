@@ -23,10 +23,10 @@
 <!-- Filter Bar -->
 <div class="filter-bar">
     <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن تخصص..." />
-    <select id="filterStatus" class="form-select" onchange="window.location.href='/Admin/Specializations?isFamous=' + this.value">
-        <!option value="" @(ViewBag.CurrentFilter == null ? "selected" : "")>جميع التخصصات</!option>
-        <!option value="true" @(ViewBag.CurrentFilter == true ? "selected" : "")>مميز</!option>
-        <!option value="false" @(ViewBag.CurrentFilter == false ? "selected" : "")>غير مميز</!option>
+    <select id="filterStatus" class="form-select">
+        <option value="">جميع التخصصات</option>
+        <option value="true">مميز</option>
+        <option value="false">غير مميز</option>
     </select>
 </div>
 
@@ -95,12 +95,13 @@
                         </td>
                     </tr>
                 }
-            </tbody>
-        </table>
+        </tbody>
+    </table>
     </div>
 </div>
 
 <partial name="_Pagination" />
+
 
 <form id="specializationForm" method="post" enctype="multipart/form-data">
     <!-- Add/Edit Modal -->
@@ -307,6 +308,27 @@
             var searchInput = document.getElementById('filterSearch');
             var statusFilter = document.getElementById('filterStatus');
             var rows = document.querySelectorAll('.spec-table tbody tr');
+            var paginationLinks = document.querySelectorAll('.pagination-link');
+
+            function getParams() {
+                return new URLSearchParams(window.location.search);
+            }
+
+            function setParam(name, value) {
+                var params = getParams();
+                if (value) params.set(name, value);
+                else params.delete(name);
+                window.history.replaceState({}, '', window.location.pathname + '?' + params.toString());
+            }
+
+            function updatePaginationLinks(searchVal) {
+                paginationLinks.forEach(function(link) {
+                    var url = new URL(link.href, window.location.origin);
+                    if (searchVal) url.searchParams.set('search', searchVal);
+                    else url.searchParams.delete('search');
+                    link.href = url.toString();
+                });
+            }
 
             function filterTable() {
                 var query = searchInput.value.trim().toLowerCase();
@@ -322,8 +344,26 @@
                 });
             }
 
-            searchInput.addEventListener('input', filterTable);
-            statusFilter.addEventListener('change', filterTable);
+            searchInput.addEventListener('input', function() {
+                setParam('search', this.value.trim());
+                updatePaginationLinks(this.value.trim());
+                filterTable();
+            });
+
+            statusFilter.addEventListener('change', function() {
+                setParam('isFamous', this.value);
+                window.location.href = window.location.pathname + '?' + getParams().toString();
+            });
+
+            (function initFromUrl() {
+                var params = getParams();
+                var searchVal = params.get('search') || '';
+                if (searchVal) searchInput.value = searchVal;
+                var statusVal = params.get('isFamous');
+                if (statusVal) statusFilter.value = statusVal;
+                updatePaginationLinks(searchVal);
+                filterTable();
+            })();
         })();
     </script>
 }
