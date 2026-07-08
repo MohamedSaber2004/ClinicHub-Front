@@ -77,9 +77,9 @@
                         <span class="sidebar-profile-role">إدارة العيادة</span>
                     </div>
                 </a>
-                <a class="sidebar-item" href="@HomeRoutes.Pages.Index()">
-                    <i class="bi bi-house-door" style="font-size: 1.1rem; margin-left: 10px;"></i>
-                    <span>موقع العيادة الرئيسي</span>
+                <a href="#" class="sidebar-item" id="logoutBtn">
+                    <i class="bi bi-box-arrow-left" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                    <span>تسجيل الخروج</span>
                 </a>
             </div>
         </aside>
@@ -88,6 +88,10 @@
         <div class="main-content">
             <!-- Top Header -->
             <header class="top-header">
+                <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة">
+                    <i class="bi bi-chevron-double-right"></i>
+                </button>
+                <div style="flex:1"></div>
                 <div class="header-user" style="cursor: default;">
                     <div class="user-info">
                         <span class="user-name">طاقم الإدارة الطبية</span>
@@ -110,10 +114,14 @@
     </div>
 
     <partial name="_ErrorModal" />
+    <partial name="_SuccessModal" />
+    <partial name="_LoadingSpinner" />
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/scroll-animations.js" asp-append-version="true"></script>
+    <script src="~/js/loading-service.js" asp-append-version="true"></script>
+    <script src="~/js/notification-service.js" asp-append-version="true"></script>
     <script>
         @if (TempData["UserId"] != null)
         {
@@ -121,44 +129,36 @@
                 localStorage.setItem("userId", "@TempData["UserId"]");
                 localStorage.setItem("role", "@TempData["Role"]");
                 localStorage.setItem("clinicId", "@TempData["ClinicId"]");
+                localStorage.setItem("accessToken", "@TempData["AccessToken"]");
+                localStorage.setItem("refreshToken", "@TempData["RefreshToken"]);
             </text>
         }
 
-        $(document).ajaxError(function (event, jqxhr) {
-            var msg = 'عذراً، حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.';
-            if (jqxhr.status === 500) {
-                msg = 'الخدمة غير متاحة الآن. يرجى المحاولة لاحقاً أو الاتصال بفريق الدعم الفني.';
-            }
-            try {
-                var resp = JSON.parse(jqxhr.responseText);
-                if (resp.message) msg = resp.message;
-                else if (resp.title) msg = resp.title;
-            } catch (e) {}
-            showErrorModal(msg);
+        $('#sidebarToggle').on('click', function () {
+            $('.app-container').toggleClass('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', $('.app-container').hasClass('sidebar-collapsed') ? 'true' : '');
         });
 
-        (function () {
-            var origFetch = window.fetch;
-            window.fetch = function () {
-                return origFetch.apply(this, arguments).then(function (response) {
-                    if (response.status >= 400) {
-                        response.clone().text().then(function (text) {
-                            var msg = 'عذراً، حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.';
-                            if (response.status === 500) {
-                                msg = 'الخدمة غير متاحة الآن. يرجى المحاولة لاحقاً أو الاتصال بفريق الدعم الفني.';
-                            }
-                            try {
-                                var resp = JSON.parse(text);
-                                if (resp.message) msg = resp.message;
-                                else if (resp.title) msg = resp.title;
-                            } catch (e) {}
-                            setTimeout(function () { showErrorModal(msg); }, 100);
-                        });
-                    }
-                    return response;
-                });
-            };
-        })();
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            $('.app-container').addClass('sidebar-collapsed');
+        }
+
+        $('#logoutBtn').on('click', function (e) {
+            e.preventDefault();
+            var token = localStorage.getItem('refreshToken') || '';
+            localStorage.removeItem('userId');
+            localStorage.removeItem('role');
+            localStorage.removeItem('clinicId');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            fetch('@HomeRoutes.Account.Logout()', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken: token })
+            }).then(function (r) { return r.json(); })
+              .then(function (d) { if (d.redirectUrl) window.location.href = d.redirectUrl; })
+              .catch(function () { window.location.href = '@HomeRoutes.Account.Login()'; });
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -76,12 +76,83 @@
     });
 
     var origFetch = window.fetch;
+    var isRefreshing = false;
+    var failedQueue = [];
+
+    function getUrl(input) {
+        return typeof input === 'string' ? input : (input && input.url ? input.url : '');
+    }
+
     window.fetch = function (input, init) {
         init = init || {};
         init.headers = init.headers || {};
         init.headers['Accept-Language'] = 'ar';
+
+        var accessToken = localStorage.getItem('accessToken');
+        if (accessToken) {
+            init.headers['Authorization'] = 'Bearer ' + accessToken;
+        }
+
+        var requestUrl = getUrl(input);
+
         return origFetch.call(window, input, init).then(function (response) {
-            if (response.status >= 400) {
+            if (response.status === 401
+                && requestUrl.indexOf('/Account/RefreshToken') === -1
+                && requestUrl.indexOf('/Account/Login') === -1)
+            {
+                if (isRefreshing) {
+                    return new Promise(function (resolve) {
+                        failedQueue.push(function (newToken) {
+                            init.headers['Authorization'] = 'Bearer ' + newToken;
+                            resolve(origFetch.call(window, input, init));
+                        });
+                    });
+                }
+
+                isRefreshing = true;
+                var refreshToken = localStorage.getItem('refreshToken');
+
+                return origFetch('/Account/RefreshToken', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken: refreshToken })
+                }).then(function (refreshRes) {
+                    return refreshRes.json().then(function (data) {
+                        if (refreshRes.ok && data.accessToken) {
+                            localStorage.setItem('accessToken', data.accessToken);
+                            if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+
+                            isRefreshing = false;
+                            failedQueue.forEach(function (cb) { cb(data.accessToken); });
+                            failedQueue = [];
+
+                            init.headers['Authorization'] = 'Bearer ' + data.accessToken;
+                            return origFetch.call(window, input, init);
+                        }
+
+                        isRefreshing = false;
+                        failedQueue = [];
+                        localStorage.removeItem('accessToken');
+                        localStorage.removeItem('refreshToken');
+                        localStorage.removeItem('userId');
+                        localStorage.removeItem('role');
+                        localStorage.removeItem('clinicId');
+                        window.location.href = '/Account/Login';
+                        throw new Error('Session expired');
+                    });
+                }).catch(function () {
+                    isRefreshing = false;
+                    failedQueue = [];
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('clinicId');
+                    window.location.href = '/Account/Login';
+                });
+            }
+
+            if (response.status >= 400 && !isRefreshing) {
                 response.clone().text().then(function (text) {
                     setTimeout(function () { window.showBackendErrors(text); }, 100);
                 });
@@ -104,6 +175,7 @@
             body: new URLSearchParams(formData),
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Accept-Language': 'ar'
             }
         }).then(function (response) {

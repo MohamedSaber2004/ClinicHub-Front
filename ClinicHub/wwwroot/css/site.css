@@ -61,6 +61,7 @@ body {
     flex-shrink: 0;
     height: 100%;
     z-index: 100;
+    transition: width 0.2s ease;
 }
 
 .sidebar-header {
@@ -3356,5 +3357,367 @@ body {
 .error-modal-btn:hover {
   background-color: var(--clr-primary-hover);
   color: #FFFFFF;
+}
+
+/* ============================================================
+   Global Loading Overlay
+   ============================================================ */
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-overlay.loading-active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4, 16px);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  color: var(--clr-primary, #2F9CCA);
+  border-width: 5px;
+}
+
+.loading-text {
+  font-family: var(--ff-primary, 'Mulish', sans-serif);
+  font-size: var(--fs-md, 14px);
+  font-weight: var(--fw-md-medium, 500);
+  color: var(--clr-text-secondary, #66748C);
+  margin: 0;
+}
+
+/* ============================================================
+   Specialization Modal Form Overrides
+   ============================================================ */
+
+#specializationModal .form-textarea {
+  min-height: 70px;
+}
+
+
+
+/* ============================================================
+   Specialization Modal Buttons
+   ============================================================ */
+
+#specializationModal .modal-footer-custom .btn {
+  padding: 10px 24px;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+  min-width: 90px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#specializationModal .modal-footer-custom .btn-primary {
+  background-color: var(--clr-primary);
+  border: 1px solid var(--clr-primary);
+  color: #FFFFFF;
+}
+
+#specializationModal .modal-footer-custom .btn-primary:hover {
+  background-color: var(--clr-primary-hover);
+  border-color: var(--clr-primary-hover);
+}
+
+#specializationModal .modal-footer-custom .btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--clr-border);
+  color: var(--clr-text);
+}
+
+#specializationModal .modal-footer-custom .btn-secondary:hover {
+  background-color: var(--clr-table-header);
+}
+
+/* ============================================================
+   Specialization Icon
+   ============================================================ */
+
+.spec-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+.spec-table td:first-child {
+  min-width: 52px;
+  text-align: center;
+}
+
+.spec-link {
+  color: var(--clr-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.spec-link:hover {
+  color: var(--clr-primary-hover);
+  text-decoration: underline;
+}
+
+/* ============================================================
+   File Upload (Modal)
+   ============================================================ */
+
+.file-upload-wrapper {
+  position: relative;
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.file-input-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 14px;
+  border: 2px dashed var(--clr-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--clr-text-secondary);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-md-medium);
+  transition: border-color var(--transition-base), background-color var(--transition-base), color var(--transition-base);
+}
+
+.file-input-label:hover {
+  border-color: var(--clr-primary);
+  background-color: var(--clr-primary-light);
+  color: var(--clr-primary);
+}
+
+.file-input-label svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity var(--transition-base);
+}
+
+.file-input-label:hover svg {
+  opacity: 1;
+}
+
+.icon-preview-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-2);
+  background-color: var(--clr-table-header);
+  border-radius: var(--radius-sm);
+}
+
+.icon-preview-wrapper.is-hidden {
+  display: none;
+}
+
+.icon-preview {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background-color: var(--clr-surface);
+  padding: 4px;
+}
+
+.icon-preview-remove {
+  background: none;
+  border: none;
+  color: var(--clr-danger);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-base);
+  flex-shrink: 0;
+}
+
+.icon-preview-remove:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.icon-preview-remove svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ============================================================
+   Responsive Specializations Table
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .spec-table .desc-col {
+    display: none;
+  }
+
+  .spec-table th,
+  .spec-table td {
+    padding: var(--space-2) var(--space-2);
+    font-size: var(--fs-sm);
+  }
+
+  .spec-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .page-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar .form-input,
+  .filter-bar .form-select {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* ============================================================
+   Sidebar Toggle / Collapse
+   ============================================================ */
+
+.sidebar-toggle {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  color: var(--clr-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  font-size: 1.3rem;
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--clr-primary-light);
+  color: var(--clr-primary);
+  box-shadow: 0 0 0 4px var(--clr-primary-light);
+}
+
+.sidebar-toggle:active {
+  transform: scale(0.92);
+}
+
+.sidebar-toggle i {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--clr-sidebar-hover);
+  color: var(--clr-primary);
+}
+
+.app-container.sidebar-collapsed .sidebar {
+  width: 70px;
+}
+
+.app-container.sidebar-collapsed .sidebar-header {
+  justify-content: center;
+  padding: var(--space-5) var(--space-3);
+}
+
+.app-container.sidebar-collapsed .sidebar-header .logo-text span {
+  display: none;
+}
+
+.app-container.sidebar-collapsed .sidebar-nav-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-container.sidebar-collapsed .sidebar-item {
+  justify-content: center;
+  padding: var(--space-3);
+  width: 44px;
+  height: 44px;
+}
+
+.app-container.sidebar-collapsed .sidebar-item span {
+  display: none;
+}
+
+.app-container.sidebar-collapsed .sidebar-item i,
+.app-container.sidebar-collapsed .sidebar-item svg {
+  margin: 0 !important;
+}
+
+.app-container.sidebar-collapsed .sidebar-menu {
+  padding: var(--space-4) var(--space-2) 0;
+  align-items: center;
+}
+
+.app-container.sidebar-collapsed .sidebar-bottom {
+  align-items: center;
+}
+
+.app-container.sidebar-collapsed .sidebar-bottom .sidebar-item {
+  width: 44px;
+  height: 44px;
+  justify-content: center;
+}
+
+.app-container.sidebar-collapsed .sidebar-bottom .sidebar-item span {
+  display: none;
+}
+
+.app-container.sidebar-collapsed .sidebar-profile {
+  justify-content: center;
+  padding: var(--space-3);
+}
+
+.app-container.sidebar-collapsed .sidebar-profile-info {
+  display: none;
+}
+
+.app-container.sidebar-collapsed .sidebar-toggle i {
+  transform: rotate(180deg);
 }
 

@@ -626,17 +626,6 @@ namespace ClinicHub.Data
 
         public static MockAd GetAdDetail(int id) => GetAds().FirstOrDefault(a => a.Id == id) ?? GetAds().First();
 
-        // ========== Specializations ==========
-        public static List<MockSpecialization> GetSpecializations() => new()
-        {
-            new() { Id = 1, Name = "القلب والأوعية الدموية", Description = "تشخيص وعلاج أمراض القلب والشرايين", Icon = "🫀", IsActive = true },
-            new() { Id = 2, Name = "الأمراض العصبية", Description = "تشخيص وعلاج اضطرابات الجهاز العصبي", Icon = "🧠", IsActive = true },
-            new() { Id = 3, Name = "جراحة العظام", Description = "جراحة وإصلاح كسور وإصابات العظام والمفاصل", Icon = "🦵", IsActive = true },
-            new() { Id = 4, Name = "طب الأطفال", Description = "رعاية صحة الأطفال من الولادة حتى المراهقة", Icon = "👶", IsActive = false },
-            new() { Id = 5, Name = "النساء والولادة", Description = "رعاية صحة المرأة ومتابعة الحمل والولادة", Icon = "🫃", IsActive = true },
-            new() { Id = 6, Name = "طب العيون", Description = "تشخيص وعلاج أمراض وجراحة العيون", Icon = "👁️", IsActive = true },
-        };
-
         // ========== Clinics ==========
         public static List<MockClinic> GetClinics() => new()
         {
@@ -907,15 +896,7 @@ namespace ClinicHub.Data
         public string Comment { get; set; } = "";
     }
 
-    // ========== Specializations Models ==========
-    public class MockSpecialization
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Description { get; set; } = "";
-        public string Icon { get; set; } = "";
-        public bool IsActive { get; set; } = true;
-    }
+
 
     // ========== Clinics Models ==========
     public class MockClinic

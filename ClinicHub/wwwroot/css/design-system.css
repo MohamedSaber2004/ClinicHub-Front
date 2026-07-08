@@ -814,3 +814,51 @@
   color: var(--clr-text);
   margin-bottom: var(--space-4);
 }
+
+/* ============================================================
+   Pagination
+   ============================================================ */
+
+.pagination-nav {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-5) 0;
+}
+
+.pagination-list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pagination-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  background: var(--clr-surface);
+  color: var(--clr-text);
+  font-size: var(--fs-sm);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.pagination-link:hover {
+  background: var(--clr-primary);
+  color: #fff;
+  border-color: var(--clr-primary);
+}
+
+.pagination-link--active {
+  background: var(--clr-primary);
+  color: #fff;
+  border-color: var(--clr-primary);
+  font-weight: 700;
+}

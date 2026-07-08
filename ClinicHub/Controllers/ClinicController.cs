@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicHub.Controllers
 {
-    public class ClinicController : Controller
+    public class ClinicController : BaseController
     {
         public IActionResult Index()
         {

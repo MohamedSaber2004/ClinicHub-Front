@@ -1,9 +1,12 @@
 ﻿using System.Text;
 using ClinicHub.Services.Contracts;
+using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.Options;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.RequestModels;
 using ClinicHub.Services.Routes.Api;
+using ClinicHub.Services.Utilities;
+using MediatR;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,14 +23,26 @@ namespace ClinicHub.Services.Services.Implementations
         };
 
         private readonly HttpClient _httpClient;
+
         private readonly string _loginUrl;
+        private readonly string _logoutUrl;
+        private readonly string _refreshTokenUrl;
+        private readonly string _forgetPasswordUrl;
+        private readonly string _verifyResetTokenUrl;
+        private readonly string _resetPasswordUrl;
 
         public AuthService(IOptions<Doctory> doctoryOptions)
         {
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             DoctoryRoutes.Initialize(doctoryOptions.Value.BaseUrl);
+
             _loginUrl = DoctoryRoutes.Auth.Login;
+            _logoutUrl = DoctoryRoutes.Auth.Logout;
+            _refreshTokenUrl = DoctoryRoutes.Auth.RefreshToken;
+            _forgetPasswordUrl = DoctoryRoutes.Auth.ForgetPassword;
+            _verifyResetTokenUrl = DoctoryRoutes.Auth.VerifyResetToken;
+            _resetPasswordUrl = DoctoryRoutes.Auth.ResetPassword;
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginRequest request)
@@ -40,13 +55,13 @@ namespace ClinicHub.Services.Services.Implementations
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorMessages = ExtractApiErrors(responseBody);
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
                 var combined = string.Join(" ", errorMessages);
-                throw new Exception(string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تسجيل الدخول" : combined);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تسجيل الدخول" : combined);
             }
 
             var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"] ?? obj?["result"] ?? obj?["Result"];
+            var dataToken = obj?["data"] ?? obj?["Data"];
 
             var dataJson = dataToken?.ToString() ?? responseBody;
             var result = JsonConvert.DeserializeObject<AuthResponseDto>(dataJson, _jsonSettings);
@@ -54,48 +69,118 @@ namespace ClinicHub.Services.Services.Implementations
             return result!;
         }
 
-        private static List<string> ExtractApiErrors(string body)
+        public async Task<string> LogoutAsync(LogoutRequest request)
         {
-            var errors = new List<string>();
+            var json  = JsonConvert.SerializeObject(request, _jsonSettings);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            try
+            var response = await _httpClient.PostAsync(_logoutUrl, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
             {
-                var obj = JsonConvert.DeserializeObject<JObject>(body);
-                if (obj == null) return errors;
-
-                var message = obj["message"]?.ToString() ?? obj["Message"]?.ToString() ?? "";
-
-                var errorsToken = obj["errors"] ?? obj["Errors"];
-                if (errorsToken != null && errorsToken.Type == JTokenType.Object)
-                {
-                    foreach (var prop in errorsToken.Children<JProperty>())
-                    {
-                        if (prop.Value.Type == JTokenType.Array)
-                        {
-                            foreach (var item in prop.Value)
-                            {
-                                var msg = item.ToString();
-                                if (!string.IsNullOrWhiteSpace(msg))
-                                    errors.Add(msg);
-                            }
-                        }
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(message))
-                {
-                    if (errors.Count == 0)
-                        errors.Add(message);
-                    else
-                        errors.Insert(0, message);
-                }
-            }
-            catch
-            {
-                // fallback — keep errors empty
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تسجيل الخروج" : combined);
             }
 
-            return errors;
+            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+
+            var dataJson = dataToken?.ToString() ?? responseBody;
+            var result = JsonConvert.DeserializeObject<string>(dataJson, _jsonSettings);
+
+            return result!;
+        }
+
+        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenRequest request)
+        {
+            var json = JsonConvert.SerializeObject(request, _jsonSettings);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(_refreshTokenUrl, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تحديث الجلسة" : combined);
+            }
+
+            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+
+            var dataJson = dataToken?.ToString() ?? responseBody;
+            var result = JsonConvert.DeserializeObject<AuthResponseDto>(dataJson, _jsonSettings);
+
+            return result!;
+        }
+
+        public async Task<Unit> ForgetPasswordAsync(ForgetPasswordRequest request)
+        {
+            var json = JsonConvert.SerializeObject(request, _jsonSettings);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(_forgetPasswordUrl, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في إرسال رمز التحقق" : combined);
+            }
+
+            return Unit.Value;
+        }
+
+        public async Task<bool> VerifyResetTokenAsync(VerifyResetTokenRequest request)
+        {
+            var json = JsonConvert.SerializeObject(request, _jsonSettings);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(_verifyResetTokenUrl, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "رمز التحقق غير صحيح أو منتهي الصلاحية" : combined);
+            }
+
+            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+
+            if (dataToken != null && dataToken.Type == JTokenType.Boolean)
+                return dataToken.Value<bool>();
+
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
+        {
+            var json = JsonConvert.SerializeObject(request, _jsonSettings);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(_resetPasswordUrl, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في إعادة تعيين كلمة المرور" : combined);
+            }
+
+            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+
+            if (dataToken != null && dataToken.Type == JTokenType.Boolean)
+                return dataToken.Value<bool>();
+
+            return true;
         }
     }
 }

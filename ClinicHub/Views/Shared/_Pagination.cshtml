@@ -1,0 +1,48 @@
+@{
+    var pagination = ViewBag.Pagination;
+    int totalCount = pagination?.TotalCount ?? 0;
+    int totalPages = pagination?.TotalPages ?? 0;
+    int pageNumber = pagination?.PageNumber ?? 1;
+    int pageSize = pagination?.PageSize ?? 20;
+    bool hasPrev = pagination?.HasPreviousPage ?? false;
+    bool hasNext = pagination?.HasNextPage ?? false;
+    if (pagination == null || totalCount == 0) return;
+}
+
+<nav class="pagination-nav">
+    <ul class="pagination-list">
+        @if (hasPrev)
+        {
+            <li class="pagination-item">
+                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber - 1, pageSize, isFamous = ViewBag.CurrentFilter })">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                    السابق
+                </a>
+            </li>
+        }
+
+        @for (var i = 1; i <= totalPages; i++)
+        {
+            <li class="pagination-item">
+                <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")"
+                   href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = i, pageSize, isFamous = ViewBag.CurrentFilter })">
+                    @i
+                </a>
+            </li>
+        }
+
+        @if (hasNext)
+        {
+            <li class="pagination-item">
+                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber + 1, pageSize, isFamous = ViewBag.CurrentFilter })">
+                    التالي
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                    </svg>
+                </a>
+            </li>
+        }
+    </ul>
+</nav>

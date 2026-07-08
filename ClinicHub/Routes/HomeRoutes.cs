@@ -19,6 +19,8 @@ namespace ClinicHub.Routes
             private static string AccountBase => "/Account";
 
             public static string Login() => $"{AccountBase}/Login";
+            public static string Logout() => $"{AccountBase}/Logout";
+            public static string RefreshToken() => $"{AccountBase}/RefreshToken";
             public static string ForgotPassword() => $"{AccountBase}/ForgotPassword";
             public static string VerifyCode() => $"{AccountBase}/VerifyCode";
             public static string ResetPassword() => $"{AccountBase}/ResetPassword";

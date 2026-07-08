@@ -52,11 +52,13 @@
     </footer>
 
     <partial name="_ErrorModal" />
+    <partial name="_LoadingSpinner" />
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/scroll-animations.js" asp-append-version="true"></script>
     <script src="~/js/error-service.js" asp-append-version="true"></script>
+    <script src="~/js/loading-service.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

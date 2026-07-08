@@ -8,7 +8,11 @@ namespace ClinicHub.Services
     {
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ISpecializationService, SpecializationService>();
+            services.AddScoped<IAttachmentService, AttachmentService>();
+            services.AddScoped<IAttachmentUrlResolver, AttachmentUrlResolver>();
 
             return services;
         }

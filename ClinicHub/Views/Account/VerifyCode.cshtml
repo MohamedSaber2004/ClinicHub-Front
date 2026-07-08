@@ -1,10 +1,7 @@
 @{
     ViewData["Title"] = "تحقق من الرمز - Doctory";
     var email = TempData["Email"]?.ToString() ?? "البريد الإلكتروني";
-    var code = TempData["VerificationCode"]?.ToString();
-    // Keep TempData so it survives the form post if validation fails
     TempData.Keep("Email");
-    TempData.Keep("VerificationCode");
 }
 
 <div class="auth-wrapper">
@@ -25,15 +22,6 @@
             تم إرسال رمز التحقق إلى: <br />
             <strong style="color: var(--text-dark);">@email</strong>
         </p>
-
-        @if (!string.IsNullOrEmpty(code))
-        {
-            <div style="background-color: rgba(47, 156, 202, 0.1); border: 1px dashed var(--primary-color); border-radius: 5px; padding: 10px; margin-bottom: 20px; text-align: center;">
-                <span style="font-size: 13px; color: var(--primary-hover); font-weight: 600;">
-                    رمز التحقق التجريبي الخاص بك هو: <strong style="font-size: 16px; letter-spacing: 2px;">@code</strong>
-                </span>
-            </div>
-        }
 
         <form action="@HomeRoutes.Account.VerifyCode()" method="post" data-ajax="true">
             <div class="text-danger" asp-validation-summary="ModelOnly" style="font-size: 14px; margin-bottom: 15px; text-align: center;"></div>

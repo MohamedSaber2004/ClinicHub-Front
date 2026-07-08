@@ -23,55 +23,74 @@
 <!-- Filter Bar -->
 <div class="filter-bar">
     <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن تخصص..." />
-    <select id="filterStatus" class="form-select">
-        <option value="">جميع الحالات</option>
-        <option value="active">نشط</option>
-        <option value="inactive">غير نشط</option>
+    <select id="filterStatus" class="form-select" onchange="window.location.href='/Admin/Specializations?isFamous=' + this.value">
+        <!option value="" @(ViewBag.CurrentFilter == null ? "selected" : "")>جميع التخصصات</!option>
+        <!option value="true" @(ViewBag.CurrentFilter == true ? "selected" : "")>مميز</!option>
+        <!option value="false" @(ViewBag.CurrentFilter == false ? "selected" : "")>غير مميز</!option>
     </select>
 </div>
 
 <!-- Specializations Table -->
 <div class="table-card">
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table spec-table">
             <thead>
                 <tr>
                     <th>الأيقونة</th>
-                    <th>اسم التخصص</th>
-                    <th>الوصف</th>
+                    <th>اسم التخصص (عربي)</th>
+                    <th>الاسم (إنجليزي)</th>
+                    <th class="desc-col">الوصف</th>
                     <th>الحالة</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
             <tbody>
                 @{
-                    var specializations = ViewBag.Specializations as List<MockSpecialization> ?? new();
+                    var specializations = ViewBag.Specializations as List<SpecializationDto> ?? new();
                 }
                 @foreach (var spec in specializations)
                 {
                     <tr>
-                        <td><span class="emoji-display">@spec.Icon</span></td>
-                        <td class="text-md-medium">@spec.Name</td>
-                        <td class="text-md">@spec.Description</td>
                         <td>
-                            <label class="toggle-switch">
-                                <input type="checkbox" class="spec-toggle-input" @(spec.IsActive ? "checked" : "") />
-                                <span class="toggle-track-sm"></span>
-                            </label>
+                            @if (!string.IsNullOrEmpty(spec.IconUrl))
+                            {
+                                <img class="spec-icon" src="@spec.IconUrl" alt="@spec.ArName" loading="lazy" />
+                            }
+                        </td>
+                        <td class="text-md-medium"><a href="/Admin/Specializations/@spec.Id" class="spec-link">@spec.ArName</a></td>
+                        <td class="text-md">@spec.Name</td>
+                        <td class="text-md desc-col">@(spec.Description ?? "_")</td>
+                        <td>
+                            @if (spec.IsFamous)
+                            {
+                                <span class="badge badge-success">مميز</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-warning">غير مميز</span>
+                            }
                         </td>
                         <td>
                             <div class="table-actions">
                                 <button class="btn-icon btn-edit-spec" title="تعديل"
                                         data-id="@spec.Id"
-                                        data-name="@spec.Name"
+                                        data-name="@spec.ArName"
+                                        data-nameen="@spec.Name"
                                         data-description="@spec.Description"
-                                        data-icon="@spec.Icon"
-                                        data-active="@spec.IsActive.ToString().ToLower()">
+                                        data-iconurl="@spec.IconUrl"
+                                        data-isfamous="@spec.IsFamous.ToString().ToLower()"
+                                        >
                                     <svg viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                                     </svg>
                                 </button>
-
+                                <button class="btn-icon btn-delete-spec" title="حذف"
+                                        data-id="@spec.Id"
+                                        data-name="@spec.ArName">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -81,40 +100,91 @@
     </div>
 </div>
 
-<!-- Add/Edit Modal -->
-<div class="modal fade" id="specializationModal" tabindex="-1" aria-hidden="true">
+<partial name="_Pagination" />
+
+<form id="specializationForm" method="post" enctype="multipart/form-data">
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="specializationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header-custom">
+                    <h5 class="modal-title" id="specializationModalTitle">إضافة تخصص جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body-custom">
+                    <input type="hidden" id="specId" name="id" value="" />
+                    <input type="hidden" id="formAction" name="formAction" value="create" />
+                    <input type="hidden" id="specCurrentIcon" name="CurrentIcon" value="" />
+                    <div class="form-group">
+                        <label class="form-label" for="specName">اسم التخصص (عربي)</label>
+                        <input type="text" id="specArName" name="ArName" class="form-input" placeholder="مثال: أمراض القلب" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="specNameEn">اسم التخصص (إنجليزي)</label>
+                        <input type="text" id="specName" name="Name" class="form-input" placeholder="Example: Cardiology" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="specDescription">الوصف</label>
+                        <textarea id="specDescription" name="Description" class="form-textarea" placeholder="وصف مختصر للتخصص..." rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="specIconUpload">أيقونة التخصص</label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="specIconUpload" name="Icon" class="file-input" accept="image/*" />
+                            <label for="specIconUpload" class="file-input-label">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                                </svg>
+                                <span id="fileLabel">اختر صورة الأيقونة</span>
+                            </label>
+                        </div>
+                        <div class="icon-preview-wrapper is-hidden" id="iconPreviewWrapper">
+                            <img id="iconPreview" class="icon-preview" src="" alt="معاينة" />
+                            <button type="button" class="icon-preview-remove" id="iconPreviewRemove">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-toggle">
+                            <input type="checkbox" id="specIsSpecial" name="IsFamous" value="true" checked />
+                            <span class="toggle-track"></span>
+                            <span class="toggle-label">مميز</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="saveSpecBtn">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form id="deleteSpecForm" method="post" asp-action="DeleteSpecialization" asp-controller="Admin">
+    <input type="hidden" id="deleteSpecId" name="id" value="" />
+</form>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-content-custom">
-            <div class="modal-header-custom">
-                <h5 class="modal-title" id="specializationModalTitle">إضافة تخصص جديد</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
-            </div>
-            <div class="modal-body-custom">
-                <input type="hidden" id="specId" value="" />
-                <div class="form-group">
-                    <label class="form-label" for="specName">اسم التخصص</label>
-                    <input type="text" id="specName" name="Name" class="form-input" placeholder="مثال: أمراض القلب" />
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <div class="modal-body" style="padding: var(--space-6); text-align: center;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+                    </svg>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="specDescription">الوصف</label>
-                    <textarea id="specDescription" name="Description" class="form-textarea" placeholder="وصف مختصر للتخصص..." rows="3"></textarea>
+                <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-2);">تأكيد الحذف</h3>
+                <p style="font-family: var(--ff-primary); font-size: var(--fs-md); color: var(--clr-text-secondary); margin: 0 0 var(--space-5);">
+                    هل أنت متأكد من حذف التخصص: <strong id="deleteSpecName" style="color: var(--clr-text);"></strong>؟
+                </p>
+                <div style="display: flex; gap: var(--space-2); justify-content: center;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn" style="min-width: 90px; padding: 10px 24px; background-color: var(--clr-danger); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600; cursor: pointer;">حذف</button>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" for="specIcon">الأيقونة</label>
-                    <input type="text" id="specIcon" name="Icon" class="form-input" placeholder="🫀 أو رمز إيموجي" />
-                    <p class="form-hint">يمكنك استخدام إيموجي أو رمز تعبيري</p>
-                </div>
-                <div class="form-group">
-                    <label class="form-toggle">
-                        <input type="checkbox" id="specIsActive" name="IsActive" checked />
-                        <span class="toggle-track"></span>
-                        <span class="toggle-label">التخصص نشط</span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer-custom">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary" id="saveSpecBtn" data-bs-dismiss="modal">حفظ</button>
             </div>
         </div>
     </div>
@@ -122,53 +192,138 @@
 
 @section Scripts {
     <script>
+        var errorMsg = '@(ViewBag.ErrorMessage ?? TempData["ErrorMessage"] ?? "")';
+        if (errorMsg) { showErrorModal(errorMsg); }
+        var successMsg = '@(TempData["SuccessMessage"] ?? "")';
+        if (successMsg) { showSuccessModal(successMsg); }
+    </script>
+    <script>
         (function() {
             var modalEl = document.getElementById('specializationModal');
+            var form = document.getElementById('specializationForm');
             var titleEl = document.getElementById('specializationModalTitle');
             var idInput = document.getElementById('specId');
             var nameInput = document.getElementById('specName');
+            var arNameInput = document.getElementById('specArName');
             var descInput = document.getElementById('specDescription');
-            var iconInput = document.getElementById('specIcon');
-            var activeCheck = document.getElementById('specIsActive');
+            var fileInput = document.getElementById('specIconUpload');
+            var fileLabel = document.getElementById('fileLabel');
+            var formAction = document.getElementById('formAction');
+            var iconPreviewWrapper = document.getElementById('iconPreviewWrapper');
+            var iconPreview = document.getElementById('iconPreview');
+            var iconPreviewRemove = document.getElementById('iconPreviewRemove');
+            var specIsSpecial = document.getElementById('specIsSpecial');
 
             var specializationModal = new bootstrap.Modal(modalEl);
 
             document.querySelectorAll('.btn-edit-spec').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     titleEl.textContent = 'تعديل التخصص';
+                    formAction.value = 'update';
                     idInput.value = btn.getAttribute('data-id');
-                    nameInput.value = btn.getAttribute('data-name');
+                    arNameInput.value = btn.getAttribute('data-name');
+                    nameInput.value = btn.getAttribute('data-nameen') || '';
                     descInput.value = btn.getAttribute('data-description');
-                    iconInput.value = btn.getAttribute('data-icon');
-                    activeCheck.checked = btn.getAttribute('data-active') === 'true';
+                    specIsSpecial.checked = btn.getAttribute('data-isfamous') === 'true';
+
+                    var iconUrl = btn.getAttribute('data-iconurl');
+                    document.getElementById('specCurrentIcon').value = iconUrl || '';
+                    if (iconUrl) {
+                        iconPreview.src = iconUrl;
+                        iconPreviewWrapper.classList.remove('is-hidden');
+                        fileLabel.textContent = 'تغيير الصورة';
+                    } else {
+                        iconPreviewWrapper.classList.add('is-hidden');
+                        fileLabel.textContent = 'اختر صورة الأيقونة';
+                    }
+                    fileInput.value = '';
                     specializationModal.show();
                 });
             });
 
+            fileInput.addEventListener('change', function() {
+                var file = fileInput.files[0];
+                if (file) {
+                    fileLabel.textContent = file.name;
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        iconPreview.src = e.target.result;
+                        iconPreviewWrapper.classList.remove('is-hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            iconPreviewRemove.addEventListener('click', function() {
+                fileInput.value = '';
+                iconPreviewWrapper.classList.add('is-hidden');
+                iconPreview.src = '';
+                fileLabel.textContent = 'اختر صورة الأيقونة';
+            });
+
+            form.addEventListener('submit', function(e) {
+                var isUpdate = formAction.value === 'update';
+                var specId = idInput.value;
+                if (isUpdate && specId) {
+                    form.action = '/Admin/UpdateSpecialization/' + specId;
+                } else {
+                    form.action = '/Admin/CreateSpecialization';
+                    idInput.disabled = true;
+                }
+            });
+
+            document.getElementById('addSpecializationBtn').addEventListener('click', function() {
+                titleEl.textContent = 'إضافة تخصص جديد';
+                formAction.value = 'create';
+                idInput.value = '';
+                arNameInput.value = '';
+                nameInput.value = '';
+                descInput.value = '';
+                specIsSpecial.checked = true;
+                document.getElementById('specCurrentIcon').value = '';
+                fileInput.value = '';
+                iconPreviewWrapper.classList.add('is-hidden');
+                iconPreview.src = '';
+                fileLabel.textContent = 'اختر صورة الأيقونة';
+            });
+
+            var deleteForm = document.getElementById('deleteSpecForm');
+            var deleteIdInput = document.getElementById('deleteSpecId');
+            var deleteNameEl = document.getElementById('deleteSpecName');
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
+            document.querySelectorAll('.btn-delete-spec').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    deleteIdInput.value = btn.getAttribute('data-id');
+                    deleteNameEl.textContent = btn.getAttribute('data-name');
+                    deleteModal.show();
+                });
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                deleteForm.submit();
+            });
+
+            var searchInput = document.getElementById('filterSearch');
+            var statusFilter = document.getElementById('filterStatus');
+            var rows = document.querySelectorAll('.spec-table tbody tr');
+
             function filterTable() {
-                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
-                var statusVal = document.getElementById('filterStatus').value;
-                var rows = document.querySelectorAll('.custom-table tbody tr');
+                var query = searchInput.value.trim().toLowerCase();
+                var status = statusFilter.value;
                 rows.forEach(function(row) {
-                    var name = row.querySelector('.text-md-medium').textContent.trim().toLowerCase();
-                    var isActive = row.querySelector('.spec-toggle-input').checked;
-                    var matchSearch = !searchVal || name.indexOf(searchVal) !== -1;
-                    var matchStatus = !statusVal || (statusVal === 'active' && isActive) || (statusVal === 'inactive' && !isActive);
+                    var arName = row.cells[1]?.textContent?.toLowerCase() || '';
+                    var enName = row.cells[2]?.textContent?.toLowerCase() || '';
+                    var desc = row.cells[3]?.textContent?.toLowerCase() || '';
+                    var isFamous = row.cells[4]?.querySelector('.badge-success') !== null;
+                    var matchSearch = !query || arName.includes(query) || enName.includes(query) || desc.includes(query);
+                    var matchStatus = !status || (status === 'true' && isFamous) || (status === 'false' && !isFamous);
                     row.style.display = matchSearch && matchStatus ? '' : 'none';
                 });
             }
 
-            document.getElementById('filterSearch').addEventListener('input', filterTable);
-            document.getElementById('filterStatus').addEventListener('change', filterTable);
-
-            document.getElementById('addSpecializationBtn').addEventListener('click', function() {
-                titleEl.textContent = 'إضافة تخصص جديد';
-                idInput.value = '';
-                nameInput.value = '';
-                descInput.value = '';
-                iconInput.value = '';
-                activeCheck.checked = true;
-            });
+            searchInput.addEventListener('input', filterTable);
+            statusFilter.addEventListener('change', filterTable);
         })();
     </script>
 }

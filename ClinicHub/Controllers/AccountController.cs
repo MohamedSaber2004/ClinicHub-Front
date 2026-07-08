@@ -1,11 +1,12 @@
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Enums;
+using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.RequestModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicHub.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : BaseController
     {
         private readonly IAuthService _authService;
 
@@ -13,8 +14,6 @@ namespace ClinicHub.Controllers
         {
             _authService = authService;
         }
-
-        private bool IsAjaxRequest => Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
         [HttpGet]
         public IActionResult Login()
@@ -32,6 +31,8 @@ namespace ClinicHub.Controllers
                 TempData["UserId"] = result.Id.ToString();
                 TempData["Role"] = result.Roles;
                 TempData["ClinicId"] = result.ClinicId?.ToString();
+                TempData["AccessToken"] = result.AccessToken;
+                TempData["RefreshToken"] = result.RefreshToken;
 
                 var redirectUrl = result.Roles.Contains(UserType.SuperAdmin.ToString())
                     ? Url.Action("Index", "Admin")
@@ -39,23 +40,60 @@ namespace ClinicHub.Controllers
                         ? Url.Action("Index", "Clinic")
                         : Url.Action("Index", "Admin");
 
-                if (IsAjaxRequest)
-                    return Json(new { redirectUrl });
-
-                return Redirect(redirectUrl!);
+                return RedirectJson(redirectUrl!);
+            }
+            catch (ApiException ex)
+            {
+                return Fail(ex.StatusCode, ex.Message);
             }
             catch (Exception ex)
             {
-                var errors = new List<string> { ex.Message };
+                return Fail(500, ex.Message);
+            }
+        }
 
-                if (IsAjaxRequest)
+        [HttpPost]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest? request)
+        {
+            var token = request?.RefreshToken;
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                try
                 {
-                    Response.StatusCode = 400;
-                    return Json(new { errors });
+                    await _authService.LogoutAsync(new LogoutRequest(token));
                 }
+                catch
+                {
+                    // ignore backend error — always clear local session
+                }
+            }
 
-                ModelState.AddModelError("", ex.Message);
-                return View();
+            return RedirectJson(Url.Action("Login"));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            try
+            {
+                var result = await _authService.RefreshTokenAsync(request);
+
+                return Json(new
+                {
+                    accessToken = result.AccessToken,
+                    refreshToken = result.RefreshToken
+                });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { errors = new List<string> { ex.Message } });
+            }
+            catch
+            {
+                Response.StatusCode = 500;
+                return Json(new { errors = new List<string> { "خطأ في الاتصال بالخادم." } });
             }
         }
 
@@ -66,126 +104,126 @@ namespace ClinicHub.Controllers
         }
 
         [HttpPost]
-        public IActionResult ForgotPassword(string email)
+        public async Task<IActionResult> ForgotPassword(string email)
         {
             if (string.IsNullOrEmpty(email))
+                return Fail(400, "يرجى إدخال البريد الإلكتروني.");
+
+            try
             {
-                if (IsAjaxRequest)
-                {
-                    Response.StatusCode = 400;
-                    return Json(new { errors = new List<string> { "يرجى إدخال البريد الإلكتروني." } });
-                }
-                ModelState.AddModelError("", "يرجى إدخال البريد الإلكتروني.");
-                return View();
+                await _authService.ForgetPasswordAsync(new ForgetPasswordRequest(email));
+                TempData["Email"] = email;
+                return RedirectJson(Url.Action("VerifyCode"));
             }
-
-            // Generate a random 6-digit verification code
-            string randomCode = new System.Random().Next(100000, 999999).ToString();
-            
-            TempData["Email"] = email;
-            TempData["VerificationCode"] = randomCode;
-
-            if (IsAjaxRequest)
-                return Json(new { redirectUrl = Url.Action("VerifyCode") });
-
-            return RedirectToAction("VerifyCode");
+            catch (ApiException ex)
+            {
+                return Fail(ex.StatusCode, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Fail(500, ex.Message);
+            }
         }
 
         [HttpGet]
         public IActionResult VerifyCode()
         {
-            if (TempData["Email"] == null || TempData["VerificationCode"] == null)
-            {
+            if (TempData["Email"] == null)
                 return RedirectToAction("ForgotPassword");
-            }
-            
+
             TempData.Keep("Email");
-            TempData.Keep("VerificationCode");
             return View();
         }
 
         [HttpPost]
-        public IActionResult VerifyCode(string verificationCode)
+        public async Task<IActionResult> VerifyCode(string verificationCode)
         {
             var email = TempData["Email"]?.ToString();
-            var expectedCode = TempData["VerificationCode"]?.ToString();
 
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(expectedCode))
-            {
-                if (IsAjaxRequest)
-                    return Json(new { redirectUrl = Url.Action("ForgotPassword") });
-
-                ModelState.AddModelError("", "انتهت صلاحية الجلسة، يرجى المحاولة مرة أخرى.");
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(verificationCode))
                 return RedirectToAction("ForgotPassword");
-            }
 
-            if (verificationCode == expectedCode)
+            try
             {
+                var isValid = await _authService.VerifyResetTokenAsync(new VerifyResetTokenRequest(verificationCode, email));
+
+                if (!isValid)
+                {
+                    TempData.Keep("Email");
+                    return Fail(400, "رمز التحقق غير صحيح.");
+                }
+
                 TempData["Email"] = email;
                 TempData["CodeVerified"] = "true";
+                TempData["VerificationCode"] = verificationCode;
 
-                if (IsAjaxRequest)
-                    return Json(new { redirectUrl = Url.Action("ResetPassword") });
-
-                return RedirectToAction("ResetPassword");
+                return RedirectJson(Url.Action("ResetPassword"));
             }
-
-            if (IsAjaxRequest)
+            catch (ApiException ex)
             {
-                Response.StatusCode = 400;
-                return Json(new { errors = new List<string> { "رمز التحقق غير صحيح، يرجى المحاولة مرة أخرى." } });
+                TempData.Keep("Email");
+                TempData.Keep("VerificationCode");
+                return Fail(ex.StatusCode, ex.Message);
             }
-
-            ModelState.AddModelError("", "رمز التحقق غير صحيح، يرجى المحاولة مرة أخرى.");
-            TempData.Keep("Email");
-            TempData.Keep("VerificationCode");
-            return View();
+            catch (Exception ex)
+            {
+                TempData.Keep("Email");
+                TempData.Keep("VerificationCode");
+                return Fail(500, ex.Message);
+            }
         }
 
         [HttpGet]
         public IActionResult ResetPassword()
         {
             if (TempData["Email"] == null || TempData["CodeVerified"]?.ToString() != "true")
-            {
                 return RedirectToAction("ForgotPassword");
-            }
 
             TempData.Keep("Email");
             return View();
         }
 
         [HttpPost]
-        public IActionResult ResetPassword(string newPassword, string confirmPassword)
+        public async Task<IActionResult> ResetPassword(string newPassword, string confirmPassword)
         {
             var email = TempData["Email"]?.ToString();
-            if (string.IsNullOrEmpty(email))
-            {
-                if (IsAjaxRequest)
-                    return Json(new { redirectUrl = Url.Action("ForgotPassword") });
+            var token = TempData["VerificationCode"]?.ToString();
 
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
                 return RedirectToAction("ForgotPassword");
-            }
 
             if (newPassword != confirmPassword)
             {
-                if (IsAjaxRequest)
-                {
-                    Response.StatusCode = 400;
-                    return Json(new { errors = new List<string> { "كلمة المرور الجديدة غير متطابقة." } });
-                }
-
-                ModelState.AddModelError("", "كلمة المرور الجديدة غير متطابقة.");
                 TempData.Keep("Email");
-                return View();
+                TempData.Keep("VerificationCode");
+                return Fail(400, "كلمة المرور الجديدة غير متطابقة.");
             }
 
-            // Simulated success
-            TempData["SuccessMessage"] = "تم إعادة تعيين كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.";
+            try
+            {
+                var success = await _authService.ResetPasswordAsync(new ResetPasswordRequest(email, token, newPassword, confirmPassword));
+                if (!success)
+                {
+                    TempData.Keep("Email");
+                    TempData.Keep("VerificationCode");
+                    return Fail(400, "فشلت عملية إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى.");
+                }
 
-            if (IsAjaxRequest)
-                return Json(new { redirectUrl = Url.Action("Login") });
-
-            return RedirectToAction("Login");
+                TempData["SuccessMessage"] = "تم إعادة تعيين كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.";
+                return RedirectJson(Url.Action("Login"));
+            }
+            catch (ApiException ex)
+            {
+                TempData.Keep("Email");
+                TempData.Keep("VerificationCode");
+                return Fail(ex.StatusCode, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                TempData.Keep("Email");
+                TempData.Keep("VerificationCode");
+                return Fail(500, ex.Message);
+            }
         }
     }
 }
