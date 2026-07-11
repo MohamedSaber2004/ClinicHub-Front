@@ -9,10 +9,35 @@ namespace ClinicHub.Services
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
             services.AddHttpContextAccessor();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<ISpecializationService, SpecializationService>();
-            services.AddScoped<IAttachmentService, AttachmentService>();
+
+            services.AddTransient<BearerTokenHandler>();
+
+            services.AddHttpClient<IAuthService, AuthService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<ISpecializationService, SpecializationService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<IAttachmentService, AttachmentService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<IUserVerificationService, UserVerificationService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
             services.AddScoped<IAttachmentUrlResolver, AttachmentUrlResolver>();
+            services.AddSingleton<IDeserializerService, DeserializerService>();
 
             return services;
         }

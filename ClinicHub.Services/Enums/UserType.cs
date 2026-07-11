@@ -2,11 +2,11 @@
 {
     public enum UserType
     {
-        None,
-        User,
-        SuperAdmin,
-        Doctor,
-        Staff,
-        ClinicOwner
+        None = 0,
+        User = 1,
+        SuperAdmin = 2,
+        Doctor = 4,
+        Staff = 8,
+        ClinicOwner = 16
     }
 }

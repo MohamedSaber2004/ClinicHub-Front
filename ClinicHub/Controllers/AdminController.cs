@@ -11,11 +11,13 @@ namespace ClinicHub.Controllers
     {
         private readonly ISpecializationService _specializationService;
         private readonly IAttachmentUrlResolver _attachmentUrlResolver;
+        private readonly IUserVerificationService _userVerificationService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
+            _userVerificationService = userVerificationService;
         }
 
         public IActionResult Index()
@@ -157,11 +159,19 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Verification")]
-        public IActionResult VerificationCenter()
+        public async Task<IActionResult> VerificationCenter(int pageNumber = 1, int pageSize = 20)
         {
-            ViewBag.Requests = MockData.GetPendingVerifications();
-            ViewBag.Registrations = MockData.GetAllClinicRegistrations();
-            ViewBag.PendingCount = MockData.GetPendingClinicRegistrationsCount();
+            try
+            {
+                var paged = await _userVerificationService.GetPendingVerificationsAsync(new GetPendingVerficationsRequest { PageNumber = pageNumber, PageSize = pageSize });
+                ViewBag.Requests = paged;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Requests = new PagginatedResult<UserVerficationDto>(new List<UserVerficationDto>(), 0);
+            }
+
             return View("VerificationCenter");
         }
 

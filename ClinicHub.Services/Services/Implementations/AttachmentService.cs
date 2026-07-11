@@ -28,9 +28,9 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly Func<string, string> _updateAttachment;
         private readonly string _downloadAttachment;
 
-        public AttachmentService(IOptions<Doctory> doctoryOptions)
+        public AttachmentService(HttpClient httpClient, IOptions<Doctory> doctoryOptions)
         {
-            _httpClient = new HttpClient();
+            _httpClient = httpClient;
 
             DoctoryRoutes.Initialize(doctoryOptions.Value.BaseUrl);
 

@@ -2,6 +2,7 @@ using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Enums;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.RequestModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicHub.Controllers
@@ -33,6 +34,16 @@ namespace ClinicHub.Controllers
                 TempData["ClinicId"] = result.ClinicId?.ToString();
                 TempData["AccessToken"] = result.AccessToken;
                 TempData["RefreshToken"] = result.RefreshToken;
+
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UtcNow.AddDays(7)
+                };
+                Response.Cookies.Append("AccessToken", result.AccessToken!, cookieOptions);
+                Response.Cookies.Append("RefreshToken", result.RefreshToken!, cookieOptions);
 
                 var redirectUrl = result.Roles.Contains(UserType.SuperAdmin.ToString())
                     ? Url.Action("Index", "Admin")
@@ -210,7 +221,10 @@ namespace ClinicHub.Controllers
                 }
 
                 TempData["SuccessMessage"] = "تم إعادة تعيين كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.";
-                return RedirectJson(Url.Action("Login"));
+            Response.Cookies.Delete("AccessToken");
+            Response.Cookies.Delete("RefreshToken");
+
+            return RedirectJson(Url.Action("Login"));
             }
             catch (ApiException ex)
             {

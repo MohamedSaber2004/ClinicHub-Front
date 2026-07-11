@@ -31,10 +31,9 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly string _verifyResetTokenUrl;
         private readonly string _resetPasswordUrl;
 
-        public AuthService(IOptions<Doctory> doctoryOptions)
+        public AuthService(HttpClient httpClient, IOptions<Doctory> doctoryOptions)
         {
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            _httpClient = httpClient;
             DoctoryRoutes.Initialize(doctoryOptions.Value.BaseUrl);
 
             _loginUrl = DoctoryRoutes.Auth.Login;

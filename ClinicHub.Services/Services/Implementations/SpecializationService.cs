@@ -26,6 +26,7 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly HttpClient _httpClient;
         private readonly IAttachmentService _attachmentService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IDeserializerService _deserializerService;
 
         private readonly string _getAllSpecializations;
         private readonly Func<Guid, string> _getSpecializationById;
@@ -33,12 +34,12 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly string _updateSpecialization;
         private readonly string _deleteSpecialization;
 
-        public SpecializationService(IOptions<Doctory> doctoryOptions, IAttachmentService attachmentService, IHttpContextAccessor httpContextAccessor)
+        public SpecializationService(HttpClient httpClient, IOptions<Doctory> doctoryOptions, IAttachmentService attachmentService, IHttpContextAccessor httpContextAccessor, IDeserializerService deserializerService)
         {
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            _httpClient = httpClient;
             _attachmentService = attachmentService;
             _httpContextAccessor = httpContextAccessor;
+            _deserializerService = deserializerService;
             DoctoryRoutes.Initialize(doctoryOptions.Value.BaseUrl);
 
             _getAllSpecializations = DoctoryRoutes.Specializations.GetAll;
@@ -46,24 +47,6 @@ namespace ClinicHub.Services.Services.Implementations
             _createSpecialization = DoctoryRoutes.Specializations.Create;
             _updateSpecialization = DoctoryRoutes.Specializations.Update;
             _deleteSpecialization = DoctoryRoutes.Specializations.Delete;
-        }
-
-        private async Task<T> DeserializeApiResponse<T>(HttpResponseMessage response, string errorMessage)
-        {
-            var body = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<T>>(body, _jsonSettings);
-
-            if (apiResponse != null && apiResponse.Success)
-                return apiResponse.Data!;
-
-            var errors = ApiErrorExtractor.ExtractErrors(body);
-            var combined = string.Join(" ", errors);
-
-            if (string.IsNullOrWhiteSpace(combined))
-                combined = apiResponse?.Message ?? errorMessage;
-
-            var statusCode = apiResponse?.StatusCode > 0 ? apiResponse.StatusCode : (int)response.StatusCode;
-            throw new ApiException(statusCode, combined);
         }
 
         public async Task<PagginatedResult<SpecializationDto>> GetAllAsync(int pageNumber = 1, int pageSize = 20, bool? isFamous = null)
@@ -165,7 +148,7 @@ namespace ClinicHub.Services.Services.Implementations
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync(_createSpecialization, content);
-                return await DeserializeApiResponse<string>(response, "حدث خطأ في إضافة التخصص");
+                return await _deserializerService.DeserializeApiResponse<string>(response, "حدث خطأ في إضافة التخصص");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -201,7 +184,7 @@ namespace ClinicHub.Services.Services.Implementations
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PutAsync(_updateSpecialization, content);
-                return await DeserializeApiResponse<SpecializationDto>(response, "حدث خطأ في تحديث التخصص");
+                return await _deserializerService.DeserializeApiResponse<SpecializationDto>(response, "حدث خطأ في تحديث التخصص");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -223,18 +206,7 @@ namespace ClinicHub.Services.Services.Implementations
                 };
 
                 var response = await _httpClient.SendAsync(req);
-                var body = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<string>>(body, _jsonSettings);
-
-                if (apiResponse != null && apiResponse.Success)
-                    return apiResponse.Message ?? "تم الحذف بنجاح";
-
-                var errors = ApiErrorExtractor.ExtractErrors(body);
-                var combined = string.Join(" ", errors);
-                if (string.IsNullOrWhiteSpace(combined))
-                    combined = apiResponse?.Message ?? "حدث خطأ في حذف التخصص";
-                var statusCode = apiResponse?.StatusCode > 0 ? apiResponse.StatusCode : (int)response.StatusCode;
-                throw new ApiException(statusCode, combined);
+                return await _deserializerService.DeserializeApiResponse<string>(response, "حدث خطأ في حذف التخصص");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
