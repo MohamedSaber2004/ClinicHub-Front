@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using ClinicHub.Data;
 
 namespace ClinicHub.Controllers
 {
@@ -16,7 +18,7 @@ namespace ClinicHub.Controllers
         protected IActionResult Fail(int statusCode, string message)
         {
             if (IsAjaxRequest)
-            {
+        {
                 Response.StatusCode = statusCode;
                 return Json(new { errors = new List<string> { message } });
             }

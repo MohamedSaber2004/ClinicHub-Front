@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;

@@ -115,8 +115,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الموقع</label>
-                            <input type="text" class="form-input" placeholder="الطابق - الغرفة" />
+                            <label class="form-label">الموقع (الغرفة)</label>
+                            <input type="text" class="form-input" id="clinicLocation" placeholder="الطابق - الغرفة" />
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -124,6 +124,19 @@
                             <label class="form-label">رقم الهاتف</label>
                             <input type="text" class="form-input" placeholder="+966 11 XXX XXXX" />
                         </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الموقع على الخريطة</label>
+                    <input type="hidden" id="clinicLat" value="31.0409" />
+                    <input type="hidden" id="clinicLng" value="31.3785" />
+                    <div id="addClinicMap" style="height: 280px; border-radius: var(--radius-md); border: 1px solid var(--clr-border); margin-bottom: 8px;"></div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="myLocationBtn" style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+                            موقعي الحالي
+                        </button>
+                        <span class="text-muted" style="font-size: var(--fs-sm);" id="coordsDisplay">31.0409, 31.3785</span>
                     </div>
                 </div>
                 <div class="row">
@@ -174,6 +187,47 @@
 
             document.getElementById('filterSearch').addEventListener('input', filterCards);
             document.getElementById('filterStatus').addEventListener('change', filterCards);
+
+            // Map for Add Clinic modal
+            var addMap = L.map('addClinicMap').setView([31.0409, 31.3785], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap',
+                maxZoom: 18
+            }).addTo(addMap);
+
+            var addMarker = L.marker([31.0409, 31.3785], { draggable: false }).addTo(addMap);
+
+            function updateAddCoords(lat, lng) {
+                document.getElementById('clinicLat').value = lat.toFixed(6);
+                document.getElementById('clinicLng').value = lng.toFixed(6);
+                document.getElementById('coordsDisplay').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+            }
+
+            addMap.on('click', function(e) {
+                addMarker.setLatLng(e.latlng);
+                updateAddCoords(e.latlng.lat, e.latlng.lng);
+            });
+
+            document.getElementById('myLocationBtn').addEventListener('click', function() {
+                if (!navigator.geolocation) {
+                    alert('الموقع غير مدعوم في متصفحك.');
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    var lat = pos.coords.latitude;
+                    var lng = pos.coords.longitude;
+                    addMap.setView([lat, lng], 15);
+                    addMarker.setLatLng([lat, lng]);
+                    updateAddCoords(lat, lng);
+                }, function() {
+                    alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
+                });
+            });
+
+            // Fix map rendering inside modal
+            document.getElementById('clinicModal').addEventListener('shown.bs.modal', function() {
+                addMap.invalidateSize();
+            });
         })();
     </script>
 }

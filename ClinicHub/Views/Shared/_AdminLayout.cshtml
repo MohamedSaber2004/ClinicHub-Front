@@ -33,6 +33,7 @@
                         var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
                         bool IsActive(string ctrl, string? action = null) =>
                             currentController == ctrl && (action == null || currentAction == action);
+                        var _user = ViewBag.CurrentUser as CurrentUserContext;
                     }
                     <a class="sidebar-item @(IsActive("Admin", "Index") ? "active" : "")" href="@AdminRoutes.Pages.Index()">
                         <i class="bi bi-speedometer2" style="font-size: 1.1rem; margin-left: 10px;"></i>
@@ -103,11 +104,11 @@
                 <div style="flex:1"></div>
                 <a class="header-user" href="@AdminRoutes.Pages.Profile()">
                     <div class="user-info">
-                        <span class="user-name">أحمد</span>
-                        <span class="user-role">المشرف العام</span>
+                        <span class="user-name">@(_user?.Role == UserRole.SystemAdmin ? "أحمد" : "مستخدم")</span>
+                        <span class="user-role">@(_user?.Role switch { UserRole.SystemAdmin => "المشرف العام", UserRole.ClinicOwner => "مالك عيادة", _ => "" })</span>
                     </div>
                     <div class="sidebar-profile-avatar" style="width:36px;height:36px;">
-                        <span>أ</span>
+                        <span>@(_user?.Role == UserRole.SystemAdmin ? "أ" : "م")</span>
                     </div>
                 </a>
             </header>

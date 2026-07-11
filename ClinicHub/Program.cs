@@ -2,6 +2,7 @@ using ClinicHub.Services;
 using ClinicHub.Services.Options;
 using Serilog;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace ClinicHub
 {
@@ -33,7 +34,12 @@ namespace ClinicHub
             builder.Host.UseSerilog();
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(
+                        new JsonStringEnumConverter());
+                });
 
             builder.Services.AddOptions();
 

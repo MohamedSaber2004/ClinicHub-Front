@@ -84,6 +84,8 @@ namespace ClinicHub.Data
         public string Email { get; set; } = "";
         public string Phone { get; set; } = "";
         public string Address { get; set; } = "";
+        public double Latitude { get; set; } = 31.0409;
+        public double Longitude { get; set; } = 31.3785;
         public string ResponsibleDoctor { get; set; } = "";
         public string LicenseNumber { get; set; } = "";
         public int PackageId { get; set; }
@@ -102,21 +104,17 @@ namespace ClinicHub.Data
         // ========== Dashboard ==========
         public static List<MockStat> GetDashboardStats() => new()
         {
-            new() { Value = "156", Label = "إجمالي الأطباء", IconColor = "primary", SvgPath = "M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2c0 1.654-1.346 3-3 3s-3-1.346-3-3V7z" },
+            new() { Value = "156", Label = "إجمالي طلبات التحقق", IconColor = "primary", SvgPath = "M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2c0 1.654-1.346 3-3 3s-3-1.346-3-3V7z" },
             new() { Value = "24", Label = "العيادات النشطة", IconColor = "blue", SvgPath = "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z" },
             new() { Value = "6", Label = "التخصصات الطبية", IconColor = "green", SvgPath = "M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z" },
-            new() { Value = "48", Label = "المشتركين", IconColor = "amber", SvgPath = "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" },
-            new() { Value = "2,847", Label = "إجمالي المرضى", IconColor = "primary", SvgPath = "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" },
+            new() { Value = "2,847", Label = "إجمالي المستخدمين", IconColor = "primary", SvgPath = "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" },
             new() { Value = "3", Label = "تذاكر مفتوحة", IconColor = "primary", SvgPath = "M19 12v-2c0-3.866-3.134-7-7-7S5 6.134 5 10v2H3v7h3v-9c0-3.313 2.687-6 6-6s6 2.687 6 6v9h3v-7h-2zM7 15v2c0 1.103.897 2 2 2h2v-6H7v2zm8 0h-2v2h2c1.103 0 2-.897 2-2v-2h-2v2z" },
+            new() { Value = "5", Label = "إعلانات مجدولة", IconColor = "blue", SvgPath = "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" },
+            new() { Value = "2", Label = "اشتراك منتهي", IconColor = "amber", SvgPath = "M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" },
         };
 
         public static List<MockQuickStatus> GetQuickStatuses() => new()
         {
-            new() { Text = "12 تخصص نشط", Color = "success" },
-            new() { Text = "3 تذاكر قيد المعالجة", Color = "warning" },
-            new() { Text = "5 إعلانات مجدولة", Color = "info" },
-            new() { Text = "2 اشتراك منتهي", Color = "danger" },
-            new() { Text = "4 أطباء مناوبون", Color = "success" },
         };
 
         public static List<MockTableRow> GetDoctorsOnDuty() => new()
@@ -470,11 +468,16 @@ namespace ClinicHub.Data
         // ========== Users ==========
         public static List<MockUser> GetUsers() => new()
         {
-            new() { Id = 1, Name = "محمد عمر", Email = "mohamed@email.com", Phone = "+966 50 111 2222", Initials = "مع", RegistrationDate = "15 يناير 2025", Status = "نشط", StatusClass = "badge-success", TotalVisits = 24, AvgRating = 4.5, TotalSpent = "12,450" },
-            new() { Id = 2, Name = "سارة أحمد", Email = "sara@email.com", Phone = "+966 55 333 4444", Initials = "سأ", RegistrationDate = "3 مارس 2025", Status = "نشط", StatusClass = "badge-success", TotalVisits = 15, AvgRating = 4.8, TotalSpent = "8,200" },
-            new() { Id = 3, Name = "خالد الزهراني", Email = "khalid@email.com", Phone = "+966 50 555 6666", Initials = "خز", RegistrationDate = "20 يونيو 2025", Status = "نشط", StatusClass = "badge-success", TotalVisits = 8, AvgRating = 3.9, TotalSpent = "3,600" },
-            new() { Id = 4, Name = "فاطمة الناصر", Email = "fatima@email.com", Phone = "+966 55 777 8888", Initials = "فن", RegistrationDate = "1 أبريل 2026", Status = "نشط", StatusClass = "badge-success", TotalVisits = 3, AvgRating = 5.0, TotalSpent = "600" },
-            new() { Id = 5, Name = "عبد الله السعيد", Email = "abdullah@email.com", Phone = "+966 50 999 0000", Initials = "عس", RegistrationDate = "10 فبراير 2025", Status = "غير نشط", StatusClass = "badge-warning", TotalVisits = 2, AvgRating = 3.0, TotalSpent = "400" },
+            new() { Id = 1, Name = "محمد عمر", Email = "mohamed@email.com", Phone = "+966 50 111 2222", Initials = "مع", RegistrationDate = "15 يناير 2025", Status = "نشط", StatusClass = "badge-success", Role = UserRole.Patient, TotalVisits = 24, AvgRating = 4.5, TotalSpent = "12,450" },
+            new() { Id = 2, Name = "سارة أحمد", Email = "sara@email.com", Phone = "+966 55 333 4444", Initials = "سأ", RegistrationDate = "3 مارس 2025", Status = "نشط", StatusClass = "badge-success", Role = UserRole.Patient, TotalVisits = 15, AvgRating = 4.8, TotalSpent = "8,200" },
+            new() { Id = 3, Name = "خالد الزهراني", Email = "khalid@email.com", Phone = "+966 50 555 6666", Initials = "خز", RegistrationDate = "20 يونيو 2025", Status = "نشط", StatusClass = "badge-success", Role = UserRole.Patient, TotalVisits = 8, AvgRating = 3.9, TotalSpent = "3,600" },
+            new() { Id = 4, Name = "فاطمة الناصر", Email = "fatima@email.com", Phone = "+966 55 777 8888", Initials = "فن", RegistrationDate = "1 أبريل 2026", Status = "نشط", StatusClass = "badge-success", Role = UserRole.Patient, TotalVisits = 3, AvgRating = 5.0, TotalSpent = "600" },
+            new() { Id = 5, Name = "عبد الله السعيد", Email = "abdullah@email.com", Phone = "+966 50 999 0000", Initials = "عس", RegistrationDate = "10 فبراير 2025", Status = "غير نشط", StatusClass = "badge-warning", Role = UserRole.Patient, TotalVisits = 2, AvgRating = 3.0, TotalSpent = "400" },
+            new() { Id = 6, Name = "أحمد المدير", Email = "ahmed@clinic1.com", Phone = "+966 55 111 2222", Initials = "أم", RegistrationDate = "1 يناير 2025", Status = "نشط", StatusClass = "badge-success", Role = UserRole.ClinicOwner, TotalVisits = 0, AvgRating = 0, TotalSpent = "0" },
+            new() { Id = 7, Name = "هشام فؤاد", Email = "hisham@clinic2.com", Phone = "+966 55 333 4444", Initials = "هف", RegistrationDate = "15 فبراير 2025", Status = "نشط", StatusClass = "badge-success", Role = UserRole.ClinicOwner, TotalVisits = 0, AvgRating = 0, TotalSpent = "0" },
+            new() { Id = 8, Name = "خالد الزهراني", Email = "khalid@clinic3.com", Phone = "+966 55 555 6666", Initials = "خز", RegistrationDate = "1 مارس 2025", Status = "نشط", StatusClass = "badge-success", Role = UserRole.ClinicOwner, TotalVisits = 0, AvgRating = 0, TotalSpent = "0" },
+            new() { Id = 9, Name = "عمار السيد", Email = "ammar@clinic4.com", Phone = "+966 55 777 8888", Initials = "عس", RegistrationDate = "20 مارس 2025", Status = "نشط", StatusClass = "badge-success", Role = UserRole.ClinicOwner, TotalVisits = 0, AvgRating = 0, TotalSpent = "0" },
+            new() { Id = 10, Name = "منى سعيد", Email = "mona@clinic5.com", Phone = "+966 55 999 0000", Initials = "مس", RegistrationDate = "1 أبريل 2025", Status = "غير نشط", StatusClass = "badge-warning", Role = UserRole.ClinicOwner, TotalVisits = 0, AvgRating = 0, TotalSpent = "0" },
         };
 
         public static MockUserOverview GetUserOverview(int id) => id switch
@@ -629,11 +632,11 @@ namespace ClinicHub.Data
         // ========== Clinics ==========
         public static List<MockClinic> GetClinics() => new()
         {
-            new() { Id = 1, Name = "مركز القلب التخصصي", Specialty = "القلب والأوعية الدموية", Specializations = new() { "القلب والأوعية الدموية", "جراحة القلب", "قسطرة القلب" }, Description = "مركز متخصص في تشخيص وعلاج أمراض القلب والشرايين، يضم أحدث الأجهزة الطبية وفريقاً من أطباء القلب المتميزين.", ResponsibleDoctor = "د. سارة أحمد", ManagerName = "أ. محمد عبد الرحمن", Location = "الطابق الثاني - غرفة 201", Phone = "+966 11 234 5678", ImageUrl = "", AvgRating = 4.5, RatingsCount = 28, IsActive = true },
-            new() { Id = 2, Name = "مركز الأعصاب والعمود الفقري", Specialty = "الأمراض العصبية", Specializations = new() { "الأمراض العصبية", "جراحة المخ والأعصاب", "العلاج الطبيعي" }, Description = "مركز رائد في تشخيص وعلاج اضطرابات الجهاز العصبي وجراحات العمود الفقري المتقدمة.", ResponsibleDoctor = "د. عبد الله ناصر", ManagerName = "د. هشام فؤاد", Location = "الطابق الثالث - غرفة 305", Phone = "+966 11 345 6789", ImageUrl = "", AvgRating = 4.2, RatingsCount = 19, IsActive = true },
-            new() { Id = 3, Name = "عيادة العظام والعلاج الطبيعي", Specialty = "جراحة العظام", Specializations = new() { "جراحة العظام", "العلاج الطبيعي", "طب الرياضة" }, Description = "عيادة متكاملة لجراحة العظام والمفاصل وإصابات الرياضة مع أحدث تقنيات العلاج الطبيعي.", ResponsibleDoctor = "د. خالد الزهراني", ManagerName = "د. خالد الزهراني", Location = "الطابق الأول - غرفة 104", Phone = "+966 11 456 7890", ImageUrl = "", AvgRating = 4.8, RatingsCount = 42, IsActive = true },
-            new() { Id = 4, Name = "عيادة الجلدية والتجميل", Specialty = "الأمراض الجلدية", Specializations = new() { "الأمراض الجلدية", "جراحة التجميل", "الليزر والعناية بالبشرة" }, Description = "عيادة متخصصة في الأمراض الجلدية وعلاجات التجميل بالليزر مع أحدث التقنيات العالمية.", ResponsibleDoctor = "د. عمار السيد", ManagerName = "د. عمار السيد", Location = "الطابق الثاني - غرفة 210", Phone = "+966 11 567 8901", ImageUrl = "", AvgRating = 4.6, RatingsCount = 35, IsActive = true },
-            new() { Id = 5, Name = "عيادة الأطفال", Specialty = "طب الأطفال", Specializations = new() { "طب الأطفال", "حديثي الولادة" }, Description = "عيادة متخصصة في رعاية الأطفال من حديثي الولادة حتى سن المراهقة مع متابعة دقيقة للنمو والتطور.", ResponsibleDoctor = "—", ManagerName = "—", Location = "الطابق الرابع - غرفة 402", Phone = "+966 11 678 9012", ImageUrl = "", AvgRating = 3.8, RatingsCount = 7, IsActive = false },
+            new() { Id = 1, Name = "مركز القلب التخصصي", Specialty = "القلب والأوعية الدموية", Specializations = new() { "القلب والأوعية الدموية", "جراحة القلب", "قسطرة القلب" }, Description = "مركز متخصص في تشخيص وعلاج أمراض القلب والشرايين، يضم أحدث الأجهزة الطبية وفريقاً من أطباء القلب المتميزين.", ResponsibleDoctor = "د. سارة أحمد", ManagerName = "أ. محمد عبد الرحمن", Location = "الطابق الثاني - غرفة 201", Latitude = 31.0435, Longitude = 31.3752, OwnerUserId = 6, Phone = "+966 11 234 5678", ImageUrl = "", AvgRating = 4.5, RatingsCount = 28, IsActive = true },
+            new() { Id = 2, Name = "مركز الأعصاب والعمود الفقري", Specialty = "الأمراض العصبية", Specializations = new() { "الأمراض العصبية", "جراحة المخ والأعصاب", "العلاج الطبيعي" }, Description = "مركز رائد في تشخيص وعلاج اضطرابات الجهاز العصبي وجراحات العمود الفقري المتقدمة.", ResponsibleDoctor = "د. عبد الله ناصر", ManagerName = "د. هشام فؤاد", Location = "الطابق الثالث - غرفة 305", Latitude = 31.0382, Longitude = 31.3801, OwnerUserId = 7, Phone = "+966 11 345 6789", ImageUrl = "", AvgRating = 4.2, RatingsCount = 19, IsActive = true },
+            new() { Id = 3, Name = "عيادة العظام والعلاج الطبيعي", Specialty = "جراحة العظام", Specializations = new() { "جراحة العظام", "العلاج الطبيعي", "طب الرياضة" }, Description = "عيادة متكاملة لجراحة العظام والمفاصل وإصابات الرياضة مع أحدث تقنيات العلاج الطبيعي.", ResponsibleDoctor = "د. خالد الزهراني", ManagerName = "د. خالد الزهراني", Location = "الطابق الأول - غرفة 104", Latitude = 31.0420, Longitude = 31.3820, OwnerUserId = 8, Phone = "+966 11 456 7890", ImageUrl = "", AvgRating = 4.8, RatingsCount = 42, IsActive = true },
+            new() { Id = 4, Name = "عيادة الجلدية والتجميل", Specialty = "الأمراض الجلدية", Specializations = new() { "الأمراض الجلدية", "جراحة التجميل", "الليزر والعناية بالبشرة" }, Description = "عيادة متخصصة في الأمراض الجلدية وعلاجات التجميل بالليزر مع أحدث التقنيات العالمية.", ResponsibleDoctor = "د. عمار السيد", ManagerName = "د. عمار السيد", Location = "الطابق الثاني - غرفة 210", Latitude = 31.0395, Longitude = 31.3760, OwnerUserId = 9, Phone = "+966 11 567 8901", ImageUrl = "", AvgRating = 4.6, RatingsCount = 35, IsActive = true },
+            new() { Id = 5, Name = "عيادة الأطفال", Specialty = "طب الأطفال", Specializations = new() { "طب الأطفال", "حديثي الولادة" }, Description = "عيادة متخصصة في رعاية الأطفال من حديثي الولادة حتى سن المراهقة مع متابعة دقيقة للنمو والتطور.", ResponsibleDoctor = "—", ManagerName = "—", Location = "الطابق الرابع - غرفة 402", Latitude = 31.0418, Longitude = 31.3798, OwnerUserId = 10, Phone = "+966 11 678 9012", ImageUrl = "", AvgRating = 3.8, RatingsCount = 7, IsActive = false },
         };
 
         public static MockClinic? GetClinicById(int id) => GetClinics().FirstOrDefault(c => c.Id == id);
@@ -806,22 +809,22 @@ namespace ClinicHub.Data
         // ========== Doctors ==========
         public static List<MockDoctor> GetDoctors() => new()
         {
-            new() { Id = 1, Name = "د. عمار السيد", SyndicateId = "123456", TaxRegistry = "789-123-456", Degree = "استشاري", Specialty = "الأمراض الجلدية", DoctorType = "OwnClinic", ClinicId = 4, WorkplaceName = "عيادة الجلدية", Phone = "+966 55 123 4567", Email = "ammar@clinic.com", Photo = "", Documents = new() { "syndicate_card_1.png", "cert_1.png" }, IsActive = true },
-            new() { Id = 2, Name = "د. سارة أحمد", SyndicateId = "234567", TaxRegistry = "789-234-567", Degree = "أخصائي", Specialty = "أمراض القلب", DoctorType = "InCenter", ClinicId = 1, WorkplaceName = "عيادة القلب", Phone = "+966 55 234 5678", Email = "sara@clinic.com", Photo = "", Documents = new() { "syndicate_card_2.png", "cert_2.png" }, IsActive = true },
-            new() { Id = 3, Name = "د. خالد الزهراني", SyndicateId = "345678", TaxRegistry = "789-345-678", Degree = "استشاري", Specialty = "جراحة العظام", DoctorType = "OwnClinic", ClinicId = 3, WorkplaceName = "عيادة العظام", Phone = "+966 55 345 6789", Email = "khalid@clinic.com", Photo = "", Documents = new() { "syndicate_card_3.png" }, IsActive = true },
-            new() { Id = 4, Name = "د. عبد الله ناصر", SyndicateId = "456789", TaxRegistry = "789-456-789", Degree = "أخصائي", Specialty = "الأمراض العصبية", DoctorType = "InCenter", ClinicId = 2, WorkplaceName = "عيادة الأعصاب", Phone = "+966 55 456 7890", Email = "abdullah@clinic.com", Photo = "", Documents = new(), IsActive = false },
-            new() { Id = 5, Name = "د. أحمد علي", SyndicateId = "567890", TaxRegistry = "789-567-890", Degree = "طبيب", Specialty = "طب الأطفال", DoctorType = "Freelance", Phone = "+966 55 567 8901", Email = "ahmed@clinic.com", Photo = "", Documents = new() { "syndicate_card_5.png" }, IsActive = true },
-            new() { Id = 6, Name = "د. ليلى محمود", SyndicateId = "678901", TaxRegistry = "789-678-901", Degree = "أخصائي", Specialty = "النساء والولادة", DoctorType = "Freelance", Phone = "+966 55 678 9012", Email = "layla@clinic.com", Photo = "", Documents = new() { "syndicate_card_6.png", "cert_6.png" }, IsActive = false },
+            new() { Id = 1, Name = "د. عمار السيد", SyndicateId = "123456", TaxRegistry = "789-123-456", Degree = "استشاري", Specialty = "الأمراض الجلدية", DoctorType = DoctorEmploymentType.OwnClinic, ClinicId = 4, WorkplaceName = "عيادة الجلدية", Phone = "+966 55 123 4567", Email = "ammar@clinic.com", Photo = "", Documents = new() { "syndicate_card_1.png", "cert_1.png" }, IsActive = true },
+            new() { Id = 2, Name = "د. سارة أحمد", SyndicateId = "234567", TaxRegistry = "789-234-567", Degree = "أخصائي", Specialty = "أمراض القلب", DoctorType = DoctorEmploymentType.InCenter, ClinicId = 1, WorkplaceName = "عيادة القلب", Phone = "+966 55 234 5678", Email = "sara@clinic.com", Photo = "", Documents = new() { "syndicate_card_2.png", "cert_2.png" }, IsActive = true },
+            new() { Id = 3, Name = "د. خالد الزهراني", SyndicateId = "345678", TaxRegistry = "789-345-678", Degree = "استشاري", Specialty = "جراحة العظام", DoctorType = DoctorEmploymentType.OwnClinic, ClinicId = 3, WorkplaceName = "عيادة العظام", Phone = "+966 55 345 6789", Email = "khalid@clinic.com", Photo = "", Documents = new() { "syndicate_card_3.png" }, IsActive = true },
+            new() { Id = 4, Name = "د. عبد الله ناصر", SyndicateId = "456789", TaxRegistry = "789-456-789", Degree = "أخصائي", Specialty = "الأمراض العصبية", DoctorType = DoctorEmploymentType.InCenter, ClinicId = 2, WorkplaceName = "عيادة الأعصاب", Phone = "+966 55 456 7890", Email = "abdullah@clinic.com", Photo = "", Documents = new(), IsActive = false },
+            new() { Id = 5, Name = "د. أحمد علي", SyndicateId = "567890", TaxRegistry = "789-567-890", Degree = "طبيب", Specialty = "طب الأطفال", DoctorType = DoctorEmploymentType.Freelance, Phone = "+966 55 567 8901", Email = "ahmed@clinic.com", Photo = "", Documents = new() { "syndicate_card_5.png" }, IsActive = true },
+            new() { Id = 6, Name = "د. ليلى محمود", SyndicateId = "678901", TaxRegistry = "789-678-901", Degree = "أخصائي", Specialty = "النساء والولادة", DoctorType = DoctorEmploymentType.Freelance, Phone = "+966 55 678 9012", Email = "layla@clinic.com", Photo = "", Documents = new() { "syndicate_card_6.png", "cert_6.png" }, IsActive = false },
         };
 
         public static MockDoctor? GetDoctorById(int id) => GetDoctors().FirstOrDefault(d => d.Id == id);
 
         public static List<MockClinicStaff> GetClinicStaff(int clinicId) => clinicId switch
         {
-            1 => new() { new() { Id = 1, Name = "محمد عمر", Role = "Reception", Phone = "+966 50 111 2222", IsActive = true }, new() { Id = 2, Name = "نورة حسن", Role = "Nurse", Phone = "+966 50 333 4444", IsActive = true } },
-            2 => new() { new() { Id = 3, Name = "علياء سعيد", Role = "Reception", Phone = "+966 50 555 6666", IsActive = true }, new() { Id = 4, Name = "سامي خالد", Role = "Cleaner", Phone = "+966 50 777 8888", IsActive = false } },
-            3 => new() { new() { Id = 5, Name = "فاطمة أحمد", Role = "Reception", Phone = "+966 50 999 0000", IsActive = true }, new() { Id = 6, Name = "هدى ناصر", Role = "Helper", Phone = "+966 51 111 2222", IsActive = true }, new() { Id = 7, Name = "مصطفى كريم", Role = "Nurse", Phone = "+966 51 333 4444", IsActive = true } },
-            4 => new() { new() { Id = 8, Name = "سارة علي", Role = "Reception", Phone = "+966 51 555 6666", IsActive = true }, new() { Id = 9, Name = "أحمد رضا", Role = "Cleaner", Phone = "+966 51 777 8888", IsActive = true } },
+            1 => new() { new() { Id = 1, Name = "محمد عمر", Role = ClinicStaffRole.Reception, Phone = "+966 50 111 2222", IsActive = true }, new() { Id = 2, Name = "نورة حسن", Role = ClinicStaffRole.Nurse, Phone = "+966 50 333 4444", IsActive = true } },
+            2 => new() { new() { Id = 3, Name = "علياء سعيد", Role = ClinicStaffRole.Reception, Phone = "+966 50 555 6666", IsActive = true }, new() { Id = 4, Name = "سامي خالد", Role = ClinicStaffRole.Cleaner, Phone = "+966 50 777 8888", IsActive = false } },
+            3 => new() { new() { Id = 5, Name = "فاطمة أحمد", Role = ClinicStaffRole.Reception, Phone = "+966 50 999 0000", IsActive = true }, new() { Id = 6, Name = "هدى ناصر", Role = ClinicStaffRole.Helper, Phone = "+966 51 111 2222", IsActive = true }, new() { Id = 7, Name = "مصطفى كريم", Role = ClinicStaffRole.Nurse, Phone = "+966 51 333 4444", IsActive = true } },
+            4 => new() { new() { Id = 8, Name = "سارة علي", Role = ClinicStaffRole.Reception, Phone = "+966 51 555 6666", IsActive = true }, new() { Id = 9, Name = "أحمد رضا", Role = ClinicStaffRole.Cleaner, Phone = "+966 51 777 8888", IsActive = true } },
             _ => new(),
         };
 
@@ -853,6 +856,7 @@ namespace ClinicHub.Data
         public string RegistrationDate { get; set; } = "";
         public string Status { get; set; } = "";
         public string StatusClass { get; set; } = "badge-success";
+        public UserRole Role { get; set; } = UserRole.Patient;
         public int TotalVisits { get; set; }
         public double AvgRating { get; set; }
         public string TotalSpent { get; set; } = "";
@@ -868,6 +872,7 @@ namespace ClinicHub.Data
         public string RegistrationDate { get; set; } = "";
         public string Status { get; set; } = "";
         public string StatusClass { get; set; } = "badge-success";
+        public UserRole Role { get; set; } = UserRole.Patient;
         public int TotalVisits { get; set; }
         public double AvgRating { get; set; }
         public string TotalSpent { get; set; } = "";
@@ -909,6 +914,9 @@ namespace ClinicHub.Data
         public string ResponsibleDoctor { get; set; } = "";
         public string ManagerName { get; set; } = "";
         public string Location { get; set; } = "";
+        public double Latitude { get; set; } = 31.0409;
+        public double Longitude { get; set; } = 31.3785;
+        public int OwnerUserId { get; set; }
         public string Phone { get; set; } = "";
         public string ImageUrl { get; set; } = "";
         public double AvgRating { get; set; }
@@ -967,7 +975,7 @@ namespace ClinicHub.Data
         public string TaxRegistry { get; set; } = "";
         public string Degree { get; set; } = "";
         public string Specialty { get; set; } = "";
-        public string DoctorType { get; set; } = ""; // Freelance / OwnClinic / InCenter
+        public DoctorEmploymentType DoctorType { get; set; }
         public int? ClinicId { get; set; } // if OwnClinic -> the clinic they own; if InCenter -> the center they work at
         public string WorkplaceName { get; set; } = "";
         public string Phone { get; set; } = "";
@@ -981,7 +989,7 @@ namespace ClinicHub.Data
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
-        public string Role { get; set; } = ""; // Reception, Cleaner, Helper, Nurse
+        public ClinicStaffRole Role { get; set; }
         public string Phone { get; set; } = "";
         public bool IsActive { get; set; } = true;
     }

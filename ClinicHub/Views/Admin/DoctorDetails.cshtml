@@ -24,16 +24,16 @@ else
 {
     var typeLabel = doctor.DoctorType switch
     {
-        "Freelance" => "مستقل",
-        "OwnClinic" => "عيادة خاصة",
-        "InCenter" => "يعمل في مركز",
-        _ => doctor.DoctorType
+        DoctorEmploymentType.Freelance => "مستقل",
+        DoctorEmploymentType.OwnClinic => "عيادة خاصة",
+        DoctorEmploymentType.InCenter => "يعمل في مركز",
+        _ => ""
     };
     var typeClass = doctor.DoctorType switch
     {
-        "Freelance" => "badge badge-warning",
-        "OwnClinic" => "badge badge-success",
-        "InCenter" => "badge badge-info",
+        DoctorEmploymentType.Freelance => "badge badge-warning",
+        DoctorEmploymentType.OwnClinic => "badge badge-success",
+        DoctorEmploymentType.InCenter => "badge badge-info",
         _ => "badge"
     };
 
@@ -219,11 +219,11 @@ else
                                                     @{
                                                         var roleLabel = s.Role switch
                                                         {
-                                                            "Reception" => "استقبال",
-                                                            "Cleaner" => "عامل نظافة",
-                                                            "Helper" => "مساعد",
-                                                            "Nurse" => "ممرض",
-                                                            _ => s.Role
+                                                            ClinicStaffRole.Reception => "استقبال",
+                                                            ClinicStaffRole.Cleaner => "عامل نظافة",
+                                                            ClinicStaffRole.Helper => "مساعد",
+                                                            ClinicStaffRole.Nurse => "ممرض",
+                                                            _ => ""
                                                         };
                                                     }
                                                     @roleLabel
