@@ -6,6 +6,7 @@ namespace ClinicHub.Controllers
 {
     public abstract class BaseController : Controller
     {
+        protected CurrentUserContext? CurrentUser { get; set; }
         protected bool IsAjaxRequest => Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
         protected IActionResult RedirectJson(string? redirectUrl)
