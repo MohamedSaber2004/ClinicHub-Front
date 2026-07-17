@@ -8,16 +8,19 @@ namespace ClinicHub.Services.Routes.Api
         public static void Initialize(string baseUrl)
         {
             BaseRoute = $"{baseUrl}/api/{Version}";
+
             Auth = new AuthRoutes(BaseRoute);
             Specializations = new SpecializationRoutes(BaseRoute);
             Attachments = new AttachmentRoutes(BaseRoute);
             Verification = new VerificationRoutes(BaseRoute);
+            Users = new UserRoutes(BaseRoute);
         }
 
         public static AuthRoutes Auth { get; private set; } = null!;
         public static SpecializationRoutes Specializations { get; private set; } = null!;
         public static AttachmentRoutes Attachments { get; private set; } = null!;
         public static VerificationRoutes Verification { get; private set; } = null!;
+        public static UserRoutes Users { get; private set; } = null!;
 
         public class AuthRoutes
         {
@@ -79,6 +82,17 @@ namespace ClinicHub.Services.Routes.Api
             public string GetPendingVerifications => $"{BaseRoute}/pending";
             public string ApproveUserVerification(Guid id) => $"{BaseRoute}/{id}/approve";
             public string RejectUserVerification(Guid id) => $"{BaseRoute}/{id}/reject";
+        }
+
+        public class UserRoutes
+        {
+            public string BaseRoute { get; }
+            public UserRoutes(string baseRoute)
+            {
+                BaseRoute = $"{baseRoute}/users";
+            }
+
+            public string GetAll => $"{BaseRoute}";
         }
     }
 }

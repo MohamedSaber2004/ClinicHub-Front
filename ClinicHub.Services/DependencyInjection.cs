@@ -24,6 +24,12 @@ namespace ClinicHub.Services
             })
             .AddHttpMessageHandler<BearerTokenHandler>();
 
+            services.AddHttpClient<IUserService, UserService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
             services.AddHttpClient<IAttachmentService, AttachmentService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");

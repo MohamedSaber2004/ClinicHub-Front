@@ -13,12 +13,14 @@ namespace ClinicHub.Controllers
         private readonly ISpecializationService _specializationService;
         private readonly IAttachmentUrlResolver _attachmentUrlResolver;
         private readonly IUserVerificationService _userVerificationService;
+        private readonly IUserService _userService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
             _userVerificationService = userVerificationService;
+            _userService = userService;
         }
 
         public IActionResult Index()
@@ -176,6 +178,42 @@ namespace ClinicHub.Controllers
             return View("VerificationCenter");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> AcceptVerification(Guid userId)
+        {
+            try
+            {
+                var result = await _userVerificationService.ApproveUserVerificationAsync(new ApproveUserVerficationRequest { UserId = userId });
+                if (result.Success)
+                    TempData["SuccessMessage"] = "تم قبول طلب التحقق بنجاح";
+                else
+                    TempData["ErrorMessage"] = result.Message;
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("VerificationCenter");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectVerification(Guid userId, string? notes)
+        {
+            try
+            {
+                var result = await _userVerificationService.RejectUserVerificationAsync(new RejectUserVerificationRequest { UserId = userId, Notes = notes });
+                if (result.Success)
+                    TempData["SuccessMessage"] = "تم رفض طلب التحقق";
+                else
+                    TempData["ErrorMessage"] = result.Message;
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("VerificationCenter");
+        }
+
         [Route("Admin/Subscriptions")]
         public IActionResult Subscriptions()
         {
@@ -187,21 +225,6 @@ namespace ClinicHub.Controllers
         {
             ViewBag.Tickets = MockData.GetSupportTickets();
             return View();
-        }
-
-        [Route("Admin/Ads")]
-        public IActionResult Ads()
-        {
-            ViewBag.Stats = MockData.GetAdStats();
-            ViewBag.Ads = MockData.GetAds();
-            return View("Ads/Index");
-        }
-
-        [Route("Admin/Ads/Details/{id}")]
-        public IActionResult AdsDetails(int id)
-        {
-            ViewBag.Detail = MockData.GetAdDetail(id);
-            return View("Ads/Details");
         }
 
         public IActionResult Payments()
@@ -218,10 +241,66 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Users")]
-        public IActionResult Users()
+        public async Task<IActionResult> Users(int pageNumber = 1, int pageSize = 20, string? searchTerm = null)
         {
-            ViewBag.Users = MockData.GetUsers();
+            try
+            {
+                var request = new GetAllUsersRequest
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    SearchTerm = searchTerm
+                };
+                var paged = await _userService.GetAllUsersPagginatedAsync(request);
+
+                var users = paged.Items.Select(u => new MockUser
+                {
+                    Id = u.Id.GetHashCode(),
+                    Name = u.FullName,
+                    Email = u.Email,
+                    Phone = u.PhoneNumber,
+                    Initials = GetInitials(u.FullName),
+                    RegistrationDate = u.CreatedAt.ToString("d MMMM yyyy"),
+                    Status = u.IsActive ? "نشط" : "غير نشط",
+                    StatusClass = u.IsActive ? "badge-success" : "badge-warning",
+                    Role = MapUserTypeToRole(u.Roles.FirstOrDefault()),
+                    TotalVisits = 0,
+                    AvgRating = 0,
+                    TotalSpent = "0"
+                }).ToList();
+
+                ViewBag.Users = users;
+                ViewBag.Pagination = paged;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Users = new List<MockUser>();
+            }
+
             return View("Users/Index");
+        }
+
+        private static string GetInitials(string fullName)
+        {
+            var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0) return "";
+            var first = parts[0][0].ToString();
+            var second = parts.Length > 1 && parts[1].Length > 1 ? parts[1][1].ToString() : "";
+            return first + second;
+        }
+
+        private static UserRole MapUserTypeToRole(ClinicHub.Services.Enums.UserType? userType)
+        {
+            return userType switch
+            {
+                ClinicHub.Services.Enums.UserType.SuperAdmin => UserRole.SystemAdmin,
+                ClinicHub.Services.Enums.UserType.ClinicOwner => UserRole.ClinicOwner,
+                ClinicHub.Services.Enums.UserType.Doctor => UserRole.Doctor,
+                ClinicHub.Services.Enums.UserType.Staff => UserRole.ClinicStaff,
+                ClinicHub.Services.Enums.UserType.User => UserRole.Patient,
+                _ => UserRole.Patient
+            };
         }
 
         [Route("Admin/Users/Overview/{id}")]

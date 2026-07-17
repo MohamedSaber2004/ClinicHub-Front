@@ -55,10 +55,6 @@
                         <i class="bi bi-headset" style="font-size: 1.1rem; margin-left: 10px;"></i>
                         <span>الدعم الفني</span>
                     </a>
-                    <a class="sidebar-item @(IsActive("Admin", "Ads") ? "active" : "")" href="@AdminRoutes.Pages.Ads()">
-                        <i class="bi bi-megaphone" style="font-size: 1.1rem; margin-left: 10px;"></i>
-                        <span>الإعلانات</span>
-                    </a>
                     <a class="sidebar-item @(IsActive("Admin", "Users") ? "active" : "")" href="@AdminRoutes.Pages.Users()">
                         <!-- People SVG -->
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -98,6 +94,9 @@
         <div class="main-content">
             <!-- Top Header -->
             <header class="top-header">
+                <button class="sidebar-toggle-mobile" id="sidebarToggleMobile" title="فتح القائمة" type="button">
+                    <i class="bi bi-list"></i>
+                </button>
                 <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة">
                     <i class="bi bi-chevron-double-right"></i>
                 </button>
@@ -144,6 +143,16 @@
         $('#sidebarToggle').on('click', function () {
             $('.app-container').toggleClass('sidebar-collapsed');
             localStorage.setItem('sidebarCollapsed', $('.app-container').hasClass('sidebar-collapsed') ? 'true' : '');
+        });
+
+        $('#sidebarToggleMobile').on('click', function () {
+            $('.sidebar').toggleClass('mobile-open');
+        });
+
+        $(document).on('click', function (e) {
+            if ($(window).width() < 992 && !$(e.target).closest('.sidebar, .sidebar-toggle-mobile').length) {
+                $('.sidebar').removeClass('mobile-open');
+            }
         });
 
         if (localStorage.getItem('sidebarCollapsed') === 'true') {

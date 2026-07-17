@@ -36,8 +36,7 @@ namespace ClinicHub.Data
         ManageUsers = 1L << 3,
         ManageSubscriptions = 1L << 4,
         ManagePayments = 1L << 5,
-        ManageAds = 1L << 6,
-        ManageSpecializations = 1L << 7,
+        ManageSpecializations = 1L << 6,
         ReviewPendingClinics = 1L << 8,
         ManageSupportTickets = 1L << 9,
 
@@ -72,7 +71,7 @@ namespace ClinicHub.Data
                 UserRole.SystemAdmin =>
                     Permission.ViewAdminDashboard | Permission.ManageClinics | Permission.ManageDoctors |
                     Permission.ManageUsers | Permission.ManageSubscriptions | Permission.ManagePayments |
-                    Permission.ManageAds | Permission.ManageSpecializations | Permission.ReviewPendingClinics |
+                    Permission.ManageSpecializations | Permission.ReviewPendingClinics |
                     Permission.ManageSupportTickets,
 
                 UserRole.ClinicOwner =>

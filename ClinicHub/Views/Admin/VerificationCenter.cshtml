@@ -407,12 +407,16 @@
                 confirmBtn.addEventListener('click', function() {
                     var type = document.getElementById('doctorActionType').value;
                     var reason = document.getElementById('doctorActionReason').value;
-                    if (type === 'accept') {
-                        alert('تم قبول الطلب بنجاح.\n' + (reason ? 'ملاحظة: ' + reason : ''));
-                    } else {
-                        alert('تم رفض الطلب.\n' + (reason ? 'سبب الرفض: ' + reason : ''));
-                    }
-                    document.getElementById('doctorActionReason').value = '';
+                    var req = verificationRequests.find(function(r) { return r.id === selectedRequestId; });
+                    if (!req) return;
+
+                    var url = type === 'accept'
+                        ? '/Admin/AcceptVerification?userId=' + encodeURIComponent(req.userId)
+                        : '/Admin/RejectVerification?userId=' + encodeURIComponent(req.userId) + '&notes=' + encodeURIComponent(reason || '');
+
+                    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(function(r) { window.location.href = '/Admin/Verification'; })
+                        .catch(function() { window.location.href = '/Admin/Verification'; });
                 });
             }
         })();

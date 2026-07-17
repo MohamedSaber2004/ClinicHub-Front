@@ -608,27 +608,6 @@ namespace ClinicHub.Data
             new() { Id = 104, Code = "#P-006", Payer = "محمد عمر", Type = "موعد مريض", TypeClass = "badge-success", Amount = "200", Method = "تحويل بنكي", Status = "معلق", StatusClass = "badge-warning", Date = "2026-06-05" },
         };
 
-        // ========== Ads ==========
-        public static List<MockStat> GetAdStats() => new()
-        {
-            new() { Value = "6", Label = "إجمالي الإعلانات", IconColor = "primary", SvgPath = "M20 2.01L4 2v2h16V2.01zM4 22h16v-2H4v22zm-2-14h2v8H2V8zm18 0h2v8h-2V8zM9 6c-2.21 0-4 1.79-4 4 0 1.2.54 2.27 1.38 3H7v1c0 1.66 1.34 3 3 3s3-1.34 3-3v-1h.62c.84-.73 1.38-1.8 1.38-3 0-2.21-1.79-4-4-4z" },
-            new() { Value = "3", Label = "نشط حاليًا", IconColor = "green", SvgPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" },
-            new() { Value = "85,420", Label = "إجمالي مرات الظهور", IconColor = "blue", SvgPath = "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" },
-            new() { Value = "1,280", Label = "إجمالي النقرات", IconColor = "amber", SvgPath = "M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" },
-        };
-
-        public static List<MockAd> GetAds() => new()
-        {
-            new() { Id = 1, Title = "عروض شهر يوليو - عيادة متكاملة", Type = "بانر إعلاني", TypeClass = "badge-info", Status = "نشط", StatusClass = "badge-success", StartDate = "2026-07-01", EndDate = "2026-07-31", SortOrder = 1, Gradient = "linear-gradient(135deg, #2F9CCA, #2385AF)", SvgPath = "M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z", ImageUrl = "", TargetUrl = "https://clinic.com/offers/july", Placement = "الصفحة الرئيسية - أعلى", Impressions = 45200, Clicks = 890, CostPerDay = "250", TotalBudget = "7,750", Notes = "إعلان ترويجي لجميع العيادات بمناسبة شهر يوليو.", Timeline = new() { new() { Date = "2026-07-01 00:00", Text = "تم تفعيل الإعلان", Marker = "success" }, new() { Date = "2026-06-28 14:00", Text = "تمت الموافقة على الإعلان", Marker = "success" }, new() { Date = "2026-06-25 10:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
-            new() { Id = 2, Title = "د. عمار السيد - استشاري جلدية", Type = "طبيب مميز", TypeClass = "badge-warning", Status = "نشط", StatusClass = "badge-success", StartDate = "2026-06-15", EndDate = "2026-07-15", SortOrder = 2, Gradient = "linear-gradient(135deg, #a78bfa, #7c3aed)", SvgPath = "M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z", LinkedEntityId = "2", LinkedEntityName = "د. عمار السيد", LinkedEntityDetail = "استشاري أمراض جلدية - 15 سنة خبرة", Placement = "صفحة الأطباء - المميزون", Impressions = 28400, Clicks = 320, CostPerDay = "180", TotalBudget = "5,400", Notes = "ترويج لطبيب مميز في قسم الجلدية.", Timeline = new() { new() { Date = "2026-06-15 00:00", Text = "تم تفعيل الإعلان", Marker = "success" }, new() { Date = "2026-06-12 11:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
-            new() { Id = 3, Title = "عيادة القلب - فريق متكامل", Type = "عيادة مميزة", TypeClass = "badge-success", Status = "نشط", StatusClass = "badge-success", StartDate = "2026-07-01", EndDate = "2026-09-30", SortOrder = 3, Gradient = "linear-gradient(135deg, #34d399, #059669)", SvgPath = "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z", LinkedEntityId = "3", LinkedEntityName = "عيادة القلب", LinkedEntityDetail = "فريق طبي متكامل - د. سارة أحمد و د. علي الناصر", Placement = "صفحة العيادات - المميزة", Impressions = 11820, Clicks = 70, CostPerDay = "300", TotalBudget = "27,000", Notes = "إعلان موسمي لعيادة القلب لمدة 3 أشهر.", Timeline = new() { new() { Date = "2026-07-01 00:00", Text = "تم تفعيل الإعلان", Marker = "success" }, new() { Date = "2026-06-28 15:00", Text = "تمت الموافقة على الإعلان", Marker = "success" }, new() { Date = "2026-06-25 09:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
-            new() { Id = 4, Title = "د. سارة أحمد - استشارية قلب", Type = "طبيب مميز", TypeClass = "badge-warning", Status = "مجدول", StatusClass = "badge-info", StartDate = "2026-07-10", EndDate = "2026-08-10", SortOrder = 4, Gradient = "linear-gradient(135deg, #f472b6, #ec4899)", SvgPath = "M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z", LinkedEntityId = "1", LinkedEntityName = "د. سارة أحمد", LinkedEntityDetail = "استشارية أمراض القلب - 10 سنة خبرة", Placement = "صفحة الأطباء - المميزون", Impressions = 0, Clicks = 0, CostPerDay = "200", TotalBudget = "6,200", Notes = "سيتم التفعيل تلقائيًا في 10 يوليو.", Timeline = new() { new() { Date = "2026-07-05 10:00", Text = "تم جدولة الإعلان", Marker = "info" }, new() { Date = "2026-07-01 14:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
-            new() { Id = 5, Title = "خصومات الصيف - عروض حصرية", Type = "بانر إعلاني", TypeClass = "badge-info", Status = "غير نشط", StatusClass = "badge-warning", StartDate = "2026-08-01", EndDate = "2026-08-31", SortOrder = 5, Gradient = "linear-gradient(135deg, #fb923c, #ea580c)", SvgPath = "M20 2.01L4 2v2h16V2.01zM4 22h16v-2H4v22zm-2-14h2v8H2V8zm18 0h2v8h-2V8zM9 6c-2.21 0-4 1.79-4 4 0 1.2.54 2.27 1.38 3H7v1c0 1.66 1.34 3 3 3s3-1.34 3-3v-1h.62c.84-.73 1.38-1.8 1.38-3 0-2.21-1.79-4-4-4z", ImageUrl = "", TargetUrl = "https://clinic.com/summer-offers", Placement = "الصفحة الرئيسية - أعلى", Impressions = 0, Clicks = 0, CostPerDay = "250", TotalBudget = "7,750", Notes = "إعلان صيفي - غير مفعل حاليًا، سينطلق في أغسطس.", Timeline = new() { new() { Date = "2026-07-03 16:00", Text = "تم إيقاف الإعلان", Marker = "warning" }, new() { Date = "2026-06-30 10:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
-            new() { Id = 6, Title = "مجمع عيادات السلام الطبي", Type = "عيادة مميزة", TypeClass = "badge-success", Status = "منتهي", StatusClass = "badge-danger", StartDate = "2026-04-01", EndDate = "2026-06-30", SortOrder = 6, Gradient = "linear-gradient(135deg, #14b8a6, #0d9488)", SvgPath = "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z", LinkedEntityId = "5", LinkedEntityName = "مجمع عيادات السلام الطبي", LinkedEntityDetail = "أكبر مجمع طبي في المنطقة - 15 عيادة", Placement = "صفحة العيادات - المميزة", Impressions = 72000, Clicks = 1450, CostPerDay = "400", TotalBudget = "36,000", Notes = "انتهت مدة الإعلان. يمكن تجديده.", Timeline = new() { new() { Date = "2026-06-30 23:59", Text = "انتهت صلاحية الإعلان", Marker = "danger" }, new() { Date = "2026-04-01 00:00", Text = "تم تفعيل الإعلان", Marker = "success" }, new() { Date = "2026-03-28 11:00", Text = "تم إنشاء الإعلان", Marker = "info" } } },
-        };
-
-        public static MockAd GetAdDetail(int id) => GetAds().FirstOrDefault(a => a.Id == id) ?? GetAds().First();
-
         // ========== Clinics ==========
         public static List<MockClinic> GetClinics() => new()
         {
@@ -1027,32 +1006,4 @@ namespace ClinicHub.Data
         public List<string> Attachments { get; set; } = new();
     }
 
-    // ========== Ads Models ==========
-    public class MockAd
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = "";
-        public string Type { get; set; } = "";
-        public string TypeClass { get; set; } = "badge-info";
-        public string Status { get; set; } = "";
-        public string StatusClass { get; set; } = "badge-success";
-        public string StartDate { get; set; } = "";
-        public string EndDate { get; set; } = "";
-        public int SortOrder { get; set; }
-        public string Gradient { get; set; } = "linear-gradient(135deg, #2F9CCA, #2385AF)";
-        public string SvgPath { get; set; } = "";
-        public string ImageUrl { get; set; } = "";
-        public string TargetUrl { get; set; } = "";
-        public string LinkedEntityId { get; set; } = "";
-        public string LinkedEntityName { get; set; } = "";
-        public string LinkedEntityDetail { get; set; } = "";
-        public string Placement { get; set; } = "";
-        public int Impressions { get; set; }
-        public int Clicks { get; set; }
-        public double CTR => Clicks > 0 ? Math.Round((double)Clicks / Impressions * 100, 2) : 0;
-        public string CostPerDay { get; set; } = "";
-        public string TotalBudget { get; set; } = "";
-        public string Notes { get; set; } = "";
-        public List<MockTimelineEntry> Timeline { get; set; } = new();
-    }
 }
