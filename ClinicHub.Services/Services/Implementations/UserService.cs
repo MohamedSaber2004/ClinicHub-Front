@@ -27,7 +27,8 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly string _getAllUsers;
         private readonly string _changePassword;
         private readonly string _createUser;
-        private readonly Func<Guid, string> _deleteUser;    
+        private readonly Func<Guid, string> _deleteUser;
+        private readonly Func<Guid, string> _updateUser;
 
         public UserService(HttpClient httpClient, IOptions<Doctory> doctoryOptions, IDeserializerService deserializerService)
         {
@@ -39,6 +40,7 @@ namespace ClinicHub.Services.Services.Implementations
             _changePassword = DoctoryRoutes.Users.ChangePassword;
             _createUser = DoctoryRoutes.Users.Create;
             _deleteUser = DoctoryRoutes.Users.Delete;
+            _updateUser = DoctoryRoutes.Users.EditUser;
         }
 
         public async Task<Unit> ChangePasswordAsync(ChangePasswordRequest request)
@@ -153,9 +155,43 @@ namespace ClinicHub.Services.Services.Implementations
             {
                 var url = _deleteUser(request.Id);
                 var req = new HttpRequestMessage(HttpMethod.Delete, url);
-
                 var response = await _httpClient.SendAsync(req);
-                return await _deserializerService.DeserializeApiResponse<ApiResponse<bool>>(response, "حدث خطأ في حذف المستخدم");
+                var success = await _deserializerService.DeserializeApiResponse<bool?>(response, "حدث خطأ في حذف المستخدم");
+                return new ApiResponse<bool> { Success = true, Data = success ?? true };
+
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<bool>> EditUserAsync(EditUserRequest request)
+        {
+            try
+            {
+                var url = _updateUser(request.Id);
+                var payload = new Dictionary<string, object?>
+                {
+                    ["FullName"] = request.FullName,
+                    ["PhoneNumber"] = request.PhoneNumber,
+                    ["BirthDate"] = request.BirthDate,
+                    ["Gender"] = request.Gender.HasValue ? (int)request.Gender.Value : null,
+                    ["IsActive"] = request.IsActive
+                };
+
+                var json = JsonConvert.SerializeObject(payload, _jsonSettings);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
+                {
+                    Content = content
+                };
+
+                var response = await _httpClient.SendAsync(requestMessage);
+                var success = await _deserializerService.DeserializeApiResponse<bool?>(response, "حدث خطأ في تعديل المستخدم");
+                return new ApiResponse<bool> { Success = true, Data = success ?? true };
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

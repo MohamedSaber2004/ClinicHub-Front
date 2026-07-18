@@ -77,9 +77,17 @@
                                         data-id="@d.Id"
                                         data-name="@d.FullName"
                                         data-email="@d.Email"
-                                        data-phone="@d.PhoneNumber">
+                                        data-phone="@d.PhoneNumber"
+                                        data-active="@d.IsActive.ToString().ToLower()">
                                     <svg viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                </button>
+                                <button class="btn-icon btn-change-password-doctor" title="تغيير كلمة المرور"
+                                        data-id="@d.Id"
+                                        data-name="@d.FullName">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/>
                                     </svg>
                                 </button>
                                 <button class="btn-icon btn-delete-doctor" title="حذف"
@@ -100,7 +108,7 @@
 
 <partial name="_Pagination" />
 
-<form id="deleteDoctorForm" method="post" action="/Admin/Users/Delete">
+<form id="deleteDoctorForm" method="post" action="/Admin/Doctors/Delete">
     <input type="hidden" id="deleteDoctorId" name="id" value="" />
 </form>
 
@@ -130,6 +138,76 @@
     </div>
 </div>
 
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <form id="changePasswordForm" method="post" action="/Admin/Doctors/ChangePassword">
+                <div class="modal-body" style="padding: var(--space-6);">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" fill="#2563eb"/>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-1); text-align: center;">تغيير كلمة المرور</h3>
+                    <p style="font-family: var(--ff-primary); font-size: var(--fs-sm); color: var(--clr-text-secondary); margin: 0 0 var(--space-5); text-align: center;">
+                        تغيير كلمة مرور الطبيب: <strong id="changePasswordDoctorName" style="color: var(--clr-text);"></strong>
+                    </p>
+                    <input type="hidden" id="changePasswordDoctorId" name="id" value="" />
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="newPassword">كلمة المرور الجديدة</label>
+                        <input type="password" id="newPassword" name="newPassword" class="form-input" placeholder="********" required minlength="6" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="confirmPassword">تأكيد كلمة المرور</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="********" required minlength="6" />
+                    </div>
+                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">حفظ</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editDoctorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <form id="editDoctorForm" method="post" action="/Admin/Doctors/Edit">
+                <div class="modal-body" style="padding: var(--space-6);">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#2563eb"/>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-1); text-align: center;">تعديل بيانات الطبيب</h3>
+                    <input type="hidden" id="editDoctorId" name="id" value="" />
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="editDoctorName">الاسم الكامل</label>
+                        <input type="text" id="editDoctorName" name="fullName" class="form-input" required />
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="editDoctorPhone">رقم الهاتف</label>
+                        <input type="text" id="editDoctorPhone" name="phoneNumber" class="form-input" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="editDoctorStatus">الحالة</label>
+                        <select id="editDoctorStatus" name="isActive" class="form-select">
+                            <option value="true">نشط</option>
+                            <option value="false">غير نشط</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">حفظ التعديلات</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         (function() {
@@ -148,6 +226,44 @@
 
             document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
                 deleteForm.submit();
+            });
+
+            var changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            var changePasswordDoctorId = document.getElementById('changePasswordDoctorId');
+            var changePasswordDoctorName = document.getElementById('changePasswordDoctorName');
+
+            document.querySelectorAll('.btn-change-password-doctor').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    changePasswordDoctorId.value = btn.getAttribute('data-id');
+                    changePasswordDoctorName.textContent = btn.getAttribute('data-name');
+                    document.getElementById('changePasswordForm').reset();
+                    changePasswordModal.show();
+                });
+            });
+
+            document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                var pwd = document.getElementById('newPassword').value;
+                var confirm = document.getElementById('confirmPassword').value;
+                if (pwd !== confirm) {
+                    e.preventDefault();
+                    alert('كلمة المرور غير متطابقة');
+                }
+            });
+
+            var editDoctorModal = new bootstrap.Modal(document.getElementById('editDoctorModal'));
+            var editDoctorId = document.getElementById('editDoctorId');
+            var editDoctorName = document.getElementById('editDoctorName');
+            var editDoctorPhone = document.getElementById('editDoctorPhone');
+            var editDoctorStatus = document.getElementById('editDoctorStatus');
+
+            document.querySelectorAll('.btn-edit-doctor').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    editDoctorId.value = btn.getAttribute('data-id');
+                    editDoctorName.value = btn.getAttribute('data-name');
+                    editDoctorPhone.value = btn.getAttribute('data-phone');
+                    editDoctorStatus.value = btn.getAttribute('data-active');
+                    editDoctorModal.show();
+                });
             });
         })();
 

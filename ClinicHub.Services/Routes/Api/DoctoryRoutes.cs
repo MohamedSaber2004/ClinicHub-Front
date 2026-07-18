@@ -98,6 +98,7 @@ namespace ClinicHub.Services.Routes.Api
             public string ChangePassword => $"{BaseRoute}/change-password";
             public string Create => $"{BaseRoute}";
             public string Delete(Guid id) => $"{BaseRoute}/{id}";
+            public string EditUser(Guid id) => $"{BaseRoute}/{id}";
         }
 
         public class DoctorRoutes

@@ -62,6 +62,16 @@
                         <td><span class="badge @u.StatusClass">@u.Status</span></td>
                         <td>
                             <div class="table-actions">
+                                <button class="btn-icon btn-edit-user" title="تعديل"
+                                        data-id="@u.Id"
+                                        data-name="@u.Name"
+                                        data-email="@u.Email"
+                                        data-phone="@u.Phone"
+                                        data-active="@(u.StatusClass == "badge-success" ? "true" : "false")">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                    </svg>
+                                </button>
                                 <button class="btn-icon btn-change-password" title="تغيير كلمة المرور"
                                         data-id="@u.Id"
                                         data-name="@u.Name">
@@ -235,6 +245,43 @@
     </div>
 </div>
 
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <form id="editUserForm" method="post" action="/Admin/Users/Edit">
+                <div class="modal-body" style="padding: var(--space-6);">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#2563eb"/>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-1); text-align: center;">تعديل بيانات المستخدم</h3>
+                    <input type="hidden" id="editUserId" name="id" value="" />
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="editUserName">الاسم الكامل</label>
+                        <input type="text" id="editUserName" name="fullName" class="form-input" required />
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="editUserPhone">رقم الهاتف</label>
+                        <input type="text" id="editUserPhone" name="phoneNumber" class="form-input" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="editUserStatus">الحالة</label>
+                        <select id="editUserStatus" name="isActive" class="form-select">
+                            <option value="true">نشط</option>
+                            <option value="false">غير نشط</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">حفظ التعديلات</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         (function() {
@@ -284,6 +331,21 @@
                 }
             });
 
+            var editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+            var editUserId = document.getElementById('editUserId');
+            var editUserName = document.getElementById('editUserName');
+            var editUserPhone = document.getElementById('editUserPhone');
+            var editUserStatus = document.getElementById('editUserStatus');
+
+            document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    editUserId.value = btn.getAttribute('data-id');
+                    editUserName.value = btn.getAttribute('data-name');
+                    editUserPhone.value = btn.getAttribute('data-phone');
+                    editUserStatus.value = btn.getAttribute('data-active');
+                    editUserModal.show();
+                });
+            });
 
         })();
 

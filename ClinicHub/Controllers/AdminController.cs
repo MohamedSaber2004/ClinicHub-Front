@@ -4,6 +4,7 @@ using ClinicHub.Data;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.ReponseModels;
+using ClinicHub.Services.Enums;
 using ClinicHub.Services.RequestModels;
 
 namespace ClinicHub.Controllers
@@ -406,6 +407,34 @@ namespace ClinicHub.Controllers
             return RedirectToAction("Users");
         }
 
+        [HttpPost]
+        [Route("Admin/Users/Edit")]
+        public async Task<IActionResult> EditUser(Guid id, string fullName, string phoneNumber, DateTime? birthDate, int? gender, bool? isActive)
+        {
+            try
+            {
+                var request = new EditUserRequest
+                {
+                    Id = id,
+                    FullName = fullName,
+                    PhoneNumber = phoneNumber,
+                    BirthDate = birthDate,
+                    Gender = gender.HasValue ? (Gender)gender.Value : null,
+                    IsActive = isActive
+                };
+                var result = await _userService.EditUserAsync(request);
+                if (result.Success)
+                    TempData["SuccessMessage"] = "تم تعديل المستخدم بنجاح";
+                else
+                    TempData["ErrorMessage"] = result.Message;
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("Users");
+        }
+
         [Route("Admin/Users/Overview/{id}")]
         public IActionResult UsersOverview(int id)
         {
@@ -446,6 +475,75 @@ namespace ClinicHub.Controllers
                 TempData["ErrorMessage"] = ex.Message;
             }
             return RedirectToAction("Users");
+        }
+
+        [HttpPost]
+        [Route("Admin/Doctors/Delete")]
+        public async Task<IActionResult> DeleteDoctor(Guid id)
+        {
+            try
+            {
+                var result = await _userService.DeleteUserAsync(new DeleteUserRequest { Id = id });
+                if (result.Success)
+                    TempData["SuccessMessage"] = "تم حذف الطبيب بنجاح";
+                else
+                    TempData["ErrorMessage"] = result.Message;
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("Doctors");
+        }
+
+        [HttpPost]
+        [Route("Admin/Doctors/ChangePassword")]
+        public async Task<IActionResult> ChangePasswordDoctor(Guid id, string newPassword, string confirmPassword)
+        {
+            try
+            {
+                var request = new ChangePasswordRequest
+                {
+                    Id = id,
+                    NewPassword = newPassword,
+                    ConfirmPassword = confirmPassword
+                };
+                await _userService.ChangePasswordAsync(request);
+                TempData["SuccessMessage"] = "تم تغيير كلمة المرور بنجاح";
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("Doctors");
+        }
+
+        [HttpPost]
+        [Route("Admin/Doctors/Edit")]
+        public async Task<IActionResult> EditDoctor(Guid id, string fullName, string phoneNumber, DateTime? birthDate, int? gender, bool? isActive)
+        {
+            try
+            {
+                var request = new EditUserRequest
+                {
+                    Id = id,
+                    FullName = fullName,
+                    PhoneNumber = phoneNumber,
+                    BirthDate = birthDate,
+                    Gender = gender.HasValue ? (Gender)gender.Value : null,
+                    IsActive = isActive
+                };
+                var result = await _userService.EditUserAsync(request);
+                if (result.Success)
+                    TempData["SuccessMessage"] = "تم تعديل الطبيب بنجاح";
+                else
+                    TempData["ErrorMessage"] = result.Message;
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("Doctors");
         }
 
         [Route("Admin/Users/Payments/{id}")]
