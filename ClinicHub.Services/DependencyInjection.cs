@@ -11,6 +11,7 @@ namespace ClinicHub.Services
             services.AddHttpContextAccessor();
 
             services.AddTransient<BearerTokenHandler>();
+            services.AddTransient<ClinicHeaderHandler>();
 
             services.AddHttpClient<IAuthService, AuthService>(client =>
             {
@@ -28,7 +29,8 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
-            .AddHttpMessageHandler<BearerTokenHandler>();
+            .AddHttpMessageHandler<BearerTokenHandler>()
+            .AddHttpMessageHandler<ClinicHeaderHandler>();
 
             services.AddHttpClient<IAttachmentService, AttachmentService>(client =>
             {
@@ -42,6 +44,13 @@ namespace ClinicHub.Services
             })
             .AddHttpMessageHandler<BearerTokenHandler>();
 
+            services.AddHttpClient<IClinicService, ClinicService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddScoped<IDoctorService, DoctorService>();
             services.AddScoped<IAttachmentUrlResolver, AttachmentUrlResolver>();
             services.AddSingleton<IDeserializerService, DeserializerService>();
 

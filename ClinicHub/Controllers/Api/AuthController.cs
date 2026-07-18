@@ -17,7 +17,12 @@ namespace ClinicHub.Controllers.Api
                 Permissions = RolePermissions.For(UserRole.ClinicOwner)
             };
 
-            var user = MockData.GetUsers().FirstOrDefault(u => u.Id == ctx.Id);
+            var mockUsers = new List<(int Id, string Name, string Email, string Phone)>
+            {
+                (1, "محمد عمر", "mohamed@email.com", "+966 50 111 2222"),
+                (6, "أحمد المدير", "ahmed@clinic1.com", "+966 55 111 2222"),
+            };
+            var user = mockUsers.FirstOrDefault(u => u.Id == ctx.Id);
 
             var permissions = new List<string>();
             foreach (Permission p in Enum.GetValues<Permission>())
@@ -29,9 +34,9 @@ namespace ClinicHub.Controllers.Api
             var response = new
             {
                 id = ctx.Id,
-                fullName = user?.Name ?? "مستخدم",
-                email = user?.Email ?? "",
-                phoneNumber = user?.Phone ?? "",
+                fullName = user.Name ?? "مستخدم",
+                email = user.Email ?? "",
+                phoneNumber = user.Phone ?? "",
                 role = ctx.Role.ToString(),
                 permissions,
             };

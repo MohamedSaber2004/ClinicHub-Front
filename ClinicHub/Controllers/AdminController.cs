@@ -14,13 +14,17 @@ namespace ClinicHub.Controllers
         private readonly IAttachmentUrlResolver _attachmentUrlResolver;
         private readonly IUserVerificationService _userVerificationService;
         private readonly IUserService _userService;
+        private readonly IDoctorService _doctorService;
+        private readonly IClinicService _clinicService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
             _userVerificationService = userVerificationService;
             _userService = userService;
+            _doctorService = doctorService;
+            _clinicService = clinicService;
         }
 
         public IActionResult Index()
@@ -134,7 +138,7 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Clinics/Details/{id}")]
-        public IActionResult ClinicDetails(int id)
+        public IActionResult ClinicDetails(Guid id)
         {
             var clinic = MockData.GetClinicById(id);
             if (clinic == null) return RedirectToAction("Clinics");
@@ -146,15 +150,48 @@ namespace ClinicHub.Controllers
             return View("ClinicDetails");
         }
 
-        public IActionResult Doctors()
+        public async Task<IActionResult> Doctors(Guid? clinicId = null, int pageNumber = 1, int pageSize = 20, string? searchTerm = null, bool? isUnassigned = null)
         {
-            ViewBag.Doctors = MockData.GetDoctors();
-            ViewBag.Clinics = MockData.GetClinics();
+            try
+            {
+                if (clinicId.HasValue)
+                    HttpContext.Items["ClinicId"] = clinicId.Value;
+
+                var request = new GetAllDoctorsRequest
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    SearchTerm = searchTerm,
+                    IsUnassigned = isUnassigned
+                };
+                var paged = await _doctorService.GetAllDoctorsPagginatedAsync(request);
+                ViewBag.Doctors = paged.Items;
+                ViewBag.Pagination = paged;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Doctors = new List<UserResponseDto>();
+            }
+
+            try
+            {
+                var clinicsResponse = await _clinicService.GetAllClinicsForViewingOnlyAsync(new GetAllCLinicsForViewingOnly());
+                ViewBag.Clinics = clinicsResponse?.Data ?? new List<ClinicLookupDto>();
+            }
+            catch (ApiException)
+            {
+                ViewBag.Clinics = new List<ClinicLookupDto>();
+            }
+
+            ViewBag.SelectedClinicId = clinicId;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.IsUnassigned = isUnassigned;
             return View();
         }
 
         [Route("Admin/Doctors/Details/{id}")]
-        public IActionResult DoctorDetails(int id)
+        public IActionResult DoctorDetails(Guid id)
         {
             ViewBag.Doctor = MockData.GetDoctorById(id);
             ViewBag.Clinics = MockData.GetClinics();
@@ -241,7 +278,7 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Users")]
-        public async Task<IActionResult> Users(int pageNumber = 1, int pageSize = 20, string? searchTerm = null)
+        public async Task<IActionResult> Users(int pageNumber = 1, int pageSize = 20, string? searchTerm = null, string? status = null)
         {
             try
             {
@@ -255,7 +292,7 @@ namespace ClinicHub.Controllers
 
                 var users = paged.Items.Select(u => new MockUser
                 {
-                    Id = u.Id.GetHashCode(),
+                    Id = u.Id,
                     Name = u.FullName,
                     Email = u.Email,
                     Phone = u.PhoneNumber,
@@ -269,13 +306,41 @@ namespace ClinicHub.Controllers
                     TotalSpent = "0"
                 }).ToList();
 
+                if (!string.IsNullOrEmpty(status))
+                {
+                    users = users.Where(u => u.Status == status).ToList();
+                }
+
                 ViewBag.Users = users;
                 ViewBag.Pagination = paged;
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.StatusFilter = status;
+
             }
             catch (ApiException ex)
             {
                 ViewBag.ErrorMessage = ex.Message;
                 ViewBag.Users = new List<MockUser>();
+            }
+
+            try
+            {
+                var clinicsResponse = await _clinicService.GetAllClinicsForViewingOnlyAsync(new GetAllCLinicsForViewingOnly());
+                ViewBag.Clinics = clinicsResponse?.Data ?? new List<ClinicLookupDto>();
+            }
+            catch (ApiException)
+            {
+                ViewBag.Clinics = new List<ClinicLookupDto>();
+            }
+
+            try
+            {
+                var specs = await _specializationService.GetAllAsync(pageNumber: 1, pageSize: 200);
+                ViewBag.Specializations = specs.Items;
+            }
+            catch (ApiException)
+            {
+                ViewBag.Specializations = new List<SpecializationDto>();
             }
 
             return View("Users/Index");
@@ -303,6 +368,44 @@ namespace ClinicHub.Controllers
             };
         }
 
+        [HttpPost]
+        [Route("Admin/Users/ChangePassword")]
+        public async Task<IActionResult> ChangePassword(Guid id, string newPassword, string confirmPassword)
+        {
+            try
+            {
+                var request = new ChangePasswordRequest
+                {
+                    Id = id,
+                    NewPassword = newPassword,
+                    ConfirmPassword = confirmPassword
+                };
+                await _userService.ChangePasswordAsync(request);
+                TempData["SuccessMessage"] = "تم تغيير كلمة المرور بنجاح";
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("Users");
+        }
+
+        [HttpPost]
+        [Route("Admin/Users/Create")]
+        public async Task<IActionResult> CreateUser([FromForm] CreateUserRequest request)
+        {
+            try
+            {
+                await _userService.CreateUserAsync(request);
+                TempData["SuccessMessage"] = "تم إضافة المستخدم بنجاح";
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("Users");
+        }
+
         [Route("Admin/Users/Overview/{id}")]
         public IActionResult UsersOverview(int id)
         {
@@ -324,6 +427,25 @@ namespace ClinicHub.Controllers
             ViewBag.UserId = id;
             ViewBag.Requests = MockData.GetUserRequests(id);
             return View("Users/Requests");
+        }
+
+        [HttpPost]
+        [Route("Admin/Users/Delete")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            try
+            {
+                var result = await _userService.DeleteUserAsync(new DeleteUserRequest { Id = id });
+                if (result.Success)
+                    TempData["SuccessMessage"] = "تم حذف المستخدم بنجاح";
+                else
+                    TempData["ErrorMessage"] = result.Message;
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction("Users");
         }
 
         [Route("Admin/Users/Payments/{id}")]

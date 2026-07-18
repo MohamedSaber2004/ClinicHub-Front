@@ -1,6 +1,7 @@
 ﻿namespace ClinicHub.Services.RequestModels
 {
-    internal class DeleteUserRequest
+    public class DeleteUserRequest
     {
+        public Guid Id { get; set; }
     }
 }

@@ -420,5 +420,10 @@
                 });
             }
         })();
+
+        var successMsg = '@(TempData["SuccessMessage"] ?? "")';
+        if (successMsg) { showSuccessModal(successMsg); }
+        var errorMsg = '@(TempData["ErrorMessage"] ?? "")';
+        if (errorMsg) { showErrorModal(errorMsg); }
     </script>
 }

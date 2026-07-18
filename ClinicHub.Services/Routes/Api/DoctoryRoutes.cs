@@ -14,6 +14,7 @@ namespace ClinicHub.Services.Routes.Api
             Attachments = new AttachmentRoutes(BaseRoute);
             Verification = new VerificationRoutes(BaseRoute);
             Users = new UserRoutes(BaseRoute);
+            Doctors = new DoctorRoutes(BaseRoute);
         }
 
         public static AuthRoutes Auth { get; private set; } = null!;
@@ -21,6 +22,7 @@ namespace ClinicHub.Services.Routes.Api
         public static AttachmentRoutes Attachments { get; private set; } = null!;
         public static VerificationRoutes Verification { get; private set; } = null!;
         public static UserRoutes Users { get; private set; } = null!;
+        public static DoctorRoutes Doctors { get; private set; } = null!;
 
         public class AuthRoutes
         {
@@ -93,6 +95,20 @@ namespace ClinicHub.Services.Routes.Api
             }
 
             public string GetAll => $"{BaseRoute}";
+            public string ChangePassword => $"{BaseRoute}/change-password";
+            public string Create => $"{BaseRoute}";
+            public string Delete(Guid id) => $"{BaseRoute}/{id}";
+        }
+
+        public class DoctorRoutes
+        {
+            public string BaseRoute { get; }
+            public DoctorRoutes(string baseRoute)
+            {
+                BaseRoute = $"{baseRoute}/admin/dashboard";
+            }
+            
+            public string GetAllClinicsForViewingOnly => $"{BaseRoute}/clinics";
         }
     }
 }

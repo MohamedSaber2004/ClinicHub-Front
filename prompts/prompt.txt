@@ -1,25 +1,14 @@
-﻿public CreateSpecializationCommandValidator(IStringLocalizer<Messages> localizer, IUnitOfWork ctx)
+﻿public class AddUserCommand : IRequest<Guid>
 {
-    RuleFor(x => x.Name)
-        .NotEmpty().WithMessage(JsonLocalizationProvider.GetLocalizedString(localizer[LocalizationKeys.ValidationMessages.Required.Value]))
-        .MaximumLength(100).WithMessage(JsonLocalizationProvider.GetLocalizedString(localizer[LocalizationKeys.ValidationMessages.MaxLength.Value]))
-        .MustAsync(BeUniqueName).WithMessage(JsonLocalizationProvider.GetLocalizedString(localizer[LocalizationKeys.SpecializationMessages.UniqueName.Value]));
-
-    RuleFor(x => x.ArName)
-        .NotEmpty().WithMessage(JsonLocalizationProvider.GetLocalizedString(localizer[LocalizationKeys.ValidationMessages.Required.Value]))
-        .MaximumLength(100).WithMessage(JsonLocalizationProvider.GetLocalizedString(localizer[LocalizationKeys.ValidationMessages.MaxLength.Value]))
-        .MustAsync(BeUniqueArName).WithMessage(JsonLocalizationProvider.GetLocalizedString(localizer[LocalizationKeys.SpecializationMessages.UniqueArName.Value]));
-    RuleFor(x => x.Description)
-        .MaximumLength(500).WithMessage(JsonLocalizationProvider.GetLocalizedString(localizer[LocalizationKeys.ValidationMessages.MaxLength.Value]));
-    _ctx = ctx;
-}
-
-private async Task<bool> BeUniqueName(string name, CancellationToken cancellationToken)
-{
-    return await _ctx.SpecializationRepository.ExistsAsync(s => s.Name == name, cancellationToken);
-}
-
-private async Task<bool> BeUniqueArName(string arName, CancellationToken cancellationToken)
-{
-    return await _ctx.SpecializationRepository.ExistsAsync(s => s.ArName == arName, cancellationToken);
+    public string FullName { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string Password { get; set; } = null!;
+    public string PhoneNumber { get; set; } = null!;
+    public DateTime BirthDate { get; set; }
+    public Gender Gender { get; set; }
+    public UserType Role { get; set; }
+    public Guid? ClinicId { get; set; }
+    public Guid? SpecializationId { get; set; }
+    public string? Bio { get; set; }
+    public int? YearsOfExperience { get; set; }
 }

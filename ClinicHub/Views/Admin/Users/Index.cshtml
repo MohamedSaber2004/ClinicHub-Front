@@ -3,6 +3,9 @@
     ViewData["Title"] = "المستخدمين";
     Layout = "_AdminLayout";
     var users = ViewBag.Users as List<MockUser> ?? new();
+    var statusFilter = ViewBag.StatusFilter as string;
+    var isActiveSelected = statusFilter == "نشط";
+    var isInactiveSelected = statusFilter == "غير نشط";
 }
 
 <div class="page-header">
@@ -17,12 +20,14 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن مستخدم..." />
-    <select id="filterStatus" class="form-select">
-        <option value="">جميع الحالات</option>
-        <option value="نشط">نشط</option>
-        <option value="غير نشط">غير نشط</option>
-    </select>
+    <form method="get" action="/Admin/Users" class="filter-bar" style="display: contents;">
+        <input type="text" id="filterSearch" name="searchTerm" class="form-input" placeholder="بحث عن مستخدم..." value="@ViewBag.SearchTerm" />
+        <select id="filterStatus" name="status" class="form-select" onchange="this.form.submit()">
+            <option value="">جميع الحالات</option>
+            <option value="نشط" selected="@isActiveSelected">نشط</option>
+            <option value="غير نشط" selected="@isInactiveSelected">غير نشط</option>
+        </select>
+    </form>
 </div>
 
 <!-- Users Table -->
@@ -57,6 +62,13 @@
                         <td><span class="badge @u.StatusClass">@u.Status</span></td>
                         <td>
                             <div class="table-actions">
+                                <button class="btn-icon btn-change-password" title="تغيير كلمة المرور"
+                                        data-id="@u.Id"
+                                        data-name="@u.Name">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/>
+                                    </svg>
+                                </button>
                                 <button class="btn-icon btn-delete-user" title="حذف"
                                         data-id="@u.Id"
                                         data-name="@u.Name">
@@ -75,7 +87,7 @@
 
 <partial name="_Pagination" />
 
-<form id="createUserForm" method="post">
+<form id="createUserForm" method="post" action="/Admin/Users/Create">
     <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-content-custom">
@@ -94,11 +106,65 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="createPhone">رقم الهاتف</label>
-                        <input type="text" id="createPhone" name="Phone" class="form-input" placeholder="010 12345678" required />
+                        <input type="text" id="createPhone" name="PhoneNumber" class="form-input" placeholder="010 12345678" required />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="createPassword">كلمة المرور</label>
                         <input type="password" id="createPassword" name="Password" class="form-input" placeholder="********" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createBirthDate">تاريخ الميلاد</label>
+                        <input type="date" id="createBirthDate" name="BirthDate" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createGender">الجنس</label>
+                        <select id="createGender" name="Gender" class="form-select" required>
+                            <option value="1">ذكر</option>
+                            <option value="2">أنثى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="createRole">الدور</label>
+                        <select id="createRole" name="Role" class="form-select" required>
+                            <option value="1">مستخدم</option>
+                            <option value="4">طبيب</option>
+                            <option value="8">موظف</option>
+                            <option value="16">مالك عيادة</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="clinicGroup" style="display:none;">
+                        <label class="form-label" for="createClinic">العيادة</label>
+                        <select id="createClinic" name="ClinicId" class="form-select">
+                            <option value="">اختر عيادة</option>
+                            @if (ViewBag.Clinics != null)
+                            {
+                                foreach (var c in ViewBag.Clinics)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group" id="doctorFields" style="display:none;">
+                        <label class="form-label" for="createSpecialization">التخصص</label>
+                        <select id="createSpecialization" name="SpecializationId" class="form-select">
+                            <option value="">اختر تخصص</option>
+                            @if (ViewBag.Specializations != null)
+                            {
+                                foreach (var s in ViewBag.Specializations)
+                                {
+                                    <option value="@s.Id">@s.ArName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group" id="bioGroup" style="display:none;">
+                        <label class="form-label" for="createBio">نبذة تعريفية</label>
+                        <textarea id="createBio" name="Bio" class="form-input" rows="3" placeholder="نبذة عن الطبيب"></textarea>
+                    </div>
+                    <div class="form-group" id="experienceGroup" style="display:none;">
+                        <label class="form-label" for="createExperience">سنوات الخبرة</label>
+                        <input type="number" id="createExperience" name="YearsOfExperience" class="form-input" placeholder="مثال: 5" min="0" />
                     </div>
                 </div>
                 <div class="modal-footer-custom">
@@ -110,7 +176,7 @@
     </div>
 </form>
 
-<form id="deleteUserForm" method="post">
+<form id="deleteUserForm" method="post" action="/Admin/Users/Delete">
     <input type="hidden" id="deleteUserId" name="id" value="" />
 </form>
 
@@ -132,6 +198,39 @@
                     <button type="button" id="confirmDeleteBtn" class="btn" style="min-width: 90px; padding: 10px 24px; background-color: var(--clr-danger); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600; cursor: pointer;">حذف</button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <form id="changePasswordForm" method="post" action="/Admin/Users/ChangePassword">
+                <div class="modal-body" style="padding: var(--space-6);">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" fill="#2563eb"/>
+                        </svg>
+                    </div>
+                    <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-1); text-align: center;">تغيير كلمة المرور</h3>
+                    <p style="font-family: var(--ff-primary); font-size: var(--fs-sm); color: var(--clr-text-secondary); margin: 0 0 var(--space-5); text-align: center;">
+                        تغيير كلمة مرور المستخدم: <strong id="changePasswordUserName" style="color: var(--clr-text);"></strong>
+                    </p>
+                    <input type="hidden" id="changePasswordUserId" name="id" value="" />
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="newPassword">كلمة المرور الجديدة</label>
+                        <input type="password" id="newPassword" name="newPassword" class="form-input" placeholder="********" required minlength="6" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                        <label class="form-label" for="confirmPassword">تأكيد كلمة المرور</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="********" required minlength="6" />
+                    </div>
+                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
+                        <button type="submit" class="btn btn-primary" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">حفظ</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -163,22 +262,48 @@
                 deleteForm.submit();
             });
 
-            function filterTable() {
-                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
-                var statusVal = document.getElementById('filterStatus').value;
-                var rows = document.querySelectorAll('.custom-table tbody tr');
-                rows.forEach(function(row) {
-                    var name = row.cells[0].textContent.trim().toLowerCase();
-                    var email = row.cells[1].textContent.trim().toLowerCase();
-                    var status = row.cells[4].textContent.trim();
-                    var matchSearch = !searchVal || name.indexOf(searchVal) !== -1 || email.indexOf(searchVal) !== -1;
-                    var matchStatus = !statusVal || status === statusVal;
-                    row.style.display = matchSearch && matchStatus ? '' : 'none';
-                });
-            }
+            var changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            var changePasswordUserId = document.getElementById('changePasswordUserId');
+            var changePasswordUserName = document.getElementById('changePasswordUserName');
 
-            document.getElementById('filterSearch').addEventListener('input', filterTable);
-            document.getElementById('filterStatus').addEventListener('change', filterTable);
+            document.querySelectorAll('.btn-change-password').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    changePasswordUserId.value = btn.getAttribute('data-id');
+                    changePasswordUserName.textContent = btn.getAttribute('data-name');
+                    document.getElementById('changePasswordForm').reset();
+                    changePasswordModal.show();
+                });
+            });
+
+            document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+                var pwd = document.getElementById('newPassword').value;
+                var confirm = document.getElementById('confirmPassword').value;
+                if (pwd !== confirm) {
+                    e.preventDefault();
+                    alert('كلمة المرور غير متطابقة');
+                }
+            });
+
+
         })();
+
+            document.getElementById('createRole').addEventListener('change', function() {
+                var clinicGroup = document.getElementById('clinicGroup');
+                var doctorFields = document.getElementById('doctorFields');
+                var bioGroup = document.getElementById('bioGroup');
+                var experienceGroup = document.getElementById('experienceGroup');
+                var val = parseInt(this.value);
+                var showClinic = val === 4 || val === 8 || val === 16;
+                var showDoctorFields = val === 4 || val === 16;
+                clinicGroup.style.display = showClinic ? '' : 'none';
+                doctorFields.style.display = showDoctorFields ? '' : 'none';
+                bioGroup.style.display = showDoctorFields ? '' : 'none';
+                experienceGroup.style.display = showDoctorFields ? '' : 'none';
+            });
+
+        var successMsg = '@(TempData["SuccessMessage"] ?? "")';
+        if (successMsg) { showSuccessModal(successMsg); }
+        var errorMsg = '@(TempData["ErrorMessage"] ?? "")';
+        if (errorMsg) { showErrorModal(errorMsg); }
     </script>
 }
