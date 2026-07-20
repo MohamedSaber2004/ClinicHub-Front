@@ -61,6 +61,12 @@ namespace ClinicHub.Services.Services.Implementations
             }
 
             var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+            if (dataToken is JObject dataObj)
+            {
+                var fn = dataObj["filename"] ?? dataObj["fileName"] ?? dataObj["FileName"];
+                if (fn != null) return fn.ToString();
+            }
             var messageToken = obj?["message"] ?? obj?["Message"];
 
             var result = messageToken?.ToString() ?? string.Empty;
@@ -161,6 +167,12 @@ namespace ClinicHub.Services.Services.Implementations
             }
 
             var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+            if (dataToken is JObject dataObj)
+            {
+                var fn = dataObj["filename"] ?? dataObj["fileName"] ?? dataObj["FileName"];
+                if (fn != null) return fn.ToString();
+            }
             var messageToken = obj?["message"] ?? obj?["Message"];
 
             var result = messageToken?.ToString() ?? string.Empty;

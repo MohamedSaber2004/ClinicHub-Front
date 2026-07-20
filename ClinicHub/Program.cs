@@ -46,6 +46,7 @@ namespace ClinicHub
             builder.Services.AddHttpClient();
 
             builder.Services.Configure<Doctory>(builder.Configuration.GetSection("Doctory"));
+            builder.Services.Configure<GoogleMapsOptions>(builder.Configuration.GetSection("GoogleMaps"));
             builder.Services.AddServices();
 
             var app = builder.Build();

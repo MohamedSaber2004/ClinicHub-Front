@@ -2299,6 +2299,7 @@ body {
 
 .btn-outline-secondary:hover {
   background-color: var(--clr-table-header);
+  color: var(--clr-text);
 }
 
 .btn-success {
@@ -2387,6 +2388,7 @@ body {
   overflow: hidden;
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
   transition: box-shadow var(--transition-base), transform var(--transition-base);
 }
 
@@ -2500,6 +2502,27 @@ body {
 
 .stars-inline svg {
   flex-shrink: 0;
+}
+
+/* ============================================================
+   Load More / Infinite Scroll
+   ============================================================ */
+
+.load-more-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  color: var(--clr-text-secondary);
+  font-size: var(--fs-md);
+}
+
+.load-more-end {
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--clr-text-secondary);
+  font-size: var(--fs-sm);
 }
 
 /* ============================================================
@@ -3250,6 +3273,13 @@ body {
   animation: fadeIn 0.5s ease-out;
 }
 
+/* Role list (multiple badges per cell) */
+.role-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
 /* Plan cards entrance */
 .subscription-plans .plan-card {
   animation: fadeInUp 0.45s ease-out both;
@@ -3723,16 +3753,196 @@ body {
     justify-content: center;
   }
 
-  .filter-bar {
+  .filter-card {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .filter-bar .form-input,
-  .filter-bar .form-select {
+  .filter-card .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-card .filter-group {
+    min-width: unset;
+  }
+
+  .filter-card .form-input,
+  .filter-card .form-select {
     width: 100%;
     min-width: unset;
   }
+}
+
+/* ============================================================
+   Filter Card (Professional Design)
+   ============================================================ */
+
+.filter-card {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+}
+
+.filter-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.filter-card-body {
+  padding: var(--space-4);
+}
+
+.filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.filter-row + .filter-row {
+  margin-top: var(--space-3);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+  position: relative;
+}
+
+.filter-group-search {
+  min-width: 220px;
+  flex: 1;
+}
+
+.filter-group .form-input,
+.filter-group .form-select {
+  width: 100%;
+  height: 38px;
+  padding-right: 32px;
+}
+
+.filter-group-search .form-input {
+  padding-right: 36px;
+}
+
+.filter-icon {
+  position: absolute;
+  bottom: 11px;
+  right: 10px;
+  color: var(--clr-text-secondary);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.filter-toggle-btn {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+  padding: 0 var(--space-4);
+  flex-shrink: 0;
+}
+
+.filter-toggle-btn:hover {
+  background-color: var(--clr-primary-light);
+  border-color: var(--clr-primary);
+  color: var(--clr-primary);
+}
+
+.filter-toggle-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.filter-advanced {
+  margin-top: 0;
+}
+
+.filter-divider {
+  height: 1px;
+  background: var(--clr-border);
+  margin-bottom: var(--space-4);
+}
+
+.filter-label {
+  font-size: var(--fs-xs);
+  color: var(--clr-text-secondary);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.filter-group-date {
+  min-width: 180px;
+}
+
+.filter-group-actions {
+  display: flex;
+  align-items: flex-end;
+  min-width: unset;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.sort-direction-group {
+  display: flex;
+  gap: var(--space-1);
+  background: var(--clr-table-header);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  height: 38px;
+  align-items: center;
+}
+
+.sort-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+  transition: all var(--transition-base);
+  user-select: none;
+}
+
+.sort-radio input {
+  display: none;
+}
+
+.sort-radio:has(input:checked) {
+  background: var(--clr-surface);
+  color: var(--clr-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.sort-radio svg {
+  flex-shrink: 0;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--clr-text-secondary);
+  padding: 6px 14px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.btn-ghost:hover {
+  background: var(--clr-table-header);
+  color: var(--clr-danger);
+  border-color: var(--clr-border);
 }
 
 /* ============================================================
@@ -4207,9 +4417,69 @@ body {
   }
 }
 
+.working-days-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.working-day-chk {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+  background: var(--clr-surface);
+  transition: all var(--transition-base);
+  user-select: none;
+}
+
+.working-day-chk input {
+  display: none;
+}
+
+.working-day-chk:has(input:checked) {
+  background: var(--clr-primary-light);
+  border-color: var(--clr-primary);
+  color: var(--clr-primary);
+  font-weight: var(--fw-semibold);
+}
+
+.text-danger {
+  color: var(--clr-danger);
+}
+
 @media (min-width: 992px) {
   .sidebar-toggle-mobile {
     display: none;
   }
+}
+
+/* ============================================================
+   Validation
+   ============================================================ */
+
+.validation-summary {
+  background-color: rgba(239,68,68,0.08);
+  border: 1px solid var(--clr-danger);
+  border-radius: var(--radius-md);
+  color: var(--clr-danger);
+  font-size: var(--fs-sm);
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.form-input.field-error {
+  border-color: var(--clr-danger);
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.15);
+}
+
+.form-input.field-error:focus {
+  border-color: var(--clr-danger);
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.25);
 }
 

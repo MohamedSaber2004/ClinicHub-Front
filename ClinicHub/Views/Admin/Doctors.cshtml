@@ -1,4 +1,5 @@
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Enums
 @{
     ViewData["Title"] = "الأطباء";
     Layout = "_AdminLayout";
@@ -7,6 +8,7 @@
     var selectedClinicId = ViewBag.SelectedClinicId as Guid?;
     var searchTerm = ViewBag.SearchTerm as string;
     var isUnassigned = ViewBag.IsUnassigned as bool?;
+    var selectedUserTypes = ViewBag.SelectedUserTypes as string;
 }
 
 <div class="page-header">
@@ -32,6 +34,11 @@
                 <option value="@c.Id" selected="@(selectedClinicId == c.Id ? true : null)">@c.Name</option>
             }
         </select>
+        <select name="userTypes" class="form-select" onchange="this.form.submit()">
+            <option value="">جميع الأدوار</option>
+            <option value="4" selected="@(selectedUserTypes == "4" ? true : null)">طبيب</option>
+            <option value="16" selected="@(selectedUserTypes == "16" ? true : null)">مالك عيادة</option>
+        </select>
         <label class="filter-checkbox">
             <input type="checkbox" name="isUnassigned" value="true" onchange="this.form.submit()" @(isUnassigned == true ? "checked" : "") />
             <span class="filter-checkbox-label">غير منتسبين لعيادة</span>
@@ -48,6 +55,7 @@
                     <th>الاسم</th>
                     <th>البريد الإلكتروني</th>
                     <th>الهاتف</th>
+                    <th>الدور</th>
                     <th>تاريخ التسجيل</th>
                     <th>الحالة</th>
                     <th>الإجراءات</th>
@@ -67,6 +75,22 @@
                         </td>
                         <td class="text-md">@d.Email</td>
                         <td class="text-md">@d.PhoneNumber</td>
+                        <td>
+                            <div class="role-list">
+                            @foreach (var r in d.Roles)
+                            {
+                                var roleName = r switch
+                                {
+                                    UserType.Doctor => "طبيب",
+                                    UserType.ClinicOwner => "مالك عيادة",
+                                    UserType.Staff => "موظف",
+                                    UserType.SuperAdmin => "مدير النظام",
+                                    _ => "مريض"
+                                };
+                                <span class="badge badge-info">@roleName</span>
+                            }
+                            </div>
+                        </td>
                         <td class="text-md">@d.CreatedAt.ToString("d MMMM yyyy")</td>
                         <td>
                             <span class="badge @(d.IsActive ? "badge-success" : "badge-warning")">@(d.IsActive ? "نشط" : "غير نشط")</span>

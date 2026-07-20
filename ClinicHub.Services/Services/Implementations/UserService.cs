@@ -94,6 +94,8 @@ namespace ClinicHub.Services.Services.Implementations
                     url += $"&UserId={request.UserId.Value}";
                 if (request.IsUnassigned.HasValue)
                     url += $"&IsUnassigned={request.IsUnassigned.Value.ToString().ToLower()}";
+                if (request.ClinicId.HasValue)
+                    url += $"&ClinicId={request.ClinicId.Value}";
 
                 var response = await _httpClient.GetAsync(url);
                 return await _deserializerService.DeserializeApiResponse<PagginatedResult<UserResponseDto>>(response, "حدث خطأ في جلب المستخدمين");

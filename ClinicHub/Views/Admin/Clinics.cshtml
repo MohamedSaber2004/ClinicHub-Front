@@ -1,7 +1,8 @@
 @{
     ViewData["Title"] = "العيادات";
     Layout = "_AdminLayout";
-    var clinics = ViewBag.Clinics as List<MockClinic> ?? new();
+    var clinics = ViewBag.Clinics as IEnumerable<ClinicManagmentDto> ?? new List<ClinicManagmentDto>();
+    var pagination = ViewBag.Pagination as PagginatedResult<ClinicManagmentDto>;
 }
 
 <div class="page-header">
@@ -22,32 +23,96 @@
 </div>
 
 <!-- Filter Bar -->
-<div class="filter-bar">
-    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن عيادة..." />
-    <select id="filterStatus" class="form-select">
-        <option value="">جميع الحالات</option>
-        <option value="active">نشط</option>
-        <option value="inactive">غير نشط</option>
-    </select>
+<div class="filter-card">
+    <div class="filter-card-body">
+        <div class="filter-row">
+            <div class="filter-group">
+                <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                <select id="filterStatus" class="form-select">
+                    <option value="">الحالة</option>
+                    <option value="active">نشط</option>
+                    <option value="inactive">غير نشط</option>
+                </select>
+            </div>
+
+            <button type="button" id="toggleAdvancedFilters" class="btn btn-sm btn-outline-secondary filter-toggle-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
+                <span>بحث متقدم</span>
+            </button>
+        </div>
+        <div class="filter-advanced" id="advancedFilters" style="display:none">
+            <div class="filter-divider"></div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">الاسم</label>
+                    <input type="text" id="filterName" class="form-input" placeholder="اسم العيادة..." />
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">البريد الإلكتروني</label>
+                    <input type="email" id="filterEmail" class="form-input" placeholder="البريد الإلكتروني..." />
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">رقم الهاتف</label>
+                    <input type="text" id="filterPhone" class="form-input" placeholder="رقم الهاتف..." />
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group filter-group-date">
+                    <label class="filter-label">من تاريخ</label>
+                    <input type="date" id="filterCreatedFrom" class="form-input" />
+                </div>
+                <div class="filter-group filter-group-date">
+                    <label class="filter-label">إلى تاريخ</label>
+                    <input type="date" id="filterCreatedTo" class="form-input" />
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">ترتيب حسب</label>
+                    <select id="filterSortBy" class="form-select">
+                        <option value="">بدون ترتيب</option>
+                        <option value="name">الاسم</option>
+                        <option value="clinicStatus">الحالة</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">اتجاه الترتيب</label>
+                    <div class="sort-direction-group">
+                        <label class="sort-radio">
+                            <input type="radio" name="sortDir" value="asc" />
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+                            <span>تصاعدي</span>
+                        </label>
+                        <label class="sort-radio">
+                            <input type="radio" name="sortDir" value="desc" checked />
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>
+                            <span>تنازلي</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="filter-group filter-group-actions">
+                    <button type="button" id="clearFilters" class="btn btn-sm btn-ghost">مسح الكل</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Clinic Cards Grid -->
 <div class="clinic-cards-grid" id="clinicCards">
+    @{
+        int cardIndex = 0;
+    }
     @foreach (var c in clinics)
     {
-        var specs = c.Specializations.Any() ? c.Specializations : new() { c.Specialty };
-        var visibleSpecs = specs.Take(3).ToList();
-        var overflowCount = specs.Count - 3;
-        var doctorCount = MockData.GetClinicDoctors(c.Id).Count;
-        var staffCount = MockData.GetClinicStaff(c.Id).Count;
-        var rating = MockData.GetClinicAvgRating(c.Id);
-        var ratingCount = MockData.GetClinicRatings(c.Id).Count;
-        var fullStars = (int)Math.Floor(rating);
-        var hasHalf = rating - fullStars >= 0.5;
+        cardIndex++;
+        var fullStars = c.Rating.HasValue ? (int)Math.Floor(c.Rating.Value) : 0;
+        var hasHalf = c.Rating.HasValue && c.Rating.Value - fullStars >= 0.5;
         var emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+        var clipId = "halfStar" + cardIndex;
         <a href="@AdminRoutes.Pages.ClinicDetails(c.Id)" class="clinic-card @(!c.IsActive ? "clinic-card-inactive" : "")">
             <div class="cc-image">
-                @if (!string.IsNullOrEmpty(c.ImageUrl)) { <img src="@c.ImageUrl" alt="@c.Name" /> }
+                @if (!string.IsNullOrEmpty(c.Logo)) { <img src="@c.Logo" alt="@(c.NameAr ?? c.Name)" /> }
                 else { <div class="cc-image-placeholder"><svg viewBox="0 0 24 24" fill="var(--clr-primary)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/></svg></div> }
                 <div class="cc-status-badge">
                     @if (c.IsActive) { <span class="badge badge-success">نشط</span> }
@@ -55,27 +120,51 @@
                 </div>
             </div>
             <div class="cc-body">
-                <h3 class="cc-name">@c.Name</h3>
-                <p class="cc-desc">@c.Description</p>
+                <h3 class="cc-name">@(c.NameAr ?? c.Name)</h3>
+                <p class="cc-desc">@(c.ArDescription ?? c.Description)</p>
                 <div class="cc-specs">
-                    @for (int i = 0; i < visibleSpecs.Count; i++) { <span class="spec-pill">@visibleSpecs[i]</span> }
-                    @if (overflowCount > 0) { <span class="spec-pill spec-pill-overflow">+@overflowCount</span> }
+                    @{
+                        var specName = c.SpecializationNameAr ?? c.SpecializationName;
+                    }
+                    @if (!string.IsNullOrEmpty(specName))
+                    {
+                        <span class="spec-pill">@specName</span>
+                    }
                 </div>
                 <div class="cc-meta">
-                    <div class="cc-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--clr-text-secondary)"><path d="M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5z"/></svg><span>@doctorCount طبيب</span></div>
-                    <div class="cc-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--clr-text-secondary)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span>@staffCount موظف</span></div>
-                    <div class="cc-meta-item cc-rating">
-                        <div class="stars-inline">
-                            @for (int i = 0; i < fullStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                            @if (hasHalf) { <text>★</text> } @* half star placeholder *@
-                            @for (int i = 0; i < emptyStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                    @if (!string.IsNullOrEmpty(c.Phone))
+                    {
+                        <div class="cc-meta-item">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--clr-text-secondary)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            <span>@c.Phone</span>
                         </div>
-                        <span>@rating.ToString("F1") (@ratingCount)</span>
-                    </div>
+                    }
+                    @if (c.Rating.HasValue)
+                    {
+                        <div class="cc-meta-item cc-rating">
+                            <div class="stars-inline">
+                                @for (int i = 0; i < fullStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                @if (hasHalf) { <svg width="12" height="12" viewBox="0 0 24 24"><defs><clipPath id="@clipId"><rect x="0" y="0" width="12" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#@clipId)"/></svg> }
+                                @for (int i = 0; i < emptyStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                            </div>
+                            <span>@c.Rating.Value.ToString("F1")</span>
+                        </div>
+                    }
                 </div>
             </div>
         </a>
     }
+</div>
+
+<!-- Load More Indicator -->
+<div id="loadMoreIndicator" class="load-more-indicator" style="display:none">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">جاري التحميل...</span>
+    </div>
+    <span>جارٍ تحميل المزيد...</span>
+</div>
+<div id="loadMoreEnd" class="load-more-end" style="display:none">
+    <span>تم تحميل جميع العيادات</span>
 </div>
 
 <!-- Add Clinic Modal -->
@@ -86,148 +175,645 @@
                 <h5 class="modal-title">إضافة عيادة جديدة</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
-            <div class="modal-body-custom">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">اسم العيادة</label>
-                            <input type="text" class="form-input" placeholder="مثال: مركز القلب التخصصي" />
+            <form id="createClinicForm">
+                <div class="modal-body-custom">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">اسم العيادة <span class="text-danger">*</span></label>
+                                <input type="text" name="nameAr" class="form-input" placeholder="مثال: مركز القلب التخصصي" required />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">التخصص الرئيسي <span class="text-danger">*</span></label>
+                                <select name="specializationId" class="form-select" required>
+                                    <option value="">اختر التخصص</option>
+                                    @if (ViewBag.Specializations != null)
+                                    {
+                                        foreach (var s in ViewBag.Specializations)
+                                        {
+                                            <option value="@s.Id">@(s.ArName ?? s.Name)</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">التخصص الرئيسي</label>
-                            <select class="form-select">
-                                <option value="">اختر التخصص</option>
-                                <option>القلب والأوعية الدموية</option>
-                                <option>الأمراض العصبية</option>
-                                <option>جراحة العظام</option>
-                                <option>الأمراض الجلدية</option>
-                                <option>طب الأطفال</option>
-                            </select>
+                    <div id="createClinicErrors" class="validation-summary" style="display:none"></div>
+                    <div class="form-group">
+                        <label class="form-label">وصف العيادة</label>
+                        <textarea name="arDescription" class="form-input form-textarea" rows="2" placeholder="وصف مختصر عن العيادة"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">رقم الهاتف</label>
+                                <input type="text" name="phone" class="form-input" pattern="^01[0125][0-9]{8}$" placeholder="01X XXX XXXX" title="أدخل رقم هاتف مصري صحيح: 01XXXXXXXXX" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                                <input type="email" name="email" class="form-input" placeholder="clinic@example.com" required />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">الموقع الإلكتروني</label>
+                                <input type="url" name="website" class="form-input" placeholder="https://" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">العنوان</label>
+                                <input type="text" name="addressAr" class="form-input" placeholder="العنوان" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Map -->
+                    <div class="detail-card" style="background:var(--clr-card-bg);margin-bottom:var(--space-4)">
+                        <h6 style="margin-bottom:var(--space-3);font-weight:600;">تحديد الموقع على الخريطة</h6>
+                        <input type="hidden" name="lat" id="createClinicLat" value="" />
+                        <input type="hidden" name="lng" id="createClinicLng" value="" />
+                        <div id="createClinicMap" style="height:300px;border-radius:var(--radius-md);border:1px solid var(--clr-border);margin-bottom:var(--space-2);"></div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label class="form-label">خط العرض</label>
+                                    <input type="text" id="createClinicLatDisplay" class="form-input" placeholder="اختر نقطة على الخريطة" readonly />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label class="form-label">خط الطول</label>
+                                    <input type="text" id="createClinicLngDisplay" class="form-input" placeholder="اختر نقطة على الخريطة" readonly />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-card" style="background:var(--clr-card-bg);margin-bottom:var(--space-4)">
+                        <h6 style="margin-bottom:var(--space-3);font-weight:600;">بيانات المدير</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">اسم المدير <span class="text-danger">*</span></label>
+                                    <input type="text" name="ownerName" class="form-input" placeholder="اسم المدير" required />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">بريد المدير <span class="text-danger">*</span></label>
+                                    <input type="email" name="ownerEmail" class="form-input" placeholder="owner@example.com" required />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">هاتف المدير</label>
+                                    <input type="text" name="ownerPhone" class="form-input" pattern="^01[0125][0-9]{8}$" placeholder="01X XXX XXXX" title="أدخل رقم هاتف مصري صحيح: 01XXXXXXXXX" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-card" style="background:var(--clr-card-bg);margin-bottom:var(--space-4)">
+                        <h6 style="margin-bottom:var(--space-3);font-weight:600;">بيانات الطبيب</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">تخصص الطبيب <span class="text-danger">*</span></label>
+                                    <select name="doctorSpecializationId" class="form-select" required>
+                                        <option value="">اختر التخصص</option>
+                                        @if (ViewBag.Specializations != null)
+                                        {
+                                            foreach (var s in ViewBag.Specializations)
+                                            {
+                                                <option value="@s.Id">@(s.ArName ?? s.Name)</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">سنوات الخبرة</label>
+                                    <input type="number" name="yearsOfExperience" class="form-input" min="0" value="0" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">السيرة الذاتية</label>
+                                    <textarea name="bio" class="form-input form-textarea" rows="2" placeholder="نبذة عن الطبيب"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-card" style="background:var(--clr-card-bg);margin-bottom:var(--space-4)">
+                        <h6 style="margin-bottom:var(--space-3);font-weight:600;">مواعيد العمل</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">بداية الدوام</label>
+                                    <input type="text" name="workingHoursStart" class="form-input" placeholder="09:00 ص" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">نهاية الدوام</label>
+                                    <input type="text" name="workingHoursEnd" class="form-input" placeholder="05:00 م" />
+                                </div>
+                            </div>
+                        </div>
+                        <label class="form-label" style="margin-bottom:var(--space-2);">أيام العمل</label>
+                        <div class="working-days-grid">
+                            @{
+                                var days = new[] {
+                                    new { Value = "Saturday", Label = "السبت" },
+                                    new { Value = "Sunday", Label = "الأحد" },
+                                    new { Value = "Monday", Label = "الإثنين" },
+                                    new { Value = "Tuesday", Label = "الثلاثاء" },
+                                    new { Value = "Wednesday", Label = "الأربعاء" },
+                                    new { Value = "Thursday", Label = "الخميس" },
+                                    new { Value = "Friday", Label = "الجمعة" }
+                                };
+                            }
+                            @foreach (var d in days)
+                            {
+                                <label class="working-day-chk">
+                                    <input type="checkbox" name="workingDays" value="@d.Value" />
+                                    <span>@d.Label</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">صورة العيادة</label>
+                        <input type="file" id="clinicLogoInput" class="form-input" accept="image/*" />
+                        <div id="clinicLogoPreview" class="upload-preview" style="display:none;margin-top:var(--space-2)">
+                            <img id="clinicLogoImg" src="" alt="صورة العيادة" style="max-width:200px;max-height:120px;border-radius:var(--radius-md);border:1px solid var(--clr-border);" />
+                            <span id="clinicLogoStatus" style="font-size:var(--fs-sm);color:var(--clr-text-secondary);display:block;margin-top:var(--space-1);"></span>
                         </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">وصف العيادة</label>
-                    <textarea class="form-input form-textarea" rows="2" placeholder="وصف مختصر عن العيادة"></textarea>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">الموقع (الغرفة)</label>
-                            <input type="text" class="form-input" id="clinicLocation" placeholder="الطابق - الغرفة" />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">رقم الهاتف</label>
-                            <input type="text" class="form-input" placeholder="+966 11 XXX XXXX" />
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">الموقع على الخريطة</label>
-                    <input type="hidden" id="clinicLat" value="31.0409" />
-                    <input type="hidden" id="clinicLng" value="31.3785" />
-                    <div id="addClinicMap" style="height: 280px; border-radius: var(--radius-md); border: 1px solid var(--clr-border); margin-bottom: 8px;"></div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="myLocationBtn" style="display: inline-flex; align-items: center; gap: 4px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-                            موقعي الحالي
-                        </button>
-                        <span class="text-muted" style="font-size: var(--fs-sm);" id="coordsDisplay">31.0409, 31.3785</span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">مدير العيادة</label>
-                            <input type="text" class="form-input" placeholder="اسم المدير" />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">صورة العيادة</label>
-                            <input type="file" class="form-input" accept="image/*" />
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-toggle">
-                        <input type="checkbox" checked />
-                        <span class="toggle-track"></span>
-                        <span class="toggle-label">العيادة نشطة</span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer-custom">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">حفظ</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script src="https://maps.googleapis.com/maps/api/js?key=@ViewBag.GoogleMapsApiKey&callback=initCreateClinicMap" async defer></script>
     <script>
+        function initCreateClinicMap() {
+            var defaultPos = { lat: 30.0444, lng: 31.2357 };
+            var map = new google.maps.Map(document.getElementById('createClinicMap'), {
+                center: defaultPos,
+                zoom: 12,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false
+            });
+            var marker = new google.maps.Marker({
+                position: defaultPos,
+                map: map,
+                draggable: true
+            });
+            marker.setVisible(false);
+            map.addListener('click', function(e) {
+                placeMarker(e.latLng);
+            });
+            marker.addListener('dragend', function(e) {
+                updateCoords(e.latLng);
+            });
+            function placeMarker(latLng) {
+                marker.setPosition(latLng);
+                marker.setVisible(true);
+                map.panTo(latLng);
+                updateCoords(latLng);
+            }
+            function updateCoords(latLng) {
+                var lat = latLng.lat().toFixed(6);
+                var lng = latLng.lng().toFixed(6);
+                document.getElementById('createClinicLat').value = lat;
+                document.getElementById('createClinicLng').value = lng;
+                document.getElementById('createClinicLatDisplay').value = lat;
+                document.getElementById('createClinicLngDisplay').value = lng;
+            }
+        }
+
         (function() {
-            function filterCards() {
-                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
-                var statusVal = document.getElementById('filterStatus').value;
-                var cards = document.querySelectorAll('.clinic-card');
-                cards.forEach(function(card) {
-                    var name = card.querySelector('.cc-name').textContent.trim().toLowerCase();
-                    var isActive = !card.classList.contains('clinic-card-inactive');
-                    var matchSearch = !searchVal || name.indexOf(searchVal) !== -1;
-                    var matchStatus = !statusVal || (statusVal === 'active' && isActive) || (statusVal === 'inactive' && !isActive);
-                    card.style.display = matchSearch && matchStatus ? '' : 'none';
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>showSuccessModal('@TempData["SuccessMessage"]');</text>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>showErrorModal('@TempData["ErrorMessage"]');</text>
+            }
+
+            var currentPage = @(pagination?.PageNumber ?? 1);
+            var hasMore = @((pagination?.HasNextPage ?? false).ToString().ToLower());
+            var isLoading = false;
+            var loadedIds = {};
+            var filters = {
+                status: '',
+                name: '',
+                email: '',
+                phone: '',
+                createdFrom: '',
+                createdTo: '',
+                sortBy: '',
+                sortAscending: false
+            };
+            var contentBody = document.querySelector('.content-body');
+            var cardsGrid = document.getElementById('clinicCards');
+            var loadMoreIndicator = document.getElementById('loadMoreIndicator');
+            var loadMoreEnd = document.getElementById('loadMoreEnd');
+
+            var fetchUrl = '@Url.Action("Clinics", "Admin")';
+
+            // Record initial server-rendered clinic IDs
+            document.querySelectorAll('#clinicCards .clinic-card').forEach(function(card) {
+                var href = card.getAttribute('href');
+                if (href) {
+                    var id = href.split('/').pop();
+                    if (id) loadedIds[id] = true;
+                }
+            });
+
+            var starCounter = 0;
+
+            function buildCardHtml(item) {
+                var name = item.nameAr || item.name || '';
+                var description = item.arDescription || item.description || '';
+                var rating = item.rating || 0;
+                var fullStars = Math.floor(rating);
+                var hasHalf = rating - fullStars >= 0.5;
+                var emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+                var isActive = item.isActive;
+                var imgHtml = item.imageUrl
+                    ? '<img src="' + item.imageUrl + '" alt="' + name + '" />'
+                    : '<div class="cc-image-placeholder"><svg viewBox="0 0 24 24" fill="var(--clr-primary)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/></svg></div>';
+                var statusBadge = isActive
+                    ? '<span class="badge badge-success">نشط</span>'
+                    : '<span class="badge badge-danger">غير نشط</span>';
+                var specName = item.specializationNameAr || item.specializationName || '';
+                var specsHtml = specName
+                    ? '<span class="spec-pill">' + specName + '</span>'
+                    : '';
+                var inactiveClass = isActive ? '' : 'clinic-card-inactive';
+                var starsHtml = '';
+                for (var i = 0; i < fullStars; i++) {
+                    starsHtml += '<svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
+                }
+                if (hasHalf) {
+                    starCounter++;
+                    var clipId = 'jsHalf' + starCounter;
+                    starsHtml += '<svg width="12" height="12" viewBox="0 0 24 24"><defs><clipPath id="' + clipId + '"><rect x="0" y="0" width="12" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#' + clipId + ')"/></svg>';
+                }
+                for (var i = 0; i < emptyStars; i++) {
+                    starsHtml += '<svg width="12" height="12" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>';
+                }
+                var phoneHtml = item.phone
+                    ? '<div class="cc-meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--clr-text-secondary)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>' + item.phone + '</span></div>'
+                    : '';
+                var ratingHtml = item.rating
+                    ? '<div class="cc-meta-item cc-rating"><div class="stars-inline">' + starsHtml + '</div><span>' + rating.toFixed(1) + '</span></div>'
+                    : '';
+
+                return '<a href="/Admin/Clinics/Details/' + item.id + '" class="clinic-card ' + inactiveClass + '">'
+                    + '<div class="cc-image">' + imgHtml + '<div class="cc-status-badge">' + statusBadge + '</div></div>'
+                    + '<div class="cc-body">'
+                    + '<h3 class="cc-name">' + name + '</h3>'
+                    + '<p class="cc-desc">' + description + '</p>'
+                    + '<div class="cc-specs">' + specsHtml + '</div>'
+                    + '<div class="cc-meta">' + phoneHtml + ratingHtml + '</div>'
+                    + '</div></a>';
+            }
+
+            function appendItems(items) {
+                items.forEach(function(item) {
+                    if (loadedIds[item.id]) return;
+                    loadedIds[item.id] = true;
+                    cardsGrid.insertAdjacentHTML('beforeend', buildCardHtml(item));
                 });
             }
 
-            document.getElementById('filterSearch').addEventListener('input', filterCards);
-            document.getElementById('filterStatus').addEventListener('change', filterCards);
+            function loadMore() {
+                if (isLoading || !hasMore) return;
+                isLoading = true;
+                loadMoreIndicator.style.display = 'flex';
 
-            // Map for Add Clinic modal
-            var addMap = L.map('addClinicMap').setView([31.0409, 31.3785], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap',
-                maxZoom: 18
-            }).addTo(addMap);
+                currentPage++;
+                var url = fetchUrl + '?format=json&pageNumber=' + currentPage + '&pageSize=10' + buildFilterQuery();
 
-            var addMarker = L.marker([31.0409, 31.3785], { draggable: false }).addTo(addMap);
-
-            function updateAddCoords(lat, lng) {
-                document.getElementById('clinicLat').value = lat.toFixed(6);
-                document.getElementById('clinicLng').value = lng.toFixed(6);
-                document.getElementById('coordsDisplay').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+                fetch(url)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.error) {
+                            showErrorModal(data.error);
+                            isLoading = false;
+                            loadMoreIndicator.style.display = 'none';
+                            return;
+                        }
+                        appendItems(data.items);
+                        hasMore = data.hasMore;
+                        isLoading = false;
+                        loadMoreIndicator.style.display = 'none';
+                        if (!hasMore) {
+                            loadMoreEnd.style.display = 'block';
+                        }
+                    })
+                    .catch(function() {
+                        showErrorModal('عذراً، حدث خطأ أثناء تحميل البيانات.');
+                        isLoading = false;
+                        loadMoreIndicator.style.display = 'none';
+                    });
             }
 
-            addMap.on('click', function(e) {
-                addMarker.setLatLng(e.latlng);
-                updateAddCoords(e.latlng.lat, e.latlng.lng);
+            function resetAndReload() {
+                currentPage = 1;
+                hasMore = true;
+                isLoading = false;
+                cardsGrid.innerHTML = '';
+                loadedIds = {};
+                loadMoreIndicator.style.display = 'none';
+                loadMoreEnd.style.display = 'none';
+
+                var url = fetchUrl + '?format=json&pageNumber=1&pageSize=10' + buildFilterQuery();
+
+                fetch(url)
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.error) {
+                            showErrorModal(data.error);
+                            return;
+                        }
+                        if (data.items.length === 0) {
+                            cardsGrid.innerHTML = '<div class="empty-state"><p>لا توجد عيادات تطابق بحثك.</p></div>';
+                            loadMoreEnd.style.display = 'none';
+                            return;
+                        }
+                        appendItems(data.items);
+                        hasMore = data.hasMore;
+                        if (!hasMore) {
+                            loadMoreEnd.style.display = 'block';
+                        }
+                    })
+                    .catch(function() {
+                        showErrorModal('عذراً، حدث خطأ أثناء تحميل البيانات.');
+                    });
+            }
+
+            // Scroll on content body
+            contentBody.addEventListener('scroll', function() {
+                if (contentBody.scrollTop + contentBody.clientHeight >= contentBody.scrollHeight - 300) {
+                    loadMore();
+                }
             });
 
-            document.getElementById('myLocationBtn').addEventListener('click', function() {
-                if (!navigator.geolocation) {
-                    alert('الموقع غير مدعوم في متصفحك.');
+            function buildFilterQuery() {
+                var q = '';
+                if (filters.status) q += '&status=' + filters.status;
+                if (filters.name) q += '&name=' + encodeURIComponent(filters.name);
+                if (filters.email) q += '&email=' + encodeURIComponent(filters.email);
+                if (filters.phone) q += '&phone=' + encodeURIComponent(filters.phone);
+                if (filters.createdFrom) q += '&createdFrom=' + filters.createdFrom;
+                if (filters.createdTo) q += '&createdTo=' + filters.createdTo;
+                if (filters.sortBy) q += '&sortBy=' + encodeURIComponent(filters.sortBy);
+                q += '&sortAscending=' + filters.sortAscending;
+                return q;
+            }
+
+            // Filter change handler
+            function onFilterChange() {
+                filters.status = document.getElementById('filterStatus').value;
+                filters.name = document.getElementById('filterName').value.trim();
+                filters.email = document.getElementById('filterEmail').value.trim();
+                filters.phone = document.getElementById('filterPhone').value.trim();
+                filters.createdFrom = document.getElementById('filterCreatedFrom').value;
+                filters.createdTo = document.getElementById('filterCreatedTo').value;
+                filters.sortBy = document.getElementById('filterSortBy').value;
+                filters.sortAscending = document.querySelector('input[name="sortDir"]:checked').value === 'asc';
+                resetAndReload();
+            }
+
+            function onEnterKey(e) {
+                if (e.key === 'Enter') onFilterChange();
+            }
+
+            document.getElementById('filterStatus').addEventListener('change', onFilterChange);
+            document.getElementById('filterName').addEventListener('keydown', onEnterKey);
+            document.getElementById('filterEmail').addEventListener('keydown', onEnterKey);
+            document.getElementById('filterPhone').addEventListener('keydown', onEnterKey);
+            document.getElementById('filterCreatedFrom').addEventListener('change', onFilterChange);
+            document.getElementById('filterCreatedTo').addEventListener('change', onFilterChange);
+            document.getElementById('filterSortBy').addEventListener('change', onFilterChange);
+            document.querySelectorAll('input[name="sortDir"]').forEach(function(el) {
+                el.addEventListener('change', onFilterChange);
+            });
+
+            // Toggle advanced filters
+            document.getElementById('toggleAdvancedFilters').addEventListener('click', function() {
+                var adv = document.getElementById('advancedFilters');
+                var isHidden = adv.style.display === 'none';
+                adv.style.display = isHidden ? 'block' : 'none';
+                this.querySelector('svg').style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+
+            // Clear filters
+            document.getElementById('clearFilters').addEventListener('click', function() {
+                document.getElementById('filterStatus').value = '';
+                document.getElementById('filterName').value = '';
+                document.getElementById('filterEmail').value = '';
+                document.getElementById('filterPhone').value = '';
+                document.getElementById('filterCreatedFrom').value = '';
+                document.getElementById('filterCreatedTo').value = '';
+                document.getElementById('filterSortBy').value = '';
+                document.querySelector('input[name="sortDir"][value="desc"]').checked = true;
+                onFilterChange();
+            });
+
+            function clearErrors() {
+                var summary = document.getElementById('createClinicErrors');
+                if (summary) summary.style.display = 'none';
+                document.querySelectorAll('#createClinicForm .form-input.field-error').forEach(function(el) {
+                    el.classList.remove('field-error');
+                });
+            }
+
+            document.getElementById('clinicModal').addEventListener('hidden.bs.modal', function() {
+                clearErrors();
+                document.getElementById('clinicLogoPreview').style.display = 'none';
+            });
+
+            document.getElementById('clinicLogoInput').addEventListener('change', function() {
+                var file = this.files && this.files[0];
+                var preview = document.getElementById('clinicLogoPreview');
+                var img = document.getElementById('clinicLogoImg');
+                var status = document.getElementById('clinicLogoStatus');
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        img.src = e.target.result;
+                        preview.style.display = 'block';
+                        status.textContent = file.name + ' - جاري التحميل...';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            function showInlineErrors(result) {
+                var summary = document.getElementById('createClinicErrors');
+                if (summary) {
+                    summary.innerHTML = result.error || result.message || 'حدث خطأ غير متوقع';
+                    summary.style.display = 'block';
+                }
+                if (result.errors) {
+                    for (var field in result.errors) {
+                        var input = document.querySelector('[name="' + field.charAt(0).toLowerCase() + field.slice(1) + '"]');
+                        if (input) input.classList.add('field-error');
+                    }
+                }
+            }
+
+            function convertTo24h(timeStr) {
+                if (!timeStr) return '';
+                var match12 = timeStr.match(/^(\d{1,2}):(\d{2})\s*(ص|م)$/);
+                if (match12) {
+                    var h = parseInt(match12[1], 10);
+                    var m = match12[2];
+                    if (match12[3] === 'م') {
+                        h = h === 12 ? 12 : h + 12;
+                    } else {
+                        h = h === 12 ? 0 : h;
+                    }
+                    return (h < 10 ? '0' : '') + h + ':' + m + ':00';
+                }
+                var match24 = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+                if (match24) return match24[1] + ':' + match24[2] + ':00';
+                return '';
+            }
+
+            // Create Clinic form submission
+            document.getElementById('createClinicForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                var form = this;
+                clearErrors();
+
+                var required = ['nameAr', 'specializationId', 'phone', 'email', 'ownerName', 'ownerEmail'];
+                var missing = [];
+                required.forEach(function(n) {
+                    var el = form.querySelector('[name="' + n + '"]');
+                    if (el && !el.value.trim()) missing.push(n);
+                });
+                if (missing.length > 0) {
+                    showInlineErrors({ message: 'يرجى ملء جميع الحقول المطلوبة' });
+                    missing.forEach(function(n) {
+                        var el = form.querySelector('[name="' + n + '"]');
+                        if (el) el.classList.add('field-error');
+                    });
                     return;
                 }
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    var lat = pos.coords.latitude;
-                    var lng = pos.coords.longitude;
-                    addMap.setView([lat, lng], 15);
-                    addMarker.setLatLng([lat, lng]);
-                    updateAddCoords(lat, lng);
-                }, function() {
-                    alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
-                });
+
+                var submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'جاري الحفظ...';
+
+                function buildPayload(logoUrl) {
+                    var data = {
+                        nameAr: form.querySelector('[name="nameAr"]').value,
+                        arDescription: form.querySelector('[name="arDescription"]').value,
+                        specializationId: form.querySelector('[name="specializationId"]').value,
+                        phone: form.querySelector('[name="phone"]').value,
+                        email: form.querySelector('[name="email"]').value,
+                        website: form.querySelector('[name="website"]').value,
+                        addressAr: form.querySelector('[name="addressAr"]').value,
+                        ownerName: form.querySelector('[name="ownerName"]').value,
+                        ownerEmail: form.querySelector('[name="ownerEmail"]').value,
+                        ownerPhone: form.querySelector('[name="ownerPhone"]').value,
+                        lat: parseFloat(form.querySelector('[name="lat"]').value) || null,
+                        lng: parseFloat(form.querySelector('[name="lng"]').value) || null,
+                        logo: logoUrl || '',
+                        workingHoursStart: convertTo24h(form.querySelector('[name="workingHoursStart"]').value) || null,
+                        workingHoursEnd: convertTo24h(form.querySelector('[name="workingHoursEnd"]').value) || null,
+                        workingDays: [],
+                        doctorSpecializationId: form.querySelector('[name="doctorSpecializationId"]').value || null,
+                        yearsOfExperience: parseInt(form.querySelector('[name="yearsOfExperience"]').value) || 0,
+                        bio: form.querySelector('[name="bio"]').value || ''
+                    };
+                    var dayChecks = form.querySelectorAll('[name="workingDays"]:checked');
+                    dayChecks.forEach(function(c) { data.workingDays.push(c.value); });
+                    if (data.workingDays.length === 0) delete data.workingDays;
+                    return data;
+                }
+
+                var fileInput = document.getElementById('clinicLogoInput');
+                var logoFile = fileInput && fileInput.files && fileInput.files[0];
+
+                if (logoFile) {
+                    var fd = new FormData();
+                    fd.append('file', logoFile);
+                    fetch('@Url.Action("UploadClinicImage", "Admin")', {
+                        method: 'POST',
+                        body: fd
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(imgResult) {
+                        if (imgResult.success) {
+                            var payload = buildPayload(imgResult.url);
+                            sendCreateRequest(payload, submitBtn, form);
+                        } else {
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = 'حفظ';
+                            showInlineErrors({ error: imgResult.error || imgResult.message || 'فشل رفع الصورة' });
+                        }
+                    })
+                    .catch(function() {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'حفظ';
+                        showInlineErrors({ message: 'فشل رفع الصورة' });
+                    });
+                } else {
+                    var payload = buildPayload('');
+                    sendCreateRequest(payload, submitBtn, form);
+                }
             });
 
-            // Fix map rendering inside modal
-            document.getElementById('clinicModal').addEventListener('shown.bs.modal', function() {
-                addMap.invalidateSize();
-            });
+            function sendCreateRequest(data, submitBtn, form) {
+                fetch('@Url.Action("CreateClinic", "Admin")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'حفظ';
+                    if (result.success) {
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('clinicModal'));
+                        modal.hide();
+                        form.reset();
+                        clearErrors();
+                        document.getElementById('clinicLogoPreview').style.display = 'none';
+                        showSuccessModal(result.message);
+                        resetAndReload();
+                    } else {
+                        showErrorModal(result.error || 'حدث خطأ');
+                    }
+                })
+                .catch(function() {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'حفظ';
+                    showErrorModal('عذراً، حدث خطأ أثناء إنشاء العيادة.');
+                });
+            }
         })();
     </script>
 }

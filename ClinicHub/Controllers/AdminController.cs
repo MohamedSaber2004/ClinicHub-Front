@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
+using ClinicHub.Services.Options;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.Enums;
 using ClinicHub.Services.RequestModels;
+using Microsoft.Extensions.Options;
 
 namespace ClinicHub.Controllers
 {
@@ -17,8 +19,10 @@ namespace ClinicHub.Controllers
         private readonly IUserService _userService;
         private readonly IDoctorService _doctorService;
         private readonly IClinicService _clinicService;
+        private readonly IAttachmentService _attachmentService;
+        private readonly IOptions<GoogleMapsOptions> _googleMapsOptions;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
@@ -26,6 +30,8 @@ namespace ClinicHub.Controllers
             _userService = userService;
             _doctorService = doctorService;
             _clinicService = clinicService;
+            _attachmentService = attachmentService;
+            _googleMapsOptions = googleMapsOptions;
         }
 
         public IActionResult Index()
@@ -132,38 +138,167 @@ namespace ClinicHub.Controllers
             return RedirectToAction("Specializations");
         }
 
-        public IActionResult Clinics()
+        public async Task<IActionResult> Clinics(
+            int pageNumber = 1,
+            int pageSize = 10,
+            string? searchTerm = null,
+            string? status = null,
+            string? name = null,
+            string? email = null,
+            string? phone = null,
+            DateTime? createdFrom = null,
+            DateTime? createdTo = null,
+            string? sortBy = null,
+            bool sortAscending = false,
+            string? format = null)
         {
-            ViewBag.Clinics = MockData.GetClinics();
+            try
+            {
+                var request = new GetAllClinicsPagginatedRequest
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    SearchTerm = searchTerm,
+                    Status = status switch
+                    {
+                        "active" => ClinicStatus.Active,
+                        "inactive" => ClinicStatus.Inactive,
+                        _ => null
+                    },
+                    Name = name,
+                    Email = email,
+                    Phone = phone,
+                    CreatedFrom = createdFrom,
+                    CreatedTo = createdTo,
+                    SortBy = sortBy,
+                    SortAscending = sortAscending
+                };
+                var paged = await _clinicService.GetAllClinicsPaginatedAsync(request);
+                if (paged?.Items != null)
+                    foreach (var c in paged.Items)
+                    {
+                        c.Logo = _attachmentUrlResolver.Resolve(c.Logo);
+                        c.ImageUrl = c.Logo;
+                    }
+
+                if (format == "json")
+                    return Json(new { items = paged?.Items ?? new List<ClinicManagmentDto>(), hasMore = paged?.HasNextPage ?? false });
+
+                ViewBag.Clinics = paged?.Items ?? new List<ClinicManagmentDto>();
+                ViewBag.Pagination = paged;
+            }
+            catch (ApiException ex)
+            {
+                if (format == "json")
+                    return Json(new { error = ex.Message, items = new List<ClinicManagmentDto>(), hasMore = false });
+
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Clinics = new List<ClinicManagmentDto>();
+            }
+
+            try
+            {
+                var specs = await _specializationService.GetAllAsync(pageNumber: 1, pageSize: 200);
+                ViewBag.Specializations = specs.Items;
+            }
+            catch (ApiException)
+            {
+                ViewBag.Specializations = new List<SpecializationDto>();
+            }
+
+            ViewBag.GoogleMapsApiKey = _googleMapsOptions.Value.ApiKey;
             return View();
         }
 
         [Route("Admin/Clinics/Details/{id}")]
-        public IActionResult ClinicDetails(Guid id)
+        public async Task<IActionResult> ClinicDetails(Guid id)
         {
-            var clinic = MockData.GetClinicById(id);
-            if (clinic == null) return RedirectToAction("Clinics");
-            ViewBag.Clinic = clinic;
-            ViewBag.Doctors = MockData.GetClinicDoctors(id);
-            ViewBag.Staff = MockData.GetClinicStaff(id);
-            ViewBag.Ratings = MockData.GetClinicRatings(id);
-            ViewBag.AllClinics = MockData.GetClinics();
+            ViewBag.GoogleMapsApiKey = _googleMapsOptions.Value.ApiKey;
+            try
+            {
+                var response = await _clinicService.GetClinicByIdAsync(new GetClinicByIdRequest { Id = id });
+                var clinic = response?.Data;
+                if (clinic != null)
+                {
+                    clinic.Logo = _attachmentUrlResolver.Resolve(clinic.Logo);
+                    clinic.ImageUrl = clinic.Logo;
+                    ViewBag.Clinic = clinic;
+                }
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Clinic = null;
+            }
             return View("ClinicDetails");
         }
 
-        public async Task<IActionResult> Doctors(Guid? clinicId = null, int pageNumber = 1, int pageSize = 20, string? searchTerm = null, bool? isUnassigned = null)
+        [HttpPost]
+        public async Task<IActionResult> CreateClinic([FromBody] CreateClinicRequest request)
         {
             try
             {
-                if (clinicId.HasValue)
-                    HttpContext.Items["ClinicId"] = clinicId.Value;
+                if (request == null)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    var msg = errors.Count > 0
+                        ? "خطأ في البيانات: " + string.Join(" | ", errors)
+                        : "البيانات مطلوبة";
+                    return Json(new { success = false, error = msg });
+                }
 
+                var result = await _clinicService.CreateClinicAsync(request);
+                if (result.Success)
+                    return Json(new { success = true, message = "تم إنشاء العيادة بنجاح", data = result.Data });
+                return Json(new { success = false, error = result.Message ?? "فشل إنشاء العيادة" });
+            }
+            catch (ApiException ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadClinicImage(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, error = "الملف مطلوب" });
+
+                var uploadRequest = new UploadAttachmentRequest(file, 5, MediaType.Image);
+                var url = await _attachmentService.UploadAttachmentAsync(uploadRequest);
+                return Json(new { success = true, url });
+            }
+            catch (ApiException ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        public async Task<IActionResult> Doctors(Guid? clinicId = null, int pageNumber = 1, int pageSize = 20, string? searchTerm = null, bool? isUnassigned = null, string? userTypes = null)
+        {
+            try
+            {
                 var request = new GetAllDoctorsRequest
                 {
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     SearchTerm = searchTerm,
-                    IsUnassigned = isUnassigned
+                    IsUnassigned = isUnassigned,
+                    ClinicId = clinicId,
+                    UserTypes = ParseUserTypes(userTypes)
                 };
                 var paged = await _doctorService.GetAllDoctorsPagginatedAsync(request);
                 ViewBag.Doctors = paged.Items;
@@ -188,6 +323,7 @@ namespace ClinicHub.Controllers
             ViewBag.SelectedClinicId = clinicId;
             ViewBag.SearchTerm = searchTerm;
             ViewBag.IsUnassigned = isUnassigned;
+            ViewBag.SelectedUserTypes = userTypes;
             return View();
         }
 
@@ -302,6 +438,7 @@ namespace ClinicHub.Controllers
                     Status = u.IsActive ? "نشط" : "غير نشط",
                     StatusClass = u.IsActive ? "badge-success" : "badge-warning",
                     Role = MapUserTypeToRole(u.Roles.FirstOrDefault()),
+                    Roles = u.Roles.Select(r => MapUserTypeToRole(r)).Where(r => r != UserRole.Patient).ToList(),
                     TotalVisits = 0,
                     AvgRating = 0,
                     TotalSpent = "0"
@@ -557,6 +694,19 @@ namespace ClinicHub.Controllers
         public IActionResult Profile()
         {
             return View();
+        }
+
+        private static List<UserType>? ParseUserTypes(string? userTypes)
+        {
+            if (string.IsNullOrWhiteSpace(userTypes))
+                return null;
+            var types = new List<UserType>();
+            foreach (var part in userTypes.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (int.TryParse(part.Trim(), out var val) && Enum.IsDefined(typeof(UserType), val))
+                    types.Add((UserType)val);
+            }
+            return types.Count > 0 ? types : null;
         }
     }
 }

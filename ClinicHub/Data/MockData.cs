@@ -828,6 +828,7 @@ namespace ClinicHub.Data
         public string Status { get; set; } = "";
         public string StatusClass { get; set; } = "badge-success";
         public UserRole Role { get; set; } = UserRole.Patient;
+        public List<UserRole> Roles { get; set; } = new();
         public int TotalVisits { get; set; }
         public double AvgRating { get; set; }
         public string TotalSpent { get; set; } = "";

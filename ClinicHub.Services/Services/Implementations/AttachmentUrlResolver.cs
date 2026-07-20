@@ -18,7 +18,14 @@ namespace ClinicHub.Services.Services.Implementations
             if (string.IsNullOrWhiteSpace(fileName))
                 return string.Empty;
 
-            return $"{_baseUrl}/files/{fileName}";
+            if (fileName.StartsWith("http://") || fileName.StartsWith("https://"))
+                return fileName;
+
+            var clean = fileName.TrimStart('/');
+            if (clean.StartsWith("files/", StringComparison.OrdinalIgnoreCase))
+                clean = clean.Substring("files/".Length);
+
+            return $"{_baseUrl}/files/{clean}";
         }
     }
 }

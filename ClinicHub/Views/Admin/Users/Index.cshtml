@@ -39,6 +39,7 @@
                     <th>المستخدم</th>
                     <th>البريد الإلكتروني</th>
                     <th>الهاتف</th>
+                    <th>الدور</th>
                     <th>تاريخ التسجيل</th>
                     <th>الحالة</th>
                     <th>الإجراءات</th>
@@ -58,6 +59,26 @@
                         </td>
                         <td class="text-md">@u.Email</td>
                         <td class="text-md">@u.Phone</td>
+                        <td>
+                            <div class="role-list">
+                            @{
+                                var roleNames = u.Roles.Count > 0 ? u.Roles : new List<UserRole> { u.Role };
+                                foreach (var r in roleNames)
+                                {
+                                    var roleName = r switch
+                                    {
+                                        UserRole.SystemAdmin => "مدير النظام",
+                                        UserRole.ClinicOwner => "مالك عيادة",
+                                        UserRole.ClinicManager => "مدير عيادة",
+                                        UserRole.Doctor => "طبيب",
+                                        UserRole.ClinicStaff => "موظف",
+                                        _ => "مريض"
+                                    };
+                                    <span class="badge badge-info">@roleName</span>
+                                }
+                            }
+                            </div>
+                        </td>
                         <td class="text-md">@u.RegistrationDate</td>
                         <td><span class="badge @u.StatusClass">@u.Status</span></td>
                         <td>
@@ -139,7 +160,6 @@
                             <option value="1">مستخدم</option>
                             <option value="4">طبيب</option>
                             <option value="8">موظف</option>
-                            <option value="16">مالك عيادة</option>
                         </select>
                     </div>
                     <div class="form-group" id="clinicGroup" style="display:none;">

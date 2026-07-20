@@ -2,30 +2,24 @@ using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.RequestModels;
-using Microsoft.AspNetCore.Http;
 
 namespace ClinicHub.Services.Services.Implementations
 {
     public class DoctorService : IDoctorService
     {
         private readonly IUserService _userService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public DoctorService(IUserService userService, IHttpContextAccessor httpContextAccessor)
+        public DoctorService(IUserService userService)
         {
             _userService = userService;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<PagginatedResult<UserResponseDto>> GetAllDoctorsPagginatedAsync(GetAllDoctorsRequest request)
         {
             try
             {
-                var hasClinicFilter = _httpContextAccessor.HttpContext?.Items["ClinicId"] is Guid;
-                var isFiltering = request.IsUnassigned is true || hasClinicFilter;
-
                 var userTypes = new List<Enums.UserType> { Enums.UserType.Doctor };
-                if (!isFiltering)
+                if (!request.ClinicId.HasValue)
                     userTypes.Add(Enums.UserType.ClinicOwner);
 
                 var usersRequest = new GetAllUsersRequest
@@ -33,8 +27,9 @@ namespace ClinicHub.Services.Services.Implementations
                     PageNumber = request.PageNumber,
                     PageSize = request.PageSize,
                     SearchTerm = request.SearchTerm,
-                    UserTypes = userTypes,
-                    IsUnassigned = request.IsUnassigned
+                    UserTypes = request.UserTypes?.Count > 0 ? request.UserTypes : userTypes,
+                    IsUnassigned = request.IsUnassigned,
+                    ClinicId = request.ClinicId
                 };
 
                 return await _userService.GetAllUsersPagginatedAsync(usersRequest);

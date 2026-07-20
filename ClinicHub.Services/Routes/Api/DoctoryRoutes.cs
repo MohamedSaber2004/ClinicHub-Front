@@ -15,6 +15,7 @@ namespace ClinicHub.Services.Routes.Api
             Verification = new VerificationRoutes(BaseRoute);
             Users = new UserRoutes(BaseRoute);
             Doctors = new DoctorRoutes(BaseRoute);
+            Clinics = new ClinicRoutes(BaseRoute);
         }
 
         public static AuthRoutes Auth { get; private set; } = null!;
@@ -23,6 +24,7 @@ namespace ClinicHub.Services.Routes.Api
         public static VerificationRoutes Verification { get; private set; } = null!;
         public static UserRoutes Users { get; private set; } = null!;
         public static DoctorRoutes Doctors { get; private set; } = null!;
+        public static ClinicRoutes Clinics { get; private set; } = null!;
 
         public class AuthRoutes
         {
@@ -108,8 +110,20 @@ namespace ClinicHub.Services.Routes.Api
             {
                 BaseRoute = $"{baseRoute}/admin/dashboard";
             }
-            
+
             public string GetAllClinicsForViewingOnly => $"{BaseRoute}/clinics";
+        }
+
+        public class ClinicRoutes
+        {
+            public string BaseRoute { get; }
+            public ClinicRoutes(string baseRoute)
+            {
+                BaseRoute = $"{baseRoute}/admin/clinics";
+            }
+            public string GetAll => $"{BaseRoute}/paginated";
+            public string GetById(Guid id) => $"{BaseRoute}/{id}";
+            public string Create => $"{BaseRoute}";
         }
     }
 }
