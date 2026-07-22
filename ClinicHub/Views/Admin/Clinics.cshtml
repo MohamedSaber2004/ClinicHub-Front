@@ -117,6 +117,12 @@
                 <div class="cc-status-badge">
                     @if (c.IsActive) { <span class="badge badge-success">نشط</span> }
                     else { <span class="badge badge-danger">غير نشط</span> }
+                    <button type="button" class="btn-toggle-status" data-clinic-id="@c.Id" data-is-active="@c.IsActive.ToString().ToLower()" title="@(c.IsActive ? "إلغاء التفعيل" : "تفعيل")">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            @if (c.IsActive) { <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/> }
+                            else { <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" style="opacity:0.4"/> }
+                        </svg>
+                    </button>
                 </div>
             </div>
             <div class="cc-body">
@@ -458,9 +464,13 @@
                 var imgHtml = item.imageUrl
                     ? '<img src="' + item.imageUrl + '" alt="' + name + '" />'
                     : '<div class="cc-image-placeholder"><svg viewBox="0 0 24 24" fill="var(--clr-primary)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/></svg></div>';
+                var toggleIcon = isActive
+                    ? '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>'
+                    : '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" style="opacity:0.4"/>';
                 var statusBadge = isActive
                     ? '<span class="badge badge-success">نشط</span>'
                     : '<span class="badge badge-danger">غير نشط</span>';
+                var toggleBtn = '<button type="button" class="btn-toggle-status" data-clinic-id="' + item.id + '" data-is-active="' + isActive + '" title="' + (isActive ? 'إلغاء التفعيل' : 'تفعيل') + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">' + toggleIcon + '</svg></button>';
                 var specName = item.specializationNameAr || item.specializationName || '';
                 var specsHtml = specName
                     ? '<span class="spec-pill">' + specName + '</span>'
@@ -486,7 +496,7 @@
                     : '';
 
                 return '<a href="/Admin/Clinics/Details/' + item.id + '" class="clinic-card ' + inactiveClass + '">'
-                    + '<div class="cc-image">' + imgHtml + '<div class="cc-status-badge">' + statusBadge + '</div></div>'
+                    + '<div class="cc-image">' + imgHtml + '<div class="cc-status-badge">' + statusBadge + toggleBtn + '</div></div>'
                     + '<div class="cc-body">'
                     + '<h3 class="cc-name">' + name + '</h3>'
                     + '<p class="cc-desc">' + description + '</p>'
@@ -623,6 +633,45 @@
                 var isHidden = adv.style.display === 'none';
                 adv.style.display = isHidden ? 'block' : 'none';
                 this.querySelector('svg').style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+
+            // Toggle clinic active status (delegated for dynamic cards)
+            document.getElementById('clinicCards').addEventListener('click', function(e) {
+                var btn = e.target.closest('.btn-toggle-status');
+                if (!btn) return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                var clinicId = btn.getAttribute('data-clinic-id');
+                var isActive = btn.getAttribute('data-is-active') === 'true';
+                var action = isActive ? 'DeactivateClinic' : 'ActivateClinic';
+                var confirmMsg = isActive ? 'هل أنت متأكد من إلغاء تفعيل هذه العيادة؟' : 'هل أنت متأكد من تفعيل هذه العيادة؟';
+
+                showConfirmModal(confirmMsg, function(confirmed) {
+                    if (!confirmed) return;
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+                    fetch('@Url.Action("ActivateClinic", "Admin")'.replace('ActivateClinic', action) + '/' + clinicId, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(result) {
+                        if (result.success) {
+                            showSuccessModal(result.message);
+                            resetAndReload();
+                        } else {
+                            btn.disabled = false;
+                            showErrorModal(result.error || 'حدث خطأ');
+                        }
+                    })
+                    .catch(function() {
+                        btn.disabled = false;
+                        showErrorModal('عذراً، حدث خطأ أثناء تحديث حالة العيادة.');
+                    });
+                });
             });
 
             // Clear filters

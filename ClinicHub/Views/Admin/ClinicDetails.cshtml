@@ -100,6 +100,18 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
             حفظ التغييرات
         </button>
+        <button id="toggleClinicStatusBtn" class="btn @(clinic.IsActive ? "btn-outline-danger" : "btn-outline-success")" data-clinic-id="@clinic.Id" data-is-active="@clinic.IsActive.ToString().ToLower()">
+            @if (clinic.IsActive)
+            {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                <span>إلغاء التفعيل</span>
+            }
+            else
+            {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                <span>تفعيل</span>
+            }
+        </button>
     </div>
 </div>
 
@@ -530,6 +542,42 @@
             }
 
             saveBtn.addEventListener('click', submitUpdate);
+
+            // Toggle clinic active status
+            var toggleBtn = document.getElementById('toggleClinicStatusBtn');
+            toggleBtn.addEventListener('click', function() {
+                var clinicId = this.getAttribute('data-clinic-id');
+                var isActive = this.getAttribute('data-is-active') === 'true';
+                var action = isActive ? 'DeactivateClinic' : 'ActivateClinic';
+                var confirmMsg = isActive ? 'هل أنت متأكد من إلغاء تفعيل هذه العيادة؟' : 'هل أنت متأكد من تفعيل هذه العيادة؟';
+
+                showConfirmModal(confirmMsg, function(confirmed) {
+                    if (!confirmed) return;
+
+                    var btn = toggleBtn;
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+                    fetch('@Url.Action("ActivateClinic", "Admin")'.replace('ActivateClinic', action) + '/' + clinicId, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(result) {
+                        if (result.success) {
+                            showSuccessModal(result.message);
+                            setTimeout(function() { location.reload(); }, 1000);
+                        } else {
+                            btn.disabled = false;
+                            showErrorModal(result.error || 'حدث خطأ');
+                        }
+                    })
+                    .catch(function() {
+                        btn.disabled = false;
+                        showErrorModal('عذراً، حدث خطأ أثناء تحديث حالة العيادة.');
+                    });
+                });
+            });
         })();
     </script>
 }

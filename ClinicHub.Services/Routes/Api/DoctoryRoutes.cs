@@ -125,6 +125,9 @@ namespace ClinicHub.Services.Routes.Api
             public string GetById(Guid id) => $"{BaseRoute}/{id}";
             public string Create => $"{BaseRoute}";
             public string Update(Guid id) => $"{BaseRoute}/{id}";
+            public string Activate(Guid id) => $"{BaseRoute}/{id}/activate";
+            public string Deactivate(Guid id) => $"{BaseRoute}/{id}/deactivate";
+
         }
     }
 }

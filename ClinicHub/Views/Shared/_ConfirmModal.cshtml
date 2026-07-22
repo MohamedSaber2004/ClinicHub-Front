@@ -1,0 +1,61 @@
+<div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <div class="modal-body" style="padding: var(--space-8); text-align: center;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--clr-warning); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="white"/>
+                    </svg>
+                </div>
+                <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-2);">تأكيد</h3>
+                <div id="globalConfirmMsg" style="font-family: var(--ff-primary); font-size: var(--fs-md); color: var(--clr-text-secondary); margin-bottom: var(--space-5);"></div>
+                <div style="display: flex; gap: var(--space-3); justify-content: center;">
+                    <button type="button" class="btn" id="confirmModalCancelBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-family: var(--ff-primary); font-size: var(--fs-md); font-weight: 600; cursor: pointer;">إلغاء</button>
+                    <button type="button" class="btn" id="confirmModalConfirmBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-family: var(--ff-primary); font-size: var(--fs-md); font-weight: 600; cursor: pointer;">تأكيد</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var _confirmCallback = null;
+
+    function showConfirmModal(message, callback) {
+        var msgEl = document.getElementById('globalConfirmMsg');
+        if (!msgEl) return;
+        msgEl.innerHTML = message;
+        var modalEl = document.getElementById('globalConfirmModal');
+        if (!modalEl) return;
+        _confirmCallback = callback;
+        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('confirmModalConfirmBtn').addEventListener('click', function() {
+            var modalEl = document.getElementById('globalConfirmModal');
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            if (typeof _confirmCallback === 'function') {
+                _confirmCallback(true);
+                _confirmCallback = null;
+            }
+        });
+        document.getElementById('confirmModalCancelBtn').addEventListener('click', function() {
+            var modalEl = document.getElementById('globalConfirmModal');
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            if (typeof _confirmCallback === 'function') {
+                _confirmCallback(false);
+                _confirmCallback = null;
+            }
+        });
+        document.getElementById('globalConfirmModal').addEventListener('hidden.bs.modal', function() {
+            if (typeof _confirmCallback === 'function') {
+                _confirmCallback(false);
+                _confirmCallback = null;
+            }
+        });
+    });
+</script>

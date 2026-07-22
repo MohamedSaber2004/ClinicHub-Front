@@ -14,5 +14,9 @@ namespace ClinicHub.Services.Contracts
         Task<ApiResponse<ClinicManagmentDto>> CreateClinicAsync(CreateClinicRequest request);
 
         Task<ApiResponse<ClinicManagmentDto>> UpdateClinicAsync(UpdateClinicRequest request);
+
+        Task<ApiResponse<ClinicManagmentDto>> ActivateClinicAsync(ActivateClinicRequest request);
+
+        Task<ApiResponse<ClinicManagmentDto>> DeactivateClinicAsync(DeactivateClinicRequest request);
     }
 }

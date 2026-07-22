@@ -302,6 +302,46 @@ namespace ClinicHub.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> ActivateClinic(Guid id)
+        {
+            try
+            {
+                var result = await _clinicService.ActivateClinicAsync(new ActivateClinicRequest { Id = id });
+                if (result.Success)
+                    return Json(new { success = true, message = "تم تفعيل العيادة بنجاح", data = result.Data });
+                return Json(new { success = false, error = result.Message ?? "فشل تفعيل العيادة" });
+            }
+            catch (ApiException ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeactivateClinic(Guid id)
+        {
+            try
+            {
+                var result = await _clinicService.DeactivateClinicAsync(new DeactivateClinicRequest { Id = id });
+                if (result.Success)
+                    return Json(new { success = true, message = "تم إلغاء تفعيل العيادة بنجاح", data = result.Data });
+                return Json(new { success = false, error = result.Message ?? "فشل إلغاء تفعيل العيادة" });
+            }
+            catch (ApiException ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> UploadClinicImage(IFormFile file)
         {
             try

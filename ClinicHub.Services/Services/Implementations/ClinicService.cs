@@ -31,6 +31,8 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly Func<Guid, string> _getClinicById;
         private readonly string _createClinic;
         private readonly Func<Guid, string> _updateClinic;
+        private readonly Func<Guid, string> _activateClinic;
+        private readonly Func<Guid, string> _deactivateClinic;
 
         public ClinicService(HttpClient httpClient, IOptions<Doctory> doctoryOptions, IDeserializerService deserializerService)
         {
@@ -43,6 +45,8 @@ namespace ClinicHub.Services.Services.Implementations
             _getClinicById = DoctoryRoutes.Clinics.GetById;
             _createClinic = DoctoryRoutes.Clinics.Create;
             _updateClinic = DoctoryRoutes.Clinics.Update;
+            _activateClinic = DoctoryRoutes.Clinics.Activate;
+            _deactivateClinic = DoctoryRoutes.Clinics.Deactivate;
         }
 
         public async Task<ApiResponse<ClinicManagmentDto>> CreateClinicAsync(CreateClinicRequest request)
@@ -239,6 +243,82 @@ namespace ClinicHub.Services.Services.Implementations
                     };
 
                 throw new ApiException(500, "حدث خطأ في تحديث العيادة");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<ClinicManagmentDto>> ActivateClinicAsync(ActivateClinicRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    throw new ApiException(400, "بيانات العيادة مطلوبة");
+
+                var url = _activateClinic(request.Id);
+                var response = await _httpClient.PatchAsync(url, null);
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errs = ApiErrorExtractor.ExtractErrors(body);
+                    var combined = string.Join("<br />", errs);
+                    if (string.IsNullOrWhiteSpace(combined))
+                        combined = "حدث خطأ في تفعيل العيادة";
+                    throw new ApiException((int)response.StatusCode, combined);
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<ClinicManagmentDto>>(body, _jsonSettings);
+                if (apiResponse?.Data != null)
+                    return new ApiResponse<ClinicManagmentDto>
+                    {
+                        Success = true,
+                        Data = apiResponse.Data,
+                        Message = apiResponse.Message ?? "تم تفعيل العيادة بنجاح"
+                    };
+
+                throw new ApiException(500, "حدث خطأ في تفعيل العيادة");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<ClinicManagmentDto>> DeactivateClinicAsync(DeactivateClinicRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    throw new ApiException(400, "بيانات العيادة مطلوبة");
+
+                var url = _deactivateClinic(request.Id);
+                var response = await _httpClient.PatchAsync(url, null);
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errs = ApiErrorExtractor.ExtractErrors(body);
+                    var combined = string.Join("<br />", errs);
+                    if (string.IsNullOrWhiteSpace(combined))
+                        combined = "حدث خطأ في إلغاء تفعيل العيادة";
+                    throw new ApiException((int)response.StatusCode, combined);
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<ClinicManagmentDto>>(body, _jsonSettings);
+                if (apiResponse?.Data != null)
+                    return new ApiResponse<ClinicManagmentDto>
+                    {
+                        Success = true,
+                        Data = apiResponse.Data,
+                        Message = apiResponse.Message ?? "تم إلغاء تفعيل العيادة بنجاح"
+                    };
+
+                throw new ApiException(500, "حدث خطأ في إلغاء تفعيل العيادة");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
