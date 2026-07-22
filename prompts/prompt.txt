@@ -1,2 +1,3 @@
-﻿فشل التحقق
-Name مطلوب
+﻿خطأ
+The request field is required.
+The JSON value could not be converted to ClinicHub.Application.Features.Clinics.Commands.UpdateClinic.UpdateClinicCommand. Path: $.workingHoursStart | LineNumber: 0 | BytePositionInLine: 266.

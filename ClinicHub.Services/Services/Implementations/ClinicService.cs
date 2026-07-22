@@ -210,8 +210,8 @@ namespace ClinicHub.Services.Services.Implementations
                 AddIfNotNull(payload, "logo", request.Logo);
                 AddIfNotNull(payload, "specializationId", request.SpecializationId.ToString());
                 AddIfNotNull(payload, "workingHours", request.WorkingHours);
-                if (request.WorkingHoursStart.HasValue) payload["workingHoursStart"] = request.WorkingHoursStart.Value.ToString();
-                if (request.WorkingHoursEnd.HasValue) payload["workingHoursEnd"] = request.WorkingHoursEnd.Value.ToString();
+                if (request.WorkingHoursStart.HasValue) payload["workingHoursStart"] = request.WorkingHoursStart.Value.ToString("HH:mm:ss");
+                if (request.WorkingHoursEnd.HasValue) payload["workingHoursEnd"] = request.WorkingHoursEnd.Value.ToString("HH:mm:ss");
                 if (request.WorkingDays != null && request.WorkingDays.Count > 0)
                     payload["workingDays"] = new JArray(request.WorkingDays.Select(d => (int)d).ToList());
 
