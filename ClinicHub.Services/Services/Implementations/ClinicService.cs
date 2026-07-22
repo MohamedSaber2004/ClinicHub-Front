@@ -30,6 +30,7 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly string _getAllClinicsPaginated;
         private readonly Func<Guid, string> _getClinicById;
         private readonly string _createClinic;
+        private readonly Func<Guid, string> _updateClinic;
 
         public ClinicService(HttpClient httpClient, IOptions<Doctory> doctoryOptions, IDeserializerService deserializerService)
         {
@@ -41,6 +42,7 @@ namespace ClinicHub.Services.Services.Implementations
             _getAllClinicsPaginated = DoctoryRoutes.Clinics.GetAll;
             _getClinicById = DoctoryRoutes.Clinics.GetById;
             _createClinic = DoctoryRoutes.Clinics.Create;
+            _updateClinic = DoctoryRoutes.Clinics.Update;
         }
 
         public async Task<ApiResponse<ClinicManagmentDto>> CreateClinicAsync(CreateClinicRequest request)
@@ -179,6 +181,64 @@ namespace ClinicHub.Services.Services.Implementations
                     Success = true,
                     Data = data
                 };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<ClinicManagmentDto>> UpdateClinicAsync(UpdateClinicRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    throw new ApiException(400, "بيانات العيادة مطلوبة");
+
+                var url = _updateClinic(request.Id);
+                var payload = new JObject();
+                AddIfNotNull(payload, "name", request.Name);
+                AddIfNotNull(payload, "nameAr", request.NameAr);
+                AddIfNotNull(payload, "description", request.Description);
+                AddIfNotNull(payload, "arDescription", request.ArDescription);
+                AddIfNotNull(payload, "address", request.Address);
+                AddIfNotNull(payload, "addressAr", request.AddressAr);
+                AddIfNotNull(payload, "phone", request.Phone);
+                AddIfNotNull(payload, "email", request.Email);
+                AddIfNotNull(payload, "website", request.Website);
+                AddIfNotNull(payload, "logo", request.Logo);
+                AddIfNotNull(payload, "specializationId", request.SpecializationId.ToString());
+                AddIfNotNull(payload, "workingHours", request.WorkingHours);
+                if (request.WorkingHoursStart.HasValue) payload["workingHoursStart"] = request.WorkingHoursStart.Value.ToString();
+                if (request.WorkingHoursEnd.HasValue) payload["workingHoursEnd"] = request.WorkingHoursEnd.Value.ToString();
+                if (request.WorkingDays != null && request.WorkingDays.Count > 0)
+                    payload["workingDays"] = new JArray(request.WorkingDays.Select(d => (int)d).ToList());
+
+                var json = payload.ToString(Formatting.None);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync(url, content);
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errs = ApiErrorExtractor.ExtractErrors(body);
+                    var combined = string.Join("<br />", errs);
+                    if (string.IsNullOrWhiteSpace(combined))
+                        combined = "حدث خطأ في تحديث العيادة";
+                    throw new ApiException((int)response.StatusCode, combined);
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<ClinicManagmentDto>>(body, _jsonSettings);
+                if (apiResponse?.Data != null)
+                    return new ApiResponse<ClinicManagmentDto>
+                    {
+                        Success = true,
+                        Data = apiResponse.Data,
+                        Message = apiResponse.Message ?? "تم تحديث العيادة بنجاح"
+                    };
+
+                throw new ApiException(500, "حدث خطأ في تحديث العيادة");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

@@ -4,6 +4,16 @@
     var clinic = ViewBag.Clinic as ClinicManagmentDto;
 }
 
+<style>
+    .edit-field { display: none; }
+    .edit-mode .edit-field { display: block; }
+    .edit-mode .view-field { display: none; }
+    .form-actions { margin-top: var(--space-4); display: flex; gap: var(--space-2); }
+    .working-days-checkboxes { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .working-days-checkboxes .checkbox-inline { display: flex; align-items: center; gap: 4px; font-size: var(--fs-sm); cursor: pointer; }
+    .working-days-checkboxes .checkbox-inline input { width: auto; }
+</style>
+
 @if (clinic == null)
 {
     <div class="empty-state">
@@ -79,6 +89,17 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             العودة
         </a>
+        <button id="editClinicBtn" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            تعديل
+        </button>
+        <button id="cancelEditBtn" class="btn btn-outline-secondary" style="display:none">
+            إلغاء
+        </button>
+        <button id="saveClinicBtn" class="btn btn-success" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            حفظ التغييرات
+        </button>
     </div>
 </div>
 
@@ -143,51 +164,158 @@
                     </div>
                 </div>
             }
+            <form id="updateClinicForm">
             <div class="detail-card">
                 <div class="detail-section-header"><h5>معلومات العيادة</h5></div>
+                <div id="updateClinicErrors" class="validation-summary" style="display:none"></div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">اسم العيادة</label>
-                            <input type="text" class="form-input" value="@clinicName" />
+                            <label class="form-label">اسم العيادة (عربي)</label>
+                            <input type="text" name="nameAr" class="form-input" value="@clinic.NameAr" disabled />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">التخصص الرئيسي</label>
-                            <input type="text" class="form-input" value="@clinicSpec" readonly />
+                            <label class="form-label">اسم العيادة (إنجليزي)</label>
+                            <input type="text" name="name" class="form-input" value="@clinic.Name" disabled />
                         </div>
                     </div>
                 </div>
-                @if (!string.IsNullOrEmpty(clinicDesc))
-                {
-                    <div class="form-group">
-                        <label class="form-label">الوصف</label>
-                        <textarea class="form-input form-textarea" rows="2">@clinicDesc</textarea>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">التخصص الرئيسي</label>
+                            <select name="specializationId" class="form-select" disabled>
+                                <option value="">اختر التخصص</option>
+                                @if (ViewBag.Specializations != null)
+                                {
+                                    foreach (var s in ViewBag.Specializations)
+                                    {
+                                        <option value="@s.Id" selected="@(s.Id == clinic.SpecializationId ? true : null)">@(s.ArName ?? s.Name)</option>
+                                    }
+                                }
+                            </select>
+                        </div>
                     </div>
-                }
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" name="email" class="form-input" value="@clinic.Email" disabled />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الوصف (عربي)</label>
+                            <textarea name="arDescription" class="form-input form-textarea" rows="2" disabled>@clinic.ArDescription</textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الوصف (إنجليزي)</label>
+                            <textarea name="description" class="form-input form-textarea" rows="2" disabled>@clinic.Description</textarea>
+                        </div>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="form-label">العنوان</label>
-                            <input type="text" class="form-input" value="@(clinic.AddressAr ?? clinic.Address)" />
+                            <label class="form-label">العنوان (عربي)</label>
+                            <input type="text" name="addressAr" class="form-input" value="@clinic.AddressAr" disabled />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">العنوان (إنجليزي)</label>
+                            <input type="text" name="address" class="form-input" value="@clinic.Address" disabled />
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="form-label">رقم الهاتف</label>
-                            <input type="text" class="form-input" value="@clinic.Phone" />
+                            <input type="text" name="phone" class="form-input" value="@clinic.Phone" disabled />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الموقع الإلكتروني</label>
+                            <input type="url" name="website" class="form-input" value="@clinic.Website" disabled />
+                        </div>
+                    </div>
+                    <div class="col-md-6 edit-field">
+                        <div class="form-group">
+                            <label class="form-label">مواعيد العمل (نص)</label>
+                            <input type="text" name="workingHours" class="form-input" value="@clinic.WorkingHours" placeholder="مثال: 9:00 ص - 5:00 م" disabled />
+                        </div>
+                    </div>
+                </div>
+                <div class="row edit-field">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">وقت البدء</label>
+                            <input type="time" name="workingHoursStart" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.StartTime.ToString("HH:mm"))" disabled />
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="form-label">مدير العيادة</label>
-                            <input type="text" class="form-input" value="@clinic.OwnerName" />
+                            <label class="form-label">وقت الانتهاء</label>
+                            <input type="time" name="workingHoursEnd" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.EndTime.ToString("HH:mm"))" disabled />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">أيام العمل</label>
+                            <div class="working-days-checkboxes">
+                                @{
+                                    var workingDayNames = new Dictionary<DayOfWeek, string>
+                                    {
+                                        { DayOfWeek.Saturday, "السبت" },
+                                        { DayOfWeek.Sunday, "الأحد" },
+                                        { DayOfWeek.Monday, "الإثنين" },
+                                        { DayOfWeek.Tuesday, "الثلاثاء" },
+                                        { DayOfWeek.Wednesday, "الأربعاء" },
+                                        { DayOfWeek.Thursday, "الخميس" },
+                                        { DayOfWeek.Friday, "الجمعة" }
+                                    };
+                                    var existingDays = clinic.WorkingDays?.Select(d => d.DayOfWeek).ToList() ?? new List<string>();
+                                }
+                                @foreach (var day in workingDayNames)
+                                {
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" name="workingDays" value="@((int)day.Key)" @(existingDays.Contains(day.Key.ToString()) ? "checked" : "") disabled />
+                                        @day.Value
+                                    </label>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
-                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">شعار العيادة</label>
+                            <div id="editClinicLogoPreview" class="upload-preview" style="margin-bottom:var(--space-2)">
+                                @if (!string.IsNullOrEmpty(clinic.Logo))
+                                {
+                                    <img id="editClinicLogoImg" src="@clinic.Logo" alt="شعار العيادة" style="max-width:200px;max-height:120px;border-radius:var(--radius-md);border:1px solid var(--clr-border);" />
+                                }
+                                else
+                                {
+                                    <img id="editClinicLogoImg" src="" alt="شعار العيادة" style="max-width:200px;max-height:120px;border-radius:var(--radius-md);border:1px solid var(--clr-border);display:none;" />
+                                }
+                                <span id="editClinicLogoStatus" style="font-size:var(--fs-sm);color:var(--clr-text-secondary);display:block;margin-top:var(--space-1);"></span>
+                            </div>
+                            <input type="file" id="editClinicLogoInput" class="form-input edit-field" accept="image/*" disabled />
+                            <input type="hidden" name="logo" value="@clinic.Logo" />
+                        </div>
+                    </div>
+                </div>
             </div>
+            </form>
         </div>
 
         <!-- ======== DOCTORS TAB ======== -->
@@ -234,5 +362,171 @@
             marker.addListener('click', function() { info.open(map, marker); });
             info.open(map, marker);
         }
+
+        (function() {
+            var editMode = false;
+            var editBtn = document.getElementById('editClinicBtn');
+            var cancelBtn = document.getElementById('cancelEditBtn');
+            var saveBtn = document.getElementById('saveClinicBtn');
+            var form = document.getElementById('updateClinicForm');
+            var detailHeader = document.querySelector('.clinic-detail-header');
+            var container = detailHeader ? detailHeader.parentNode : document.body;
+
+            function toggleEditMode(enable) {
+                editMode = enable;
+                var inputs = form.querySelectorAll('input:not([type="hidden"]):not([name="email"]), select, textarea');
+                if (enable) {
+                    container.classList.add('edit-mode');
+                    editBtn.style.display = 'none';
+                    cancelBtn.style.display = 'inline-flex';
+                    saveBtn.style.display = 'inline-flex';
+                    inputs.forEach(function(el) { el.removeAttribute('disabled'); });
+                } else {
+                    container.classList.remove('edit-mode');
+                    editBtn.style.display = 'inline-flex';
+                    cancelBtn.style.display = 'none';
+                    saveBtn.style.display = 'none';
+                    inputs.forEach(function(el) { el.setAttribute('disabled', 'disabled'); });
+                }
+            }
+
+            function clearErrors() {
+                var summary = document.getElementById('updateClinicErrors');
+                if (summary) { summary.style.display = 'none'; summary.innerHTML = ''; }
+            }
+
+            function showErrors(msg) {
+                var summary = document.getElementById('updateClinicErrors');
+                if (summary) { summary.innerHTML = msg; summary.style.display = 'block'; }
+            }
+
+            editBtn.addEventListener('click', function() { toggleEditMode(true); });
+
+            function cancelEdit() {
+                toggleEditMode(false);
+                clearErrors();
+                location.reload();
+            }
+
+            cancelBtn.addEventListener('click', cancelEdit);
+
+            var logoInput = document.getElementById('editClinicLogoInput');
+            logoInput.addEventListener('change', function() {
+                var file = this.files && this.files[0];
+                var preview = document.getElementById('editClinicLogoPreview');
+                var img = document.getElementById('editClinicLogoImg');
+                var status = document.getElementById('editClinicLogoStatus');
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        img.src = e.target.result;
+                        img.style.display = 'block';
+                        status.textContent = file.name + ' - جاري التحميل...';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            function formatTime(val) {
+                if (!val) return null;
+                return val.indexOf(':') >= 0 && val.split(':').length === 2 ? val + ':00' : val;
+            }
+
+            function buildPayload(logoUrl) {
+                var specId = form.querySelector('[name="specializationId"]').value;
+                return {
+                    nameAr: form.querySelector('[name="nameAr"]').value,
+                    name: form.querySelector('[name="name"]').value,
+                    arDescription: form.querySelector('[name="arDescription"]').value,
+                    description: form.querySelector('[name="description"]').value,
+                    addressAr: form.querySelector('[name="addressAr"]').value,
+                    address: form.querySelector('[name="address"]').value,
+                    phone: form.querySelector('[name="phone"]').value,
+                    email: form.querySelector('[name="email"]').value,
+                    website: form.querySelector('[name="website"]').value,
+                    specializationId: specId || '00000000-0000-0000-0000-000000000000',
+                    workingHours: form.querySelector('[name="workingHours"]').value,
+                    workingHoursStart: formatTime(form.querySelector('[name="workingHoursStart"]').value),
+                    workingHoursEnd: formatTime(form.querySelector('[name="workingHoursEnd"]').value),
+                    logo: logoUrl || '',
+                    workingDays: []
+                };
+            }
+
+            function sendUpdateRequest(data) {
+                var clinicId = '@clinic.Id';
+                fetch('@Url.Action("UpdateClinic", "Admin")/' + clinicId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'حفظ التغييرات';
+                    if (result.success) {
+                        showSuccessModal(result.message);
+                        setTimeout(function() { location.reload(); }, 1000);
+                    } else {
+                        showErrors(result.error || result.message || 'حدث خطأ');
+                        showErrorModal(result.error || 'حدث خطأ');
+                    }
+                })
+                .catch(function() {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'حفظ التغييرات';
+                    showErrors('عذراً، حدث خطأ أثناء تحديث العيادة.');
+                    showErrorModal('عذراً، حدث خطأ أثناء تحديث العيادة.');
+                });
+            }
+
+            function submitUpdate() {
+                clearErrors();
+
+                var dayChecks = form.querySelectorAll('[name="workingDays"]:checked');
+                var logoFile = logoInput.files && logoInput.files[0];
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'جاري الحفظ...';
+
+                if (logoFile) {
+                    var fd = new FormData();
+                    fd.append('file', logoFile);
+                    fetch('@Url.Action("UploadClinicImage", "Admin")', {
+                        method: 'POST',
+                        body: fd
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(imgResult) {
+                        if (imgResult.success) {
+                            var data = buildPayload(imgResult.url);
+                            data.workingDays = [];
+                            dayChecks.forEach(function(c) { data.workingDays.push(parseInt(c.value)); });
+                            if (data.workingDays.length === 0) delete data.workingDays;
+                            sendUpdateRequest(data);
+                        } else {
+                            saveBtn.disabled = false;
+                            saveBtn.textContent = 'حفظ التغييرات';
+                            showErrors(imgResult.error || imgResult.message || 'فشل رفع الصورة');
+                            showErrorModal(imgResult.error || 'فشل رفع الصورة');
+                        }
+                    })
+                    .catch(function() {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = 'حفظ التغييرات';
+                        showErrors('فشل رفع الصورة');
+                        showErrorModal('فشل رفع الصورة');
+                    });
+                } else {
+                    var data = buildPayload(form.querySelector('[name="logo"]').value);
+                    data.workingDays = [];
+                    dayChecks.forEach(function(c) { data.workingDays.push(parseInt(c.value)); });
+                    if (data.workingDays.length === 0) delete data.workingDays;
+                    sendUpdateRequest(data);
+                }
+            }
+
+            saveBtn.addEventListener('click', submitUpdate);
+        })();
     </script>
 }

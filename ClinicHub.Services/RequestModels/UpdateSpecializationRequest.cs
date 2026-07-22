@@ -11,5 +11,6 @@ namespace ClinicHub.Services.RequestModels
         public IFormFile? Icon { get; set; }
         public string? CurrentIcon { get; set; }
         public bool IsFamous { get; set; }
+        public bool IsActive { get; set; }
     }
 }

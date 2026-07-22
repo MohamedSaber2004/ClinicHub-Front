@@ -46,11 +46,11 @@ namespace ClinicHub.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Specializations(int pageNumber = 1, int pageSize = 20, bool? isFamous = null)
+        public async Task<IActionResult> Specializations(int pageNumber = 1, int pageSize = 20, bool? isFamous = null, bool? isActive = null)
         {
             try
             {
-                var paged = await _specializationService.GetAllAsync(pageNumber, pageSize, isFamous);
+                var paged = await _specializationService.GetAllAsync(pageNumber, pageSize, isFamous, isActive);
                 foreach (var s in paged.Items)
                 {
                     if (!string.IsNullOrWhiteSpace(s.IconUrl) && !Uri.TryCreate(s.IconUrl, UriKind.Absolute, out _))
@@ -61,6 +61,7 @@ namespace ClinicHub.Controllers
                 ViewBag.Specializations = paged.Items;
                 ViewBag.Pagination = paged;
                 ViewBag.CurrentFilter = isFamous;
+                ViewBag.CurrentActiveFilter = isActive;
             }
             catch (ApiException ex)
             {
@@ -152,6 +153,7 @@ namespace ClinicHub.Controllers
             bool sortAscending = false,
             string? format = null)
         {
+            ViewBag.GoogleMapsApiKey = _googleMapsOptions.Value.ApiKey;
             try
             {
                 var request = new GetAllClinicsPagginatedRequest
@@ -198,15 +200,14 @@ namespace ClinicHub.Controllers
 
             try
             {
-                var specs = await _specializationService.GetAllAsync(pageNumber: 1, pageSize: 200);
-                ViewBag.Specializations = specs.Items;
+                var specs = await _specializationService.GetAllAsync(pageNumber: 1, pageSize: 200, isActive: true);
+                ViewBag.Specializations = specs.Items.Where(s => s.IsActive).ToList();
             }
             catch (ApiException)
             {
                 ViewBag.Specializations = new List<SpecializationDto>();
             }
 
-            ViewBag.GoogleMapsApiKey = _googleMapsOptions.Value.ApiKey;
             return View();
         }
 
@@ -230,6 +231,17 @@ namespace ClinicHub.Controllers
                 ViewBag.ErrorMessage = ex.Message;
                 ViewBag.Clinic = null;
             }
+
+            try
+            {
+                var specs = await _specializationService.GetAllAsync(pageNumber: 1, pageSize: 200, isActive: true);
+                ViewBag.Specializations = specs.Items.Where(s => s.IsActive).ToList();
+            }
+            catch (ApiException)
+            {
+                ViewBag.Specializations = new List<SpecializationDto>();
+            }
+
             return View("ClinicDetails");
         }
 
@@ -254,6 +266,30 @@ namespace ClinicHub.Controllers
                 if (result.Success)
                     return Json(new { success = true, message = "تم إنشاء العيادة بنجاح", data = result.Data });
                 return Json(new { success = false, error = result.Message ?? "فشل إنشاء العيادة" });
+            }
+            catch (ApiException ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateClinic(Guid id, [FromBody] UpdateClinicRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    return Json(new { success = false, error = "البيانات مطلوبة" });
+
+                request.Id = id;
+                var result = await _clinicService.UpdateClinicAsync(request);
+                if (result.Success)
+                    return Json(new { success = true, message = "تم تحديث العيادة بنجاح", data = result.Data });
+                return Json(new { success = false, error = result.Message ?? "فشل تحديث العيادة" });
             }
             catch (ApiException ex)
             {
@@ -473,8 +509,8 @@ namespace ClinicHub.Controllers
 
             try
             {
-                var specs = await _specializationService.GetAllAsync(pageNumber: 1, pageSize: 200);
-                ViewBag.Specializations = specs.Items;
+                var specs = await _specializationService.GetAllAsync(pageNumber: 1, pageSize: 200, isActive: true);
+                ViewBag.Specializations = specs.Items.Where(s => s.IsActive).ToList();
             }
             catch (ApiException)
             {

@@ -28,6 +28,11 @@
         <option value="true">مميز</option>
         <option value="false">غير مميز</option>
     </select>
+    <select id="filterActive" class="form-select">
+        <option value="">جميع الحالات</option>
+        <option value="true">نشط</option>
+        <option value="false">غير نشط</option>
+    </select>
 </div>
 
 <!-- Specializations Table -->
@@ -41,6 +46,7 @@
                     <th>الاسم (إنجليزي)</th>
                     <th class="desc-col">الوصف</th>
                     <th>الحالة</th>
+                    <th>نشط</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
@@ -71,6 +77,16 @@
                             }
                         </td>
                         <td>
+                            @if (spec.IsActive)
+                            {
+                                <span class="badge badge-success">نشط</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">غير نشط</span>
+                            }
+                        </td>
+                        <td>
                             <div class="table-actions">
                                 <button class="btn-icon btn-edit-spec" title="تعديل"
                                         data-id="@spec.Id"
@@ -79,6 +95,7 @@
                                         data-description="@spec.Description"
                                         data-iconurl="@spec.IconUrl"
                                         data-isfamous="@spec.IsFamous.ToString().ToLower()"
+                                        data-isactive="@spec.IsActive.ToString().ToLower()"
                                         >
                                     <svg viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -155,6 +172,13 @@
                             <span class="toggle-label">مميز</span>
                         </label>
                     </div>
+                    <div class="form-group">
+                        <label class="form-toggle">
+                            <input type="checkbox" id="specIsActive" name="IsActive" value="true" checked />
+                            <span class="toggle-track"></span>
+                            <span class="toggle-label">نشط</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="modal-footer-custom">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -214,6 +238,7 @@
             var iconPreview = document.getElementById('iconPreview');
             var iconPreviewRemove = document.getElementById('iconPreviewRemove');
             var specIsSpecial = document.getElementById('specIsSpecial');
+            var specIsActive = document.getElementById('specIsActive');
 
             var specializationModal = new bootstrap.Modal(modalEl);
 
@@ -226,6 +251,7 @@
                     nameInput.value = btn.getAttribute('data-nameen') || '';
                     descInput.value = btn.getAttribute('data-description');
                     specIsSpecial.checked = btn.getAttribute('data-isfamous') === 'true';
+                    specIsActive.checked = btn.getAttribute('data-isactive') === 'true';
 
                     var iconUrl = btn.getAttribute('data-iconurl');
                     document.getElementById('specCurrentIcon').value = iconUrl || '';
@@ -281,6 +307,7 @@
                 nameInput.value = '';
                 descInput.value = '';
                 specIsSpecial.checked = true;
+                specIsActive.checked = true;
                 document.getElementById('specCurrentIcon').value = '';
                 fileInput.value = '';
                 iconPreviewWrapper.classList.add('is-hidden');
@@ -307,6 +334,7 @@
 
             var searchInput = document.getElementById('filterSearch');
             var statusFilter = document.getElementById('filterStatus');
+            var activeFilter = document.getElementById('filterActive');
             var rows = document.querySelectorAll('.spec-table tbody tr');
             var paginationLinks = document.querySelectorAll('.pagination-link');
 
@@ -333,14 +361,17 @@
             function filterTable() {
                 var query = searchInput.value.trim().toLowerCase();
                 var status = statusFilter.value;
+                var active = activeFilter.value;
                 rows.forEach(function(row) {
                     var arName = row.cells[1]?.textContent?.toLowerCase() || '';
                     var enName = row.cells[2]?.textContent?.toLowerCase() || '';
                     var desc = row.cells[3]?.textContent?.toLowerCase() || '';
                     var isFamous = row.cells[4]?.querySelector('.badge-success') !== null;
+                    var isActive = row.cells[5]?.querySelector('.badge-success') !== null;
                     var matchSearch = !query || arName.includes(query) || enName.includes(query) || desc.includes(query);
                     var matchStatus = !status || (status === 'true' && isFamous) || (status === 'false' && !isFamous);
-                    row.style.display = matchSearch && matchStatus ? '' : 'none';
+                    var matchActive = !active || (active === 'true' && isActive) || (active === 'false' && !isActive);
+                    row.style.display = matchSearch && matchStatus && matchActive ? '' : 'none';
                 });
             }
 
@@ -355,12 +386,19 @@
                 window.location.href = window.location.pathname + '?' + getParams().toString();
             });
 
+            activeFilter.addEventListener('change', function() {
+                setParam('isActive', this.value);
+                window.location.href = window.location.pathname + '?' + getParams().toString();
+            });
+
             (function initFromUrl() {
                 var params = getParams();
                 var searchVal = params.get('search') || '';
                 if (searchVal) searchInput.value = searchVal;
                 var statusVal = params.get('isFamous');
                 if (statusVal) statusFilter.value = statusVal;
+                var activeVal = params.get('isActive');
+                if (activeVal) activeFilter.value = activeVal;
                 updatePaginationLinks(searchVal);
                 filterTable();
             })();

@@ -49,13 +49,15 @@ namespace ClinicHub.Services.Services.Implementations
             _deleteSpecialization = DoctoryRoutes.Specializations.Delete;
         }
 
-        public async Task<PagginatedResult<SpecializationDto>> GetAllAsync(int pageNumber = 1, int pageSize = 20, bool? isFamous = null)
+        public async Task<PagginatedResult<SpecializationDto>> GetAllAsync(int pageNumber = 1, int pageSize = 20, bool? isFamous = null, bool? isActive = null)
         {
             try
             {
                 var url = $"{_getAllSpecializations}?PageNumber={pageNumber}&PageSize={pageSize}";
                 if (isFamous.HasValue)
                     url += $"&IsFamous={isFamous.Value.ToString().ToLower()}";
+                if (isActive.HasValue)
+                    url += $"&IsActive={isActive.Value.ToString().ToLower()}";
                 var response = await _httpClient.GetAsync(url);
                 var body = await response.Content.ReadAsStringAsync();
 
@@ -175,7 +177,8 @@ namespace ClinicHub.Services.Services.Implementations
                     ["Name"] = request.Name,
                     ["ArName"] = request.ArName,
                     ["Description"] = request.Description,
-                    ["IsFamous"] = request.IsFamous
+                    ["IsFamous"] = request.IsFamous,
+                    ["IsActive"] = request.IsActive
                 };
                 if (!string.IsNullOrEmpty(iconUrl))
                     payload["Icon"] = iconUrl;

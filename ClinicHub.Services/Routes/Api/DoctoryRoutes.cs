@@ -124,6 +124,7 @@ namespace ClinicHub.Services.Routes.Api
             public string GetAll => $"{BaseRoute}/paginated";
             public string GetById(Guid id) => $"{BaseRoute}/{id}";
             public string Create => $"{BaseRoute}";
+            public string Update(Guid id) => $"{BaseRoute}/{id}";
         }
     }
 }

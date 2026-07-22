@@ -7,5 +7,6 @@ namespace ClinicHub.Services.RequestModels
         string ArName,
         string? Description,
         string? Icon,
-        bool IsFamous);
+        bool IsFamous,
+        bool IsActive = true);
 }

@@ -1,4 +1,2 @@
-﻿This exception was originally thrown at this call stack:
-    Newtonsoft.Json.Linq.JToken.this[object].get(object)
-    ClinicHub.Services.Services.Implementations.AttachmentService.UploadAttachmentAsync(ClinicHub.Services.RequestModels.UploadAttachmentRequest) in AttachmentService.cs
-    ClinicHub.Controllers.AdminController.UploadClinicImage(Microsoft.AspNetCore.Http.IFormFile) in AdminController.cs
+﻿فشل التحقق
+Name مطلوب
