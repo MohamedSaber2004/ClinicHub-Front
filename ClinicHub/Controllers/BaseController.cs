@@ -9,6 +9,12 @@ namespace ClinicHub.Controllers
         protected CurrentUserContext? CurrentUser { get; set; }
         protected bool IsAjaxRequest => Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            ViewBag.CurrentUser = CurrentUser;
+            base.OnActionExecuting(context);
+        }
+
         protected IActionResult RedirectJson(string? redirectUrl)
         {
             if (IsAjaxRequest)

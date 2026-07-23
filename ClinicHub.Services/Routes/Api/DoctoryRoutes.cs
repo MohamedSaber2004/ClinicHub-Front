@@ -35,7 +35,7 @@ namespace ClinicHub.Services.Routes.Api
                 BaseRoute = $"{baseRoute}/auth";
             }
 
-            public string Login => $"{BaseRoute}/login";
+            public string Login => $"{BaseRoute}/login-web";
             public string ForgetPassword => $"{BaseRoute}/forget-password";
             public string VerifyResetToken => $"{BaseRoute}/verify-reset-token";
             public string ResetPassword => $"{BaseRoute}/reset-password";
