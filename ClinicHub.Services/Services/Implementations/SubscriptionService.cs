@@ -35,7 +35,7 @@ namespace ClinicHub.Services.Services.Implementations
             _myUrl = DoctoryRoutes.Subscriptions.My;
             _initiateUrl = DoctoryRoutes.Subscriptions.InitiatePayment;
             _cancelUrl = DoctoryRoutes.Subscriptions.Cancel;
-            _registerUrl = $"{DoctoryRoutes.Plans.BaseRoute}/../clinics/register";
+            _registerUrl = DoctoryRoutes.Clinics.Register;
         }
 
         public async Task<InitiatePaymentResponseDto> InitiatePaymentAsync(InitiatePaymentRequest request)
@@ -112,7 +112,21 @@ namespace ClinicHub.Services.Services.Implementations
             var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
             var dataToken = obj?["data"] ?? obj?["Data"];
             var dataJson = dataToken?.ToString() ?? responseBody;
-            return JsonConvert.DeserializeObject<RegisterClinicResponseDto>(dataJson, _jsonSettings)!;
+            var dto = JsonConvert.DeserializeObject<RegisterClinicResponseDto>(dataJson, _jsonSettings) ?? new RegisterClinicResponseDto();
+
+            if (dto.PendingData != null)
+            {
+                dto.UserId ??= dto.PendingData.UserId;
+                dto.Message ??= dto.PendingData.Message;
+                dto.IsPendingApproval = dto.PendingData.IsPendingApproval;
+            }
+            else if (dto.AuthData != null)
+            {
+                dto.IsPendingApproval = false;
+                dto.UserId ??= dto.AuthData.Id;
+            }
+
+            return dto;
         }
     }
 }

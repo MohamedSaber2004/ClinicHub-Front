@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.Options;
@@ -60,17 +60,7 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في رفع الملف" : combined);
             }
 
-            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"];
-            if (dataToken is JObject dataObj)
-            {
-                var fn = dataObj["filename"] ?? dataObj["fileName"] ?? dataObj["FileName"];
-                if (fn != null) return fn.ToString();
-            }
-            var messageToken = obj?["message"] ?? obj?["Message"];
-
-            var result = messageToken?.ToString() ?? string.Empty;
-
+            var result = ExtractFileNameFromResponse(responseBody);
             return result;
         }
 
@@ -166,18 +156,58 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تحديث الملف" : combined);
             }
 
-            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"];
-            if (dataToken is JObject dataObj)
-            {
-                var fn = dataObj["filename"] ?? dataObj["fileName"] ?? dataObj["FileName"];
-                if (fn != null) return fn.ToString();
-            }
-            var messageToken = obj?["message"] ?? obj?["Message"];
-
-            var result = messageToken?.ToString() ?? string.Empty;
-
+            var result = ExtractFileNameFromResponse(responseBody);
             return result;
+        }
+
+        private static string ExtractFileNameFromResponse(string responseBody)
+        {
+            if (string.IsNullOrWhiteSpace(responseBody)) return string.Empty;
+
+            try
+            {
+                var token = JToken.Parse(responseBody);
+                if (token is JObject obj)
+                {
+                    var dataToken = obj["data"] ?? obj["Data"];
+                    if (dataToken != null && dataToken.Type != JTokenType.Null)
+                    {
+                        if (dataToken is JObject dataObj)
+                        {
+                            var fn = dataObj["filename"] ?? dataObj["fileName"] ?? dataObj["FileName"]
+                                  ?? dataObj["url"] ?? dataObj["Url"] ?? dataObj["URL"]
+                                  ?? dataObj["path"] ?? dataObj["Path"]
+                                  ?? dataObj["file"] ?? dataObj["File"]
+                                  ?? dataObj["name"] ?? dataObj["Name"];
+                            if (fn != null) return fn.ToString();
+                        }
+                        else if (dataToken is JValue jVal)
+                        {
+                            return jVal.ToString() ?? string.Empty;
+                        }
+                        else
+                        {
+                            return dataToken.ToString();
+                        }
+                    }
+
+                    var messageToken = obj["message"] ?? obj["Message"];
+                    if (messageToken != null && messageToken.Type != JTokenType.Null)
+                    {
+                        return messageToken.ToString();
+                    }
+                }
+                else if (token is JValue jVal)
+                {
+                    return jVal.ToString() ?? string.Empty;
+                }
+            }
+            catch
+            {
+                if (responseBody.Length < 256) return responseBody;
+            }
+
+            return string.Empty;
         }
 
         public async Task<DownloadAttachmentResponse> DownloadAttachment(DownloadAttachmentRequest request)

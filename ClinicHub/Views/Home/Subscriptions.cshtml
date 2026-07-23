@@ -4,7 +4,7 @@
 @{
     ViewData["Title"] = "الباقات والاشتراكات - Doctory";
     var plans = ViewBag.Plans as List<PlanDto> ?? new();
-    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var isAuthenticated = Context.Request.Cookies["AccessToken"] != null;
     var featureLabels = new Dictionary<string, string>
     {
         ["appointments"] = "إدارة المواعيد",
@@ -46,8 +46,10 @@
             {
                 foreach (var plan in plans.OrderBy(p => p.SortOrder))
                 {
-                    var planClass = plan.SortOrder switch { 2 => "plan-standard", 3 => "plan-premium", _ => "plan-free" };
-                    var badge = plan.SortOrder == 2 ? "الأكثر طلباً" : plan.SortOrder == 3 ? "الأفضل" : "";
+                    var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
+                    var isTop = plan.SortOrder >= maxSort;
+                    var planClass = isTop ? "plan-premium" : "plan-free";
+                    var badge = isTop ? "الأفضل" : "";
                     var featureList = JsonSerializer.Deserialize<List<string>>(plan.Features) ?? new();
 
                     <div class="plan-card @planClass">
@@ -88,7 +90,7 @@
                         <div class="plan-footer">
                             @if (isAuthenticated)
                             {
-                                <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary btn-lg plan-cta-full">اشترك الآن</a>
+                                <button type="button" class="btn btn-primary btn-lg plan-cta-full btn-subscribe" data-plan-id="@plan.Id">اشترك الآن</button>
                             }
                             else
                             {
@@ -157,14 +159,7 @@
     <div class="container text-center">
         <h2 class="text-h2">انضم إلى منصة Doctory</h2>
         <p class="subscription-cta-desc">أدرج عيادتك اليوم وابدأ في إدارة أعمالك بكفاءة</p>
-        @if (isAuthenticated)
-        {
-            <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary btn-lg">اشترك الآن</a>
-        }
-        else
-        {
-            <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary btn-lg">ابدأ الآن</a>
-        }
+        <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary btn-lg">ابدأ الآن</a>
     </div>
 </section>
 
@@ -172,13 +167,33 @@
     <script>
         (function() {
             var toggle = document.getElementById('periodToggle');
-            toggle.addEventListener('change', function() {
-                var isYearly = this.checked;
-                document.querySelectorAll('.plan-card').forEach(function(card) {
-                    card.querySelector('.price-monthly').style.display = isYearly ? 'none' : '';
-                    card.querySelector('.price-yearly').style.display = isYearly ? '' : 'none';
-                    card.querySelector('.period-monthly').style.display = isYearly ? 'none' : '';
-                    card.querySelector('.period-yearly').style.display = isYearly ? '' : 'none';
+            if (toggle) {
+                toggle.addEventListener('change', function() {
+                    var isYearly = this.checked;
+                    document.querySelectorAll('.plan-card').forEach(function(card) {
+                        var monthlyPrice = card.querySelector('.price-monthly');
+                        var yearlyPrice = card.querySelector('.price-yearly');
+                        var monthlyPeriod = card.querySelector('.period-monthly');
+                        var yearlyPeriod = card.querySelector('.period-yearly');
+                        if (monthlyPrice) monthlyPrice.style.display = isYearly ? 'none' : '';
+                        if (yearlyPrice) yearlyPrice.style.display = isYearly ? '' : 'none';
+                        if (monthlyPeriod) monthlyPeriod.style.display = isYearly ? 'none' : '';
+                        if (yearlyPeriod) yearlyPeriod.style.display = isYearly ? '' : 'none';
+                    });
+                });
+            }
+
+            document.querySelectorAll('.btn-subscribe').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var planId = this.getAttribute('data-plan-id');
+                    if (!planId) {
+                        var card = this.closest('.plan-card');
+                        var select = card ? card.querySelector('.plan-hidden-id') : null;
+                        planId = select ? select.value : '';
+                    }
+                    if (!planId) return;
+                    var period = toggle && toggle.checked ? 1 : 0;
+                    window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(planId) + '&period=' + period;
                 });
             });
         })();

@@ -1,3 +1,4 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery _antiforgery
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <meta name="csrf-token" content="@_antiforgery.GetAndStoreTokens(Context).RequestToken" />
 
 </head>
 <body class="public-body" style="height: auto; overflow: auto;">
@@ -54,6 +56,7 @@
 
     <partial name="_ErrorModal" />
     <partial name="_SuccessModal" />
+    <partial name="_ConfirmModal" />
     <partial name="_LoadingSpinner" />
 
     <script>
@@ -74,6 +77,50 @@
     <script src="~/js/error-service.js" asp-append-version="true"></script>
     <script src="~/js/notification-service.js" asp-append-version="true"></script>
     <script src="~/js/loading-service.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            @if (TempData["SuccessMessage"] != null || ViewBag.SuccessMessage != null)
+            {
+                var successMsg = TempData["SuccessMessage"] ?? ViewBag.SuccessMessage;
+                <text>
+                    if (typeof showSuccessModal === 'function') {
+                        showSuccessModal(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(successMsg.ToString())));
+                    }
+                </text>
+            }
+            @if (TempData["ErrorMessage"] != null || ViewBag.ErrorMessage != null)
+            {
+                var errorMsg = TempData["ErrorMessage"] ?? ViewBag.ErrorMessage;
+                <text>
+                    if (typeof showErrorModal === 'function') {
+                        showErrorModal(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(errorMsg.ToString())));
+                    }
+                </text>
+            }
+        });
+
+        (function() {
+            var origFetch = window.fetch;
+            window.fetch = function(url, init) {
+                init = init || {};
+                var method = (init.method || 'GET').toUpperCase();
+                if (method !== 'GET' && method !== 'HEAD') {
+                    var token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    if (token) {
+                        if (!init.headers) init.headers = {};
+                        if (init.headers instanceof Headers) {
+                            if (!init.headers.has('RequestVerificationToken')) init.headers.append('RequestVerificationToken', token);
+                        } else if (Array.isArray(init.headers)) {
+                            if (!init.headers.some(function(h) { return h[0] === 'RequestVerificationToken'; })) init.headers.push(['RequestVerificationToken', token]);
+                        } else {
+                            if (!init.headers['RequestVerificationToken']) init.headers['RequestVerificationToken'] = token;
+                        }
+                    }
+                }
+                return origFetch(url, init);
+            };
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -37,8 +37,10 @@
     {
         foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
         {
-            var planClass = plan.SortOrder == 2 ? "plan-standard" : plan.SortOrder == 3 ? "plan-premium" : "plan-free";
-            var badge = plan.SortOrder == 2 ? "الأكثر طلباً" : plan.SortOrder == 3 ? "الأفضل" : "";
+            var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
+            var isTop = plan.SortOrder >= maxSort;
+            var planClass = isTop ? "plan-premium" : "plan-free";
+            var badge = isTop ? "الأفضل" : "";
             var featureList = JsonSerializer.Deserialize<List<string>>(plan.Features) ?? new();
             <div class="plan-card @planClass">
                 @if (!string.IsNullOrEmpty(badge))

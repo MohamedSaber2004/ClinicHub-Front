@@ -1,7 +1,6 @@
 @using ClinicHub.Routes
 @{
     ViewData["Title"] = "اشتراك مطلوب - Doctory";
-    var isAuthenticated = User.Identity?.IsAuthenticated == true;
 }
 
 <section class="subscription-required-section">
@@ -22,14 +21,7 @@
             </div>
             <div class="required-actions">
                 <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-primary btn-lg">عرض الباقات والاشتراك</a>
-                @if (isAuthenticated)
-                {
-                    <a href="@ClinicRoutes.Pages.Index()" class="btn btn-secondary">العودة للوحة التحكم</a>
-                }
-                else
-                {
-                    <a href="@HomeRoutes.Account.Login()" class="btn btn-secondary">تسجيل الدخول</a>
-                }
+                <a href="@HomeRoutes.Pages.Index()" class="btn btn-secondary">العودة للرئيسية</a>
             </div>
         </div>
     </div>

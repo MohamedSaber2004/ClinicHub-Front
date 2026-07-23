@@ -113,8 +113,10 @@
             <div class="subscription-plans">
                 @foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
                 {
-                    var planClass = plan.SortOrder == 2 ? "plan-standard" : plan.SortOrder == 3 ? "plan-premium" : "plan-free";
-                    var badge = plan.SortOrder == 2 ? "الأكثر طلباً" : plan.SortOrder == 3 ? "الأفضل" : "";
+                    var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
+                    var isTop = plan.SortOrder >= maxSort;
+                    var planClass = isTop ? "plan-premium" : "plan-free";
+                    var badge = isTop ? "الأفضل" : "";
                     var featureList = System.Text.Json.JsonSerializer.Deserialize<List<string>>(plan.Features) ?? new();
                     <div class="plan-card @planClass">
                         @if (!string.IsNullOrEmpty(badge))
@@ -297,15 +299,75 @@
 
             document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
                 var id = document.getElementById('deletePlanId').value;
-                var row = document.querySelector('tr[data-plan-id="' + id + '"]');
-                if (row) row.remove();
-                deleteModal.hide();
-                showSuccessModal('تم حذف الباقة بنجاح');
+                var btn = document.getElementById('confirmDeleteBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+                fetch('/Admin/PlanManagement/Delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    btn.disabled = false;
+                    btn.textContent = 'حذف';
+                    deleteModal.hide();
+                    if (result.success) {
+                        showSuccessModal(result.message || 'تم حذف الباقة بنجاح');
+                        setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(result.message || 'حدث خطأ');
+                    }
+                })
+                .catch(function() {
+                    btn.disabled = false;
+                    btn.textContent = 'حذف';
+                    showErrorModal('عذراً، حدث خطأ أثناء حذف الباقة.');
+                });
             });
 
             document.getElementById('savePlanBtn').addEventListener('click', function() {
-                modal.hide();
-                showSuccessModal('تم حفظ الباقة بنجاح');
+                var id = planId.value;
+                var name = planName.value;
+                var data = {
+                    name: name,
+                    nameAr: name,
+                    priceMonthly: parseFloat(planPriceMonthly.value) || 0,
+                    priceYearly: parseFloat(planPriceYearly.value) || 0,
+                    maxDoctors: planMaxDoctors.value ? parseInt(planMaxDoctors.value) : null,
+                    maxStaff: planMaxStaff.value ? parseInt(planMaxStaff.value) : null,
+                    sortOrder: parseInt(planSortOrder.value) || 0,
+                    features: JSON.stringify(planFeatures.value.split('\n').filter(function(f) { return f.trim(); })),
+                    isActive: planIsActive.checked
+                };
+                var btn = document.getElementById('savePlanBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+                var url = id ? '/Admin/PlanManagement/Update?id=' + id : '/Admin/PlanManagement/Create';
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    btn.disabled = false;
+                    btn.textContent = 'حفظ الباقة';
+                    modal.hide();
+                    if (result.success) {
+                        showSuccessModal('تم حفظ الباقة بنجاح');
+                        setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(result.message || 'حدث خطأ');
+                    }
+                })
+                .catch(function() {
+                    btn.disabled = false;
+                    btn.textContent = 'حفظ الباقة';
+                    showErrorModal('عذراً، حدث خطأ أثناء حفظ الباقة.');
+                });
             });
         })();
     </script>

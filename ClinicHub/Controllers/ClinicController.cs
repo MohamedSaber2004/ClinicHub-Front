@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
+using ClinicHub.Services.RequestModels;
 
 namespace ClinicHub.Controllers
 {
@@ -87,6 +88,90 @@ namespace ClinicHub.Controllers
             }
 
             return View("MySubscription");
+        }
+
+        [Route("Clinic/Subscribe")]
+        public async Task<IActionResult> Subscribe(Guid planId, int period = 0)
+        {
+            try
+            {
+                if (planId == Guid.Empty)
+                {
+                    var plans = await _planService.GetAllAsync();
+                    var defaultPlan = plans?.FirstOrDefault(p => p.IsActive);
+                    if (defaultPlan != null)
+                    {
+                        planId = defaultPlan.Id;
+                    }
+                }
+
+                var returnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult";
+
+                var result = await _subscriptionService.InitiatePaymentAsync(new InitiatePaymentRequest
+                {
+                    PlanId = planId,
+                    Period = period,
+                    ReturnUrl = returnUrl
+                });
+
+                var targetUrl = result?.TargetRedirectUrl;
+                if (string.IsNullOrWhiteSpace(targetUrl))
+                {
+                    return Redirect(Url.Action("PaymentResult", "Home", new { success = true }) ?? "/");
+                }
+                return Redirect(targetUrl);
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return Redirect(Url.Action("PaymentResult", "Home", new { success = false }) ?? "/");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "حدث خطأ أثناء البدء في عملية الدفع: " + ex.Message;
+                return Redirect(Url.Action("PaymentResult", "Home", new { success = false }) ?? "/");
+            }
+        }
+
+
+
+        [Route("Clinic/InitiatePayment")]
+        [HttpPost]
+        public async Task<IActionResult> InitiatePayment([FromBody] InitiatePaymentRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.ReturnUrl))
+                {
+                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult";
+                }
+                var result = await _subscriptionService.InitiatePaymentAsync(request);
+                return Json(new { success = true, targetUrl = result?.TargetRedirectUrl });
+            }
+            catch (ApiException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "حدث خطأ أثناء البدء في عملية الدفع: " + ex.Message });
+            }
+        }
+
+        [Route("Clinic/CancelSubscription")]
+        [HttpPost]
+        public async Task<IActionResult> CancelSubscription()
+        {
+            try
+            {
+                var message = await _subscriptionService.CancelMySubscriptionAsync();
+                return Json(new { success = true, message });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         public IActionResult Settings()

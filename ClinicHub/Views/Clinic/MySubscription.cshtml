@@ -1,5 +1,6 @@
 @using ClinicHub.Services.ReponseModels
 @{
+    Layout = "_ClinicLayout";
     ViewData["Title"] = "اشتراكي - Doctory";
     var subscription = ViewBag.Subscription as SubscriptionDto;
     var plans = ViewBag.Plans as List<PlanDto> ?? new();
@@ -23,8 +24,20 @@
         <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-primary">عرض الباقات والاشتراك</a>
     </div>
 }
-
-@if (subscription != null)
+else if (subscription == null)
+{
+    <div class="subscription-empty-state">
+        <div class="empty-state-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="var(--clr-success)"/>
+            </svg>
+        </div>
+        <h3>ليس لديك اشتراك نشط</h3>
+        <p>اشترك الآن للاستفادة من جميع ميزات المنصة لإدارة عيادتك بكفاءة.</p>
+        <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-primary btn-lg">عرض الباقات والاشتراك</a>
+    </div>
+}
+else
 {
     var statusText = subscription.Status switch { 0 => "نشط", 1 => "ملغي", 2 => "منتهي", 3 => "ملغي من الإدارة", _ => "غير معروف" };
     var statusClass = subscription.Status switch { 0 => "badge-success", 1 => "badge-warning", 2 => "badge-danger", 3 => "badge-danger", _ => "badge-info" };
@@ -78,9 +91,11 @@
                 <div class="subs-plans-preview">
                     <h4>الباقات المتاحة</h4>
                     <div class="subscription-plans">
-                        @foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder).Take(3))
+                        @foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
                         {
-                            var planClass = plan.SortOrder == 2 ? "plan-standard" : plan.SortOrder == 3 ? "plan-premium" : "plan-free";
+                            var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
+                            var isTop = plan.SortOrder >= maxSort;
+                            var planClass = isTop ? "plan-premium" : "plan-free";
                             <div class="plan-card @planClass" style="margin-bottom: 0;">
                                 <div class="plan-header">
                                     <h3 class="plan-name">@plan.NameAr</h3>
@@ -99,6 +114,25 @@
 }
 
 <style>
+    .subscription-empty-state {
+        text-align: center;
+        padding: var(--space-10) var(--space-5);
+    }
+    .empty-state-icon {
+        margin-bottom: var(--space-5);
+    }
+    .subscription-empty-state h3 {
+        font-size: var(--fs-xl);
+        font-weight: var(--fw-semibold);
+        margin-bottom: var(--space-3);
+    }
+    .subscription-empty-state p {
+        color: var(--clr-text-secondary);
+        margin-bottom: var(--space-6);
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
     .subscription-status-card {
         padding: var(--space-5) 0;
     }
@@ -155,10 +189,27 @@
 @section Scripts {
     <script>
         function cancelSubscription() {
-            if (confirm('هل أنت متأكد من إلغاء الاشتراك؟ لن يتم استرداد المبلغ المدفوع.')) {
-                showSuccessModal('تم إلغاء الاشتراك بنجاح');
-                setTimeout(function() { window.location.reload(); }, 1500);
-            }
+            showConfirmModal('هل أنت متأكد من إلغاء الاشتراك؟ لن يتم استرداد المبلغ المدفوع.', function(confirmed) {
+                if (!confirmed) return;
+                fetch('@ClinicRoutes.Pages.CancelSubscription()', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(function(r) { return r.json(); })
+                  .then(function(data) {
+                      if (data.success) {
+                          localStorage.removeItem('accessToken');
+                          localStorage.removeItem('refreshToken');
+                          localStorage.removeItem('userId');
+                          localStorage.removeItem('role');
+                          localStorage.removeItem('clinicId');
+                          window.location.href = '@HomeRoutes.Pages.SubscriptionRequired()';
+                      } else {
+                          showBackendErrors(JSON.stringify(data));
+                      }
+                  }).catch(function() {
+                      showBackendErrors(null);
+                  });
+            });
         }
     </script>
 }

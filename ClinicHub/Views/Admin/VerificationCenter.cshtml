@@ -415,8 +415,24 @@
                         : '/Admin/RejectVerification?userId=' + encodeURIComponent(req.userId) + '&notes=' + encodeURIComponent(reason || '');
 
                     fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                        .then(function(r) { window.location.href = '/Admin/Verification'; })
-                        .catch(function() { window.location.href = '/Admin/Verification'; });
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data.success) {
+                                req.status = type === 'accept' ? 1 : 2;
+                                document.getElementById('detailStatus').innerHTML = getStatusHtml(req.status);
+                                var card = document.querySelector('.verification-card[data-request-id="' + req.id + '"]');
+                                if (card) {
+                                    var statusEl = card.querySelector('.vc-status');
+                                    if (statusEl) statusEl.innerHTML = getStatusHtml(req.status);
+                                }
+                                showSuccessModal(data.message || (type === 'accept' ? 'تم قبول طلب التحقق بنجاح' : 'تم رفض طلب التحقق بنجاح'));
+                            } else {
+                                showErrorModal(data.message || (type === 'accept' ? 'فشل قبول طلب التحقق' : 'فشل رفض طلب التحقق'));
+                            }
+                        })
+                        .catch(function() {
+                            showErrorModal('عذراً، حدث خطأ غير متوقع أثناء معالجة الطلب.');
+                        });
                 });
             }
         })();

@@ -58,6 +58,7 @@ namespace ClinicHub.Services.Routes.Api
                 BaseRoute = $"{baseRoute}/specializations";
             }
 
+            public string GetActive => $"{BaseRoute}/active";
             public string GetAll => $"{BaseRoute}";
             public string GetById(Guid id) => $"{BaseRoute}/{id}";
             public string Create => $"{BaseRoute}/create";
@@ -123,16 +124,19 @@ namespace ClinicHub.Services.Routes.Api
         public class ClinicRoutes
         {
             public string BaseRoute { get; }
+            public string AdminBaseRoute { get; }
             public ClinicRoutes(string baseRoute)
             {
-                BaseRoute = $"{baseRoute}/admin/clinics";
+                BaseRoute = $"{baseRoute}/clinics";
+                AdminBaseRoute = $"{baseRoute}/admin/clinics";
             }
-            public string GetAll => $"{BaseRoute}/paginated";
-            public string GetById(Guid id) => $"{BaseRoute}/{id}";
-            public string Create => $"{BaseRoute}";
-            public string Update(Guid id) => $"{BaseRoute}/{id}";
-            public string Activate(Guid id) => $"{BaseRoute}/{id}/activate";
-            public string Deactivate(Guid id) => $"{BaseRoute}/{id}/deactivate";
+            public string Register => $"{BaseRoute}/register";
+            public string GetAll => $"{AdminBaseRoute}/paginated";
+            public string GetById(Guid id) => $"{AdminBaseRoute}/{id}";
+            public string Create => $"{AdminBaseRoute}";
+            public string Update(Guid id) => $"{AdminBaseRoute}/{id}";
+            public string Activate(Guid id) => $"{AdminBaseRoute}/{id}/activate";
+            public string Deactivate(Guid id) => $"{AdminBaseRoute}/{id}/deactivate";
         }
 
         public class PlanRoutes

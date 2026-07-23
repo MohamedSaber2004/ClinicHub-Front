@@ -1,8 +1,9 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Enums
 @{
-    ViewData["Title"] = "العيادات قيد الانتظار";
+    ViewData["Title"] = "طلبات التحقق من العيادات";
     Layout = "_AdminLayout";
-    var pendingClinics = ViewBag.PendingClinics as List<MockPendingClinic> ?? new();
+    var pendingRequests = ViewBag.PendingClinics as IReadOnlyCollection<UserVerficationDto> ?? new List<UserVerficationDto>();
 }
 
 <div class="page-header">
@@ -12,7 +13,7 @@
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
             </svg>
         </span>
-        العيادات قيد الانتظار
+        طلبات التحقق من العيادات
     </h2>
 </div>
 
@@ -21,48 +22,49 @@
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>اسم العيادة</th>
-                    <th>العنوان</th>
-                    <th>رقم الهاتف</th>
-                    <th>التخصص</th>
                     <th>اسم المالك</th>
                     <th>البريد الإلكتروني</th>
-                    <th>تاريخ التسجيل</th>
+                    <th>رقم الهاتف</th>
+                    <th>الدور المطلوب</th>
+                    <th>تاريخ الطلب</th>
+                    <th>الحالة</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
             <tbody>
-                @if (pendingClinics.Count == 0)
+                @if (pendingRequests.Count == 0)
                 {
                     <tr>
-                        <td colspan="8" class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
+                        <td colspan="7" class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-4);">
                                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--clr-text-secondary)"/>
                             </svg>
-                            <p style="font-size: var(--fs-lg); margin-bottom: 0;">لا توجد عيادات في انتظار المراجعة</p>
+                            <p style="font-size: var(--fs-lg); margin-bottom: 0;">لا توجد طلبات في انتظار المراجعة</p>
                         </td>
                     </tr>
                 }
                 else
                 {
-                    foreach (var clinic in pendingClinics)
+                    foreach (var req in pendingRequests)
                     {
+                        var statusText = req.Status switch { VerificationStatus.Pending => "قيد الانتظار", VerificationStatus.Approved => "مقبول", VerificationStatus.Rejected => "مرفوض", _ => "غير معروف" };
+                        var statusClass = req.Status switch { VerificationStatus.Pending => "badge-warning", VerificationStatus.Approved => "badge-success", VerificationStatus.Rejected => "badge-danger", _ => "badge-info" };
+                        var roleText = req.RequestedRole switch { UserType.ClinicOwner => "مالك عيادة", UserType.Doctor => "طبيب", UserType.Staff => "موظف", _ => req.RequestedRole.ToString() };
                         <tr>
-                            <td class="text-md-medium">@clinic.ClinicName</td>
-                            <td class="text-md">@clinic.Address</td>
-                            <td class="text-md">@clinic.Phone</td>
-                            <td><span class="badge badge-info">@clinic.Specialization</span></td>
-                            <td class="text-md">@clinic.OwnerName</td>
-                            <td class="text-md">@clinic.OwnerEmail</td>
-                            <td class="text-md">@clinic.RegistrationDate</td>
+                            <td class="text-md-medium">@req.UserFullName</td>
+                            <td class="text-md">@req.UserEmail</td>
+                            <td class="text-md">@req.UserPhoneNumber</td>
+                            <td><span class="badge badge-info">@roleText</span></td>
+                            <td class="text-md">@req.RequestedAt.ToString("yyyy-MM-dd")</td>
+                            <td><span class="badge @statusClass">@statusText</span></td>
                             <td>
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-success" title="قبول" onclick="approveClinic('@clinic.Id')">
+                                    <button class="btn btn-sm btn-success" title="قبول" onclick="approveClinic('@req.UserId')">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
                                         قبول
                                     </button>
-                                    <button class="btn btn-sm btn-danger" title="رفض" onclick="rejectClinic('@clinic.Id')">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                                    <button class="btn btn-sm btn-danger" title="رفض" onclick="rejectClinic('@req.UserId')">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 19 17.59 13.41 12 19 6.41z"/></svg>
                                         رفض
                                     </button>
                                 </div>
@@ -77,20 +79,81 @@
 
 @section Scripts {
     <script>
-        function approveClinic(id) {
-            if (confirm('هل أنت متأكد من قبول هذه العيادة؟')) {
-                var row = event.target.closest('tr');
-                row.querySelector('.table-actions').innerHTML = '<span class="badge badge-success">تم القبول</span>';
-                showSuccessModal('تم قبول العيادة بنجاح');
-            }
+        function approveClinic(id, btnElem) {
+            showConfirmModal('هل أنت متأكد من قبول طلب التحقق هذا؟', function(confirmed) {
+                if (!confirmed) return;
+                var btn = btnElem || (window.event ? window.event.target.closest('button') : null);
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                }
+                fetch('/Admin/PendingClinics/Approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clinicId: id })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        if (btn) {
+                            var row = btn.closest('tr');
+                            if (row) row.querySelector('.table-actions').innerHTML = '<span class="badge badge-success">تم القبول</span>';
+                        }
+                        showSuccessModal(result.message || 'تم قبول طلب التحقق بنجاح');
+                    } else {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.textContent = 'قبول';
+                        }
+                        showErrorModal(result.message || 'فشل قبول طلب التحقق');
+                    }
+                })
+                .catch(function() {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = 'قبول';
+                    }
+                    showErrorModal('عذراً، حدث خطأ أثناء قبول طلب التحقق.');
+                });
+            });
         }
-        function rejectClinic(id) {
+
+        function rejectClinic(id, btnElem) {
             var reason = prompt('يرجى إدخال سبب الرفض (اختياري):');
-            if (reason !== null) {
-                var row = event.target.closest('tr');
-                row.querySelector('.table-actions').innerHTML = '<span class="badge badge-danger">مرفوض</span>';
-                showSuccessModal('تم رفض العيادة');
+            if (reason === null) return;
+            var btn = btnElem || (window.event ? window.event.target.closest('button') : null);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
             }
+            fetch('/Admin/PendingClinics/Reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clinicId: id, reason: reason || '' })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success) {
+                    if (btn) {
+                        var row = btn.closest('tr');
+                        if (row) row.querySelector('.table-actions').innerHTML = '<span class="badge badge-danger">مرفوض</span>';
+                    }
+                    showSuccessModal(result.message || 'تم رفض طلب التحقق');
+                } else {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = 'رفض';
+                    }
+                    showErrorModal(result.message || 'فشل رفض طلب التحقق');
+                }
+            })
+            .catch(function() {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'رفض';
+                }
+                showErrorModal('عذراً، حدث خطأ أثناء رفض طلب التحقق.');
+            });
         }
     </script>
 }

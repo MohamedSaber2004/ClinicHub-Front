@@ -62,13 +62,16 @@ namespace ClinicHub.Controllers
             catch (AuthenticatedApiException ex)
             {
                 SetAuthCookies(ex.AuthData);
-                var msg = ex.Message.ToLowerInvariant();
-                if (msg.Contains("pending"))
-                    return RedirectJson(Url.Action("PendingApproval", "Home"));
                 return RedirectJson(Url.Action("SubscriptionRequired", "Home"));
             }
             catch (ApiException ex)
             {
+                if (ex.StatusCode == 403)
+                {
+                    var msg = ex.Message.ToLowerInvariant();
+                    if (msg.Contains("pending"))
+                        return RedirectJson(Url.Action("PendingApproval", "Home"));
+                }
                 return Fail(ex.StatusCode, ex.Message);
             }
             catch (Exception ex)

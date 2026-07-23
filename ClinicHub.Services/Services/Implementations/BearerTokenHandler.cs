@@ -7,13 +7,26 @@ namespace ClinicHub.Services.Services.Implementations
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        private static readonly string[] _skipAuthPaths =
+        // Paths that must NEVER send a token (strictly public/anonymous, e.g. auth flows)
+        private static readonly string[] _neverSendTokenPaths =
         [
             "/auth/login",
             "/auth/refresh-token",
             "/auth/forget-password",
             "/auth/verify-reset-token",
-            "/auth/reset-password"
+            "/auth/reset-password",
+            "/specializations/active",  // anonymous public endpoint for active specializations
+            "/clinics/register",
+            "/attachments/upload"
+        ];
+
+        // Paths that are anonymous-friendly — send token only if one exists in the cookie.
+        // These endpoints work with or without authentication (e.g. public listing endpoints).
+        private static readonly string[] _publicEndpoints =
+        [
+            "/api/v1/specializations",
+            "/api/v1/plans",
+            "/api/v1/clinics/register"
         ];
 
         public BearerTokenHandler(IHttpContextAccessor httpContextAccessor)
@@ -25,13 +38,28 @@ namespace ClinicHub.Services.Services.Implementations
         {
             var path = request.RequestUri?.AbsolutePath ?? "";
 
-            if (!_skipAuthPaths.Any(p => path.Contains(p, StringComparison.OrdinalIgnoreCase)))
+            // 1. Never send a token for strictly anonymous auth-flow endpoints
+            bool isNeverAuth = _neverSendTokenPaths.Any(p => path.Contains(p, StringComparison.OrdinalIgnoreCase));
+            if (isNeverAuth)
             {
-                var token = _httpContextAccessor.HttpContext?.Request.Cookies["AccessToken"];
-                if (!string.IsNullOrEmpty(token))
+                return await base.SendAsync(request, cancellationToken);
+            }
+
+            var token = _httpContextAccessor.HttpContext?.Request.Cookies["AccessToken"]
+                     ?? _httpContextAccessor.HttpContext?.Request.Cookies["accessToken"];
+
+            if (string.IsNullOrEmpty(token))
+            {
+                var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
+                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                 {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    token = authHeader.Substring(7).Trim();
                 }
+            }
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
             return await base.SendAsync(request, cancellationToken);

@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Enums;
 using ClinicHub.Services.Exceptions;
@@ -15,7 +15,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace ClinicHub.Services.Services.Implementations
 {
-    public class SpecializationService: ISpecializationService
+    public class SpecializationService : ISpecializationService
     {
         private static readonly JsonSerializerSettings _jsonSettings = new()
         {
@@ -29,6 +29,7 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly IDeserializerService _deserializerService;
 
         private readonly string _getAllSpecializations;
+        private readonly string _getActiveSpecializations;
         private readonly Func<Guid, string> _getSpecializationById;
         private readonly string _createSpecialization;
         private readonly string _updateSpecialization;
@@ -43,10 +44,44 @@ namespace ClinicHub.Services.Services.Implementations
             DoctoryRoutes.Initialize(doctoryOptions.Value.BaseUrl);
 
             _getAllSpecializations = DoctoryRoutes.Specializations.GetAll;
+            _getActiveSpecializations = DoctoryRoutes.Specializations.GetActive;
             _getSpecializationById = DoctoryRoutes.Specializations.GetById;
             _createSpecialization = DoctoryRoutes.Specializations.Create;
             _updateSpecialization = DoctoryRoutes.Specializations.Update;
             _deleteSpecialization = DoctoryRoutes.Specializations.Delete;
+        }
+
+        /// <summary>
+        /// Calls the anonymous GET /specializations/active endpoint.
+        /// No authentication required — safe to use on public pages like ClinicRegister.
+        /// </summary>
+        public async Task<List<SpecializationDto>> GetActiveAsync(bool? isFamous = null)
+        {
+            try
+            {
+                var url = $"{_getActiveSpecializations}?isFamous={isFamous.ToString().ToLower()}";
+                var response = await _httpClient.GetAsync(url);
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errors = ApiErrorExtractor.ExtractErrors(body);
+                    var combined = string.Join(" ", errors);
+                    throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في جلب التخصصات النشطة" : combined);
+                }
+
+                // Response shape: { data: [ { id, arName, name, isFamous }, ... ] }
+                var obj = JsonConvert.DeserializeObject<JObject>(body);
+                var dataToken = obj?["data"] ?? obj?["Data"];
+                if (dataToken == null) return new();
+
+                return JsonConvert.DeserializeObject<List<SpecializationDto>>(dataToken.ToString(), _jsonSettings) ?? new();
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
         }
 
         public async Task<PagginatedResult<SpecializationDto>> GetAllAsync(int pageNumber = 1, int pageSize = 20, bool? isFamous = null, bool? isActive = null)

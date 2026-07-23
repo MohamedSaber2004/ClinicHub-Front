@@ -918,34 +918,6 @@ namespace ClinicHub.Data
             },
         };
 
-        public static List<MockPendingClinic> GetPendingClinics() => new()
-        {
-            new()
-            {
-                Id = "pend-001", ClinicName = "مجمع عيادات النور الطبي",
-                Address = "الرياض - حي النور - شارع الملك عبد الله",
-                Phone = "0501234567", Specialization = "طب عام",
-                OwnerName = "أحمد السعيد", OwnerEmail = "ahmed@alnoor-clinic.com",
-                RegistrationDate = "2026-07-20",
-            },
-            new()
-            {
-                Id = "pend-002", ClinicName = "عيادات الدكتور فهد التخصصية",
-                Address = "جدة - حي الشاطئ - طريق الكورنيش",
-                Phone = "0559876543", Specialization = "جراحة عامة",
-                OwnerName = "فهد العتيبي", OwnerEmail = "fahad@drfahad-clinic.com",
-                RegistrationDate = "2026-07-19",
-            },
-            new()
-            {
-                Id = "pend-003", ClinicName = "مركز إشراق الطبي",
-                Address = "الدمام - حي الفيصلية - شارع 14",
-                Phone = "0591122334", Specialization = "طب الأسرة",
-                OwnerName = "ليلى الشمري", OwnerEmail = "layla@eshraq-med.com",
-                RegistrationDate = "2026-07-18",
-            },
-        };
-
         public static MockInitiatePaymentResponse InitiatePayment(string planId, int period)
         {
             var plan = GetPlanById(planId);
@@ -1174,7 +1146,7 @@ namespace ClinicHub.Data
         public int SortOrder { get; set; }
         public string Badge { get; set; } = "";
         public string PlanClass { get; set; } = "";
-    }
+        }
 
     public class MockUserSubscription
     {
@@ -1190,18 +1162,6 @@ namespace ClinicHub.Data
         public decimal Amount { get; set; }
         public string PaidAt { get; set; } = "";
         public bool IsActive { get; set; }
-    }
-
-    public class MockPendingClinic
-    {
-        public string Id { get; set; } = "";
-        public string ClinicName { get; set; } = "";
-        public string Address { get; set; } = "";
-        public string Phone { get; set; } = "";
-        public string Specialization { get; set; } = "";
-        public string OwnerName { get; set; } = "";
-        public string OwnerEmail { get; set; } = "";
-        public string RegistrationDate { get; set; } = "";
     }
 
     public class MockInitiatePaymentResponse

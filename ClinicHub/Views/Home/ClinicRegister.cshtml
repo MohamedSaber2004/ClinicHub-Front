@@ -2,33 +2,45 @@
 @{
     ViewData["Title"] = "تسجيل العيادة - Doctory";
     var plans = ViewBag.Plans as List<PlanDto> ?? new();
+    var specializations = ViewBag.Specializations as List<SpecializationDto> ?? new();
     var googleMapsApiKey = ViewBag.GoogleMapsApiKey as string ?? "";
 }
 
 <section class="register-hero">
     <div class="container text-center">
         <h1 class="text-h1">تسجيل عيادتك في Doctory</h1>
-        <p class="register-hero-desc">املأ البيانات أدناه للتقديم على الاشتراك. سيتم مراجعة طلبك من قبل فريقنا.</p>
+        <p class="register-hero-desc">أنشئ حساب عيادتك واملأ جميع البيانات المطلوبة للتحقق من حسابك والبدء.</p>
     </div>
 </section>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="container register-alert-container">
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    </div>
+}
 
 <section class="register-section">
     <div class="container">
         <div class="register-form-card">
-            <form method="post" action="@HomeRoutes.Pages.RegistrationSubmitted()" enctype="multipart/form-data">
+            <form method="post" asp-action="ClinicRegister" asp-controller="Home">
+
                 <div class="register-form-section">
-                    <h3 class="register-form-title">بيانات العيادة</h3>
+                    <h3 class="register-form-title">
+                        <span class="register-form-step">١</span>
+                        بيانات الحساب
+                    </h3>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="clinicName">اسم العيادة <span class="text-danger">*</span></label>
-                                <input type="text" id="clinicName" name="ClinicName" class="form-input" placeholder="مثال: مجمع عيادات السلام الطبي" required />
+                                <label class="form-label" for="fullName">الاسم الكامل <span class="text-danger">*</span></label>
+                                <input type="text" id="fullName" name="FullName" class="form-input" placeholder="مثال: د. أحمد السعيد" required />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="responsibleDoctor">الطبيب المسؤول <span class="text-danger">*</span></label>
-                                <input type="text" id="responsibleDoctor" name="ResponsibleDoctor" class="form-input" placeholder="مثال: د. أحمد السعيد" required />
+                                <label class="form-label" for="password">كلمة المرور <span class="text-danger">*</span></label>
+                                <input type="password" id="password" name="Password" class="form-input" placeholder="6 أحرف على الأقل" required minlength="6" />
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -40,92 +52,231 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label" for="phone">رقم الهاتف <span class="text-danger">*</span></label>
-                                <input type="tel" id="phone" name="Phone" class="form-input" placeholder="05xxxxxxxx" required />
+                                <input type="tel" id="phone" name="PhoneNumber" class="form-input" placeholder="05xxxxxxxx" required />
                             </div>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="address">العنوان <span class="text-danger">*</span></label>
-                                <input type="text" id="address" name="Address" class="form-input" placeholder="الرياض - حي النور - شارع الملك عبد الله" required />
+                                <label class="form-label" for="birthDate">تاريخ الميلاد</label>
+                                <input type="date" id="birthDate" name="BirthDate" class="form-input" />
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="licenseNumber">رقم الترخيص <span class="text-danger">*</span></label>
-                                <input type="text" id="licenseNumber" name="LicenseNumber" class="form-input" placeholder="LIC-2026-XXXX" required />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group" style="margin-top: 16px;">
-                        <label class="form-label">الموقع على الخريطة</label>
-                        <input type="hidden" id="registerLat" name="Latitude" value="31.0409" />
-                        <input type="hidden" id="registerLng" name="Longitude" value="31.3785" />
-                        <input type="text" id="registerPlaceSearch" class="form-input" placeholder="ابحث عن عنوان العيادة..." style="margin-bottom: 8px;" />
-                        <div id="registerClinicMap" style="height: 300px; border-radius: var(--radius-md); border: 1px solid var(--clr-border); margin-bottom: 8px;"></div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="registerMyLocationBtn" style="display: inline-flex; align-items: center; gap: 4px;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-                                موقعي الحالي
-                            </button>
-                            <span class="text-muted" style="font-size: var(--fs-sm);" id="registerCoordsDisplay">31.0409, 31.3785</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="register-form-section">
-                    <h3 class="register-form-title">الباقة المطلوبة</h3>
-                    <div class="form-group">
-                        <label class="form-label" for="packageId">اختر الباقة <span class="text-danger">*</span></label>
-                        <select id="packageId" name="PackageId" class="form-select" required>
-                            <option value="">-- اختر الباقة --</option>
-                            @foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
-                            {
-                                <option value="@plan.Id" data-price="@plan.PriceMonthly" data-currency="ج.م">
-                                    @plan.NameAr — @plan.PriceMonthly.ToString("N0") ج.م / شهرياً
-                                </option>
-                            }
-                        </select>
-                    </div>
-                    <div id="selectedPlanPreview" class="register-plan-preview" style="display: none;">
-                        <div class="plan-card plan-free">
-                            <div class="plan-header">
-                                <h3 class="plan-name" id="previewPlanName"></h3>
-                                <p class="plan-duration" id="previewPlanDuration"></p>
-                                <p class="plan-price">
-                                    <span id="previewPlanPrice"></span>
-                                    <span class="plan-currency" id="previewPlanCurrency"></span>
-                                </p>
+                                <label class="form-label" for="gender">الجنس <span class="text-danger">*</span></label>
+                                <select id="gender" name="Gender" class="form-select" required>
+                                    <option value="1">ذكر</option>
+                                    <option value="2">أنثى</option>
+                                </select>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="register-form-section">
-                    <h3 class="register-form-title">المستندات المطلوبة</h3>
-                    <p class="register-form-desc">يرجى رفع المستندات التالية لإتمام عملية التحقق. الصيغ المدعومة: PDF, JPG, PNG</p>
+                    <h3 class="register-form-title">
+                        <span class="register-form-step">٢</span>
+                        بيانات العيادة
+                    </h3>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="licenseFile">صورة رخصة العيادة <span class="text-danger">*</span></label>
-                                <input type="file" id="licenseFile" name="documents" class="form-input" accept="image/*,.pdf" required />
+                                <label class="form-label" for="clinicName">اسم العيادة (عربي) <span class="text-danger">*</span></label>
+                                <input type="text" id="clinicName" name="ClinicName" class="form-input" placeholder="مثال: مجمع عيادات السلام الطبي" required />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="doctorCertFile">شهادة الطبيب المسؤول <span class="text-danger">*</span></label>
-                                <input type="file" id="doctorCertFile" name="documents" class="form-input" accept="image/*,.pdf" required />
+                                <label class="form-label" for="clinicNameAr">اسم العيادة (إنجليزي)</label>
+                                <input type="text" id="clinicNameAr" name="ClinicNameAr" class="form-input" placeholder="Salam Medical Center" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label" for="clinicDescription">وصف العيادة</label>
+                                <textarea id="clinicDescription" name="ClinicDescription" class="form-input" rows="3" placeholder="اكتب وصفاً مختصراً عن العيادة وخدماتها..."></textarea>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="clinicPhotoFile">صورة واجهة العيادة</label>
-                                <input type="file" id="clinicPhotoFile" name="documents" class="form-input" accept="image/*" />
+                                <label class="form-label" for="clinicPhone">هاتف العيادة</label>
+                                <input type="tel" id="clinicPhone" name="ClinicPhone" class="form-input" placeholder="02xxxxxxxx" />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label" for="otherFile">مستندات إضافية</label>
-                                <input type="file" id="otherFile" name="documents" class="form-input" accept="image/*,.pdf" multiple />
+                                <label class="form-label" for="clinicEmail">البريد الإلكتروني للعيادة</label>
+                                <input type="email" id="clinicEmail" name="ClinicEmail" class="form-input" placeholder="clinic@example.com" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="specializationId">التخصص <span class="text-danger">*</span></label>
+                                <select id="specializationId" name="SpecializationId" class="form-select" required>
+                                    <option value="">-- اختر التخصص --</option>
+                                    @foreach (var spec in specializations)
+                                    {
+                                        <option value="@spec.Id">@spec.ArName</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="address">عنوان العيادة <span class="text-danger">*</span></label>
+                                <input type="text" id="address" name="ClinicAddress" class="form-input" placeholder="الرياض - حي النور - شارع الملك عبد الله" required />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group register-map-group">
+                                <label class="form-label">الموقع على الخريطة</label>
+                                <input type="hidden" id="registerLat" name="Lat" value="31.0409" />
+                                <input type="hidden" id="registerLng" name="Lng" value="31.3785" />
+                                <div id="registerClinicMap" class="register-map-container"></div>
+                                <div class="register-map-tools">
+                                    <button type="button" class="btn btn-sm btn-outline-primary register-location-btn" id="registerMyLocationBtn">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+                                        موقعي الحالي
+                                    </button>
+                                    <span class="text-muted register-coords-display" id="registerCoordsDisplay">31.0409, 31.3785</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="register-form-section">
+                    <h3 class="register-form-title">
+                        <span class="register-form-step">٣</span>
+                        أوقات وأيام العمل
+                    </h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="workingHoursStart">وقت بداية الدوام</label>
+                                <input type="time" id="workingHoursStart" name="WorkingHoursStart" class="form-input" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="workingHoursEnd">وقت نهاية الدوام</label>
+                                <input type="time" id="workingHoursEnd" name="WorkingHoursEnd" class="form-input" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label">أيام العمل</label>
+                                <div class="working-days-container">
+                                    @{
+                                        var days = new[] {
+                                            ("Saturday",  "السبت"),
+                                            ("Sunday",    "الأحد"),
+                                            ("Monday",    "الاثنين"),
+                                            ("Tuesday",   "الثلاثاء"),
+                                            ("Wednesday", "الأربعاء"),
+                                            ("Thursday",  "الخميس"),
+                                            ("Friday",    "الجمعة"),
+                                        };
+                                    }
+                                    @foreach (var (val, lbl) in days)
+                                    {
+                                        <label class="working-day-item">
+                                            <input type="checkbox" name="WorkingDays" value="@val" />
+                                            @lbl
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="register-form-section">
+                    <h3 class="register-form-title">
+                        <span class="register-form-step">٤</span>
+                        معلومات الطبيب والخبرة
+                    </h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="yearsOfExperience">سنوات الخبرة</label>
+                                <input type="number" id="yearsOfExperience" name="YearsOfExperience" class="form-input" min="0" max="60" placeholder="مثال: 5" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="bio">نبذة تعريفية (Bio)</label>
+                                <textarea id="bio" name="Bio" class="form-input" rows="3" placeholder="اكتب نبذة مختصرة عن مؤهلاتك وخبرتك..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="register-form-section">
+                    <h3 class="register-form-title">
+                        <span class="register-form-step">٥</span>
+                        إثبات ممارسة المهنة وترخيص العيادة
+                    </h3>
+                    <p class="register-form-desc">قم برفع الشهادات والترخيص الخاص بالعيادة ومزاولة المهنة للتحقق من الحساب</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="practiceCardInput">بطاقة مزاولة المهنة <span class="text-danger">*</span></label>
+                                <input type="file" id="practiceCardInput" accept="image/*,.pdf" class="form-input" required />
+                                <input type="hidden" id="practiceCardAttachmentName" name="ProfessionalPracticeCardImage" />
+                                <div id="practiceCardUploadStatus" class="upload-status-badge d-none">
+                                    <span class="badge badge-success">✓ تم رفع بطاقة مزاولة المهنة بنجاح</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="taxCardInput">البطاقة الضريبية / ترخيص العيادة <span class="text-danger">*</span></label>
+                                <input type="file" id="taxCardInput" accept="image/*,.pdf" class="form-input" required />
+                                <input type="hidden" id="taxCardAttachmentName" name="TaxCardImage" />
+                                <div id="taxCardUploadStatus" class="upload-status-badge d-none">
+                                    <span class="badge badge-success">✓ تم رفع البطاقة الضريبية بنجاح</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="unionCardInput">بطاقة النقابة</label>
+                                <input type="file" id="unionCardInput" accept="image/*,.pdf" class="form-input" />
+                                <input type="hidden" id="unionCardAttachmentName" name="UnionIdCardImage" />
+                                <div id="unionCardUploadStatus" class="upload-status-badge d-none">
+                                    <span class="badge badge-success">✓ تم رفع بطاقة النقابة بنجاح</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="register-form-section">
+                    <h3 class="register-form-title">
+                        <span class="register-form-step">٦</span>
+                        صور العيادة والشعار
+                    </h3>
+                    <p class="register-form-desc">قم برفع شعار العيادة وصورة الطبيب التعريفية (اختياري)</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="logoInput">شعار العيادة (Logo)</label>
+                                <input type="file" id="logoInput" accept="image/*" class="form-input" />
+                                <input type="hidden" id="logoAttachmentName" name="Logo" />
+                                <div id="logoUploadStatus" class="upload-status-badge d-none">
+                                    <span class="badge badge-success">✓ تم رفع الشعار بنجاح</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="imageInput">صورة الطبيب</label>
+                                <input type="file" id="imageInput" accept="image/*" class="form-input" />
+                                <input type="hidden" id="imageAttachmentName" name="DoctorImage" />
+                                <div id="imageUploadStatus" class="upload-status-badge d-none">
+                                    <span class="badge badge-success">✓ تم رفع صورة الطبيب بنجاح</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -135,7 +286,7 @@
                     <p class="register-form-note">بتقديم هذا الطلب، أنت توافق على <a href="@HomeRoutes.Pages.Privacy()">شروط وأحكام المنصة</a>.</p>
                     <div class="register-form-buttons">
                         <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-secondary">رجوع</a>
-                        <button type="submit" class="btn btn-primary btn-lg">تقديم الطلب</button>
+                        <button type="submit" class="btn btn-primary btn-lg">إنشاء الحساب</button>
                     </div>
                 </div>
             </form>
@@ -147,34 +298,54 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=@googleMapsApiKey&libraries=places&language=ar"></script>
     <script>
         (function() {
-            var packageSelect = document.getElementById('packageId');
-            var preview = document.getElementById('selectedPlanPreview');
-            var previewName = document.getElementById('previewPlanName');
-            var previewDuration = document.getElementById('previewPlanDuration');
-            var previewPrice = document.getElementById('previewPlanPrice');
-            var previewCurrency = document.getElementById('previewPlanCurrency');
+            var antiForgeryToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-            var plansData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(plans));
+            function setupFileUpload(fileInputId, hiddenInputId, statusDivId, place) {
+                var fileInput = document.getElementById(fileInputId);
+                var hiddenInput = document.getElementById(hiddenInputId);
+                var statusDiv = document.getElementById(statusDivId);
+                if (!fileInput) return;
 
-            packageSelect.addEventListener('change', function() {
-                var selectedId = this.value;
-                if (!selectedId) {
-                    preview.style.display = 'none';
-                    return;
-                }
-                var plan = plansData.find(function(p) { return p.Id === selectedId; });
-                if (plan) {
-                    previewName.textContent = plan.nameAr || plan.name;
-                    previewDuration.textContent = 'شهرياً';
-                    previewPrice.textContent = (plan.priceMonthly || '0') + ' ج.م';
-                    previewCurrency.textContent = '';
-                    preview.style.display = 'block';
-                }
-            });
+                fileInput.addEventListener('change', function() {
+                    var file = fileInput.files[0];
+                    if (!file) return;
+
+                    var formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('place', place);
+
+                    fetch('/Home/UploadAttachment', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': antiForgeryToken },
+                        body: formData
+                    })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data.success && data.fileName) {
+                            hiddenInput.value = data.fileName;
+                            statusDiv.classList.remove('d-none');
+                        } else {
+                            alert(data.error || 'حدث خطأ أثناء رفع الملف');
+                        }
+                    })
+                    .catch(function() {
+                        alert('حدث خطأ في الاتصال أثناء رفع الملف');
+                    });
+                });
+            }
+
+            setupFileUpload('logoInput',        'logoAttachmentName',         'logoUploadStatus',         5);
+            setupFileUpload('imageInput',        'imageAttachmentName',        'imageUploadStatus',        5);
+            setupFileUpload('practiceCardInput', 'practiceCardAttachmentName', 'practiceCardUploadStatus', 5);
+            setupFileUpload('taxCardInput',      'taxCardAttachmentName',      'taxCardUploadStatus',      5);
+            setupFileUpload('unionCardInput',    'unionCardAttachmentName',    'unionCardUploadStatus',    5);
 
             function initMap() {
                 var defaultPos = { lat: 31.0409, lng: 31.3785 };
-                var regMap = new google.maps.Map(document.getElementById('registerClinicMap'), {
+                var mapElem = document.getElementById('registerClinicMap');
+                if (!mapElem || typeof google === 'undefined' || !google.maps) return;
+
+                var regMap = new google.maps.Map(mapElem, {
                     center: defaultPos,
                     zoom: 13,
                     mapTypeControl: false,
@@ -204,48 +375,27 @@
                     updateRegCoords(e.latLng.lat(), e.latLng.lng());
                 });
 
-                var searchInput = document.getElementById('registerPlaceSearch');
-                var autocomplete = new google.maps.places.Autocomplete(searchInput, { types: ['geocode'] });
-                autocomplete.bindTo('bounds', regMap);
-
-                autocomplete.addListener('place_changed', function() {
-                    var place = autocomplete.getPlace();
-                    if (!place.geometry) return;
-                    if (place.geometry.viewport) {
-                        regMap.fitBounds(place.geometry.viewport);
-                    } else {
-                        regMap.setCenter(place.geometry.location);
-                        regMap.setZoom(15);
-                    }
-                    regMarker.setPosition(place.geometry.location);
-                    updateRegCoords(place.geometry.location.lat(), place.geometry.location.lng());
-                });
-
-                regMarker.addListener('dragend', function() {
-                    var pos = regMarker.getPosition();
-                    updateRegCoords(pos.lat(), pos.lng());
-                });
-
-                document.getElementById('registerMyLocationBtn').addEventListener('click', function() {
-                    if (!navigator.geolocation) {
-                        alert('الموقع غير مدعوم في متصفحك.');
-                        return;
-                    }
-                    navigator.geolocation.getCurrentPosition(function(pos) {
-                        var lat = pos.coords.latitude;
-                        var lng = pos.coords.longitude;
-                        var latLng = new google.maps.LatLng(lat, lng);
-                        regMap.panTo(latLng);
-                        regMap.setZoom(15);
-                        regMarker.setPosition(latLng);
-                        updateRegCoords(lat, lng);
-                    }, function() {
-                        alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
+                var myLocBtn = document.getElementById('registerMyLocationBtn');
+                if (myLocBtn) {
+                    myLocBtn.addEventListener('click', function() {
+                        if (!navigator.geolocation) { alert('الموقع غير مدعوم في متصفحك.'); return; }
+                        navigator.geolocation.getCurrentPosition(function(pos) {
+                            var lat = pos.coords.latitude;
+                            var lng = pos.coords.longitude;
+                            var latLng = new google.maps.LatLng(lat, lng);
+                            regMap.panTo(latLng);
+                            regMap.setZoom(15);
+                            regMarker.setPosition(latLng);
+                            updateRegCoords(lat, lng);
+                        }, function() {
+                            alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
+                        });
                     });
-                });
+                }
             }
 
-            google.maps.event.addDomListener(window, 'load', initMap);
+            if (typeof google !== 'undefined' && google.maps) { initMap(); }
+            else { window.addEventListener('load', initMap); }
         })();
     </script>
 }

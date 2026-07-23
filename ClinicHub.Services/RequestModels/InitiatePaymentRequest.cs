@@ -4,5 +4,6 @@ namespace ClinicHub.Services.RequestModels
     {
         public Guid PlanId { get; set; }
         public int Period { get; set; }
+        public string? ReturnUrl { get; set; }
     }
 }

@@ -65,7 +65,7 @@
                             <td>
                                 @if (sub.Status == 0)
                                 {
-                                    <button class="btn btn-sm btn-danger" onclick="revokeSubscription('@sub.Id', '@sub.ClinicName')">
+                                    <button class="btn btn-sm btn-danger" onclick="revokeSubscription('@sub.Id', '@sub.ClinicName', this)">
                                         إلغاء الاشتراك
                                     </button>
                                 }
@@ -88,19 +88,39 @@
 
 @section Scripts {
     <script>
-        function revokeSubscription(id, clinicName) {
-            if (confirm('هل أنت متأكد من إلغاء اشتراك "' + clinicName + '"؟')) {
-                var btn = event.target;
+        function revokeSubscription(id, clinicName, btnElement) {
+            showConfirmModal('هل أنت متأكد من إلغاء اشتراك "' + clinicName + '"؟', function(confirmed) {
+                if (!confirmed) return;
+
+                var btn = btnElement;
+                if (!btn) return;
                 btn.disabled = true;
                 btn.textContent = 'جاري الإلغاء...';
-                setTimeout(function() {
-                    var row = btn.closest('tr');
-                    var statusCell = row.querySelector('td:nth-child(7)');
-                    statusCell.innerHTML = '<span class="badge badge-danger">ملغي من الإدارة</span>';
-                    btn.outerHTML = '<span class="text-muted">—</span>';
-                    showSuccessModal('تم إلغاء الاشتراك بنجاح');
-                }, 500);
-            }
+
+                fetch('/Admin/SubscriptionManagement/Revoke', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subscriptionId: id })
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(result) {
+                    if (result.success) {
+                        var row = btn.closest('tr');
+                        row.querySelector('td:nth-child(7)').innerHTML = '<span class="badge badge-danger">ملغي من الإدارة</span>';
+                        btn.outerHTML = '<span class="text-muted">—</span>';
+                        showSuccessModal(result.message || 'تم إلغاء الاشتراك بنجاح');
+                    } else {
+                        btn.disabled = false;
+                        btn.textContent = 'إلغاء الاشتراك';
+                        showErrorModal(result.message || 'حدث خطأ');
+                    }
+                })
+                .catch(function() {
+                    btn.disabled = false;
+                    btn.textContent = 'إلغاء الاشتراك';
+                    showErrorModal('عذراً، حدث خطأ أثناء إلغاء الاشتراك.');
+                });
+            });
         }
     </script>
 }

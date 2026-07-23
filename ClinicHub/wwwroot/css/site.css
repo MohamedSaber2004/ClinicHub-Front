@@ -1545,13 +1545,9 @@ body {
   border-color: var(--clr-border);
 }
 
-.plan-standard {
+.plan-premium {
   border-color: var(--clr-primary);
   box-shadow: 0 0 0 2px var(--clr-primary-light);
-}
-
-.plan-premium {
-  border-color: var(--clr-border);
 }
 
 .plan-badge {
@@ -1876,6 +1872,46 @@ body {
 .register-plan-preview .plan-card {
   margin-bottom: 0;
 }
+
+.register-alert-container {
+  margin-top: var(--space-4);
+}
+
+.register-map-group {
+  margin-top: var(--space-4);
+}
+
+.register-map-search {
+  margin-bottom: var(--space-2);
+}
+
+.register-map-container {
+  height: 300px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--clr-border);
+  margin-bottom: var(--space-2);
+}
+
+.register-map-tools {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.register-location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.register-coords-display {
+  font-size: var(--fs-sm);
+}
+
+.upload-status-badge {
+  margin-top: var(--space-2);
+}
+
 
 .register-form-actions {
   margin-top: var(--space-7);
@@ -3480,6 +3516,60 @@ body {
   color: #FFFFFF;
 }
 
+/* Success Modal Styles */
+.success-modal-content {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-6);
+}
+
+.success-modal-body {
+  text-align: center;
+  padding: var(--space-5);
+}
+
+.success-modal-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto var(--space-5);
+  border-radius: var(--radius-full);
+  background-color: var(--clr-success);
+  color: #FFFFFF;
+}
+
+.success-modal-title {
+  font-size: 20px;
+  font-weight: var(--fw-h2);
+  color: var(--clr-text);
+  margin-bottom: var(--space-2);
+}
+
+.success-modal-msg {
+  font-size: var(--fs-md);
+  color: var(--clr-text-secondary);
+  line-height: 1.8;
+  margin-bottom: var(--space-6);
+}
+
+.success-modal-btn {
+  background-color: var(--clr-primary);
+  color: #FFFFFF;
+  font-weight: var(--fw-md-bold);
+  padding: var(--space-2) 40px;
+  border-radius: var(--radius-sm);
+  border: none;
+  transition: background-color var(--transition-base);
+}
+
+.success-modal-btn:hover {
+  background-color: var(--clr-primary-hover);
+  color: #FFFFFF;
+}
+
 /* ============================================================
    Global Loading Overlay
    ============================================================ */
@@ -4606,4 +4696,125 @@ body {
 .table-actions .btn-sm + .btn-sm {
   margin-right: 4px;
 }
+
+/* ============================================================
+   Payment Result Styles & Countdown
+   ============================================================ */
+.payment-result-section {
+  padding: var(--space-10) 0;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+}
+
+.payment-result-card {
+  max-width: 520px;
+  margin: 0 auto;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+
+.result-icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-5);
+}
+
+.result-success {
+  background: var(--clr-success);
+}
+
+.result-fail {
+  background: var(--clr-danger);
+}
+
+.result-desc {
+  font-size: var(--fs-base);
+  color: var(--clr-text-secondary);
+  max-width: 400px;
+  margin: var(--space-3) auto var(--space-4);
+  line-height: 1.8;
+}
+
+.result-redirect-notice {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.countdown-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background-color: var(--clr-primary-light);
+  color: var(--clr-primary);
+  font-weight: var(--fw-bold);
+  border-radius: var(--radius-full);
+  margin: 0 var(--space-1);
+}
+
+.result-actions {
+  margin-top: var(--space-4);
+}
+
+/* ============================================================
+   Registration Form Working Days & Extended Helpers
+   ============================================================ */
+.working-days-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.working-day-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--clr-bg);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--clr-border);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  user-select: none;
+}
+
+.working-day-item input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* Numbered step badge inside section titles */
+.register-form-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--clr-primary);
+  color: #fff;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  border-radius: var(--radius-full);
+  margin-inline-end: var(--space-2);
+  flex-shrink: 0;
+}
+
+.register-form-title {
+  display: flex;
+  align-items: center;
+}
+
+
+
 

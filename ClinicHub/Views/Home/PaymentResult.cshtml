@@ -17,8 +17,11 @@
                 <p class="result-desc">
                     شكراً لك! تم تفعيل اشتراك عيادتك بنجاح. يمكنك الآن الاستمتاع بجميع ميزات المنصة.
                 </p>
+                <div class="result-redirect-notice">
+                    سيتم العودة للرئيسية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...
+                </div>
                 <div class="result-actions">
-                    <a href="/Clinic/Index" class="btn btn-primary btn-lg">انتقال إلى لوحة التحكم</a>
+                    <a href="/" target="_top" class="btn btn-primary btn-lg">العودة للرئيسية الآن</a>
                 </div>
             }
             else
@@ -32,53 +35,58 @@
                 <p class="result-desc">
                     حدث خطأ أثناء معالجة عملية الدفع. يرجى المحاولة مرة أخرى أو اختيار باقة مختلفة.
                 </p>
-                <div class="result-actions">
-                    <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-primary btn-lg">عودة للباقات</a>
+                <div class="result-redirect-notice">
+                    سيتم العودة للرئيسية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...
+                </div>
+                <div class="result-actions" style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+                    <a href="/" target="_top" class="btn btn-secondary btn-lg">العودة للرئيسية</a>
+                    <a href="@HomeRoutes.Pages.Subscriptions()" target="_top" class="btn btn-primary btn-lg">عودة للباقات</a>
                 </div>
             }
         </div>
     </div>
 </section>
 
-<style>
-    .payment-result-section {
-        padding: var(--space-10) 0;
-        min-height: 70vh;
-        display: flex;
-        align-items: center;
-    }
-    .payment-result-card {
-        max-width: 520px;
-        margin: 0 auto;
-        background: var(--clr-surface);
-        border: 1px solid var(--clr-border);
-        border-radius: var(--radius-lg);
-        padding: var(--space-8);
-        text-align: center;
-    }
-    .result-icon-circle {
-        width: 80px;
-        height: 80px;
-        border-radius: var(--radius-full);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto var(--space-5);
-    }
-    .result-success {
-        background: var(--clr-success);
-    }
-    .result-fail {
-        background: var(--clr-danger);
-    }
-    .result-desc {
-        font-size: var(--fs-base);
-        color: var(--clr-text-secondary);
-        max-width: 400px;
-        margin: var(--space-3) auto var(--space-6);
-        line-height: 1.8;
-    }
-    .result-actions {
-        margin-top: var(--space-5);
-    }
-</style>
+@section Scripts {
+    <script>
+        (function() {
+            var seconds = 5;
+            var timerEl = document.getElementById('countdownTimer');
+            
+            function redirectToHome() {
+                // Solution 3: Dynamic multi-environment base URL resolution
+                var currentOrigin = window.location.origin;
+                if (!currentOrigin) {
+                    currentOrigin = window.location.protocol + "//" + window.location.host;
+                }
+                var baseUrl = currentOrigin + '/';
+
+                if (window.self !== window.top) {
+                    try {
+                        window.top.location.href = baseUrl;
+                    } catch (e) {
+                        window.location.href = baseUrl;
+                    }
+                } else {
+                    window.location.href = baseUrl;
+                }
+            }
+
+            if (timerEl) {
+                var interval = setInterval(function() {
+                    seconds--;
+                    if (seconds >= 0) {
+                        timerEl.textContent = seconds;
+                    }
+                    if (seconds <= 0) {
+                        clearInterval(interval);
+                        redirectToHome();
+                    }
+                }, 1000);
+            } else {
+                setTimeout(redirectToHome, 5000);
+            }
+        })();
+    </script>
+}
+

@@ -355,7 +355,11 @@ namespace ClinicHub.Controllers
 
                 var uploadRequest = new UploadAttachmentRequest(file, 5, MediaType.Image);
                 var url = await _attachmentService.UploadAttachmentAsync(uploadRequest);
-                return Json(new { success = true, url });
+                if (string.IsNullOrWhiteSpace(url))
+                {
+                    return Json(new { success = false, error = "فشل رفع الملف أو لم يتم استرجاع المسار بنجاح" });
+                }
+                return Json(new { success = true, url, fileName = url });
             }
             catch (ApiException ex)
             {
@@ -438,13 +442,22 @@ namespace ClinicHub.Controllers
             try
             {
                 var result = await _userVerificationService.ApproveUserVerificationAsync(new ApproveUserVerficationRequest { UserId = userId });
+                var msg = result.Success ? "تم قبول طلب التحقق بنجاح" : (result.Message ?? "فشل قبول طلب التحقق");
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = result.Success, message = msg });
+                }
                 if (result.Success)
-                    TempData["SuccessMessage"] = "تم قبول طلب التحقق بنجاح";
+                    TempData["SuccessMessage"] = msg;
                 else
-                    TempData["ErrorMessage"] = result.Message;
+                    TempData["ErrorMessage"] = msg;
             }
             catch (ApiException ex)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
                 TempData["ErrorMessage"] = ex.Message;
             }
             return RedirectToAction("VerificationCenter");
@@ -456,13 +469,22 @@ namespace ClinicHub.Controllers
             try
             {
                 var result = await _userVerificationService.RejectUserVerificationAsync(new RejectUserVerificationRequest { UserId = userId, Notes = notes });
+                var msg = result.Success ? "تم رفض طلب التحقق بنجاح" : (result.Message ?? "فشل رفض طلب التحقق");
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = result.Success, message = msg });
+                }
                 if (result.Success)
-                    TempData["SuccessMessage"] = "تم رفض طلب التحقق";
+                    TempData["SuccessMessage"] = msg;
                 else
-                    TempData["ErrorMessage"] = result.Message;
+                    TempData["ErrorMessage"] = msg;
             }
             catch (ApiException ex)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = ex.Message });
+                }
                 TempData["ErrorMessage"] = ex.Message;
             }
             return RedirectToAction("VerificationCenter");
@@ -488,11 +510,17 @@ namespace ClinicHub.Controllers
         {
             try
             {
-                ViewBag.PendingClinics = MockData.GetPendingClinics();
+                var result = await _userVerificationService.GetPendingVerificationsAsync(new GetPendingVerficationsRequest
+                {
+                    PageNumber = 1,
+                    PageSize = 50
+                });
+                var items = result.Items ?? new List<UserVerficationDto>();
+                ViewBag.PendingClinics = items.Where(r => r.RequestedRole == UserType.ClinicOwner).ToList();
             }
             catch (ApiException)
             {
-                ViewBag.PendingClinics = new List<MockPendingClinic>();
+                ViewBag.PendingClinics = new List<UserVerficationDto>();
             }
             return View("PendingClinics");
         }
@@ -537,6 +565,110 @@ namespace ClinicHub.Controllers
                 ViewBag.Plans = new List<PlanDto>();
             }
             return View("SubscriptionManagement");
+        }
+
+        [HttpPost]
+        [Route("Admin/PlanManagement/Create")]
+        public async Task<IActionResult> CreatePlan([FromBody] PlanDto plan)
+        {
+            try
+            {
+                var result = await _adminSubscriptionService.CreatePlanAsync(plan);
+                return Json(new { success = true, data = result });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/PlanManagement/Update")]
+        public async Task<IActionResult> UpdatePlan(Guid id, [FromBody] PlanDto plan)
+        {
+            try
+            {
+                var result = await _adminSubscriptionService.UpdatePlanAsync(id, plan);
+                return Json(new { success = true, data = result });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/PlanManagement/Delete")]
+        public async Task<IActionResult> DeletePlan([FromBody] DeleteRequest request)
+        {
+            try
+            {
+                var message = await _adminSubscriptionService.DeletePlanAsync(request.Id);
+                return Json(new { success = true, message });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/SubscriptionManagement/Revoke")]
+        public async Task<IActionResult> RevokeSubscription([FromBody] RevokeSubscriptionRequest request)
+        {
+            try
+            {
+                var message = await _adminSubscriptionService.RevokeSubscriptionAsync(request);
+                return Json(new { success = true, message });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/PendingClinics/Approve")]
+        public async Task<IActionResult> ApproveClinicRegistration([FromBody] ApproveClinicRequest request)
+        {
+            try
+            {
+                var userResult = await _userVerificationService.ApproveUserVerificationAsync(new ApproveUserVerficationRequest { UserId = request.ClinicId });
+                try
+                {
+                    await _clinicService.ActivateClinicAsync(new ActivateClinicRequest { Id = request.ClinicId });
+                }
+                catch
+                {
+                    // Ignore clinic activation errors if already active or mapped differently
+                }
+                return Json(new { success = userResult.Success, message = userResult.Message });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/PendingClinics/Reject")]
+        public async Task<IActionResult> RejectClinicRegistration([FromBody] RejectClinicRequest request)
+        {
+            try
+            {
+                var result = await _userVerificationService.RejectUserVerificationAsync(new RejectUserVerificationRequest { UserId = request.ClinicId, Notes = request.Reason });
+                return Json(new { success = result.Success, message = result.Message });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         public IActionResult Support()
