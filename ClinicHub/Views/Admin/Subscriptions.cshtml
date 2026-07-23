@@ -1,7 +1,9 @@
+@using ClinicHub.Services.ReponseModels
+@using System.Text.Json
 @{
-    ViewData["Title"] = "إدارة الباقات";
+    ViewData["Title"] = "الباقات";
     Layout = "_AdminLayout";
-    var plans = ViewBag.SubscriptionPlans as List<MockSubscriptionPlan> ?? new();
+    var plans = ViewBag.Plans as List<PlanDto> ?? new();
 }
 
 <div class="page-header">
@@ -11,381 +13,62 @@
                 <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="currentColor"/>
             </svg>
         </span>
-        إدارة الباقات
+        الباقات
     </h2>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#planModal" id="addPlanBtn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-        إضافة باقة جديدة
-    </button>
+    <a href="@AdminRoutes.Pages.PlanManagement()" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        إدارة الباقات
+    </a>
 </div>
 
-<!-- Plans Table -->
-<div class="table-card">
-    <div class="table-responsive">
-        <table class="custom-table" id="plansTable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>اسم الباقة</th>
-                    <th>المدة</th>
-                    <th>السعر</th>
-                    <th>عدد الميزات</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (plans.Count == 0)
-                {
-                    <tr>
-                        <td colspan="7" class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-4);">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--clr-text-secondary)"/>
-                            </svg>
-                            <p style="font-size: var(--fs-lg); margin-bottom: var(--space-2);">لا توجد باقات بعد</p>
-                            <p style="margin-bottom: 0;">اضغط على "إضافة باقة جديدة" لإنشاء أول باقة</p>
-                        </td>
-                    </tr>
-                }
-                else
-                {
-                    foreach (var plan in plans.OrderByDescending(p => p.IsActive).ThenBy(p => p.Id))
-                    {
-                        <tr data-plan-id="@plan.Id">
-                            <td class="text-md-medium">@plan.Id</td>
-                            <td class="text-md-medium">@plan.Name</td>
-                            <td class="text-md">@plan.Duration</td>
-                            <td class="text-md">
-                                @if (!string.IsNullOrEmpty(plan.Price))
-                                {
-                                    @plan.Price <span class="text-muted">@plan.Currency</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </td>
-                            <td class="text-md">@plan.Features.Length</td>
-                            <td>
-                                @if (plan.IsActive)
-                                {
-                                    <span class="badge badge-success">نشط</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-warning">غير نشط</span>
-                                }
-                            </td>
-                            <td>
-                                <div class="table-actions">
-                                    <button class="btn-icon btn-edit" title="تعديل"
-                                            data-id="@plan.Id"
-                                            data-name="@plan.Name"
-                                            data-duration="@plan.Duration"
-                                            data-price="@plan.Price"
-                                            data-currency="@plan.Currency"
-                                            data-badge="@plan.Badge"
-                                            data-planclass="@plan.PlanClass"
-                                            data-features="@string.Join("|", plan.Features)"
-                                            data-active="@plan.IsActive.ToString().ToLower()">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="btn-icon btn-toggle-status" title="@(plan.IsActive ? "تعطيل" : "تفعيل")"
-                                            data-id="@plan.Id"
-                                            data-name="@plan.Name"
-                                            data-current="@plan.IsActive.ToString().ToLower()">
-                                        @if (plan.IsActive)
-                                        {
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                            </svg>
-                                        }
-                                        else
-                                        {
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="var(--clr-text-secondary)"/>
-                                            </svg>
-                                        }
-                                    </button>
-                                    <button class="btn-icon btn-delete" title="حذف" data-id="@plan.Id" data-name="@plan.Name">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Plan Card Preview -->
-<div class="table-card mt-4">
-    <div class="table-card-header">
-        <h4>معاينة الباقات النشطة في الموقع</h4>
-    </div>
-    <div class="table-card-body">
-        @if (plans.Count == 0)
-        {
-            <div class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
-                <p style="margin-bottom: 0;">لا توجد باقات مضافة بعد. أضف باقة جديدة وسيظهر معاينتها هنا.</p>
-            </div>
-        }
-        else
-        {
-            <div class="subscription-plans">
-                @foreach (var plan in plans.OrderBy(p => p.Id))
-                {
-                    <div class="plan-card @plan.PlanClass @(!plan.IsActive ? "plan-inactive-overlay" : "")">
-                        @if (!string.IsNullOrEmpty(plan.Badge))
-                        {
-                            <span class="plan-badge">@plan.Badge</span>
-                        }
-                        <div class="plan-header">
-                            <h3 class="plan-name">@plan.Name</h3>
-                            @if (!string.IsNullOrEmpty(plan.Duration))
-                            {
-                                <p class="plan-duration">@plan.Duration</p>
-                            }
-                            <p class="plan-price">
-                                @(string.IsNullOrEmpty(plan.Price) ? "مجاناً" : plan.Price)
-                                @if (!string.IsNullOrEmpty(plan.Currency))
-                                {
-                                    <span class="plan-currency">@plan.Currency</span>
-                                }
-                            </p>
-                        </div>
-                        <div class="plan-body">
-                            <ul class="plan-features">
-                                @for (int i = 0; i < plan.Features.Length; i++)
-                                {
-                                    <li class="@(plan.FeatureEnabled.Length > i && plan.FeatureEnabled[i] ? "" : "plan-feature-disabled")">
-                                        @if (plan.FeatureEnabled.Length > i && plan.FeatureEnabled[i])
-                                        {
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/>
-                                            </svg>
-                                        }
-                                        else
-                                        {
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="var(--clr-text-secondary)"/>
-                                            </svg>
-                                        }
-                                        <span>@plan.Features[i]</span>
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                        <div class="plan-footer">
-                            @if (plan.IsActive)
-                            {
-                                <span class="plan-current">نشط في الموقع</span>
-                            }
-                            else
-                            {
-                                <span class="plan-current plan-current-inactive">غير نشط</span>
-                            }
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-    </div>
-</div>
-
-<!-- Add / Edit Plan Modal -->
-<div class="modal fade" id="planModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-content-custom">
-            <div class="modal-header-custom">
-                <h5 class="modal-title" id="planModalTitle">إضافة باقة جديدة</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
-            </div>
-            <div class="modal-body-custom">
-                <input type="hidden" id="planId" value="" />
-                <div class="form-group">
-                    <label class="form-label" for="planName">اسم الباقة</label>
-                    <input type="text" id="planName" class="form-input" placeholder="مثال: الباقة السنوية" />
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="planDuration">المدة</label>
-                            <input type="text" id="planDuration" class="form-input" placeholder="مثال: سنة واحدة" />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="planPrice">السعر</label>
-                            <input type="text" id="planPrice" class="form-input" placeholder="مثال: 2,999" />
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="planCurrency">العملة</label>
-                    <input type="text" id="planCurrency" class="form-input" placeholder="مثال: ريال / سنوياً" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="planBadge">الشارة (وسم)</label>
-                    <input type="text" id="planBadge" class="form-input" placeholder="مثال: الأكثر طلباً" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="planClass">نوع الباقة (لون الكرت)</label>
-                    <select id="planClass" class="form-select">
-                        <option value="plan-free">عادي (plan-free)</option>
-                        <option value="plan-standard">مميز (plan-standard)</option>
-                        <option value="plan-premium">احترافي (plan-premium)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">الميزات (كل ميزة في سطر)</label>
-                    <textarea id="planFeatures" class="form-textarea" rows="5" placeholder="إدراج العيادة في المنصة&#10;لوحة تحكم متكاملة&#10;..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-toggle">
-                        <input type="checkbox" id="planIsActive" checked />
-                        <span class="toggle-track"></span>
-                        <span class="toggle-label">الباقة نشطة ومعروضة في الموقع</span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer-custom">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary" id="savePlanBtn">حفظ الباقة</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content modal-content-custom">
-            <div class="modal-body-custom text-center" style="padding: var(--space-7);">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-4);">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--clr-danger)"/>
-                </svg>
-                <h5 style="margin-bottom: var(--space-2);">حذف الباقة</h5>
-                <p style="color: var(--clr-text-secondary); margin-bottom: 0;" id="deleteMessage">هل أنت متأكد من حذف هذه الباقة؟</p>
-                <input type="hidden" id="deletePlanId" value="" />
-            </div>
-            <div class="modal-footer-custom" style="justify-content: center; gap: var(--space-3);">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        (function() {
-            var modalEl = document.getElementById('planModal');
-            var modalTitle = document.getElementById('planModalTitle');
-            var planId = document.getElementById('planId');
-            var planName = document.getElementById('planName');
-            var planDuration = document.getElementById('planDuration');
-            var planPrice = document.getElementById('planPrice');
-            var planCurrency = document.getElementById('planCurrency');
-            var planBadge = document.getElementById('planBadge');
-            var planClass = document.getElementById('planClass');
-            var planFeatures = document.getElementById('planFeatures');
-            var planIsActive = document.getElementById('planIsActive');
-
-            var modal = new bootstrap.Modal(modalEl);
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-
-            // Reset form on add
-            document.getElementById('addPlanBtn').addEventListener('click', function() {
-                modalTitle.textContent = 'إضافة باقة جديدة';
-                planId.value = '';
-                planName.value = '';
-                planDuration.value = '';
-                planPrice.value = '';
-                planCurrency.value = '';
-                planBadge.value = '';
-                planClass.value = 'plan-free';
-                planFeatures.value = '';
-                planIsActive.checked = true;
-            });
-
-            // Edit button
-            document.querySelectorAll('.btn-edit').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    modalTitle.textContent = 'تعديل الباقة';
-                    planId.value = btn.getAttribute('data-id');
-                    planName.value = btn.getAttribute('data-name');
-                    planDuration.value = btn.getAttribute('data-duration');
-                    planPrice.value = btn.getAttribute('data-price');
-                    planCurrency.value = btn.getAttribute('data-currency');
-                    planBadge.value = btn.getAttribute('data-badge');
-                    var pc = btn.getAttribute('data-planclass');
-                    if (pc) planClass.value = pc;
-                    var features = btn.getAttribute('data-features') || '';
-                    planFeatures.value = features.split('|').join('\n');
-                    planIsActive.checked = btn.getAttribute('data-active') === 'true';
-                    modal.show();
-                });
-            });
-
-            // Toggle status button
-            document.querySelectorAll('.btn-toggle-status').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    new bootstrap.Modal(document.getElementById('deleteModal')).hide();
-                    var id = btn.getAttribute('data-id');
-                    var name = btn.getAttribute('data-name');
-                    var current = btn.getAttribute('data-current') === 'true';
-                    if (confirm((current ? 'تعطيل' : 'تفعيل') + ' الباقة "' + name + '"؟')) {
-                        var row = document.querySelector('tr[data-plan-id="' + id + '"]');
-                        if (row) {
-                            var statusCell = row.querySelector('td:nth-child(6)');
-                            var actionBtn = row.querySelector('.btn-toggle-status');
-                            if (current) {
-                                statusCell.innerHTML = '<span class="badge badge-warning">غير نشط</span>';
-                                actionBtn.setAttribute('data-current', 'false');
-                                actionBtn.setAttribute('title', 'تفعيل');
-                                actionBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="var(--clr-text-secondary)"/></svg>';
-                            } else {
-                                statusCell.innerHTML = '<span class="badge badge-success">نشط</span>';
-                                actionBtn.setAttribute('data-current', 'true');
-                                actionBtn.setAttribute('title', 'تعطيل');
-                                actionBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
-                            }
-                        }
-                    }
-                });
-            });
-
-            // Delete button
-            document.querySelectorAll('.btn-delete').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var id = btn.getAttribute('data-id');
-                    var name = btn.getAttribute('data-name');
-                    document.getElementById('deletePlanId').value = id;
-                    document.getElementById('deleteMessage').textContent = 'هل أنت متأكد من حذف الباقة "' + name + '"؟';
-                    deleteModal.show();
-                });
-            });
-
-            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-                var id = document.getElementById('deletePlanId').value;
-                var row = document.querySelector('tr[data-plan-id="' + id + '"]');
-                if (row) row.remove();
-                deleteModal.hide();
-            });
-
-            // Save plan button
-            document.getElementById('savePlanBtn').addEventListener('click', function() {
-                modal.hide();
-            });
-        })();
-    </script>
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
 }
+
+<div class="subscription-plans">
+    @if (plans.Count == 0)
+    {
+        <div class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
+            <p style="margin-bottom: 0;">لا توجد باقات متاحة</p>
+        </div>
+    }
+    else
+    {
+        foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
+        {
+            var planClass = plan.SortOrder == 2 ? "plan-standard" : plan.SortOrder == 3 ? "plan-premium" : "plan-free";
+            var badge = plan.SortOrder == 2 ? "الأكثر طلباً" : plan.SortOrder == 3 ? "الأفضل" : "";
+            var featureList = JsonSerializer.Deserialize<List<string>>(plan.Features) ?? new();
+            <div class="plan-card @planClass">
+                @if (!string.IsNullOrEmpty(badge))
+                {
+                    <span class="plan-badge">@badge</span>
+                }
+                <div class="plan-header">
+                    <h3 class="plan-name">@plan.NameAr</h3>
+                    <p class="plan-price">
+                        @plan.PriceMonthly.ToString("N0") <span class="plan-currency">ج.م</span>
+                        <span style="font-size: var(--fs-sm); color: var(--clr-text-secondary);">/ شهرياً</span>
+                    </p>
+                </div>
+                <div class="plan-body">
+                    <ul class="plan-features">
+                        @foreach (var feature in featureList)
+                        {
+                            <li>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/>
+                                </svg>
+                                <span>@feature</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="plan-footer">
+                    <span class="plan-current">نشط في الموقع</span>
+                </div>
+            </div>
+        }
+    }
+</div>

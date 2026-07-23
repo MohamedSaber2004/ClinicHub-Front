@@ -14,6 +14,7 @@ namespace ClinicHub.Routes
             public static string PatientPortal() => $"{Base}/PatientPortal";
             public static string Staff() => $"{Base}/Staff";
             public static string Settings() => $"{Base}/Settings";
+        public static string MySubscription() => $"{Base}/MySubscription";
         }
     }
 }

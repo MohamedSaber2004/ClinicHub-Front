@@ -1,3 +1,29 @@
-﻿خطأ
-The request field is required.
-The JSON value could not be converted to ClinicHub.Application.Features.Clinics.Commands.UpdateClinic.UpdateClinicCommand. Path: $.workingHoursStart | LineNumber: 0 | BytePositionInLine: 266.
+﻿The login-web handler already distinguishes between these cases — it returns 403 with different messages:
+Scenario
+User not active / pending verification
+No active subscription
+The frontend should check the response body to decide which screen to show:
+const res = await fetch('/api/v1/auth/login-web', { method: 'POST', body: JSON.stringify(data) });
+
+if (res.ok) {
+  // Normal dashboard
+} else if (res.status === 403) {
+  const body = await res.json();
+  if (body.message?.includes('pending') || body.message?.includes('Pending')) {
+    showPendingApprovalScreen();  // Registration not yet approved by admin
+  } else {
+    showSubscriptionRequiredScreen();  // Already approved, just needs to subscribe
+  }
+}
+That way, a clinic owner who registered via mobile (and is already approved) will skip the "Pending Approval" screen and go directly to subscribing, while a newly registered user will see the pending message.
+▣  Build · DeepSeek V4 Flash Free · 30.9s
+no i don't want to register clinic again are you understand me???
++ Thought: 10.8s
+Yes, I understand. The flow already works that way — no registration step for existing users.
+The RegisterClinic endpoint (POST /api/v1/clinics/register) is only for brand new clinics (no account yet). An already-registered, approved clinic owner follows this path:
+Login → POST /api/v1/auth/login-web
+  → 403 with message "An active subscription is required..."
+  → Frontend shows "Subscribe Now" (NOT "Register")
+  → POST /api/v1/subscriptions/initiate-payment
+  → Paymob → Done
+The frontend just needs to check the 403 message — if it mentions "subscription", show the plans/subscribe page. No registration endpoint is ever called for existing users.

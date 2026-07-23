@@ -1,0 +1,96 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "العيادات قيد الانتظار";
+    Layout = "_AdminLayout";
+    var pendingClinics = ViewBag.PendingClinics as List<MockPendingClinic> ?? new();
+}
+
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+            </svg>
+        </span>
+        العيادات قيد الانتظار
+    </h2>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>اسم العيادة</th>
+                    <th>العنوان</th>
+                    <th>رقم الهاتف</th>
+                    <th>التخصص</th>
+                    <th>اسم المالك</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>تاريخ التسجيل</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (pendingClinics.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-4);">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--clr-text-secondary)"/>
+                            </svg>
+                            <p style="font-size: var(--fs-lg); margin-bottom: 0;">لا توجد عيادات في انتظار المراجعة</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var clinic in pendingClinics)
+                    {
+                        <tr>
+                            <td class="text-md-medium">@clinic.ClinicName</td>
+                            <td class="text-md">@clinic.Address</td>
+                            <td class="text-md">@clinic.Phone</td>
+                            <td><span class="badge badge-info">@clinic.Specialization</span></td>
+                            <td class="text-md">@clinic.OwnerName</td>
+                            <td class="text-md">@clinic.OwnerEmail</td>
+                            <td class="text-md">@clinic.RegistrationDate</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-success" title="قبول" onclick="approveClinic('@clinic.Id')">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                                        قبول
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" title="رفض" onclick="rejectClinic('@clinic.Id')">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                                        رفض
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function approveClinic(id) {
+            if (confirm('هل أنت متأكد من قبول هذه العيادة؟')) {
+                var row = event.target.closest('tr');
+                row.querySelector('.table-actions').innerHTML = '<span class="badge badge-success">تم القبول</span>';
+                showSuccessModal('تم قبول العيادة بنجاح');
+            }
+        }
+        function rejectClinic(id) {
+            var reason = prompt('يرجى إدخال سبب الرفض (اختياري):');
+            if (reason !== null) {
+                var row = event.target.closest('tr');
+                row.querySelector('.table-actions').innerHTML = '<span class="badge badge-danger">مرفوض</span>';
+                showSuccessModal('تم رفض العيادة');
+            }
+        }
+    </script>
+}

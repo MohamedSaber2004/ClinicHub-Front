@@ -4512,3 +4512,98 @@ body {
   box-shadow: 0 0 0 3px rgba(239,68,68,0.25);
 }
 
+/* ============================================================
+   Subscription System
+   ============================================================ */
+
+.pricing-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+}
+.pricing-toggle .toggle-label {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text-secondary);
+}
+.toggle-save {
+  display: inline-block;
+  background: rgba(34,197,94,0.12);
+  color: var(--clr-success);
+  font-size: 12px;
+  font-weight: var(--fw-bold);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  margin-right: var(--space-1);
+}
+.plan-desc {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+  margin-bottom: var(--space-3);
+  line-height: 1.6;
+}
+.plan-limits {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+}
+.plan-limits span {
+  background: var(--clr-bg);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+.plan-period-label {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+  margin-top: 4px;
+}
+
+.subscription-banner {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+}
+.subscription-banner-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.subscription-banner-content span {
+  flex: 1;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+.subscription-banner-btn {
+  display: inline-block;
+  background: white;
+  color: #d97706;
+  padding: 6px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.subscription-banner-btn:hover {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.table-actions .btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  border-radius: var(--radius-md);
+}
+.table-actions .btn-sm + .btn-sm {
+  margin-right: 4px;
+}
+

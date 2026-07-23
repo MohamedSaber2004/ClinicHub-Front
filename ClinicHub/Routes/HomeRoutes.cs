@@ -12,6 +12,9 @@ namespace ClinicHub.Routes
             public static string Subscriptions() => $"{Base}/Subscriptions";
             public static string ClinicRegister() => $"{Base}/ClinicRegister";
             public static string RegistrationSubmitted() => $"{Base}/RegistrationSubmitted";
+            public static string PendingApproval() => $"{Base}/PendingApproval";
+            public static string SubscriptionRequired() => $"{Base}/SubscriptionRequired";
+            public static string PaymentResult() => $"{Base}/PaymentResult";
         }
 
         public static class Account

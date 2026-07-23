@@ -21,8 +21,10 @@ namespace ClinicHub.Controllers
         private readonly IClinicService _clinicService;
         private readonly IAttachmentService _attachmentService;
         private readonly IOptions<GoogleMapsOptions> _googleMapsOptions;
+        private readonly IPlanService _planService;
+        private readonly IAdminSubscriptionService _adminSubscriptionService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
@@ -32,6 +34,8 @@ namespace ClinicHub.Controllers
             _clinicService = clinicService;
             _attachmentService = attachmentService;
             _googleMapsOptions = googleMapsOptions;
+            _planService = planService;
+            _adminSubscriptionService = adminSubscriptionService;
         }
 
         public IActionResult Index()
@@ -465,10 +469,74 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Subscriptions")]
-        public IActionResult Subscriptions()
+        public async Task<IActionResult> Subscriptions()
         {
-            ViewBag.SubscriptionPlans = MockData.GetAllSubscriptionPlans();
+            try
+            {
+                ViewBag.Plans = await _planService.GetAllAsync();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Plans = new List<PlanDto>();
+            }
             return View("Subscriptions");
+        }
+
+        [Route("Admin/PendingClinics")]
+        public async Task<IActionResult> PendingClinics()
+        {
+            try
+            {
+                ViewBag.PendingClinics = MockData.GetPendingClinics();
+            }
+            catch (ApiException)
+            {
+                ViewBag.PendingClinics = new List<MockPendingClinic>();
+            }
+            return View("PendingClinics");
+        }
+
+        [Route("Admin/PlanManagement")]
+        public async Task<IActionResult> PlanManagement()
+        {
+            try
+            {
+                ViewBag.Plans = await _adminSubscriptionService.GetAllPlansAsync();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Plans = new List<PlanDto>();
+            }
+            return View("PlanManagement");
+        }
+
+        [Route("Admin/SubscriptionManagement")]
+        public async Task<IActionResult> SubscriptionManagement(int? status = null, Guid? planId = null, Guid? clinicId = null, int pageNumber = 1, int pageSize = 20)
+        {
+            try
+            {
+                var request = new GetPaginatedSubscriptionsRequest
+                {
+                    Status = status,
+                    PlanId = planId,
+                    ClinicId = clinicId,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+                var result = await _adminSubscriptionService.GetSubscriptionsAsync(request);
+                ViewBag.Subscriptions = result.Items;
+                ViewBag.Pagination = result;
+                ViewBag.Plans = await _adminSubscriptionService.GetAllPlansAsync();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Subscriptions = new List<SubscriptionDto>();
+                ViewBag.Plans = new List<PlanDto>();
+            }
+            return View("SubscriptionManagement");
         }
 
         public IActionResult Support()
@@ -700,7 +768,7 @@ namespace ClinicHub.Controllers
                 if (result.Success)
                     TempData["SuccessMessage"] = "تم حذف الطبيب بنجاح";
                 else
-                    TempData["ErrorMessage"] = result.Message;
+                TempData["ErrorMessage"] = result.Message;
             }
             catch (ApiException ex)
             {

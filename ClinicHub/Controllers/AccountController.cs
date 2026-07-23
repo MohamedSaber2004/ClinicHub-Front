@@ -1,6 +1,7 @@
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Enums;
 using ClinicHub.Services.Exceptions;
+using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.RequestModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,25 @@ namespace ClinicHub.Controllers
             return View();
         }
 
+        private void SetAuthCookies(Services.ReponseModels.AuthResponseDto result)
+        {
+            TempData["UserId"] = result.Id.ToString();
+            TempData["Role"] = result.Roles;
+            TempData["ClinicId"] = result.ClinicId?.ToString();
+            TempData["AccessToken"] = result.AccessToken;
+            TempData["RefreshToken"] = result.RefreshToken;
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            };
+            Response.Cookies.Append("AccessToken", result.AccessToken!, cookieOptions);
+            Response.Cookies.Append("RefreshToken", result.RefreshToken!, cookieOptions);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
@@ -29,21 +49,7 @@ namespace ClinicHub.Controllers
             {
                 var result = await _authService.LoginAsync(new LoginRequest(email, password));
 
-                TempData["UserId"] = result.Id.ToString();
-                TempData["Role"] = result.Roles;
-                TempData["ClinicId"] = result.ClinicId?.ToString();
-                TempData["AccessToken"] = result.AccessToken;
-                TempData["RefreshToken"] = result.RefreshToken;
-
-                var cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTimeOffset.UtcNow.AddDays(7)
-                };
-                Response.Cookies.Append("AccessToken", result.AccessToken!, cookieOptions);
-                Response.Cookies.Append("RefreshToken", result.RefreshToken!, cookieOptions);
+                SetAuthCookies(result);
 
                 var redirectUrl = result.Roles.Contains(UserType.SuperAdmin.ToString())
                     ? Url.Action("Index", "Admin")
@@ -52,6 +58,14 @@ namespace ClinicHub.Controllers
                         : Url.Action("Index", "Admin");
 
                 return RedirectJson(redirectUrl!);
+            }
+            catch (AuthenticatedApiException ex)
+            {
+                SetAuthCookies(ex.AuthData);
+                var msg = ex.Message.ToLowerInvariant();
+                if (msg.Contains("pending"))
+                    return RedirectJson(Url.Action("PendingApproval", "Home"));
+                return RedirectJson(Url.Action("SubscriptionRequired", "Home"));
             }
             catch (ApiException ex)
             {

@@ -52,18 +52,30 @@ namespace ClinicHub.Services.Services.Implementations
             var response = await _httpClient.PostAsync(_loginUrl, content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
+            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+
+            AuthResponseDto? result = null;
+            if (dataToken != null)
+            {
+                var dataJson = dataToken.ToString();
+                result = JsonConvert.DeserializeObject<AuthResponseDto>(dataJson, _jsonSettings);
+            }
+            else
+            {
+                result = JsonConvert.DeserializeObject<AuthResponseDto>(responseBody, _jsonSettings);
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
                 var combined = string.Join(" ", errorMessages);
-                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تسجيل الدخول" : combined);
+
+                if (result == null || (string.IsNullOrWhiteSpace(result.AccessToken) && string.IsNullOrWhiteSpace(result.RefreshToken)))
+                    throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تسجيل الدخول" : combined);
+
+                throw new AuthenticatedApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تسجيل الدخول" : combined, result);
             }
-
-            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"];
-
-            var dataJson = dataToken?.ToString() ?? responseBody;
-            var result = JsonConvert.DeserializeObject<AuthResponseDto>(dataJson, _jsonSettings);
 
             return result!;
         }

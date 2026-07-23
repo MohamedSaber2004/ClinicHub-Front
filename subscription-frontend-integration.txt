@@ -1,0 +1,629 @@
+================================================================================
+  ClinicHub — Subscription System: Frontend Integration Plan
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1. SEEDED PLANS REFERENCE
+2. COMPLETE API ENDPOINTS
+   a. Public / No Auth
+   b. ClinicOwner (Web Dashboard)
+   c. Staff / Doctor (Web Dashboard)
+   d. SuperAdmin
+3. USER FLOWS
+   a. New Clinic Registration Flow
+   b. Existing ClinicOwner — No Subscription
+   c. Existing ClinicOwner — Active Subscription
+   d. Staff / Doctor Web Login
+   e. SuperAdmin — Manage Subscriptions
+4. JWT & CLIENT-SIDE GATING
+5. PLAN SELECTION & PRICING PAGE
+6. PAYMENT FLOW (PAYMOB)
+7. WEB DASHBOARD GATING
+8. SUPERADMIN DASHBOARD PAGES
+9. ERROR HANDLING
+10. LOCALIZATION
+11. RESPONSE DTO REFERENCE
+12. FRONTEND CHECKLIST
+
+================================================================================
+1. SEEDED PLANS REFERENCE
+================================================================================
+
+  Plan       Monthly      Yearly       Max Doctors    Max Staff
+  ------     ---------    ---------    ------------    ---------
+  Basic      500 EGP      5,000 EGP    2               5
+  Standard   1,000 EGP    10,000 EGP   5               15
+  Premium    2,000 EGP    20,000 EGP   Unlimited       Unlimited
+
+  Plan ID values are GUIDs — must fetch from GET /api/v1/plans.
+
+================================================================================
+2. COMPLETE API ENDPOINTS
+================================================================================
+
+  All endpoints are under the base path: /api/v1
+
+  2a. PUBLIC (NO AUTH REQUIRED)
+  ──────────────────────────────────────────────────────────────────────
+  GET   /plans                                    List active plans
+  POST  /clinics/register                         Register new clinic + owner
+  POST  /payments/webhook                         Paymob webhook (server-side only)
+
+  2b. CLINIC OWNER (WEB DASHBOARD)
+  ──────────────────────────────────────────────────────────────────────
+  POST  /auth/login-web                           Web login (returns 403 if no subscription)
+  POST  /subscriptions/initiate-payment           Initiate Paymob subscription payment
+  GET   /subscriptions/my                         View current subscription
+  POST  /subscriptions/my/cancel                  Cancel my subscription
+
+  2c. STAFF / DOCTOR (WEB DASHBOARD)
+  ──────────────────────────────────────────────────────────────────────
+  POST  /auth/login-web                           Returns 403 if clinic has no active subscription
+
+  2d. SUPER ADMIN
+  ──────────────────────────────────────────────────────────────────────
+  GET   /admin/dashboard/clinics/pending          List clinics pending approval
+  POST  /admin/dashboard/clinics/{id}/approve     Approve clinic registration
+  POST  /admin/dashboard/clinics/{id}/reject      Reject clinic registration (with optional reason)
+  GET   /admin/plans                              List ALL plans (incl. inactive)
+  POST  /admin/plans                              Create a new plan
+  PUT   /admin/plans/{id}                         Update a plan
+  DELETE  /admin/plans/{id}                       Delete a plan (soft-delete)
+  GET   /admin/dashboard/subscriptions            List all subscriptions (paginated + filters)
+  POST  /admin/dashboard/subscriptions/{id}/revoke  Revoke an active subscription
+
+================================================================================
+3. USER FLOWS
+================================================================================
+
+  FLOW A: NEW CLINIC REGISTRATION (BRAND NEW USER)
+  ──────────────────────────────────────────────────────────────────────
+
+  Landing Page / Marketing Page
+       │
+       ▼
+  [GET /api/v1/plans] — Show pricing cards
+       │
+       ▼
+  User clicks "Get Started" or "Subscribe"
+       │
+       ▼
+  [POST /api/v1/clinics/register]
+  Body: { fullName, email, phoneNumber, password,
+          clinicName, clinicAddress, specializationId, ... }
+       │
+       ▼
+  Response: 202 Accepted — { userId, message, isPendingApproval: true }
+       │
+       ▼
+  Show "Registration submitted for approval" screen
+  ─── Wait for SuperAdmin to approve (no real-time notification yet) ───
+       │
+       ▼
+  SuperAdmin approves via admin panel
+       │
+       ▼
+  User can now login (account is active)
+       │
+       ▼
+  [POST /api/v1/auth/login-web]
+  Response: 403 Forbidden — "Active subscription required"
+       │
+       ▼
+  Show "Subscription Required" page with CTA "View Plans"
+       │
+       ▼
+  [GET /api/v1/plans] — Show pricing
+       │
+       ▼
+  User selects plan + period (monthly/yearly)
+       │
+       ▼
+  [POST /api/v1/subscriptions/initiate-payment]
+  Body: { planId, period }
+  Response: { paymentId, paymobRedirectUrl, paymobPaymentKey, planId, ... }
+       │
+       ▼
+  Redirect browser to paymobRedirectUrl
+       │
+       ▼
+  User pays on Paymob checkout page
+       │
+       ▼
+  Paymob redirects back to /payments/result?success=true|false
+       │
+       ▼
+  [POST /api/v1/auth/refresh-token] — Get new JWT with HasActiveSubscription: true
+       │
+       ▼
+  Full dashboard unlocked!
+
+  FLOW B: EXISTING CLINICOWNER — NO ACTIVE SUBSCRIPTION
+  ──────────────────────────────────────────────────────────────────────
+
+  Login → POST /api/v1/auth/login-web
+  → 403 — "Active subscription required"
+  → Show "Subscription Required" screen
+  → User clicks "View Plans"
+  → GET /api/v1/plans
+  → POST /api/v1/subscriptions/initiate-payment
+  → Redirect to Paymob → Pay → Webhook confirms → Refresh token
+  → Full dashboard
+
+  FLOW C: EXISTING CLINICOWNER — HAS ACTIVE SUBSCRIPTION
+  ──────────────────────────────────────────────────────────────────────
+
+  Login → POST /api/v1/auth/login-web
+  → 200 OK — JWT contains HasActiveSubscription: true
+  → Full dashboard access
+  → GET /api/v1/subscriptions/my — view plan details, expiry
+  → POST /api/v1/subscriptions/my/cancel — cancel (no refund)
+
+  FLOW D: STAFF / DOCTOR WEB LOGIN
+  ──────────────────────────────────────────────────────────────────────
+
+  POST /api/v1/auth/login-web
+  → If clinic has no active subscription: 403 Forbidden
+  → If clinic has active subscription: 200 OK (normal dashboard)
+
+  FLOW E: SUPERADMIN — CLINIC APPROVAL
+  ──────────────────────────────────────────────────────────────────────
+
+  GET /api/v1/admin/dashboard/clinics/pending
+  → Shows clinics with Status = PendingApproval
+  → Approve:  POST /api/v1/admin/dashboard/clinics/{id}/approve
+  → Reject:   POST /api/v1/admin/dashboard/clinics/{id}/reject  (body: { reason })
+
+  FLOW F: SUPERADMIN — SUBSCRIPTION MANAGEMENT
+  ──────────────────────────────────────────────────────────────────────
+
+  GET /api/v1/admin/dashboard/subscriptions?status=&planId=&clinicId=&pageNumber=&pageSize=
+  → Paginated list of all subscriptions
+  → Revoke: POST /api/v1/admin/dashboard/subscriptions/{id}/revoke
+    (triggers Paymob refund if payment has transaction ID)
+
+  FLOW G: SUPERADMIN — PLAN MANAGEMENT (CRUD)
+  ──────────────────────────────────────────────────────────────────────
+
+  GET    /api/v1/admin/plans              — List all plans
+  POST   /api/v1/admin/plans              — Create plan
+  PUT    /api/v1/admin/plans/{id}         — Update plan
+  DELETE /api/v1/admin/plans/{id}         — Delete plan
+
+================================================================================
+4. JWT & CLIENT-SIDE GATING
+================================================================================
+
+  Every JWT access token now contains:
+
+    {
+      "HasActiveSubscription": "True",
+      "ClinicId": "guid-here",
+      "sub": "user-id",
+      "role": "ClinicOwner"
+    }
+
+  DECODING THE JWT
+  ─────────────────
+
+  Web (JavaScript):
+    import { jwtDecode } from 'jwt-decode';
+    const token = localStorage.getItem('accessToken');
+    const decoded = jwtDecode(token);
+    const hasSubscription = decoded.HasActiveSubscription === 'True';
+
+  Mobile (React Native):
+    import jwtDecode from 'jwt-decode';
+    const decoded = jwtDecode(accessToken);
+    const hasSubscription = decoded.HasActiveSubscription === 'True';
+
+  UI DECISIONS
+  ────────────
+
+  HasActiveSubscription   ClinicOwner Outcome           Staff/Doctor Outcome
+  ─────────────────────   ──────────────────────────     ─────────────────────────
+  True                    Full web dashboard             Full web dashboard
+  False                   Limited view + Subscribe CTA   403 on login-web
+
+================================================================================
+5. PLAN SELECTION & PRICING PAGE
+================================================================================
+
+  FETCH PLANS
+  ───────────
+  GET /api/v1/plans  (public, no auth required)
+
+  Response:
+  [
+    {
+      "id": "guid",
+      "name": "Basic",
+      "nameAr": "أساسية",
+      "description": "For small clinics starting out...",
+      "descriptionAr": "للعيادات الصغيرة الجديدة...",
+      "priceMonthly": 500,
+      "priceYearly": 5000,
+      "maxDoctors": 2,
+      "maxStaff": 5,
+      "features": "[\"appointments\",\"patient_records\",\"basic_reports\"]",
+      "isActive": true,
+      "sortOrder": 1
+    },
+    ...
+  ]
+
+  FEATURES PARSING
+  ────────────────
+  features is a JSON string array. Parse and map:
+
+    const featureList = JSON.parse(plan.features);
+
+    const featureLabels = {
+      appointments:       'Appointment Management',
+      patient_records:    'Patient Records',
+      basic_reports:      'Basic Reports',
+      advanced_reports:   'Advanced Reports',
+      sms_notifications:  'SMS Notifications',
+      marketing_tools:    'Marketing Tools',
+      priority_support:   'Priority Support',
+    };
+
+  UI COMPONENT
+  ────────────
+
+  ┌────────────────────────────────────────────────−−−−−−−−−−−−−−−−−−−−−┐
+  │                     Choose Your Plan                                │
+  │                                                                     │
+  │  ┌──────────┐    ┌──────────┐    ┌──────────┐                       │
+  │  │  Basic   │    │ Standard │    │ Premium  │                       │
+  │  │ 500/mo   │    │1000/mo   │    │2000/mo   │                       │
+  │  │ 2 Docs   │    │  5 Docs   │    │Unlimited │                       │
+  │  │ 5 Staff  │    │ 15 Staff  │    │Unlimited │                       │
+  │  │ [Select] │    │ [Select]  │    │ [Select] │                       │
+  │  └──────────┘    └──────────┘    └──────────┘                       │
+  │                                                                     │
+  │  Toggle: [Monthly] / [Yearly] (save 17%)                           │
+  └−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−┘
+
+  PERIOD TOGGLE — SEND CORRECT VALUE
+  ────────────────────────────────────
+    const payload = {
+      planId: selectedPlan.id,
+      period: isYearly ? 1 : 0    // 0 = Monthly, 1 = Yearly
+    };
+
+================================================================================
+6. PAYMENT FLOW (PAYMOB)
+================================================================================
+
+  STEP 1: INITIATE PAYMENT
+  ────────────────────────
+
+  POST /api/v1/subscriptions/initiate-payment
+  Authorization: Bearer <jwt-token>
+  Content-Type: application/json
+
+  Request:
+  {
+    "planId": "guid",
+    "period": 0    // 0 = Monthly, 1 = Yearly
+  }
+
+  Response (200 OK):
+  {
+    "paymentId": "guid",
+    "paymobRedirectUrl": "https://accept.paymob.com/unifiedcheckout/?paymentKey=...",
+    "paymobPaymentKey": "...",
+    "planId": "guid",
+    "planName": "Basic",
+    "period": 0,
+    "amount": 500,
+    "currency": "EGP"
+  }
+
+  STEP 2: REDIRECT TO PAYMOB
+  ──────────────────────────
+
+  window.location.href = response.paymobRedirectUrl;
+
+  STEP 3: PAYMENT RESULT PAGE (AFTER PAYMOB REDIRECT)
+  ──────────────────────────────────────────────────
+
+  Paymob redirects to: /api/v1/payments/result?success=true|false
+
+  Frontend should detect this redirect:
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+
+    if (success === 'true') {
+      showSuccessMessage('Subscription activated successfully!');
+      await refreshToken();     // Get new JWT with HasActiveSubscription: true
+      window.location.href = '/dashboard';
+    } else {
+      showErrorMessage('Payment failed. Please try again.');
+      window.location.href = '/plans';
+    }
+
+  STEP 4: REFRESH JWT AFTER SUCCESSFUL PAYMENT
+  ────────────────────────────────────────────
+
+  async function refreshToken() {
+    const refreshToken = localStorage.getItem('refreshToken');
+    const res = await fetch('/api/v1/auth/refresh-token', {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken })
+    });
+    const data = await res.json();
+    localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
+  }
+
+================================================================================
+7. WEB DASHBOARD GATING
+================================================================================
+
+  ROUTE PROTECTION (React Router example)
+  ──────────────────────────────────────
+
+  function ProtectedRoute({ children }) {
+    const token = localStorage.getItem('accessToken');
+    const decoded = jwtDecode(token);
+
+    if (decoded.HasActiveSubscription !== 'True') {
+      return <Navigate to="/subscription-required" />;
+    }
+
+    return children;
+  }
+
+  SUBSCRIPTION REQUIRED PAGE
+  ──────────────────────────
+
+  ┌──────────────────────────────────────┐
+  │   Subscription Required              │
+  │                                      │
+  │   Your clinic needs an active        │
+  │   subscription to access the         │
+  │   full dashboard.                    │
+  │                                      │
+  │   Current plan: None                 │
+  │                                      │
+  │   [View Plans & Subscribe]           │
+  └──────────────────────────────────────┘
+
+  SUBSCRIPTION BANNER (for limited/free view)
+  ──────────────────────────────────────────
+
+  ┌─────────────────────────────────────────────────────┐
+  │  You're viewing a limited dashboard.                │
+  │  [Subscribe Now] to unlock all features.             │
+  └─────────────────────────────────────────────────────┘
+
+================================================================================
+8. SUPERADMIN DASHBOARD PAGES
+================================================================================
+
+  8a. PENDING CLINICS PAGE
+  ────────────────────────
+
+  GET /api/v1/admin/dashboard/clinics/pending
+
+  Display table with:
+    - Clinic Name
+    - Address / Phone
+    - Specialization
+    - Owner Name, Email (from clinicAdminId -> User)
+    - Registration Date
+    - Actions: [Approve] [Reject]
+
+  Approve:  POST /api/v1/admin/dashboard/clinics/{id}/approve
+  Reject:   POST /api/v1/admin/dashboard/clinics/{id}/reject
+            Body: { "reason": "Missing required documents" }
+
+  8b. PLAN MANAGEMENT PAGE (CRUD)
+  ──────────────────────────────
+
+  GET    /api/v1/admin/plans        — Fetch all plans
+  POST   /api/v1/admin/plans        — Create plan (see CreatePlanCommand fields)
+  PUT    /api/v1/admin/plans/{id}   — Update plan (see UpdatePlanCommand fields)
+  DELETE /api/v1/admin/plans/{id}   — Delete (soft-delete) plan
+
+  Create/Update Plan Fields:
+    name, nameAr, description, descriptionAr,
+    priceMonthly, priceYearly,
+    maxDoctors (null = unlimited),
+    maxStaff   (null = unlimited),
+    features   (JSON string array),
+    isActive   (boolean),
+    sortOrder  (integer)
+
+  8c. SUBSCRIPTION MANAGEMENT PAGE
+  ───────────────────────────────
+
+  GET /api/v1/admin/dashboard/subscriptions?status=&planId=&clinicId=&pageNumber=1&pageSize=20
+
+  Filters:
+    status    — SubscriptionStatus enum (0=Active, 1=Cancelled, 2=Expired, 3=Revoked)
+    planId    — Filter by plan GUID
+    clinicId  — Filter by clinic GUID
+    pageNumber / pageSize — Pagination
+
+  Display table:
+    - Clinic Name
+    - Plan Name
+    - Period (Monthly/Yearly)
+    - Amount
+    - Start Date / End Date
+    - Status
+    - [Revoke] button for active subscriptions
+
+  Revoke subscription:
+    POST /api/v1/admin/dashboard/subscriptions/{id}/revoke
+    (triggers Paymob refund if payment has transaction ID)
+
+================================================================================
+9. ERROR HANDLING
+================================================================================
+
+  HTTP STATUS CODES
+  ─────────────────
+
+  Status   Meaning                Frontend Handling
+  ───────  ───────────────────    ──────────────────────────────────────────
+  200      Success                Normal processing
+  201      Created (register)     Show success message
+  202      Accepted (register)    Show "pending approval" screen
+  400      Bad Request            Show validation errors from response body
+  403      Forbidden (login-web)  Redirect to "Subscription Required" page
+  403      Forbidden (endpoint)   Show "Feature requires subscription" toast
+  404      Not Found              Show "Not found" message
+  500      Server Error           Show generic error + retry
+
+  API RESPONSE FORMAT
+  ───────────────────
+
+  All responses follow this structure:
+
+  {
+    "success": true/false,
+    "message": "Human-readable message",
+    "errors": { "fieldName": ["error1", "error2"] },
+    "data": { ... },
+    "statusCode": 200
+  }
+
+  The API controllers use helper methods (Ok(), Created(), etc.) from
+  BaseApiController which wrap responses in ApiResponse<T>.
+
+  COMMON ERROR SCENARIOS
+  ──────────────────────
+
+  a. Login-web returns 403:
+       Show "Subscription Required" page with "View Plans" button.
+       Do NOT redirect to dashboard.
+
+  b. Initiate payment returns 400:
+       Possible reasons:
+         - Plan not found or inactive
+         - Clinic not active (pending approval)
+         - Already have an active subscription
+       Show the message from response.
+
+  c. Endpoint returns 403 (RequireSubscription filter):
+       The action filter checks for active subscription in DB.
+       Show toast: "An active subscription is required."
+
+================================================================================
+10. LOCALIZATION
+================================================================================
+
+  The API uses Accept-Language header for localization.
+
+  Default: Arabic (ar)
+  English: set header Accept-Language: en
+
+  Example:
+    fetch('/api/v1/plans', {
+      headers: { 'Accept-Language': 'en' }
+    });
+
+  All user-facing messages come pre-translated in the API response.
+  Plan names and descriptions have separate English/Arabic fields (name, nameAr).
+
+================================================================================
+11. RESPONSE DTO REFERENCE
+================================================================================
+
+  SUBSCRIPTION DTO (GET /api/v1/subscriptions/my)
+  ────────
+  {
+    "id": "guid",
+    "clinicId": "guid",
+    "clinicName": "My Clinic",
+    "planId": "guid",
+    "planName": "Basic",
+    "period": 0,                  // 0=Monthly, 1=Yearly
+    "startDate": "2026-07-23T...",
+    "endDate": "2026-08-23T...",
+    "status": 0,                  // 0=Active, 1=Cancelled, 2=Expired, 3=Revoked
+    "amount": 500,
+    "paidAt": "2026-07-23T...",
+    "isActive": true              // computed
+  }
+
+  PLAN DTO (GET /api/v1/plans)
+  ────
+  {
+    "id": "guid",
+    "name": "Basic",
+    "nameAr": "أساسية",
+    "description": "For small clinics...",
+    "descriptionAr": "للعيادات الصغيرة...",
+    "priceMonthly": 500,
+    "priceYearly": 5000,
+    "maxDoctors": 2,
+    "maxStaff": 5,
+    "features": "[\"appointments\"]",
+    "isActive": true,
+    "sortOrder": 1
+  }
+
+  INITIATE SUBSCRIPTION PAYMENT DTO
+  ──────
+  {
+    "paymentId": "guid",
+    "paymobRedirectUrl": "https://accept.paymob.com/...",
+    "paymobPaymentKey": "paymob-key",
+    "planId": "guid",
+    "planName": "Basic",
+    "period": 0,
+    "amount": 500,
+    "currency": "EGP"
+  }
+
+  REGISTER CLINIC RESPONSE
+  ──────────────────────
+  When pending approval (202 Accepted):
+  {
+    "userId": "guid",
+    "message": "Registration submitted for review.",
+    "isPendingApproval": true
+  }
+
+  PAGINATED SUBSCRIPTIONS (SuperAdmin)
+  ─────────────────────────
+  {
+    "items": [ ... SubscriptionDto array ... ],
+    "pageNumber": 1,
+    "pageSize": 20,
+    "totalCount": 50,
+    "totalPages": 3
+  }
+
+================================================================================
+12. FRONTEND CHECKLIST
+================================================================================
+
+  [ ] Decode HasActiveSubscription from JWT on every app load
+  [ ] Show limited dashboard if HasActiveSubscription === false
+  [ ] Protect premium routes with HasActiveSubscription check
+  [ ] Use POST /api/v1/auth/login-web for web dashboard login
+  [ ] Handle 403 from login-web → redirect to plans/subscription page
+  [ ] Handle 403 from any gated endpoint → show "Subscription Required" toast
+  [ ] Build pricing page with plan cards (monthly/yearly toggle)
+  [ ] Parse features JSON string into readable feature list
+  [ ] Integrate Paymob redirect after initiate-payment
+  [ ] Handle Paymob return redirect (result page)
+  [ ] Refresh JWT after successful payment
+  [ ] Build SuperAdmin pending clinics approval page
+  [ ] Build SuperAdmin plan CRUD page
+  [ ] Build SuperAdmin subscription management page (table + filters + revoke)
+  [ ] Handle clinic registration flow (register → pending → approved → subscribe)
+  [ ] Use Accept-Language: en header for English responses
+  [ ] Show subscription status / expiry on clinic owner dashboard
+
+================================================================================
+  END OF DOCUMENT
+================================================================================

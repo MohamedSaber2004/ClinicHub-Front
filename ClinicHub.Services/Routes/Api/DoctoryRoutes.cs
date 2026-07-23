@@ -16,6 +16,9 @@ namespace ClinicHub.Services.Routes.Api
             Users = new UserRoutes(BaseRoute);
             Doctors = new DoctorRoutes(BaseRoute);
             Clinics = new ClinicRoutes(BaseRoute);
+            Plans = new PlanRoutes(BaseRoute);
+            Subscriptions = new SubscriptionRoutes(BaseRoute);
+            AdminSubscriptions = new AdminSubscriptionRoutes(BaseRoute);
         }
 
         public static AuthRoutes Auth { get; private set; } = null!;
@@ -25,6 +28,9 @@ namespace ClinicHub.Services.Routes.Api
         public static UserRoutes Users { get; private set; } = null!;
         public static DoctorRoutes Doctors { get; private set; } = null!;
         public static ClinicRoutes Clinics { get; private set; } = null!;
+        public static PlanRoutes Plans { get; private set; } = null!;
+        public static SubscriptionRoutes Subscriptions { get; private set; } = null!;
+        public static AdminSubscriptionRoutes AdminSubscriptions { get; private set; } = null!;
 
         public class AuthRoutes
         {
@@ -127,7 +133,48 @@ namespace ClinicHub.Services.Routes.Api
             public string Update(Guid id) => $"{BaseRoute}/{id}";
             public string Activate(Guid id) => $"{BaseRoute}/{id}/activate";
             public string Deactivate(Guid id) => $"{BaseRoute}/{id}/deactivate";
+        }
 
+        public class PlanRoutes
+        {
+            public string BaseRoute { get; }
+            public PlanRoutes(string baseRoute)
+            {
+                BaseRoute = $"{baseRoute}/plans";
+            }
+            public string List => $"{BaseRoute}";
+        }
+
+        public class SubscriptionRoutes
+        {
+            public string BaseRoute { get; }
+            public SubscriptionRoutes(string baseRoute)
+            {
+                BaseRoute = $"{baseRoute}/subscriptions";
+            }
+            public string My => $"{BaseRoute}/my";
+            public string InitiatePayment => $"{BaseRoute}/initiate-payment";
+            public string Cancel => $"{BaseRoute}/my/cancel";
+        }
+
+        public class AdminSubscriptionRoutes
+        {
+            public string DashboardRoute { get; }
+            public string AdminRoute { get; }
+            public AdminSubscriptionRoutes(string baseRoute)
+            {
+                DashboardRoute = $"{baseRoute}/admin/dashboard";
+                AdminRoute = $"{baseRoute}/admin";
+            }
+            public string PendingClinics => $"{DashboardRoute}/clinics/pending";
+            public string ApproveClinic(Guid id) => $"{DashboardRoute}/clinics/{id}/approve";
+            public string RejectClinic(Guid id) => $"{DashboardRoute}/clinics/{id}/reject";
+            public string ListPlans => $"{AdminRoute}/plans";
+            public string CreatePlan => $"{AdminRoute}/plans";
+            public string UpdatePlan(Guid id) => $"{AdminRoute}/plans/{id}";
+            public string DeletePlan(Guid id) => $"{AdminRoute}/plans/{id}";
+            public string ListSubscriptions => $"{DashboardRoute}/subscriptions";
+            public string RevokeSubscription(Guid id) => $"{DashboardRoute}/subscriptions/{id}/revoke";
         }
     }
 }

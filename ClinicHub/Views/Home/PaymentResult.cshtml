@@ -1,0 +1,84 @@
+@{
+    ViewData["Title"] = "نتيجة الدفع - Doctory";
+    var success = ViewBag.PaymentSuccess as bool? ?? false;
+}
+
+<section class="payment-result-section">
+    <div class="container">
+        <div class="payment-result-card">
+            @if (success)
+            {
+                <div class="result-icon-circle result-success">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
+                    </svg>
+                </div>
+                <h1 class="text-h1">تم تفعيل الاشتراك بنجاح</h1>
+                <p class="result-desc">
+                    شكراً لك! تم تفعيل اشتراك عيادتك بنجاح. يمكنك الآن الاستمتاع بجميع ميزات المنصة.
+                </p>
+                <div class="result-actions">
+                    <a href="/Clinic/Index" class="btn btn-primary btn-lg">انتقال إلى لوحة التحكم</a>
+                </div>
+            }
+            else
+            {
+                <div class="result-icon-circle result-fail">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="white"/>
+                    </svg>
+                </div>
+                <h1 class="text-h1">فشلت عملية الدفع</h1>
+                <p class="result-desc">
+                    حدث خطأ أثناء معالجة عملية الدفع. يرجى المحاولة مرة أخرى أو اختيار باقة مختلفة.
+                </p>
+                <div class="result-actions">
+                    <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-primary btn-lg">عودة للباقات</a>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    .payment-result-section {
+        padding: var(--space-10) 0;
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+    }
+    .payment-result-card {
+        max-width: 520px;
+        margin: 0 auto;
+        background: var(--clr-surface);
+        border: 1px solid var(--clr-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-8);
+        text-align: center;
+    }
+    .result-icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-5);
+    }
+    .result-success {
+        background: var(--clr-success);
+    }
+    .result-fail {
+        background: var(--clr-danger);
+    }
+    .result-desc {
+        font-size: var(--fs-base);
+        color: var(--clr-text-secondary);
+        max-width: 400px;
+        margin: var(--space-3) auto var(--space-6);
+        line-height: 1.8;
+    }
+    .result-actions {
+        margin-top: var(--space-5);
+    }
+</style>

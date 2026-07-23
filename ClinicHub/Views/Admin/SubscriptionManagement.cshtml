@@ -1,0 +1,106 @@
+@using ClinicHub.Services.ReponseModels
+@{
+    ViewData["Title"] = "إدارة الاشتراكات";
+    Layout = "_AdminLayout";
+    var subscriptions = ViewBag.Subscriptions as IReadOnlyCollection<SubscriptionDto> ?? new List<SubscriptionDto>();
+    var plans = ViewBag.Plans as List<PlanDto> ?? new();
+    var pagination = ViewBag.Pagination as PagginatedResult<SubscriptionDto>;
+}
+
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+            </svg>
+        </span>
+        إدارة الاشتراكات
+    </h2>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>اسم العيادة</th>
+                    <th>الباقة</th>
+                    <th>المدة</th>
+                    <th>المبلغ</th>
+                    <th>تاريخ البداية</th>
+                    <th>تاريخ النهاية</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (subscriptions.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
+                            <p style="font-size: var(--fs-lg); margin-bottom: 0;">لا توجد اشتراكات</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var sub in subscriptions)
+                    {
+                        var statusText = sub.Status switch { 0 => "نشط", 1 => "ملغي", 2 => "منتهي", 3 => "ملغي من الإدارة", _ => "غير معروف" };
+                        var statusClass = sub.Status switch { 0 => "badge-success", 1 => "badge-warning", 2 => "badge-danger", 3 => "badge-danger", _ => "badge-info" };
+                        var periodText = sub.Period == 0 ? "شهري" : "سنوي";
+                        <tr>
+                            <td class="text-md-medium">@sub.ClinicName</td>
+                            <td><span class="badge badge-info">@sub.PlanName</span></td>
+                            <td class="text-md">@periodText</td>
+                            <td class="text-md">@sub.Amount.ToString("N0") ج.م</td>
+                            <td class="text-md">@sub.StartDate.ToString("yyyy-MM-dd")</td>
+                            <td class="text-md">@sub.EndDate.ToString("yyyy-MM-dd")</td>
+                            <td><span class="badge @statusClass">@statusText</span></td>
+                            <td>
+                                @if (sub.Status == 0)
+                                {
+                                    <button class="btn btn-sm btn-danger" onclick="revokeSubscription('@sub.Id', '@sub.ClinicName')">
+                                        إلغاء الاشتراك
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (pagination != null)
+    {
+        <partial name="_Pagination" model="pagination" />
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function revokeSubscription(id, clinicName) {
+            if (confirm('هل أنت متأكد من إلغاء اشتراك "' + clinicName + '"؟')) {
+                var btn = event.target;
+                btn.disabled = true;
+                btn.textContent = 'جاري الإلغاء...';
+                setTimeout(function() {
+                    var row = btn.closest('tr');
+                    var statusCell = row.querySelector('td:nth-child(7)');
+                    statusCell.innerHTML = '<span class="badge badge-danger">ملغي من الإدارة</span>';
+                    btn.outerHTML = '<span class="text-muted">—</span>';
+                    showSuccessModal('تم إلغاء الاشتراك بنجاح');
+                }, 500);
+            }
+        }
+    </script>
+}

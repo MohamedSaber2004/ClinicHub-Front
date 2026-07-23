@@ -1,0 +1,86 @@
+@using ClinicHub.Routes
+@{
+    ViewData["Title"] = "بانتظار الموافقة - Doctory";
+}
+
+<section class="subscription-required-section">
+    <div class="container">
+        <div class="subscription-required-card">
+            <div class="required-icon-circle" style="background: var(--clr-info);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="white"/>
+                </svg>
+            </div>
+            <h1 class="text-h1">بانتظار الموافقة</h1>
+            <p class="required-desc">
+                طلب تسجيل عيادتك قيد المراجعة من قبل فريق Doctory. سنقوم بإعلامك فور اكتمال الموافقة.
+            </p>
+            <div class="required-plan-info">
+                <span class="required-plan-label">حالة الطلب:</span>
+                <span class="required-plan-value" style="color: var(--clr-info);">قيد المراجعة</span>
+            </div>
+            <div class="required-actions">
+                <a href="@HomeRoutes.Account.Login()" class="btn btn-primary btn-lg">العودة لتسجيل الدخول</a>
+                <a href="@HomeRoutes.Pages.Index()" class="btn btn-secondary">العودة للرئيسية</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .subscription-required-section {
+        padding: var(--space-10) 0;
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+    }
+    .subscription-required-card {
+        max-width: 580px;
+        margin: 0 auto;
+        background: var(--clr-surface);
+        border: 1px solid var(--clr-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-8);
+        text-align: center;
+    }
+    .required-icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: var(--clr-warning);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-5);
+    }
+    .required-desc {
+        font-size: var(--fs-base);
+        color: var(--clr-text-secondary);
+        max-width: 440px;
+        margin: var(--space-3) auto var(--space-6);
+        line-height: 1.8;
+    }
+    .required-plan-info {
+        background: var(--clr-bg);
+        border-radius: var(--radius-md);
+        padding: var(--space-4) var(--space-5);
+        display: flex;
+        justify-content: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-6);
+    }
+    .required-plan-label {
+        font-weight: var(--fw-semibold);
+        color: var(--clr-text);
+    }
+    .required-plan-value {
+        color: var(--clr-danger);
+        font-weight: var(--fw-semibold);
+    }
+    .required-actions {
+        display: flex;
+        gap: var(--space-3);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+</style>

@@ -806,6 +806,163 @@ namespace ClinicHub.Data
         };
 
         // ========== Support Tickets ==========
+        // ========== Subscription Methods (New System) ==========
+        private static readonly string PlanId_Basic = "a1b2c3d4-0001-0000-0000-000000000001";
+        private static readonly string PlanId_Standard = "a1b2c3d4-0002-0000-0000-000000000002";
+        private static readonly string PlanId_Premium = "a1b2c3d4-0003-0000-0000-000000000003";
+
+        public static List<MockPlan> GetPlans() => new()
+        {
+            new()
+            {
+                Id = PlanId_Basic,
+                Name = "Basic",
+                NameAr = "أساسية",
+                Description = "للعيادات الصغيرة التي تبدأ رحلتها في التحول الرقمي",
+                DescriptionAr = "للعيادات الصغيرة التي تبدأ رحلتها في التحول الرقمي",
+                PriceMonthly = 500,
+                PriceYearly = 5000,
+                MaxDoctors = 2,
+                MaxStaff = 5,
+                Features = "[\"appointments\",\"patient_records\",\"basic_reports\"]",
+                IsActive = true,
+                SortOrder = 1,
+                PlanClass = "plan-free",
+            },
+            new()
+            {
+                Id = PlanId_Standard,
+                Name = "Standard",
+                NameAr = "قياسية",
+                Description = "للعيادات المتوسطة التي تحتاج حلولاً شاملة",
+                DescriptionAr = "للعيادات المتوسطة التي تحتاج حلولاً شاملة",
+                PriceMonthly = 1000,
+                PriceYearly = 10000,
+                MaxDoctors = 5,
+                MaxStaff = 15,
+                Features = "[\"appointments\",\"patient_records\",\"basic_reports\",\"advanced_reports\",\"sms_notifications\"]",
+                IsActive = true,
+                SortOrder = 2,
+                Badge = "الأكثر طلباً",
+                PlanClass = "plan-standard",
+            },
+            new()
+            {
+                Id = PlanId_Premium,
+                Name = "Premium",
+                NameAr = "بريميوم",
+                Description = "للعيادات الكبيرة التي تبحث عن حل متكامل بلا حدود",
+                DescriptionAr = "للعيادات الكبيرة التي تبحث عن حل متكامل بلا حدود",
+                PriceMonthly = 2000,
+                PriceYearly = 20000,
+                MaxDoctors = null,
+                MaxStaff = null,
+                Features = "[\"appointments\",\"patient_records\",\"basic_reports\",\"advanced_reports\",\"sms_notifications\",\"marketing_tools\",\"priority_support\"]",
+                IsActive = true,
+                SortOrder = 3,
+                Badge = "الأفضل",
+                PlanClass = "plan-premium",
+            },
+        };
+
+        public static MockPlan? GetPlanById(string id) =>
+            GetPlans().FirstOrDefault(p => p.Id == id);
+
+        public static MockUserSubscription GetClinicSubscription(string clinicId) => new()
+        {
+            Id = "sub-001",
+            ClinicId = clinicId,
+            ClinicName = "عيادة السلام الطبي",
+            PlanId = PlanId_Standard,
+            PlanName = "قياسية",
+            Period = 1,
+            StartDate = "2026-07-23",
+            EndDate = "2027-07-23",
+            Status = 0,
+            Amount = 10000,
+            PaidAt = "2026-07-23",
+            IsActive = true,
+        };
+
+        public static List<MockUserSubscription> GetAllSubscriptions() => new()
+        {
+            new()
+            {
+                Id = "sub-001", ClinicId = ClinicId_Heart.ToString(), ClinicName = "مركز القلب التخصصي",
+                PlanId = PlanId_Standard, PlanName = "قياسية", Period = 1,
+                StartDate = "2026-01-01", EndDate = "2027-01-01", Status = 0, Amount = 10000, PaidAt = "2026-01-01", IsActive = true,
+            },
+            new()
+            {
+                Id = "sub-002", ClinicId = ClinicId_Nerve.ToString(), ClinicName = "مركز الأعصاب والعمود الفقري",
+                PlanId = PlanId_Premium, PlanName = "بريميوم", Period = 0,
+                StartDate = "2026-03-15", EndDate = "2026-09-15", Status = 0, Amount = 2000, PaidAt = "2026-03-15", IsActive = true,
+            },
+            new()
+            {
+                Id = "sub-003", ClinicId = ClinicId_Bone.ToString(), ClinicName = "عيادة العظام والعلاج الطبيعي",
+                PlanId = PlanId_Basic, PlanName = "أساسية", Period = 0,
+                StartDate = "2026-06-01", EndDate = "2026-07-01", Status = 2, Amount = 500, PaidAt = "2026-06-01", IsActive = false,
+            },
+            new()
+            {
+                Id = "sub-004", ClinicId = ClinicId_Skin.ToString(), ClinicName = "عيادة الجلدية والتجميل",
+                PlanId = PlanId_Standard, PlanName = "قياسية", Period = 1,
+                StartDate = "2026-05-01", EndDate = "2027-05-01", Status = 0, Amount = 10000, PaidAt = "2026-05-01", IsActive = true,
+            },
+            new()
+            {
+                Id = "sub-005", ClinicId = ClinicId_Kids.ToString(), ClinicName = "عيادة الأطفال",
+                PlanId = PlanId_Standard, PlanName = "قياسية", Period = 0,
+                StartDate = "2026-02-01", EndDate = "2026-05-01", Status = 1, Amount = 1000, PaidAt = "2026-02-01", IsActive = false,
+            },
+        };
+
+        public static List<MockPendingClinic> GetPendingClinics() => new()
+        {
+            new()
+            {
+                Id = "pend-001", ClinicName = "مجمع عيادات النور الطبي",
+                Address = "الرياض - حي النور - شارع الملك عبد الله",
+                Phone = "0501234567", Specialization = "طب عام",
+                OwnerName = "أحمد السعيد", OwnerEmail = "ahmed@alnoor-clinic.com",
+                RegistrationDate = "2026-07-20",
+            },
+            new()
+            {
+                Id = "pend-002", ClinicName = "عيادات الدكتور فهد التخصصية",
+                Address = "جدة - حي الشاطئ - طريق الكورنيش",
+                Phone = "0559876543", Specialization = "جراحة عامة",
+                OwnerName = "فهد العتيبي", OwnerEmail = "fahad@drfahad-clinic.com",
+                RegistrationDate = "2026-07-19",
+            },
+            new()
+            {
+                Id = "pend-003", ClinicName = "مركز إشراق الطبي",
+                Address = "الدمام - حي الفيصلية - شارع 14",
+                Phone = "0591122334", Specialization = "طب الأسرة",
+                OwnerName = "ليلى الشمري", OwnerEmail = "layla@eshraq-med.com",
+                RegistrationDate = "2026-07-18",
+            },
+        };
+
+        public static MockInitiatePaymentResponse InitiatePayment(string planId, int period)
+        {
+            var plan = GetPlanById(planId);
+            var amount = period == 0 ? plan?.PriceMonthly ?? 500 : plan?.PriceYearly ?? 5000;
+            return new()
+            {
+                PaymentId = Guid.NewGuid().ToString(),
+                PaymobRedirectUrl = "/Home/PaymentResult?success=true",
+                PaymobPaymentKey = "paymob-key-" + Guid.NewGuid().ToString("N")[..8],
+                PlanId = planId,
+                PlanName = plan?.NameAr ?? "",
+                Period = period,
+                Amount = amount,
+                Currency = "EGP",
+            };
+        }
+
         public static List<MockSupportTicket> GetSupportTickets() => new()
         {
             new() { Id = 1, Code = "#1024", Subject = "تعطل نظام تسجيل الدخول", Reporter = "عيادة السلام", Priority = "عالية", PriorityClass = "badge-danger", Status = "مفتوح", StatusClass = "badge-info", Date = "2026-07-03 09:15", HasAttachment = true, Description = "نواجه مشكلة في تسجيل الدخول إلى النظام منذ صباح اليوم. تظهر رسالة خطأ \"تعذر الاتصال بالخادم\" عند محاولة الدخول. الرجاء المساعدة في أقرب وقت ممكن حيث أن جميع العمليات متوقفة.", Attachments = new() { "screenshot_error.png", "error_log.txt" } },
@@ -998,6 +1155,65 @@ namespace ClinicHub.Data
         public bool HasAttachment { get; set; }
         public string Description { get; set; } = "";
         public List<string> Attachments { get; set; } = new();
+    }
+
+    // ========== Subscription Models (New System) ==========
+    public class MockPlan
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string NameAr { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string DescriptionAr { get; set; } = "";
+        public decimal PriceMonthly { get; set; }
+        public decimal PriceYearly { get; set; }
+        public int? MaxDoctors { get; set; }
+        public int? MaxStaff { get; set; }
+        public string Features { get; set; } = "[]";
+        public bool IsActive { get; set; } = true;
+        public int SortOrder { get; set; }
+        public string Badge { get; set; } = "";
+        public string PlanClass { get; set; } = "";
+    }
+
+    public class MockUserSubscription
+    {
+        public string Id { get; set; } = "";
+        public string ClinicId { get; set; } = "";
+        public string ClinicName { get; set; } = "";
+        public string PlanId { get; set; } = "";
+        public string PlanName { get; set; } = "";
+        public int Period { get; set; }
+        public string StartDate { get; set; } = "";
+        public string EndDate { get; set; } = "";
+        public int Status { get; set; }
+        public decimal Amount { get; set; }
+        public string PaidAt { get; set; } = "";
+        public bool IsActive { get; set; }
+    }
+
+    public class MockPendingClinic
+    {
+        public string Id { get; set; } = "";
+        public string ClinicName { get; set; } = "";
+        public string Address { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Specialization { get; set; } = "";
+        public string OwnerName { get; set; } = "";
+        public string OwnerEmail { get; set; } = "";
+        public string RegistrationDate { get; set; } = "";
+    }
+
+    public class MockInitiatePaymentResponse
+    {
+        public string PaymentId { get; set; } = "";
+        public string PaymobRedirectUrl { get; set; } = "";
+        public string PaymobPaymentKey { get; set; } = "";
+        public string PlanId { get; set; } = "";
+        public string PlanName { get; set; } = "";
+        public int Period { get; set; }
+        public decimal Amount { get; set; }
+        public string Currency { get; set; } = "EGP";
     }
 
 }

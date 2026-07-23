@@ -23,6 +23,9 @@ namespace ClinicHub.Routes
             public static string VerificationCenter() => $"{Base}/Verification";
             public static string Subscriptions() => $"{Base}/Subscriptions";
             public static string Profile() => $"{Base}/Profile";
+            public static string PendingClinics() => $"{Base}/PendingClinics";
+            public static string PlanManagement() => $"{Base}/PlanManagement";
+            public static string SubscriptionManagement() => $"{Base}/SubscriptionManagement";
         }
     }
 }

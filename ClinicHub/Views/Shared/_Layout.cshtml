@@ -7,8 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
     <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 </head>
 <body class="public-body" style="height: auto; overflow: auto;">
     <!-- Public Navigation Header -->
@@ -57,6 +56,18 @@
     <partial name="_SuccessModal" />
     <partial name="_LoadingSpinner" />
 
+    <script>
+        @if (TempData["UserId"] != null)
+        {
+            <text>
+                localStorage.setItem("userId", "@TempData["UserId"]");
+                localStorage.setItem("role", "@TempData["Role"]");
+                localStorage.setItem("clinicId", "@TempData["ClinicId"]");
+                localStorage.setItem("accessToken", "@TempData["AccessToken"]");
+                localStorage.setItem("refreshToken", "@TempData["RefreshToken"]);
+            </text>
+        }
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/scroll-animations.js" asp-append-version="true"></script>

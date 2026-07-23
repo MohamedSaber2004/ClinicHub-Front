@@ -54,6 +54,24 @@ namespace ClinicHub.Services
             services.AddScoped<IAttachmentUrlResolver, AttachmentUrlResolver>();
             services.AddSingleton<IDeserializerService, DeserializerService>();
 
+            services.AddHttpClient<IPlanService, PlanService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<ISubscriptionService, SubscriptionService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<IAdminSubscriptionService, AdminSubscriptionService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
             return services;
         }
     }

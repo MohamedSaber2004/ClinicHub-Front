@@ -1,0 +1,94 @@
+@using ClinicHub.Routes
+@{
+    ViewData["Title"] = "اشتراك مطلوب - Doctory";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+}
+
+<section class="subscription-required-section">
+    <div class="container">
+        <div class="subscription-required-card">
+            <div class="required-icon-circle">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
+                </svg>
+            </div>
+            <h1 class="text-h1">اشتراك مطلوب</h1>
+            <p class="required-desc">
+                عيادتك تحتاج إلى اشتراك نشط للوصول إلى لوحة التحكم الكاملة وجميع الميزات الحصرية. اشترك الآن لتفعيل جميع الخدمات.
+            </p>
+            <div class="required-plan-info">
+                <span class="required-plan-label">الباقة الحالية:</span>
+                <span class="required-plan-value">لا توجد باقة نشطة</span>
+            </div>
+            <div class="required-actions">
+                <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-primary btn-lg">عرض الباقات والاشتراك</a>
+                @if (isAuthenticated)
+                {
+                    <a href="@ClinicRoutes.Pages.Index()" class="btn btn-secondary">العودة للوحة التحكم</a>
+                }
+                else
+                {
+                    <a href="@HomeRoutes.Account.Login()" class="btn btn-secondary">تسجيل الدخول</a>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .subscription-required-section {
+        padding: var(--space-10) 0;
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+    }
+    .subscription-required-card {
+        max-width: 580px;
+        margin: 0 auto;
+        background: var(--clr-surface);
+        border: 1px solid var(--clr-border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-8);
+        text-align: center;
+    }
+    .required-icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        background: var(--clr-warning);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-5);
+    }
+    .required-desc {
+        font-size: var(--fs-base);
+        color: var(--clr-text-secondary);
+        max-width: 440px;
+        margin: var(--space-3) auto var(--space-6);
+        line-height: 1.8;
+    }
+    .required-plan-info {
+        background: var(--clr-bg);
+        border-radius: var(--radius-md);
+        padding: var(--space-4) var(--space-5);
+        display: flex;
+        justify-content: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-6);
+    }
+    .required-plan-label {
+        font-weight: var(--fw-semibold);
+        color: var(--clr-text);
+    }
+    .required-plan-value {
+        color: var(--clr-danger);
+        font-weight: var(--fw-semibold);
+    }
+    .required-actions {
+        display: flex;
+        gap: var(--space-3);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+</style>

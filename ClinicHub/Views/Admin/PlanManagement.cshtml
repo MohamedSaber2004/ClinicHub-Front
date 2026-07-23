@@ -1,0 +1,312 @@
+@using ClinicHub.Services.ReponseModels
+@{
+    ViewData["Title"] = "إدارة الباقات";
+    Layout = "_AdminLayout";
+    var plans = ViewBag.Plans as List<PlanDto> ?? new();
+}
+
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="currentColor"/>
+            </svg>
+        </span>
+        إدارة الباقات
+    </h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#planModal" id="addPlanBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        إضافة باقة جديدة
+    </button>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>الاسم</th>
+                    <th>شهرياً</th>
+                    <th>سنوياً</th>
+                    <th>أقصى أطباء</th>
+                    <th>أقصى موظفين</th>
+                    <th>الحالة</th>
+                    <th>ترتيب</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (plans.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
+                            <p style="font-size: var(--fs-lg); margin-bottom: 0;">لا توجد باقات بعد</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var plan in plans.OrderBy(p => p.SortOrder))
+                    {
+                        <tr data-plan-id="@plan.Id">
+                            <td class="text-md-medium">@plan.NameAr</td>
+                            <td class="text-md">@plan.PriceMonthly.ToString("N0") ج.م</td>
+                            <td class="text-md">@plan.PriceYearly.ToString("N0") ج.م</td>
+                            <td class="text-md">@(plan.MaxDoctors?.ToString() ?? "غير محدود")</td>
+                            <td class="text-md">@(plan.MaxStaff?.ToString() ?? "غير محدود")</td>
+                            <td>
+                                @if (plan.IsActive)
+                                {
+                                    <span class="badge badge-success">نشط</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-warning">غير نشط</span>
+                                }
+                            </td>
+                            <td class="text-md">@plan.SortOrder</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn-icon btn-edit" title="تعديل"
+                                            data-id="@plan.Id"
+                                            data-name="@plan.NameAr"
+                                            data-price-monthly="@plan.PriceMonthly"
+                                            data-price-yearly="@plan.PriceYearly"
+                                            data-max-doctors="@(plan.MaxDoctors?.ToString() ?? "")"
+                                            data-max-staff="@(plan.MaxStaff?.ToString() ?? "")"
+                                            data-features="@plan.Features"
+                                            data-active="@plan.IsActive.ToString().ToLower()"
+                                            data-sort="@plan.SortOrder">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                    </button>
+                                    <button class="btn-icon btn-delete" title="حذف" data-id="@plan.Id" data-name="@plan.NameAr">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-card mt-4">
+    <div class="table-card-header">
+        <h4>معاينة الباقات في الموقع</h4>
+    </div>
+    <div class="table-card-body">
+        @if (plans.Count == 0)
+        {
+            <div class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
+                <p style="margin-bottom: 0;">لا توجد باقات مضافة بعد</p>
+            </div>
+        }
+        else
+        {
+            <div class="subscription-plans">
+                @foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
+                {
+                    var planClass = plan.SortOrder == 2 ? "plan-standard" : plan.SortOrder == 3 ? "plan-premium" : "plan-free";
+                    var badge = plan.SortOrder == 2 ? "الأكثر طلباً" : plan.SortOrder == 3 ? "الأفضل" : "";
+                    var featureList = System.Text.Json.JsonSerializer.Deserialize<List<string>>(plan.Features) ?? new();
+                    <div class="plan-card @planClass">
+                        @if (!string.IsNullOrEmpty(badge))
+                        {
+                            <span class="plan-badge">@badge</span>
+                        }
+                        <div class="plan-header">
+                            <h3 class="plan-name">@plan.NameAr</h3>
+                            <p class="plan-price">@plan.PriceMonthly.ToString("N0") <span class="plan-currency">ج.م</span></p>
+                        </div>
+                        <div class="plan-body">
+                            <ul class="plan-features">
+                                @foreach (var feature in featureList)
+                                {
+                                    <li>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/></svg>
+                                        <span>@feature</span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="plan-footer">
+                            <span class="plan-current">نشط في الموقع</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="planModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title" id="planModalTitle">إضافة باقة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="planId" value="" />
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label" for="planName">اسم الباقة</label>
+                            <input type="text" id="planName" class="form-input" placeholder="مثال: أساسية" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label" for="planPriceMonthly">السعر شهرياً</label>
+                            <input type="number" id="planPriceMonthly" class="form-input" placeholder="500" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-label" for="planPriceYearly">السعر سنوياً</label>
+                            <input type="number" id="planPriceYearly" class="form-input" placeholder="5000" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label" for="planMaxDoctors">أقصى عدد أطباء (فارغ = غير محدود)</label>
+                            <input type="number" id="planMaxDoctors" class="form-input" placeholder="2" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label" for="planMaxStaff">أقصى عدد موظفين</label>
+                            <input type="number" id="planMaxStaff" class="form-input" placeholder="5" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label" for="planSortOrder">ترتيب الظهور</label>
+                            <input type="number" id="planSortOrder" class="form-input" placeholder="1" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الميزات (ميزة واحدة في كل سطر)</label>
+                    <textarea id="planFeatures" class="form-textarea" rows="5" placeholder="إدارة المواعيد&#10;السجلات الطبية&#10;..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-toggle">
+                        <input type="checkbox" id="planIsActive" checked />
+                        <span class="toggle-track"></span>
+                        <span class="toggle-label">الباقة نشطة</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="savePlanBtn">حفظ الباقة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body-custom text-center" style="padding: var(--space-7);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="margin-bottom: var(--space-4);">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--clr-danger)"/>
+                </svg>
+                <h5 style="margin-bottom: var(--space-2);">حذف الباقة</h5>
+                <p style="color: var(--clr-text-secondary); margin-bottom: 0;" id="deleteMessage">هل أنت متأكد من حذف هذه الباقة؟</p>
+                <input type="hidden" id="deletePlanId" value="" />
+            </div>
+            <div class="modal-footer-custom" style="justify-content: center; gap: var(--space-3);">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">حذف</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var modalEl = document.getElementById('planModal');
+            var modalTitle = document.getElementById('planModalTitle');
+            var planId = document.getElementById('planId');
+            var planName = document.getElementById('planName');
+            var planPriceMonthly = document.getElementById('planPriceMonthly');
+            var planPriceYearly = document.getElementById('planPriceYearly');
+            var planMaxDoctors = document.getElementById('planMaxDoctors');
+            var planMaxStaff = document.getElementById('planMaxStaff');
+            var planSortOrder = document.getElementById('planSortOrder');
+            var planFeatures = document.getElementById('planFeatures');
+            var planIsActive = document.getElementById('planIsActive');
+
+            var modal = new bootstrap.Modal(modalEl);
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+            document.getElementById('addPlanBtn').addEventListener('click', function() {
+                modalTitle.textContent = 'إضافة باقة جديدة';
+                planId.value = '';
+                planName.value = '';
+                planPriceMonthly.value = '';
+                planPriceYearly.value = '';
+                planMaxDoctors.value = '';
+                planMaxStaff.value = '';
+                planSortOrder.value = '';
+                planFeatures.value = '';
+                planIsActive.checked = true;
+            });
+
+            document.querySelectorAll('.btn-edit').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    modalTitle.textContent = 'تعديل الباقة';
+                    planId.value = btn.getAttribute('data-id');
+                    planName.value = btn.getAttribute('data-name');
+                    planPriceMonthly.value = btn.getAttribute('data-price-monthly');
+                    planPriceYearly.value = btn.getAttribute('data-price-yearly');
+                    planMaxDoctors.value = btn.getAttribute('data-max-doctors');
+                    planMaxStaff.value = btn.getAttribute('data-max-staff');
+                    planSortOrder.value = btn.getAttribute('data-sort');
+                    planIsActive.checked = btn.getAttribute('data-active') === 'true';
+                    try {
+                        var features = JSON.parse(btn.getAttribute('data-features'));
+                        planFeatures.value = features.join('\n');
+                    } catch(e) {
+                        planFeatures.value = '';
+                    }
+                    modal.show();
+                });
+            });
+
+            document.querySelectorAll('.btn-delete').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var name = btn.getAttribute('data-name');
+                    document.getElementById('deletePlanId').value = btn.getAttribute('data-id');
+                    document.getElementById('deleteMessage').textContent = 'هل أنت متأكد من حذف الباقة "' + name + '"؟';
+                    deleteModal.show();
+                });
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                var id = document.getElementById('deletePlanId').value;
+                var row = document.querySelector('tr[data-plan-id="' + id + '"]');
+                if (row) row.remove();
+                deleteModal.hide();
+                showSuccessModal('تم حذف الباقة بنجاح');
+            });
+
+            document.getElementById('savePlanBtn').addEventListener('click', function() {
+                modal.hide();
+                showSuccessModal('تم حفظ الباقة بنجاح');
+            });
+        })();
+    </script>
+}

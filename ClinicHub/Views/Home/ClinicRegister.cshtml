@@ -1,6 +1,8 @@
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "تسجيل العيادة - Doctory";
-    var plans = ViewBag.Plans as List<MockSubscriptionPlan> ?? new();
+    var plans = ViewBag.Plans as List<PlanDto> ?? new();
+    var googleMapsApiKey = ViewBag.GoogleMapsApiKey as string ?? "";
 }
 
 <section class="register-hero">
@@ -58,6 +60,7 @@
                         <label class="form-label">الموقع على الخريطة</label>
                         <input type="hidden" id="registerLat" name="Latitude" value="31.0409" />
                         <input type="hidden" id="registerLng" name="Longitude" value="31.3785" />
+                        <input type="text" id="registerPlaceSearch" class="form-input" placeholder="ابحث عن عنوان العيادة..." style="margin-bottom: 8px;" />
                         <div id="registerClinicMap" style="height: 300px; border-radius: var(--radius-md); border: 1px solid var(--clr-border); margin-bottom: 8px;"></div>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <button type="button" class="btn btn-sm btn-outline-primary" id="registerMyLocationBtn" style="display: inline-flex; align-items: center; gap: 4px;">
@@ -75,10 +78,10 @@
                         <label class="form-label" for="packageId">اختر الباقة <span class="text-danger">*</span></label>
                         <select id="packageId" name="PackageId" class="form-select" required>
                             <option value="">-- اختر الباقة --</option>
-                            @foreach (var plan in plans.OrderBy(p => p.Id))
+                            @foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
                             {
-                                <option value="@plan.Id" data-price="@plan.Price" data-currency="@plan.Currency">
-                                    @plan.Name — @(string.IsNullOrEmpty(plan.Price) ? "مجاناً" : plan.Price + " " + plan.Currency)
+                                <option value="@plan.Id" data-price="@plan.PriceMonthly" data-currency="ج.م">
+                                    @plan.NameAr — @plan.PriceMonthly.ToString("N0") ج.م / شهرياً
                                 </option>
                             }
                         </select>
@@ -141,6 +144,7 @@
 </section>
 
 @section Scripts {
+    <script src="https://maps.googleapis.com/maps/api/js?key=@googleMapsApiKey&libraries=places&language=ar"></script>
     <script>
         (function() {
             var packageSelect = document.getElementById('packageId');
@@ -153,56 +157,95 @@
             var plansData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(plans));
 
             packageSelect.addEventListener('change', function() {
-                var selectedId = parseInt(this.value);
+                var selectedId = this.value;
                 if (!selectedId) {
                     preview.style.display = 'none';
                     return;
                 }
                 var plan = plansData.find(function(p) { return p.Id === selectedId; });
                 if (plan) {
-                    previewName.textContent = plan.Name;
-                    previewDuration.textContent = plan.Duration;
-                    previewPrice.textContent = plan.Price || 'مجاناً';
-                    previewCurrency.textContent = plan.Currency || '';
+                    previewName.textContent = plan.nameAr || plan.name;
+                    previewDuration.textContent = 'شهرياً';
+                    previewPrice.textContent = (plan.priceMonthly || '0') + ' ج.م';
+                    previewCurrency.textContent = '';
                     preview.style.display = 'block';
                 }
             });
 
-            // Map for Clinic Registration
-            var regMap = L.map('registerClinicMap').setView([31.0409, 31.3785], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap',
-                maxZoom: 18
-            }).addTo(regMap);
+            function initMap() {
+                var defaultPos = { lat: 31.0409, lng: 31.3785 };
+                var regMap = new google.maps.Map(document.getElementById('registerClinicMap'), {
+                    center: defaultPos,
+                    zoom: 13,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: false
+                });
 
-            var regMarker = L.marker([31.0409, 31.3785], { draggable: false }).addTo(regMap);
+                var regMarker = new google.maps.Marker({
+                    position: defaultPos,
+                    map: regMap,
+                    draggable: true
+                });
 
-            function updateRegCoords(lat, lng) {
-                document.getElementById('registerLat').value = lat.toFixed(6);
-                document.getElementById('registerLng').value = lng.toFixed(6);
-                document.getElementById('registerCoordsDisplay').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+                function updateRegCoords(lat, lng) {
+                    document.getElementById('registerLat').value = lat.toFixed(6);
+                    document.getElementById('registerLng').value = lng.toFixed(6);
+                    document.getElementById('registerCoordsDisplay').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+                }
+
+                regMarker.addListener('dragend', function() {
+                    var pos = regMarker.getPosition();
+                    updateRegCoords(pos.lat(), pos.lng());
+                });
+
+                regMap.addListener('click', function(e) {
+                    regMarker.setPosition(e.latLng);
+                    updateRegCoords(e.latLng.lat(), e.latLng.lng());
+                });
+
+                var searchInput = document.getElementById('registerPlaceSearch');
+                var autocomplete = new google.maps.places.Autocomplete(searchInput, { types: ['geocode'] });
+                autocomplete.bindTo('bounds', regMap);
+
+                autocomplete.addListener('place_changed', function() {
+                    var place = autocomplete.getPlace();
+                    if (!place.geometry) return;
+                    if (place.geometry.viewport) {
+                        regMap.fitBounds(place.geometry.viewport);
+                    } else {
+                        regMap.setCenter(place.geometry.location);
+                        regMap.setZoom(15);
+                    }
+                    regMarker.setPosition(place.geometry.location);
+                    updateRegCoords(place.geometry.location.lat(), place.geometry.location.lng());
+                });
+
+                regMarker.addListener('dragend', function() {
+                    var pos = regMarker.getPosition();
+                    updateRegCoords(pos.lat(), pos.lng());
+                });
+
+                document.getElementById('registerMyLocationBtn').addEventListener('click', function() {
+                    if (!navigator.geolocation) {
+                        alert('الموقع غير مدعوم في متصفحك.');
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(function(pos) {
+                        var lat = pos.coords.latitude;
+                        var lng = pos.coords.longitude;
+                        var latLng = new google.maps.LatLng(lat, lng);
+                        regMap.panTo(latLng);
+                        regMap.setZoom(15);
+                        regMarker.setPosition(latLng);
+                        updateRegCoords(lat, lng);
+                    }, function() {
+                        alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
+                    });
+                });
             }
 
-            regMap.on('click', function(e) {
-                regMarker.setLatLng(e.latlng);
-                updateRegCoords(e.latlng.lat, e.latlng.lng);
-            });
-
-            document.getElementById('registerMyLocationBtn').addEventListener('click', function() {
-                if (!navigator.geolocation) {
-                    alert('الموقع غير مدعوم في متصفحك.');
-                    return;
-                }
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    var lat = pos.coords.latitude;
-                    var lng = pos.coords.longitude;
-                    regMap.setView([lat, lng], 15);
-                    regMarker.setLatLng([lat, lng]);
-                    updateRegCoords(lat, lng);
-                }, function() {
-                    alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
-                });
-            });
+            google.maps.event.addDomListener(window, 'load', initMap);
         })();
     </script>
 }
