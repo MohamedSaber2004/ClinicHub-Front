@@ -1,86 +1,347 @@
+@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
-    ViewData["Title"] = "إدارة الموظفين والدوام - Doctory";
+    ViewData["Title"] = "إدارة الموظفين - Doctory";
     Layout = "_ClinicLayout";
+    var _user = ViewBag.CurrentUser as CurrentUserContext;
+    var staffList = ViewBag.StaffList as IReadOnlyCollection<StaffDto> ?? new List<StaffDto>();
+    var pagination = ViewBag.Pagination as PagginatedResult<StaffDto>;
+    var searchTerm = ViewBag.SearchTerm as string;
+    var activeFilter = ViewBag.ActiveFilter as bool?;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="page-title mb-0">إدارة الموظفين والكادر الطبي (Staff & HR Management)</h2>
-    <button class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 20px; border-radius: 5px;">
+    <h2 class="page-title mb-0">إدارة الموظفين</h2>
+    <button class="btn" id="addStaffBtn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 20px; border-radius: 5px;">
         <i class="bi bi-person-plus me-1"></i> تسجيل موظف جديد
     </button>
 </div>
 
-<!-- Roster Roster List -->
+@if (_user?.MaxStaff.HasValue == true)
+{
+    <div class="plan-info-bar" style="margin-bottom: 20px;">
+        <div class="plan-info-item">
+            <span class="plan-info-label">الحد الأقصى للموظفين في باقتك</span>
+            <span class="plan-info-value">@_user.MaxStaff موظف</span>
+        </div>
+        <span style="font-size: 12px; color: var(--clr-text-secondary);">لزيادة الحد الأقصى، قم بترقية باقتك.</span>
+        <a href="/Clinic/MySubscription" class="plan-info-link">ترقية الباقة <i class="bi bi-arrow-left"></i></a>
+    </div>
+}
+
+<div class="table-card" style="padding: 20px; margin-bottom: 24px;">
+    <form method="get" action="@Url.Action("Staff")" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label" style="font-weight: 600; font-size: 13px;">بحث</label>
+            <input type="text" name="searchTerm" class="form-control auth-form-control" style="padding: 8px 12px; font-size: 13px;" placeholder="ابحث باسم الموظف أو البريد الإلكتروني..." value="@searchTerm" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" style="font-weight: 600; font-size: 13px;">الحالة</label>
+            <select name="isActive" class="form-select auth-form-control" style="padding: 8px 12px; font-size: 13px;">
+                <option value="">الجميع</option>
+                <option value="true" selected="@(activeFilter == true)">نشط</option>
+                <option value="false" selected="@(activeFilter == false)">غير نشط</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 8px 20px; border-radius: 5px; font-size: 13px; width: 100%;">
+                <i class="bi bi-search me-1"></i> بحث
+            </button>
+        </div>
+    </form>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
 <div class="table-card" style="padding: 24px;">
-    <h4 style="font-weight: 700; margin-bottom: 20px;">كادر العيادة والدوام اليومي</h4>
-    
-    <div class="table-responsive">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th style="width: 60px;">النوع</th>
-                    <th>الموظف</th>
-                    <th>الدور الوظيفي</th>
-                    <th>العيادة المسندة</th>
-                    <th>مواعيد العمل (الوردية)</th>
-                    <th>حالة الحضور اليوم</th>
-                    <th>الإجراءات</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-center"><i class="bi bi-person-fill text-primary fs-4"></i></td>
-                    <td><strong>د. سمير المنشاوي</strong></td>
-                    <td>طبيب استشاري</td>
-                    <td>عيادة القلب</td>
-                    <td>09:00 ص - 05:00 م</td>
-                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-check-circle me-1"></i> متواجد بالعيادة</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary" style="font-size: 11px; border: 1px solid var(--border-color);">
-                            <i class="bi bi-pencil me-1"></i> تعديل الدوام
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center"><i class="bi bi-person-fill text-primary fs-4"></i></td>
-                    <td><strong>د. عبد الله الرويلي</strong></td>
-                    <td>طبيب استشاري</td>
-                    <td>عيادة الأعصاب</td>
-                    <td>09:00 ص - 05:00 م</td>
-                    <td><span style="background-color: #fef7e0; color: #b06000; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-cup-hot me-1"></i> في استراحة كشف</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary" style="font-size: 11px; border: 1px solid var(--border-color);">
-                            <i class="bi bi-pencil me-1"></i> تعديل الدوام
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center"><i class="bi bi-person-fill text-success fs-4"></i></td>
-                    <td><strong>أ. مريم السالم</strong></td>
-                    <td>رئيسة ممرضين</td>
-                    <td>عام (فرز الطوارئ)</td>
-                    <td>08:00 ص - 04:00 م</td>
-                    <td><span style="background-color: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-check-circle me-1"></i> متواجد</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary" style="font-size: 11px; border: 1px solid var(--border-color);">
-                            <i class="bi bi-pencil me-1"></i> تعديل الدوام
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center"><i class="bi bi-person-fill text-secondary fs-4"></i></td>
-                    <td><strong>أ. روان اليوسف</strong></td>
-                    <td>موظفة استقبال</td>
-                    <td>خدمة العملاء</td>
-                    <td>02:00 م - 10:00 م</td>
-                    <td><span style="background-color: #f1f3f4; color: #5f6368; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;"><i class="bi bi-clock me-1"></i> لم يبدأ الوردية</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-secondary" style="font-size: 11px; border: 1px solid var(--border-color);">
-                            <i class="bi bi-pencil me-1"></i> تعديل الدوام
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 style="font-weight: 700; margin: 0;">قائمة الموظفين</h4>
+        @if (pagination != null)
+        {
+            <span style="font-size: 13px; color: var(--clr-text-secondary);">إجمالي: @pagination.TotalCount موظف</span>
+        }
+    </div>
+
+    @if (staffList.Count == 0)
+    {
+        <div style="text-align: center; padding: 40px 20px; color: var(--clr-text-secondary);">
+            <i class="bi bi-person-badge" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
+            <p style="font-size: 16px;">لا يوجد موظفون مسجلون في العيادة</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>رقم الهاتف</th>
+                        <th>الحالة</th>
+                        <th>تاريخ التسجيل</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var staff in staffList)
+                    {
+                        <tr>
+                            <td><strong>@staff.FullName</strong></td>
+                            <td style="font-size: 13px; color: var(--clr-text-secondary);">@staff.Email</td>
+                            <td dir="ltr" style="text-align: right;">@staff.PhoneNumber</td>
+                            <td>
+                                @if (staff.IsActive)
+                                {
+                                    <span class="badge badge-success">نشط</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger">غير نشط</span>
+                                }
+                            </td>
+                            <td style="font-size: 13px; color: var(--clr-text-secondary);">@staff.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <div style="display: flex; gap: 6px;">
+                                    <button class="btn btn-sm edit-staff-btn"
+                                            data-id="@staff.Id"
+                                            data-name="@staff.FullName"
+                                            data-email="@staff.Email"
+                                            data-phone="@staff.PhoneNumber"
+                                            data-active="@staff.IsActive.ToString().ToLower()"
+                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-primary);">
+                                        <i class="bi bi-pencil me-1"></i> تعديل
+                                    </button>
+                                    <button class="btn btn-sm delete-staff-btn"
+                                            data-id="@staff.Id"
+                                            data-name="@staff.FullName"
+                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-danger);">
+                                        <i class="bi bi-trash me-1"></i> حذف
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (pagination != null && pagination.TotalPages > 1)
+        {
+            <nav class="pagination-nav" style="margin-top: 20px;">
+                <ul class="pagination-list">
+                    @if (pagination.HasPreviousPage)
+                    {
+                        <li class="pagination-item">
+                            <a class="pagination-link" href="@Url.Action("Staff", new { pageNumber = pagination.PageNumber - 1, pageSize = pagination.PageSize, searchTerm, isActive = activeFilter })">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg> السابق
+                            </a>
+                        </li>
+                    }
+                    @for (var i = 1; i <= pagination.TotalPages; i++)
+                    {
+                        <li class="pagination-item">
+                            <a class="pagination-link @(i == pagination.PageNumber ? "pagination-link--active" : "")"
+                               href="@Url.Action("Staff", new { pageNumber = i, pageSize = pagination.PageSize, searchTerm, isActive = activeFilter })">@i</a>
+                        </li>
+                    }
+                    @if (pagination.HasNextPage)
+                    {
+                        <li class="pagination-item">
+                            <a class="pagination-link" href="@Url.Action("Staff", new { pageNumber = pagination.PageNumber + 1, pageSize = pagination.PageSize, searchTerm, isActive = activeFilter })">
+                                التالي <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+<div class="modal fade" id="createStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
+                <h5 class="modal-title" style="font-weight: 700;">تسجيل موظف جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: var(--space-6);">
+                <form id="createStaffForm">
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل</label>
+                        <input type="text" class="form-control auth-form-control" id="createStaffName" placeholder="الاسم الكامل" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني</label>
+                        <input type="email" class="form-control auth-form-control" id="createStaffEmail" placeholder="البريد الإلكتروني" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف</label>
+                        <input type="text" class="form-control auth-form-control" id="createStaffPhone" placeholder="رقم الهاتف" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">كلمة المرور</label>
+                        <input type="password" class="form-control auth-form-control" id="createStaffPassword" placeholder="كلمة المرور" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--clr-border); padding: var(--space-4) var(--space-6);">
+                <button type="button" class="btn" data-bs-dismiss="modal" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-weight: 600;">إلغاء</button>
+                <button type="button" class="btn" id="createStaffSubmitBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-weight: 600;">تسجيل</button>
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="modal fade" id="editStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
+                <h5 class="modal-title" style="font-weight: 700;">تعديل بيانات الموظف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: var(--space-6);">
+                <form id="editStaffForm">
+                    <input type="hidden" id="editStaffId" />
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل</label>
+                        <input type="text" class="form-control auth-form-control" id="editStaffName" placeholder="الاسم الكامل" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف</label>
+                        <input type="text" class="form-control auth-form-control" id="editStaffPhone" placeholder="رقم الهاتف" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--clr-border); padding: var(--space-4) var(--space-6);">
+                <button type="button" class="btn" data-bs-dismiss="modal" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-weight: 600;">إلغاء</button>
+                <button type="button" class="btn" id="editStaffSubmitBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-weight: 600;">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $('#addStaffBtn').on('click', function () {
+            $('#createStaffName').val('');
+            $('#createStaffEmail').val('');
+            $('#createStaffPhone').val('');
+            $('#createStaffPassword').val('');
+            $('#createStaffModal').modal('show');
+        });
+
+        $('#createStaffSubmitBtn').on('click', function () {
+            var name = $('#createStaffName').val().trim();
+            var email = $('#createStaffEmail').val().trim();
+            var phone = $('#createStaffPhone').val().trim();
+            var password = $('#createStaffPassword').val();
+
+            if (!name) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
+            if (!email) { showErrorModal('يرجى إدخال البريد الإلكتروني'); return; }
+            if (!phone) { showErrorModal('يرجى إدخال رقم الهاتف'); return; }
+            if (!password) { showErrorModal('يرجى إدخال كلمة المرور'); return; }
+
+            $.ajax({
+                url: '@Url.Action("CreateStaff")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    fullName: name,
+                    email: email,
+                    phoneNumber: phone,
+                    password: password
+                }),
+                success: function (res) {
+                    if (res.success) {
+                        $('#createStaffModal').modal('hide');
+                        showSuccessModal('تم إضافة الموظف بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(res.message);
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'حدث خطأ أثناء إضافة الموظف';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        });
+
+        $('.edit-staff-btn').on('click', function () {
+            var btn = $(this);
+            $('#editStaffId').val(btn.data('id'));
+            $('#editStaffName').val(btn.data('name'));
+            $('#editStaffPhone').val(btn.data('phone'));
+            $('#editStaffModal').modal('show');
+        });
+
+        $('#editStaffSubmitBtn').on('click', function () {
+            var id = $('#editStaffId').val();
+            var name = $('#editStaffName').val().trim();
+            var phone = $('#editStaffPhone').val().trim();
+
+            if (!name) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
+
+            $.ajax({
+                url: '@Url.Action("UpdateStaff")/' + id,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    fullName: name,
+                    phoneNumber: phone || null
+                }),
+                success: function (res) {
+                    if (res.success) {
+                        $('#editStaffModal').modal('hide');
+                        showSuccessModal('تم تحديث بيانات الموظف بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(res.message);
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'حدث خطأ أثناء تحديث الموظف';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        });
+
+        $('.delete-staff-btn').on('click', function () {
+            var btn = $(this);
+            var id = btn.data('id');
+            var name = btn.data('name');
+            showConfirmModal('هل أنت متأكد من حذف الموظف <strong>' + name + '</strong>؟', function (confirmed) {
+                if (confirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteStaff")/' + id,
+                        type: 'POST',
+                        success: function (res) {
+                            if (res.success) {
+                                showSuccessModal('تم حذف الموظف بنجاح');
+                                setTimeout(function () { location.reload(); }, 1500);
+                            } else {
+                                showErrorModal(res.message);
+                            }
+                        },
+                        error: function (xhr) {
+                            var msg = 'حدث خطأ أثناء حذف الموظف';
+                            try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                            showErrorModal(msg);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

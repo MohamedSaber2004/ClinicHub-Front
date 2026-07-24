@@ -15,6 +15,7 @@ namespace ClinicHub.Services.Routes.Api
             Verification = new VerificationRoutes(BaseRoute);
             Users = new UserRoutes(BaseRoute);
             Doctors = new DoctorRoutes(BaseRoute);
+            Staff = new StaffRoutes(BaseRoute);
             Clinics = new ClinicRoutes(BaseRoute);
             Plans = new PlanRoutes(BaseRoute);
             Subscriptions = new SubscriptionRoutes(BaseRoute);
@@ -27,6 +28,7 @@ namespace ClinicHub.Services.Routes.Api
         public static VerificationRoutes Verification { get; private set; } = null!;
         public static UserRoutes Users { get; private set; } = null!;
         public static DoctorRoutes Doctors { get; private set; } = null!;
+        public static StaffRoutes Staff { get; private set; } = null!;
         public static ClinicRoutes Clinics { get; private set; } = null!;
         public static PlanRoutes Plans { get; private set; } = null!;
         public static SubscriptionRoutes Subscriptions { get; private set; } = null!;
@@ -108,17 +110,40 @@ namespace ClinicHub.Services.Routes.Api
             public string Create => $"{BaseRoute}";
             public string Delete(Guid id) => $"{BaseRoute}/{id}";
             public string EditUser(Guid id) => $"{BaseRoute}/{id}";
-        }
+}
 
         public class DoctorRoutes
         {
+            private readonly string _baseRoute;
             public string BaseRoute { get; }
+            public string AdminClinicRoute { get; }
             public DoctorRoutes(string baseRoute)
             {
+                _baseRoute = baseRoute;
                 BaseRoute = $"{baseRoute}/admin/dashboard";
+                AdminClinicRoute = $"{baseRoute}/admin/clinics";
             }
 
             public string GetAllClinicsForViewingOnly => $"{BaseRoute}/clinics";
+            public string ListByClinic(Guid clinicId) => $"{AdminClinicRoute}/{clinicId}/doctors";
+            public string GetById(Guid id) => $"{_baseRoute}/doctors/{id}";
+            public string Create => $"{AdminClinicRoute}/doctors";
+            public string Update(Guid id) => $"{_baseRoute}/doctors/{id}";
+            public string Delete(Guid id) => $"{_baseRoute}/doctors/{id}";
+        }
+
+        public class StaffRoutes
+        {
+            public string BaseRoute { get; }
+            public StaffRoutes(string baseRoute)
+            {
+                BaseRoute = $"{baseRoute}/admin/clinics/staff";
+            }
+
+            public string List => $"{BaseRoute}";
+            public string Create => $"{BaseRoute}";
+            public string Update(Guid id) => $"{BaseRoute}/{id}";
+            public string Delete(Guid id) => $"{BaseRoute}/{id}";
         }
 
         public class ClinicRoutes

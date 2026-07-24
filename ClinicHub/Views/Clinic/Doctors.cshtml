@@ -1,0 +1,403 @@
+@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
+@{
+    ViewData["Title"] = "إدارة الأطباء - Doctory";
+    Layout = "_ClinicLayout";
+    var _user = ViewBag.CurrentUser as CurrentUserContext;
+    var doctors = ViewBag.DoctorsList as IReadOnlyCollection<DoctorDto> ?? new List<DoctorDto>();
+    var pagination = ViewBag.Pagination as PagginatedResult<DoctorDto>;
+    var specializations = ViewBag.Specializations as IReadOnlyCollection<SpecializationDto> ?? new List<SpecializationDto>();
+    var searchTerm = ViewBag.SearchTerm as string;
+    var selectedSpecId = ViewBag.SelectedSpecializationId as Guid?;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">إدارة الأطباء</h2>
+    <button class="btn" id="addDoctorBtn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 20px; border-radius: 5px;">
+        <i class="bi bi-person-plus me-1"></i> إضافة طبيب
+    </button>
+</div>
+
+@if (_user?.MaxDoctors.HasValue == true)
+{
+    <div class="plan-info-bar" style="margin-bottom: 20px;">
+        <div class="plan-info-item">
+            <span class="plan-info-label">الحد الأقصى للأطباء في باقتك</span>
+            <span class="plan-info-value">@_user.MaxDoctors طبيب</span>
+        </div>
+        <span style="font-size: 12px; color: var(--clr-text-secondary);">لزيادة الحد الأقصى، قم بترقية باقتك.</span>
+        <a href="/Clinic/MySubscription" class="plan-info-link">ترقية الباقة <i class="bi bi-arrow-left"></i></a>
+    </div>
+}
+
+<div class="table-card" style="padding: 20px; margin-bottom: 24px;">
+    <form method="get" action="@Url.Action("Doctors")" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label" style="font-weight: 600; font-size: 13px;">بحث</label>
+            <input type="text" name="searchTerm" class="form-control auth-form-control" style="padding: 8px 12px; font-size: 13px;" placeholder="ابحث باسم الطبيب أو البريد الإلكتروني..." value="@searchTerm" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص</label>
+            <select name="specializationId" class="form-select auth-form-control" style="padding: 8px 12px; font-size: 13px;">
+                <option value="">جميع التخصصات</option>
+                @foreach (var spec in specializations)
+                {
+                    <option value="@spec.Id" selected="@(selectedSpecId == spec.Id)">@spec.ArName</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 8px 20px; border-radius: 5px; font-size: 13px; width: 100%;">
+                <i class="bi bi-search me-1"></i> بحث
+            </button>
+        </div>
+    </form>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<div class="table-card" style="padding: 24px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 style="font-weight: 700; margin: 0;">قائمة الأطباء</h4>
+        @if (pagination != null)
+        {
+            <span style="font-size: 13px; color: var(--clr-text-secondary);">إجمالي: @pagination.TotalCount طبيب</span>
+        }
+    </div>
+
+    @if (doctors.Count == 0)
+    {
+        <div style="text-align: center; padding: 40px 20px; color: var(--clr-text-secondary);">
+            <i class="bi bi-people" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
+            <p style="font-size: 16px;">لا يوجد أطباء مسجلون في العيادة</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>التخصص</th>
+                        <th>سنوات الخبرة</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإضافة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var doctor in doctors)
+                    {
+                        <tr>
+                            <td><strong>@doctor.UserName</strong></td>
+                            <td style="font-size: 13px; color: var(--clr-text-secondary);">@doctor.UserEmail</td>
+                            <td><span class="badge badge-info">@doctor.SpecializationName</span></td>
+                            <td>@doctor.YearsOfExperience سنة</td>
+                            <td>
+                                @if (doctor.IsActive)
+                                {
+                                    <span class="badge badge-success">نشط</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger">غير نشط</span>
+                                }
+                            </td>
+                            <td style="font-size: 13px; color: var(--clr-text-secondary);">@doctor.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <div style="display: flex; gap: 6px;">
+                                    <button class="btn btn-sm edit-doctor-btn"
+                                            data-id="@doctor.Id"
+                                            data-userid="@doctor.UserId"
+                                            data-name="@doctor.UserName"
+                                            data-email="@doctor.UserEmail"
+                                            data-specializationid="@doctor.SpecializationId"
+                                            data-bio="@doctor.Bio"
+                                            data-experience="@doctor.YearsOfExperience"
+                                            data-active="@doctor.IsActive.ToString().ToLower()"
+                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-primary);">
+                                        <i class="bi bi-pencil me-1"></i> تعديل
+                                    </button>
+                                    <button class="btn btn-sm delete-doctor-btn"
+                                            data-id="@doctor.Id"
+                                            data-name="@doctor.UserName"
+                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-danger);">
+                                        <i class="bi bi-trash me-1"></i> حذف
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        if (pagination != null && pagination.TotalPages > 1)
+        {
+            <nav class="pagination-nav" style="margin-top: 20px;">
+                <ul class="pagination-list">
+                    @if (pagination.HasPreviousPage)
+                    {
+                        <li class="pagination-item">
+                            <a class="pagination-link" href="@Url.Action("Doctors", new { pageNumber = pagination.PageNumber - 1, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg> السابق
+                            </a>
+                        </li>
+                    }
+                    @for (var i = 1; i <= pagination.TotalPages; i++)
+                    {
+                        <li class="pagination-item">
+                            <a class="pagination-link @(i == pagination.PageNumber ? "pagination-link--active" : "")"
+                               href="@Url.Action("Doctors", new { pageNumber = i, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">@i</a>
+                        </li>
+                    }
+                    @if (pagination.HasNextPage)
+                    {
+                        <li class="pagination-item">
+                            <a class="pagination-link" href="@Url.Action("Doctors", new { pageNumber = pagination.PageNumber + 1, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">
+                                التالي <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+<div class="modal fade" id="createDoctorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
+                <h5 class="modal-title" style="font-weight: 700;">إضافة طبيب جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: var(--space-6);">
+                <form id="createDoctorForm">
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل</label>
+                        <input type="text" class="form-control auth-form-control" id="createDoctorName" placeholder="الاسم الكامل" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني</label>
+                        <input type="email" class="form-control auth-form-control" id="createDoctorEmail" placeholder="البريد الإلكتروني" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف</label>
+                        <input type="text" class="form-control auth-form-control" id="createDoctorPhone" placeholder="رقم الهاتف" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">كلمة المرور</label>
+                        <input type="password" class="form-control auth-form-control" id="createDoctorPassword" placeholder="كلمة المرور" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص</label>
+                        <select class="form-select auth-form-control" id="createDoctorSpecializationId" required style="padding: 8px 12px; font-size: 13px;">
+                            <option value="">اختر التخصص</option>
+                            @foreach (var spec in specializations)
+                            {
+                                <option value="@spec.Id">@spec.ArName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">سنوات الخبرة</label>
+                        <input type="number" class="form-control auth-form-control" id="createDoctorExperience" value="0" min="0" required style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية (اختياري)</label>
+                        <textarea class="form-control auth-form-control" id="createDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;" placeholder="نبذة عن الطبيب..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--clr-border); padding: var(--space-4) var(--space-6);">
+                <button type="button" class="btn" data-bs-dismiss="modal" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-weight: 600;">إلغاء</button>
+                <button type="button" class="btn" id="createDoctorSubmitBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-weight: 600;">إضافة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editDoctorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
+                <h5 class="modal-title" style="font-weight: 700;">تعديل بيانات الطبيب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: var(--space-6);">
+                <form id="editDoctorForm">
+                    <input type="hidden" id="editDoctorId" />
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم</label>
+                        <input type="text" class="form-control auth-form-control" id="editDoctorName" readonly style="padding: 8px 12px; font-size: 13px; background: var(--clr-table-header);" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني</label>
+                        <input type="email" class="form-control auth-form-control" id="editDoctorEmail" readonly style="padding: 8px 12px; font-size: 13px; background: var(--clr-table-header);" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص</label>
+                        <select class="form-select auth-form-control" id="editDoctorSpecializationId" style="padding: 8px 12px; font-size: 13px;">
+                            <option value="">اختر التخصص</option>
+                            @foreach (var spec in specializations)
+                            {
+                                <option value="@spec.Id">@spec.ArName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">سنوات الخبرة</label>
+                        <input type="number" class="form-control auth-form-control" id="editDoctorExperience" min="0" style="padding: 8px 12px; font-size: 13px;" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية</label>
+                        <textarea class="form-control auth-form-control" id="editDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--clr-border); padding: var(--space-4) var(--space-6);">
+                <button type="button" class="btn" data-bs-dismiss="modal" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-weight: 600;">إلغاء</button>
+                <button type="button" class="btn" id="editDoctorSubmitBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-weight: 600;">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $('#addDoctorBtn').on('click', function () {
+            $('#createDoctorName').val('');
+            $('#createDoctorEmail').val('');
+            $('#createDoctorPhone').val('');
+            $('#createDoctorPassword').val('');
+            $('#createDoctorSpecializationId').val('');
+            $('#createDoctorExperience').val(0);
+            $('#createDoctorBio').val('');
+            $('#createDoctorModal').modal('show');
+        });
+
+        $('#createDoctorSubmitBtn').on('click', function () {
+            var name = $('#createDoctorName').val().trim();
+            var email = $('#createDoctorEmail').val().trim();
+            var phone = $('#createDoctorPhone').val().trim();
+            var password = $('#createDoctorPassword').val();
+            var specializationId = $('#createDoctorSpecializationId').val();
+            var experience = parseInt($('#createDoctorExperience').val()) || 0;
+            var bio = $('#createDoctorBio').val().trim();
+
+            if (!name) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
+            if (!email) { showErrorModal('يرجى إدخال البريد الإلكتروني'); return; }
+            if (!phone) { showErrorModal('يرجى إدخال رقم الهاتف'); return; }
+            if (!password) { showErrorModal('يرجى إدخال كلمة المرور'); return; }
+            if (!specializationId) { showErrorModal('يرجى اختيار التخصص'); return; }
+
+            $.ajax({
+                url: '@Url.Action("CreateDoctor")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    fullName: name,
+                    email: email,
+                    phoneNumber: phone,
+                    password: password,
+                    specializationId: specializationId,
+                    yearsOfExperience: experience,
+                    bio: bio || null
+                }),
+                success: function (res) {
+                    if (res.success) {
+                        $('#createDoctorModal').modal('hide');
+                        showSuccessModal('تم إضافة الطبيب بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(res.message);
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'حدث خطأ أثناء إضافة الطبيب';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        });
+
+        $('.edit-doctor-btn').on('click', function () {
+            var btn = $(this);
+            $('#editDoctorId').val(btn.data('id'));
+            $('#editDoctorName').val(btn.data('name'));
+            $('#editDoctorEmail').val(btn.data('email'));
+            $('#editDoctorSpecializationId').val(btn.data('specializationid'));
+            $('#editDoctorExperience').val(btn.data('experience'));
+            $('#editDoctorBio').val(btn.data('bio') || '');
+            $('#editDoctorModal').modal('show');
+        });
+
+        $('#editDoctorSubmitBtn').on('click', function () {
+            var id = $('#editDoctorId').val();
+            var specializationId = $('#editDoctorSpecializationId').val();
+            var experience = parseInt($('#editDoctorExperience').val()) || 0;
+            var bio = $('#editDoctorBio').val().trim();
+
+            $.ajax({
+                url: '@Url.Action("UpdateDoctor")/' + id,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    bio: bio || null,
+                    yearsOfExperience: experience || null
+                }),
+                success: function (res) {
+                    if (res.success) {
+                        $('#editDoctorModal').modal('hide');
+                        showSuccessModal('تم تحديث بيانات الطبيب بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(res.message);
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'حدث خطأ أثناء تحديث الطبيب';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        });
+
+        $('.delete-doctor-btn').on('click', function () {
+            var btn = $(this);
+            var id = btn.data('id');
+            var name = btn.data('name');
+            showConfirmModal('هل أنت متأكد من حذف الطبيب <strong>' + name + '</strong>؟', function (confirmed) {
+                if (confirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteDoctor")/' + id,
+                        type: 'POST',
+                        success: function (res) {
+                            if (res.success) {
+                                showSuccessModal('تم حذف الطبيب بنجاح');
+                                setTimeout(function () { location.reload(); }, 1500);
+                            } else {
+                                showErrorModal(res.message);
+                            }
+                        },
+                        error: function (xhr) {
+                            var msg = 'حدث خطأ أثناء حذف الطبيب';
+                            try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                            showErrorModal(msg);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

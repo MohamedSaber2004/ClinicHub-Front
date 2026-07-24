@@ -53,10 +53,10 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في بدء الدفع" : combined);
             }
 
-            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"];
-            var dataJson = dataToken?.ToString() ?? responseBody;
-            return JsonConvert.DeserializeObject<InitiatePaymentResponseDto>(dataJson, _jsonSettings)!;
+            if (string.IsNullOrWhiteSpace(responseBody))
+                throw new ApiException(500, "استجابة فارغة من الخادم");
+
+            return DeserializeData<InitiatePaymentResponseDto>(responseBody);
         }
 
         public async Task<SubscriptionDto> GetMySubscriptionAsync()
@@ -71,10 +71,37 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في جلب الاشتراك" : combined);
             }
 
-            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"];
-            var dataJson = dataToken?.ToString() ?? responseBody;
-            return JsonConvert.DeserializeObject<SubscriptionDto>(dataJson, _jsonSettings)!;
+            if (string.IsNullOrWhiteSpace(responseBody))
+                throw new ApiException(500, "استجابة فارغة من الخادم");
+
+            return DeserializeData<SubscriptionDto>(responseBody);
+        }
+
+        private static T DeserializeData<T>(string responseBody) where T : class
+        {
+            try
+            {
+                var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+                var dataToken = obj?["data"] ?? obj?["Data"];
+                if (dataToken != null)
+                {
+                    var dataJson = dataToken.ToString();
+                    return JsonConvert.DeserializeObject<T>(dataJson, _jsonSettings) ?? throw new ApiException(500, "فشل تحليل بيانات الاستجابة");
+                }
+            }
+            catch
+            {
+                // Not a JSON object wrapper — try direct deserialization below
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(responseBody, _jsonSettings) ?? throw new ApiException(500, "فشل تحليل بيانات الاستجابة");
+            }
+            catch
+            {
+                throw new ApiException(500, "فشل تحليل بيانات الاستجابة");
+            }
         }
 
         public async Task<string> CancelMySubscriptionAsync()

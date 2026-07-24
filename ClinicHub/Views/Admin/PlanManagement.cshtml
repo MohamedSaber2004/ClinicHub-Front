@@ -198,8 +198,31 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">الميزات (ميزة واحدة في كل سطر)</label>
-                    <textarea id="planFeatures" class="form-textarea" rows="5" placeholder="إدارة المواعيد&#10;السجلات الطبية&#10;..."></textarea>
+                    <label class="form-label">الميزات المتاحة في الباقة</label>
+                    <div class="plan-features-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-top: var(--space-2);">
+                        @{
+                            var allFeatures = new Dictionary<string, string>
+                            {
+                                ["appointments"] = "إدارة المواعيد",
+                                ["patient_records"] = "السجلات الطبية",
+                                ["basic_reports"] = "تقارير أساسية",
+                                ["advanced_reports"] = "تقارير متقدمة",
+                                ["marketing_tools"] = "أدوات تسويقية",
+                                ["priority_support"] = "دعم ذو أولوية",
+                                ["online_booking"] = "الحجز والدفع أونلاين",
+                                ["staff_management"] = "إدارة الموظفين",
+                                ["doctor_management"] = "إدارة الأطباء",
+                            };
+                        }
+                        @foreach (var kvp in allFeatures)
+                        {
+                            <label class="form-toggle feature-toggle" data-feature-key="@kvp.Key">
+                                <input type="checkbox" class="feature-checkbox" value="@kvp.Key" />
+                                <span class="toggle-track"></span>
+                                <span class="toggle-label">@kvp.Value</span>
+                            </label>
+                        }
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-toggle">
@@ -248,8 +271,26 @@
             var planMaxDoctors = document.getElementById('planMaxDoctors');
             var planMaxStaff = document.getElementById('planMaxStaff');
             var planSortOrder = document.getElementById('planSortOrder');
-            var planFeatures = document.getElementById('planFeatures');
             var planIsActive = document.getElementById('planIsActive');
+            var featureCheckboxes = document.querySelectorAll('.feature-checkbox');
+
+            function getSelectedFeatures() {
+                var selected = [];
+                featureCheckboxes.forEach(function(cb) {
+                    if (cb.checked) selected.push(cb.value);
+                });
+                return selected;
+            }
+
+            function setSelectedFeatures(features) {
+                featureCheckboxes.forEach(function(cb) {
+                    cb.checked = features.indexOf(cb.value) !== -1;
+                });
+            }
+
+            function resetFeatures() {
+                featureCheckboxes.forEach(function(cb) { cb.checked = false; });
+            }
 
             var modal = new bootstrap.Modal(modalEl);
             var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
@@ -263,7 +304,7 @@
                 planMaxDoctors.value = '';
                 planMaxStaff.value = '';
                 planSortOrder.value = '';
-                planFeatures.value = '';
+                resetFeatures();
                 planIsActive.checked = true;
             });
 
@@ -280,9 +321,9 @@
                     planIsActive.checked = btn.getAttribute('data-active') === 'true';
                     try {
                         var features = JSON.parse(btn.getAttribute('data-features'));
-                        planFeatures.value = features.join('\n');
+                        setSelectedFeatures(features);
                     } catch(e) {
-                        planFeatures.value = '';
+                        resetFeatures();
                     }
                     modal.show();
                 });
@@ -338,7 +379,7 @@
                     maxDoctors: planMaxDoctors.value ? parseInt(planMaxDoctors.value) : null,
                     maxStaff: planMaxStaff.value ? parseInt(planMaxStaff.value) : null,
                     sortOrder: parseInt(planSortOrder.value) || 0,
-                    features: JSON.stringify(planFeatures.value.split('\n').filter(function(f) { return f.trim(); })),
+                    features: JSON.stringify(getSelectedFeatures()),
                     isActive: planIsActive.checked
                 };
                 var btn = document.getElementById('savePlanBtn');

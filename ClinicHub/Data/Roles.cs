@@ -56,6 +56,50 @@ namespace ClinicHub.Data
         ViewOwnBilling = 1L << 22,
     }
 
+    [Flags]
+    public enum PlanFeature : long
+    {
+        None = 0,
+        ManageAppointments = 1L << 0,
+        ManagePatientRecords = 1L << 1,
+        BasicReports = 1L << 2,
+        AdvancedReports = 1L << 3,
+        MarketingTools = 1L << 4,
+        PrioritySupport = 1L << 5,
+        OnlineBooking = 1L << 6,
+        ManageStaff = 1L << 7,
+        ManageDoctors = 1L << 8,
+    }
+
+    public static class PlanFeatureMap
+    {
+        private static readonly Dictionary<string, PlanFeature> FeatureKeyMap = new()
+        {
+            ["appointments"] = PlanFeature.ManageAppointments,
+            ["patient_records"] = PlanFeature.ManagePatientRecords,
+            ["basic_reports"] = PlanFeature.BasicReports,
+            ["advanced_reports"] = PlanFeature.AdvancedReports,
+            ["marketing_tools"] = PlanFeature.MarketingTools,
+            ["priority_support"] = PlanFeature.PrioritySupport,
+            ["online_booking"] = PlanFeature.OnlineBooking,
+            ["staff_management"] = PlanFeature.ManageStaff,
+            ["doctor_management"] = PlanFeature.ManageDoctors,
+        };
+
+        public static PlanFeature FromFeatureStrings(List<string> features)
+        {
+            var result = PlanFeature.None;
+            foreach (var key in features)
+            {
+                if (FeatureKeyMap.TryGetValue(key, out var feature))
+                {
+                    result |= feature;
+                }
+            }
+            return result;
+        }
+    }
+
     public static class RolePermissions
     {
         public static Permission For(UserRole role, DoctorEmploymentType? doctorType = null)

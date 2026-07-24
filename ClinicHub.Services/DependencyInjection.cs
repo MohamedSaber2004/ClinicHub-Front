@@ -72,6 +72,20 @@ namespace ClinicHub.Services
             })
             .AddHttpMessageHandler<BearerTokenHandler>();
 
+            services.AddHttpClient<IClinicDoctorService, ClinicDoctorService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>()
+            .AddHttpMessageHandler<ClinicHeaderHandler>();
+
+            services.AddHttpClient<IClinicStaffService, ClinicStaffService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>()
+            .AddHttpMessageHandler<ClinicHeaderHandler>();
+
             return services;
         }
     }

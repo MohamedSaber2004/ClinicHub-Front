@@ -1,189 +1,230 @@
-# Permission-Based Subscription System
+# خطة تكامل صلاحيات الباقات (Subscription Permission System)
 
 ## Overview
 
-Each subscription plan now has **granular permissions** stored in a `PlanPermissions` table. The old binary `[RequireSubscription]` (on/off) is replaced with `[RequirePlanPermission]` that checks if the clinic's active plan includes a specific permission.
+The frontend enforces **plan-based access control** by reading the plan's feature list
+(from the subscription/plan API) and mapping each feature string to a `PlanFeature` flag.
+Views and sidebar items check `CurrentUserContext.HasFeature(PlanFeature.X)` before
+rendering.
 
-## Plan Permission Matrix
+## Backend → Frontend Contract
 
-| Permission | Basic | Standard | Premium |
-|---|---|---|---|
-| ManageAppointments | ✓ | ✓ | ✓ |
-| PatientRecords | ✓ | ✓ | ✓ |
-| BasicReports | ✓ | ✓ | ✓ |
-| OnlineBooking | ✓ | ✓ | ✓ |
-| ManageStaff | ✓ | ✓ | ✓ |
-| ManageDoctors | ✓ | ✓ | ✓ |
-| AdvancedReports | — | ✓ | ✓ |
-| MarketingTools | — | — | ✓ |
-| PrioritySupport | — | — | ✓ |
+### 1. Plans API (`GET /api/v1/plans`)
 
-## New Domain Types
+Each plan must include a `features` field — a JSON array of **feature key strings**.
+These keys are the single source of truth; the frontend maps them to internal flags.
 
-### `SubscriptionPermission` enum (`Domain/Enums/`)
-
-```csharp
-[Flags]
-public enum SubscriptionPermission
-{
-    None = 0,
-    ManageAppointments = 1,
-    PatientRecords = 2,
-    BasicReports = 4,
-    AdvancedReports = 8,
-    MarketingTools = 16,
-    PrioritySupport = 32,
-    ManageStaff = 64,
-    ManageDoctors = 128,
-    OnlineBooking = 256,
-    All = ~0
-}
+```json
+[
+  {
+    "id": "guid",
+    "name": "Basic",
+    "nameAr": "أساسية",
+    "priceMonthly": 500,
+    "priceYearly": 5000,
+    "maxDoctors": 2,
+    "maxStaff": 5,
+    "features": "[\"appointments\",\"patient_records\",\"basic_reports\",\"online_booking\",\"staff_management\",\"doctor_management\"]",
+    "isActive": true,
+    "sortOrder": 1
+  },
+  {
+    "id": "guid",
+    "name": "Standard",
+    "nameAr": "قياسية",
+    "priceMonthly": 1000,
+    "priceYearly": 10000,
+    "maxDoctors": 5,
+    "maxStaff": 15,
+    "features": "[\"appointments\",\"patient_records\",\"basic_reports\",\"advanced_reports\",\"sms_notifications\",\"online_booking\",\"staff_management\",\"doctor_management\"]",
+    "isActive": true,
+    "sortOrder": 2
+  },
+  {
+    "id": "guid",
+    "name": "Premium",
+    "nameAr": "بريميوم",
+    "priceMonthly": 2000,
+    "priceYearly": 20000,
+    "maxDoctors": null,
+    "maxStaff": null,
+    "features": "[\"appointments\",\"patient_records\",\"basic_reports\",\"advanced_reports\",\"sms_notifications\",\"marketing_tools\",\"priority_support\",\"online_booking\",\"staff_management\",\"doctor_management\"]",
+    "isActive": true,
+    "sortOrder": 3
+  }
+]
 ```
 
-### `PlanPermission` entity (`Domain/Entities/`)
+**Key rules:**
+- `features` is a **JSON string** (not a raw array), deserialized by the frontend.
+- `maxDoctors` / `maxStaff` = `null` means **unlimited**.
+- The `nameAr` is used for display in the sidebar/clinic dashboard.
 
-```csharp
-public class PlanPermission : BaseEntity<Guid>
-{
-    public Guid PlanId { get; set; }
-    public Plan Plan { get; set; } = null!;
-    public SubscriptionPermission Permission { get; set; }
-}
-```
+### 2. My Subscription API (`GET /api/v1/subscriptions/my`)
 
-`Plan.Permissions` navigation was added to the existing `Plan` entity.
-
-## Using the Action Filter
-
-### Server-side: Guard controller endpoints
-
-```csharp
-// Class-level — all actions require this permission
-[ApiVersion("1.0")]
-[RoleAuthorize(nameof(UserType.ClinicOwner))]
-[RequirePlanPermission(SubscriptionPermission.MarketingTools)]
-public class AdvertisementsController : BaseApiController
-{
-}
-
-// Action-level — specific endpoint requires this permission
-[HttpGet]
-[Route(ApiRoutes.ClinicManagement.Dashboard)]
-[RoleAuthorize(nameof(UserType.ClinicOwner))]
-[RequirePlanPermission(SubscriptionPermission.BasicReports)]
-public async Task<IActionResult> Dashboard()
-{
-}
-```
-
-Multiple permissions can be stacked (all must pass):
-
-```csharp
-[RequirePlanPermission(SubscriptionPermission.AdvancedReports)]
-[RequirePlanPermission(SubscriptionPermission.PrioritySupport)]
-```
-
-### Filter behavior
-
-The filter loads the clinic's active subscription → loads the Plan → checks if the plan's `PlanPermissions` contains the required permission.
-
-| Condition | Response |
-|---|---|
-| No clinic ID | 403 "Clinic not found" |
-| No active subscription | 403 "Active subscription required" |
-| Plan lacks permission | 403 "Your current plan does not include this feature" |
-| Permission found | Pass — request continues |
-
-## API: Subscription Response Includes Permissions
-
-`GET /api/v1/subscriptions/my` now returns permissions:
+Returns the clinic's current subscription including plan info so the frontend can
+resolve plan features and limits.
 
 ```json
 {
   "id": "guid",
-  "planName": "Basic",
-  "permissions": [
-    "ManageAppointments",
-    "PatientRecords",
-    "BasicReports",
-    "ManageStaff",
-    "ManageDoctors",
-    "OnlineBooking"
-  ],
-  "isActive": true,
-  ...
+  "clinicId": "guid",
+  "clinicName": "عيادة السلام الطبي",
+  "planId": "guid",
+  "planName": "قياسية",
+  "period": 0,
+  "startDate": "2026-07-23T00:00:00",
+  "endDate": "2027-07-23T00:00:00",
+  "status": 0,
+  "amount": 10000,
+  "paidAt": "2026-07-23T00:00:00",
+  "isActive": true
 }
 ```
 
-`GET /api/v1/plans` also returns permissions per plan.
+The frontend uses `planId` to look up the plan details (via plans API or embedded) and
+reads the `features` + `maxDoctors` + `maxStaff` from it.
 
-## Frontend Integration
+### 3. Current User API (`GET /api/v1/auth/me`)
 
-### 1. Fetch and cache permissions on login
+Should eventually include the active plan information so the frontend can set
+`CurrentUserContext` correctly after login.
 
-```js
-async function fetchMyPermissions() {
-  const token = localStorage.getItem('accessToken');
-  const res = await fetch('/api/v1/subscriptions/my', {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const body = await res.json();
-  const permissions = body.data?.permissions ?? [];
-  localStorage.setItem('myPermissions', JSON.stringify(permissions));
-  return permissions;
-}
-```
-
-### 2. Check permissions in UI
-
-```js
-function hasPermission(name) {
-  const perms = JSON.parse(localStorage.getItem('myPermissions') || '[]');
-  return perms.includes(name);
-}
-
-// Usage
-if (hasPermission('AdvancedReports')) {
-  // Show advanced reports feature
-} else {
-  // Show locked state with upgrade prompt
-}
-```
-
-### 3. Locked feature UX
-
-```jsx
-function FeatureCard({ name, requiredPermission, children }) {
-  const hasAccess = hasPermission(requiredPermission);
-
-  if (!hasAccess) {
-    return (
-      <div className="card card-locked" onClick={showUpgradeModal}>
-        <span className="lock-icon">🔒</span>
-        <p>{name}</p>
-        <small>Upgrade to access</small>
-      </div>
-    );
+```json
+{
+  "id": 6,
+  "fullName": "...",
+  "email": "...",
+  "role": "ClinicOwner",
+  "permissions": [...],
+  "plan": {
+    "id": "guid",
+    "name": "قياسية",
+    "features": ["appointments", "patient_records", ...],
+    "maxDoctors": 5,
+    "maxStaff": 15,
+    "isActive": true
   }
-
-  return <div className="card">{children}</div>;
 }
 ```
 
-## Adding a New Permission
+## Feature Key → PlanFeature Mapping
 
-1. Add value to `SubscriptionPermission` enum (powers of 2)
-2. Add `PlanPermission` row for each plan that should have it (via migration SQL or DataSeeder)
-3. Apply `[RequirePlanPermission(NewPermission)]` to the relevant controller/action
+The frontend (`Roles.cs:PlanFeatureMap`) maintains a hard-coded dictionary that
+translates API feature keys to `PlanFeature` flags:
 
-## Relationship to `[RoleAuthorize]`
+| API Feature Key         | PlanFeature Flag         |
+|-------------------------|--------------------------|
+| `appointments`          | `ManageAppointments`     |
+| `patient_records`       | `ManagePatientRecords`   |
+| `basic_reports`         | `BasicReports`           |
+| `advanced_reports`      | `AdvancedReports`        |
+| `sms_notifications`     | `SmsNotifications`       |
+| `marketing_tools`       | `MarketingTools`         |
+| `priority_support`      | `PrioritySupport`        |
+| `online_booking`        | `OnlineBooking`          |
+| `staff_management`      | `ManageStaff`            |
+| `doctor_management`     | `ManageDoctors`          |
 
-`[RequirePlanPermission]` is **orthogonal** to `[RoleAuthorize]`. They work together:
+**If you add a new feature key on the backend, you MUST add a corresponding entry**
+**in `PlanFeatureMap.FeatureKeyMap` (in `Data/Roles.cs`).**
 
-```csharp
-// User must be ClinicOwner AND their plan must include ManageStaff
-[RoleAuthorize(nameof(UserType.ClinicOwner))]
-[RequirePlanPermission(SubscriptionPermission.ManageStaff)]
+## Plan Permission Matrix
+
+| Feature                | Basic | Standard | Premium |
+|------------------------|-------|----------|---------|
+| إدارة المواعيد         | ✓     | ✓        | ✓       |
+| السجلات الطبية         | ✓     | ✓        | ✓       |
+| تقارير أساسية          | ✓     | ✓        | ✓       |
+| الحجز والدفع أونلاين   | ✓     | ✓        | ✓       |
+| إدارة الموظفين         | ✓     | ✓        | ✓       |
+| إدارة الأطباء          | ✓     | ✓        | ✓       |
+| تقارير متقدمة          | —     | ✓        | ✓       |
+| إشعارات SMS            | —     | ✓        | ✓       |
+| أدوات تسويقية          | —     | —        | ✓       |
+| دعم ذو أولوية          | —     | —        | ✓       |
+
+## What the Frontend Does With This Data
+
+### On page load (`ClinicController.OnActionExecuting`):
+
+1. Fetches subscription from `_subscriptionService.GetMySubscriptionAsync()`
+2. Fetches plan list from `_planService.GetAllAsync()`
+3. Finds the matching plan by `planId`
+4. Deserializes `plan.Features` JSON → `List<string>`
+5. Calls `PlanFeatureMap.FromFeatureStrings(features)` → `PlanFeature` flags
+6. Sets `CurrentUserContext.PlanFeatures`, `MaxDoctors`, `MaxStaff`, `PlanName`
+
+### In views:
+
+- **Sidebar** (`_ClinicLayout.cshtml`): items check
+  `_user.HasFeature(PlanFeature.X)` before rendering. Features not in the plan
+  are hidden. Exclusive features like marketing tools and priority support only
+  show for plans that include them.
+- **Dashboard** (`Clinic/Index.cshtml`): shows a plan-info bar with limits and
+  enabled premium features.
+- **Staff page** (`Clinic/Staff.cshtml`): shows a limit notice when
+  `MaxStaff` has a value.
+- **Subscription banner** (`_SubscriptionBanner.cshtml`): shows active plan
+  limits or warns when subscription is inactive.
+
+## Backend Responsibilities
+
+### What the backend MUST provide:
+
+| Data                     | Endpoint                             | Used For                            |
+|--------------------------|--------------------------------------|--------------------------------------|
+| Plans with features list | `GET /api/v1/plans`                  | Feature resolution, limits, pricing  |
+| Current subscription     | `GET /api/v1/subscriptions/my`       | Plan resolution, active status       |
+| User role + permissions  | `GET /api/v1/auth/me`                | Role-based permission checks         |
+
+### What the backend SHOULD enforce:
+
+- `[RequirePlanPermission]` action filter (or equivalent) on controller actions
+  to prevent direct URL access to features not in the user's plan.
+- API responses should return `403 Forbidden` with a meaningful message when
+  the plan does not include a required feature.
+
+## How to Add a New Plan Feature
+
+1. **Backend:** Add the feature key string to the plan's `features` JSON array
+   for plans that should have it.
+2. **Frontend:** Add a new entry in `PlanFeature` enum (powers of 2) and a
+   matching entry in `PlanFeatureMap.FeatureKeyMap` in `Data/Roles.cs`.
+3. **Frontend:** Gate the UI element with
+   `_user.HasFeature(PlanFeature.YourNewFeature)` in the relevant view.
+4. **Frontend (optional):** Add the feature label in
+   `Views/Home/Subscriptions.cshtml` `featureLabels` dictionary for the
+   pricing page display.
+
+## Example: Adding "Telemedicine" Feature
+
+**Step 1 — Backend plan features (add key to JSON):**
+```
+Basic:   "...telemedicine..."
+Premium: "...telemedicine..."
 ```
 
-Both must pass for the request to proceed.
+**Step 2 — Frontend enum + map (`Data/Roles.cs`):**
+```csharp
+[Flags]
+public enum PlanFeature : long
+{
+    // ... existing ...
+    Telemedicine = 1L << 10,
+}
+
+// In PlanFeatureMap.FeatureKeyMap:
+["telemedicine"] = PlanFeature.Telemedicine,
+```
+
+**Step 3 — Gate UI (`_ClinicLayout.cshtml`):**
+```html
+@if (_user?.HasFeature(PlanFeature.Telemedicine) == true)
+{
+    <a class="sidebar-item" href="#">
+        <i class="bi bi-camera-video"></i>
+        <span>استشارة عن بعد</span>
+    </a>
+}
+```

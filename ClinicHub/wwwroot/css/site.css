@@ -142,6 +142,15 @@ body {
     transition: all var(--transition-base);
 }
 
+.sidebar-item i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
 /* Sidebar Profile */
 .sidebar-profile {
     display: flex;
@@ -200,6 +209,9 @@ body {
     font-size: 11px;
     color: var(--clr-text-secondary);
     line-height: 1.2;
+}
+.sidebar-plan-badge {
+    margin-right: auto;
 }
 
 /* Inline Toggle Switch for Tables */
@@ -4686,6 +4698,18 @@ body {
   background: #fef3c7;
   color: #92400e;
 }
+.subscription-banner--warning {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+.subscription-banner--warning .subscription-banner-btn {
+  color: #dc2626;
+}
+.subscription-banner--info {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+.subscription-banner--info .subscription-banner-btn {
+  color: #2563eb;
+}
 
 .table-actions .btn-sm {
   padding: 4px 10px;
@@ -4813,6 +4837,44 @@ body {
 .register-form-title {
   display: flex;
   align-items: center;
+}
+
+/* Plan Info Bar (Dashboard) */
+.plan-info-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+.plan-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.plan-info-label {
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+  font-weight: var(--fw-medium);
+}
+.plan-info-value {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+}
+.plan-info-link {
+  margin-right: auto;
+  font-size: var(--fs-sm);
+  color: var(--clr-primary);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+}
+.plan-info-link:hover {
+  text-decoration: underline;
 }
 
 

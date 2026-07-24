@@ -1,6 +1,8 @@
+@using ClinicHub.Data
 @{
     ViewData["Title"] = "إدارة العيادات - Doctory";
     Layout = "_ClinicLayout";
+    var _user = ViewBag.CurrentUser as CurrentUserContext;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -9,6 +11,37 @@
         <i class="bi bi-clock-history me-1"></i> آخر تحديث: اليوم، 05:48 م
     </div>
 </div>
+
+@if (_user != null)
+{
+    <div class="plan-info-bar">
+        <div class="plan-info-item">
+            <span class="plan-info-label">الباقة</span>
+            <span class="plan-info-value">@_user.PlanName</span>
+        </div>
+        <div class="plan-info-item">
+            <span class="plan-info-label">الأطباء</span>
+            <span class="plan-info-value">@(_user.MaxDoctors.HasValue ? $"الحد الأقصى: {_user.MaxDoctors}" : "غير محدود")</span>
+        </div>
+        <div class="plan-info-item">
+            <span class="plan-info-label">الموظفين</span>
+            <span class="plan-info-value">@(_user.MaxStaff.HasValue ? $"الحد الأقصى: {_user.MaxStaff}" : "غير محدود")</span>
+        </div>
+        @if (_user.HasFeature(PlanFeature.MarketingTools))
+        {
+            <div class="plan-info-item">
+                <span class="badge badge-success">أدوات تسويقية</span>
+            </div>
+        }
+        @if (_user.HasFeature(PlanFeature.PrioritySupport))
+        {
+            <div class="plan-info-item">
+                <span class="badge badge-info">دعم ذو أولوية</span>
+            </div>
+        }
+        <a href="/Clinic/MySubscription" class="plan-info-link">تفاصيل الاشتراك <i class="bi bi-arrow-left"></i></a>
+    </div>
+}
 
 <!-- Statistics Grid -->
 <div class="stats-grid">

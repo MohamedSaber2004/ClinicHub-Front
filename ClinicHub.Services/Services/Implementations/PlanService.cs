@@ -1,4 +1,3 @@
-using System.Text;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.Options;
@@ -42,12 +41,31 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في جلب الباقات" : combined);
             }
 
-            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"];
-            if (dataToken == null) return new();
+            if (string.IsNullOrWhiteSpace(responseBody)) return new();
 
-            var dataJson = dataToken.ToString();
-            return JsonConvert.DeserializeObject<List<PlanDto>>(dataJson, _jsonSettings) ?? new();
+            try
+            {
+                var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+                var dataToken = obj?["data"] ?? obj?["Data"];
+                if (dataToken != null)
+                {
+                    var dataJson = dataToken.ToString();
+                    return JsonConvert.DeserializeObject<List<PlanDto>>(dataJson, _jsonSettings) ?? new();
+                }
+            }
+            catch
+            {
+                // Not a JSON object wrapper — try direct array deserialization below
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<List<PlanDto>>(responseBody, _jsonSettings) ?? new();
+            }
+            catch
+            {
+                return new();
+            }
         }
 
         public async Task<ApiResponse<PlanDto>> GetByIdAsync(Guid id)
