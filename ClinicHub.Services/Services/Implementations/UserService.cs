@@ -6,6 +6,7 @@ using ClinicHub.Services.Options;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.RequestModels;
 using ClinicHub.Services.Routes.Api;
+using ClinicHub.Services.Utilities;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -142,7 +143,23 @@ namespace ClinicHub.Services.Services.Implementations
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync(_createUser, content);
-                return await _deserializerService.DeserializeApiResponse<ApiResponse<Guid>>(response, "حدث خطأ في إنشاء المستخدم");
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode && Guid.TryParse(body.Trim('"'), out var plainId))
+                    return new ApiResponse<Guid> { Success = true, Data = plainId };
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Guid>>(body, _jsonSettings);
+                if (apiResponse != null && apiResponse.Success)
+                    return apiResponse;
+
+                var errors = ApiErrorExtractor.ExtractErrors(body);
+                var combined = string.Join("\n", errors);
+
+                if (string.IsNullOrWhiteSpace(combined))
+                    combined = apiResponse?.Message ?? "حدث خطأ في إنشاء المستخدم";
+
+                var statusCode = apiResponse?.StatusCode > 0 ? apiResponse.StatusCode : (int)response.StatusCode;
+                throw new ApiException(statusCode, combined);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

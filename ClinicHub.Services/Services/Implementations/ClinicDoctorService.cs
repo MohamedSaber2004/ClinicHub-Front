@@ -51,6 +51,10 @@ namespace ClinicHub.Services.Services.Implementations
                     throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في جلب الأطباء" : combined);
                 }
 
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<PagginatedResult<DoctorDto>>>(body, _jsonSettings);
+                if (apiResponse != null && apiResponse.Success && apiResponse.Data != null)
+                    return apiResponse.Data;
+
                 var paginated = JsonConvert.DeserializeObject<PagginatedResult<DoctorDto>>(body, _jsonSettings);
                 return paginated ?? new PagginatedResult<DoctorDto>(new List<DoctorDto>(), 0, pageNumber, pageSize);
             }

@@ -228,6 +228,8 @@ namespace ClinicHub.Controllers
                 var email = body.GetProperty("email").GetString() ?? "";
                 var phoneNumber = body.GetProperty("phoneNumber").GetString() ?? "";
                 var password = body.GetProperty("password").GetString() ?? "";
+                var gender = body.GetProperty("gender").GetInt32();
+                var birthDate = body.TryGetProperty("birthDate", out var bdEl) ? bdEl.GetString() : null;
                 var specializationId = Guid.Parse(body.GetProperty("specializationId").GetString()!);
                 var yearsOfExperience = body.GetProperty("yearsOfExperience").GetInt32();
                 var bio = body.TryGetProperty("bio", out var bioEl) ? bioEl.GetString() : null;
@@ -238,6 +240,8 @@ namespace ClinicHub.Controllers
                     Email = email,
                     PhoneNumber = phoneNumber,
                     Password = password,
+                    Gender = (Services.Enums.Gender)gender,
+                    BirthDate = !string.IsNullOrEmpty(birthDate) ? DateTime.Parse(birthDate) : null,
                     Role = Services.Enums.UserType.Doctor,
                     ClinicId = clinicId,
                     SpecializationId = specializationId,
