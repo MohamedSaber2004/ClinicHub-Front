@@ -2314,6 +2314,11 @@ body {
   margin: 0;
 }
 
+.empty-state-icon {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
 /* ============================================================
    Detail grid inside verification detail (overrides)
    ============================================================ */
@@ -4837,6 +4842,15 @@ body {
 .register-form-title {
   display: flex;
   align-items: center;
+}
+
+/* Form Input Compact Variant (for dashboard filter bars & modals) */
+.form-input-sm {
+  padding: 8px 12px;
+  font-size: var(--fs-md);
+}
+.form-input-sm::placeholder {
+  font-size: var(--fs-md);
 }
 
 /* Plan Info Bar (Dashboard) */

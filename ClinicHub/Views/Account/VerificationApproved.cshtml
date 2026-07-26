@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "التحقق من الحساب";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card text-center">
+        <div class="auth-logo-section mb-4">
+            <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="32" height="32" rx="8" fill="var(--primary-color)"/>
+                <path d="M9 16C9 12.134 12.134 9 16 9C19.866 9 23 12.134 23 16C23 19.866 19.866 23 16 23V16H9Z" fill="white"/>
+                <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
+            </svg>
+            <span class="auth-logo-text">Doctory</span>
+        </div>
+
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <h3 class="auth-title text-danger">خطأ في التحقق</h3>
+            <div class="alert alert-danger auth-alert">
+                @ViewBag.ErrorMessage
+            </div>
+            <div class="mt-4">
+                <a href="@ClinicHub.Routes.HomeRoutes.Account.Login()" class="auth-btn-primary d-inline-block text-decoration-none">الذهاب لتسجيل الدخول</a>
+            </div>
+        }
+        else
+        {
+            <h3 class="auth-title">تمت التحقق بنجاح</h3>
+            <p class="text-muted mb-4">جاري إعادة توجيهك إلى صفحة الاشتراكات...</p>
+        }
+    </div>
+</div>

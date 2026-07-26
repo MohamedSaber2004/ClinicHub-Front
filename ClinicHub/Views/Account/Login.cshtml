@@ -24,6 +24,10 @@
         }
 
         <form asp-controller="Account" asp-action="Login" method="post" data-ajax="true">
+            @if (ViewBag.ReturnUrl != null)
+            {
+                <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+            }
             <div class="text-danger auth-alert" asp-validation-summary="ModelOnly"></div>
 
             <!-- Gmail -->

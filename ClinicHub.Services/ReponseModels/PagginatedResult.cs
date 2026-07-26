@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ClinicHub.Services.ReponseModels
 {
@@ -8,18 +9,28 @@ namespace ClinicHub.Services.ReponseModels
         public const int DefaultPageSize = 20;
         public const int MaxPageSize = 100;
 
+        [JsonPropertyName("items")]
         public IReadOnlyCollection<T> Items { get; }
 
+        [JsonPropertyName("pageNumber")]
         public int PageNumber { get; }
+
+        [JsonPropertyName("pageSize")]
         public int PageSize { get; }
 
+        [JsonPropertyName("totalPages")]
         public int TotalPages { get; }
+
+        [JsonPropertyName("totalCount")]
         public int TotalCount { get; }
 
+        [JsonPropertyName("hasPreviousPage")]
         public bool HasPreviousPage => PageNumber > 1;
+
+        [JsonPropertyName("hasNextPage")]
         public bool HasNextPage => PageNumber < TotalPages;
 
-        [JsonConstructor]
+        [Newtonsoft.Json.JsonConstructor]
         public PagginatedResult(
             [JsonProperty("items")] IReadOnlyCollection<T> items,
             [JsonProperty("totalCount")] int count,

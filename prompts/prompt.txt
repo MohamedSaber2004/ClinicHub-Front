@@ -1,1 +1,142 @@
-﻿فشل التحقق 'Birth Date' لا يجب أن يكون فارغاً. 'Gender' يحتوي على مجموعة من القيم التي لا تتضمن '0'.
+﻿Based on the link generated in the approval email:
+`https://doctory.runasp.net/auth/verification-approved?userId=0c292f97-a679-46be-07d2-08deeb59fd0f&role=ClinicOwner&status=accepted&token=155cdfe872a0b555cf06623d4233a5c22453437673b131d59fcb49ffab2a9759`
+
+Here is what is missing in your frontend application and how to implement the page/route handling and redirection flow step-by-step:
+
+---
+
+### Step 1: Create the Route for `/auth/verification-approved`
+
+In your frontend router (e.g. React Router, Next.js, or Vue Router), define a page route for `/auth/verification-approved`.
+
+### Step 2: Implement the Page Logic
+
+When the user opens this page from the email link:
+
+1. **Extract Query Parameters** from the URL:
+   - `userId`
+   - `role` (`ClinicOwner`)
+   - `status` (`accepted`)
+   - `token`
+
+2. **Verify Token & Handle Status**:
+   - Make an API call to the backend endpoint `POST /api/v1/deep-links/verify` passing the `token` (or verify user verification status).
+   - If `status === 'accepted'` and verification is successful:
+     - Prompt the user to **Log In** (if they are not currently logged in) or store the verification parameters.
+     - Automatically redirect them to the **Subscriptions / Plans page** (`/subscriptions` or `/plans`).
+
+---
+
+### Step 3: Example Code Implementation (React / Next.js example)
+
+Create a component at `pages/auth/verification-approved.jsx` (or `src/app/auth/verification-approved/page.tsx`):
+
+```jsx
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation'; // Or react-router-dom `useSearchParams`
+
+export default function VerificationApprovedPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const userId = searchParams.get('userId');
+    const role = searchParams.get('role');
+    const status = searchParams.get('status');
+    const token = searchParams.get('token');
+
+    if (!token || status !== 'accepted') {
+      setError('Invalid or expired verification link.');
+      setLoading(false);
+      return;
+    }
+
+    async function handleVerification() {
+      try {
+        // 1. (Optional) Validate token with backend if required
+        const res = await fetch('/api/v1/deep-links/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: userId, token })
+        });
+
+        // 2. Save notice or user state if logged in
+        localStorage.setItem('clinic_approval_status', 'accepted');
+
+        // 3. Redirect user to Login or Subscriptions page
+        const isLoggedIn = Boolean(localStorage.getItem('token')); // check current auth state
+
+        if (!isLoggedIn) {
+          // Redirect to login page with return URL pointing to subscriptions
+          router.push('/login?redirect=/subscriptions&approved=true');
+        } else {
+          // User is already logged in -> Go straight to Subscriptions
+          router.push('/subscriptions');
+        }
+      } catch (err) {
+        setError('Verification failed. Please try again or contact support.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    handleVerification();
+  }, [searchParams, router]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h2 className="text-xl font-semibold">Verifying your clinic account...</h2>
+        <p className="text-gray-500">Please wait while we redirect you.</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h2 className="text-xl font-bold text-red-600">Verification Error</h2>
+        <p className="text-gray-600">{error}</p>
+        <button 
+          onClick={() => router.push('/login')}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
+
+  return null;
+}
+```
+
+---
+
+### Step 4: Login Page Redirection Logic
+
+In your **Login Page** (`/login`), check for the `redirect` query parameter upon successful login:
+
+```js
+// Inside your handleLoginSuccess function:
+const searchParams = new URLSearchParams(window.location.search);
+const redirectUrl = searchParams.get('redirect') || '/dashboard';
+
+// Navigate to subscriptions page after login
+router.push(redirectUrl); 
+```
+
+### Summary Flow
+
+```mermaid
+graph TD
+    A[User Clicks Email Link] --> B[/auth/verification-approved Route in Frontend]
+    B --> C{Is User Logged In?}
+    C -- Yes --> D[Redirect directly to /subscriptions]
+    C -- No --> E[Redirect to /login?redirect=/subscriptions]
+    E --> F[User Logs In Successfully]
+    F --> D
+```

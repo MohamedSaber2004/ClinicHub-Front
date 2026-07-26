@@ -1,7 +1,7 @@
 function showSuccessModal(message) {
     var msgEl = document.getElementById('globalSuccessMsg');
     if (!msgEl) return;
-    msgEl.innerHTML = message;
+    msgEl.innerHTML = message.replace(/\n/g, '<br>');
     var modalEl = document.getElementById('globalSuccessModal');
     if (!modalEl) return;
     var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -11,7 +11,7 @@ function showSuccessModal(message) {
 function showErrorModal(message) {
     var msgEl = document.getElementById('globalErrorMsg');
     if (!msgEl) return;
-    msgEl.innerHTML = message;
+    msgEl.innerHTML = message.replace(/\n/g, '<br>');
     var modalEl = document.getElementById('globalErrorModal');
     if (!modalEl) return;
     var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);

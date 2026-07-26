@@ -1,0 +1,51 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "تاريخ المريض";
+    Layout = "_DoctorLayout";
+    var patientName = ViewBag.PatientName as string ?? "مريض";
+    var history = ViewBag.History as List<MockPatientHistory> ?? new();
+}
+
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <i class="bi bi-clock-history"></i>
+    </span>
+    تاريخ المريض - @patientName
+</h2>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">الزيارات السابقة</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>التشخيص</th>
+                    <th>ملاحظات</th>
+                    <th>الوصفة</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in history)
+                {
+                    <tr>
+                        <td>@item.Date</td>
+                        <td>@item.Diagnosis</td>
+                        <td>@item.Notes</td>
+                        <td>@(!string.IsNullOrEmpty(item.Prescription) ? item.Prescription : "—")</td>
+                        <td><span class="badge @item.StatusClass">@item.Status</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="margin-top: var(--space-5);">
+    <a class="btn btn-outline-secondary" href="@DoctorRoutes.Pages.Patients()">
+        <i class="bi bi-arrow-right"></i> العودة لقائمة المرضى
+    </a>
+</div>

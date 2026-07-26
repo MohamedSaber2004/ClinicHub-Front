@@ -18,9 +18,29 @@ namespace ClinicHub.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewBag.ReturnUrl = returnUrl;
             return View();
+        }
+
+        [HttpGet]
+        [Route("auth/verification-approved")]
+        public IActionResult VerificationApproved([FromQuery] string? userId, [FromQuery] string? role, [FromQuery] string? status, [FromQuery] string? token)
+        {
+            if (string.IsNullOrEmpty(token) || status != "accepted")
+            {
+                ViewBag.ErrorMessage = "رابط التحقق غير صالِح أو منتهي الصلاحية.";
+                return View();
+            }
+
+            var isLoggedIn = Request.Cookies.ContainsKey("AccessToken");
+            if (!isLoggedIn)
+            {
+                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Subscriptions", "Home") });
+            }
+
+            return RedirectToAction("Subscriptions", "Home");
         }
 
         private void SetAuthCookies(Services.ReponseModels.AuthResponseDto result)
@@ -43,7 +63,7 @@ namespace ClinicHub.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login(string email, string password, string? returnUrl = null)
         {
             try
             {
@@ -51,11 +71,17 @@ namespace ClinicHub.Controllers
 
                 SetAuthCookies(result);
 
-                var redirectUrl = result.Roles.Contains(UserType.SuperAdmin.ToString())
-                    ? Url.Action("Index", "Admin")
-                    : result.Roles.Contains(UserType.ClinicOwner.ToString())
-                        ? Url.Action("Index", "Clinic")
-                        : Url.Action("Index", "Admin");
+                var redirectUrl = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+                    ? returnUrl
+                    : result.Roles.Contains(UserType.SuperAdmin.ToString())
+                        ? Url.Action("Index", "Admin")
+                        : result.Roles.Contains(UserType.ClinicOwner.ToString())
+                            ? Url.Action("Index", "Clinic")
+                            : result.Roles.Contains(UserType.Staff.ToString())
+                                ? Url.Action("Index", "Staff")
+                                : result.Roles.Contains(UserType.Doctor.ToString())
+                                    ? Url.Action("Index", "Doctor")
+                                    : Url.Action("Index", "Home");
 
                 return RedirectJson(redirectUrl!);
             }
@@ -238,10 +264,10 @@ namespace ClinicHub.Controllers
                 }
 
                 TempData["SuccessMessage"] = "تم إعادة تعيين كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.";
-            Response.Cookies.Delete("AccessToken");
-            Response.Cookies.Delete("RefreshToken");
+                Response.Cookies.Delete("AccessToken");
+                Response.Cookies.Delete("RefreshToken");
 
-            return RedirectJson(Url.Action("Login"));
+                return RedirectJson(Url.Action("Login"));
             }
             catch (ApiException ex)
             {

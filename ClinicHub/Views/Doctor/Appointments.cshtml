@@ -1,0 +1,71 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "مواعيدي";
+    Layout = "_DoctorLayout";
+    var appointments = ViewBag.Appointments as List<MockStaffAppointment> ?? new();
+}
+
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <i class="bi bi-calendar3"></i>
+    </span>
+    جميع المواعيد
+</h2>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">قائمة المواعيد</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>المريض</th>
+                    <th>التاريخ</th>
+                    <th>الوقت</th>
+                    <th>التخصص</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var app in appointments)
+                {
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="sidebar-profile-avatar" style="width: 28px; height: 28px;">
+                                    <span style="font-size: 11px;">@app.PatientInitial</span>
+                                </div>
+                                @app.PatientName
+                            </div>
+                        </td>
+                        <td>@app.Date</td>
+                        <td>@app.Time</td>
+                        <td>@app.Specialty</td>
+                        <td><span class="badge @app.StatusClass">@app.Status</span></td>
+                        <td>
+                            @if (app.Status == "قيد الانتظار")
+                            {
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn btn-sm btn-outline-success" onclick="alert('تم قبول الموعد')">
+                                        <i class="bi bi-check-lg"></i> قبول
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="alert('تم رفض الموعد')">
+                                        <i class="bi bi-x-lg"></i> رفض
+                                    </button>
+                                </div>
+                            }
+                            else if (app.Status == "مؤكد")
+                            {
+                                <button class="btn btn-sm btn-outline-primary" onclick="alert('تم إكمال الموعد')">
+                                    <i class="bi bi-check2-circle"></i> إكمال
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

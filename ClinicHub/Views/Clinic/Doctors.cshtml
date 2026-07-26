@@ -114,7 +114,12 @@
                             </td>
                             <td style="font-size: 13px; color: var(--clr-text-secondary);">@doctor.CreatedAt.ToString("yyyy-MM-dd")</td>
                             <td>
-                                <div style="display: flex; gap: 6px;">
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-secondary view-doctor-btn"
+                                            data-id="@doctor.Id"
+                                            title="عرض التفاصيل">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
                                     <button class="btn btn-sm edit-doctor-btn"
                                             data-id="@doctor.Id"
                                             data-userid="@doctor.UserId"
@@ -126,6 +131,14 @@
                                             data-active="@doctor.IsActive.ToString().ToLower()"
                                             style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-primary);">
                                         <i class="bi bi-pencil me-1"></i> تعديل
+                                    </button>
+                                    <button class="btn btn-sm change-password-doctor-btn"
+                                            data-id="@doctor.Id"
+                                            data-userid="@doctor.UserId"
+                                            data-name="@doctor.UserName"
+                                            title="تغيير كلمة المرور"
+                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-primary);">
+                                        <i class="bi bi-key me-1"></i>
                                     </button>
                                     <button class="btn btn-sm delete-doctor-btn"
                                             data-id="@doctor.Id"
@@ -282,8 +295,123 @@
     </div>
 </div>
 
+<div class="modal fade" id="viewDoctorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">تفاصيل الطبيب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-custom" id="viewDoctorBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordDoctorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">تغيير كلمة مرور الطبيب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-custom">
+                <form id="changePasswordDoctorForm">
+                    <input type="hidden" id="changePasswordDoctorId" />
+                    <div class="form-group mb-3">
+                        <label class="form-label">الطبيب</label>
+                        <p class="fw-bold" id="changePasswordDoctorName" style="margin: 0;"></p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور الجديدة</label>
+                        <input type="password" class="form-input form-input-sm w-100" id="changePasswordDoctorNew" placeholder="كلمة المرور الجديدة" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تأكيد كلمة المرور</label>
+                        <input type="password" class="form-input form-input-sm w-100" id="changePasswordDoctorConfirm" placeholder="تأكيد كلمة المرور" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="changePasswordDoctorSubmitBtn">حفظ كلمة المرور</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            var d = new Date(dateStr);
+            return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
+                + ' ' + d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function setButtonLoading(btn, isLoading) {
+            if (isLoading) {
+                btn.data('original-html', btn.html());
+                btn.prop('disabled', true);
+                btn.html('<span class="spinner-border spinner-border-sm me-1"></span> جاري...');
+            } else {
+                btn.prop('disabled', false);
+                btn.html(btn.data('original-html'));
+            }
+        }
+
+        function renderDoctorDetail(doctor) {
+            var statusHtml = doctor.isActive
+                ? '<span class="badge badge-success">نشط</span>'
+                : '<span class="badge badge-danger">غير نشط</span>';
+            return '<div class="detail-grid">'
+                + '<div class="detail-item"><span class="detail-label">الاسم الكامل</span><span class="detail-value">' + escapeHtml(doctor.userName) + '</span></div>'
+                + '<div class="detail-item"><span class="detail-label">البريد الإلكتروني</span><span class="detail-value">' + escapeHtml(doctor.userEmail) + '</span></div>'
+                + '<div class="detail-item"><span class="detail-label">التخصص</span><span class="detail-value">' + escapeHtml(doctor.specializationName) + '</span></div>'
+                + '<div class="detail-item"><span class="detail-label">سنوات الخبرة</span><span class="detail-value">' + doctor.yearsOfExperience + ' سنة</span></div>'
+                + '<div class="detail-item"><span class="detail-label">الحالة</span><span class="detail-value">' + statusHtml + '</span></div>'
+                + (doctor.bio ? '<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">السيرة الذاتية</span><span class="detail-value">' + escapeHtml(doctor.bio) + '</span></div>' : '')
+                + '<div class="detail-item"><span class="detail-label">تاريخ الإضافة</span><span class="detail-value">' + formatDate(doctor.createdAt) + '</span></div>'
+                + '</div>';
+        }
+
+        $('.view-doctor-btn').on('click', function () {
+            var id = $(this).data('id');
+            $('#viewDoctorBody').html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">جاري التحميل...</span></div></div>');
+            $('#viewDoctorModal').modal('show');
+
+            $.ajax({
+                url: '@Url.Action("GetDoctorById")/' + id,
+                type: 'GET',
+                success: function (res) {
+                    if (res.success && res.data) {
+                        $('#viewDoctorBody').html(renderDoctorDetail(res.data));
+                    } else {
+                        $('#viewDoctorBody').html('<div class="text-center py-4 text-muted">' + (res.message || 'تعذر تحميل بيانات الطبيب') + '</div>');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'تعذر تحميل بيانات الطبيب';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    $('#viewDoctorBody').html('<div class="text-center py-4 text-muted">' + msg + '</div>');
+                }
+            });
+        });
+
         $('#addDoctorBtn').on('click', function () {
             $('#createDoctorName').val('');
             $('#createDoctorEmail').val('');
@@ -350,8 +478,8 @@
         $('.edit-doctor-btn').on('click', function () {
             var btn = $(this);
             $('#editDoctorId').val(btn.data('id'));
-            $('#editDoctorName').val(btn.data('name'));
-            $('#editDoctorEmail').val(btn.data('email'));
+            $('#editDoctorName').val(btn.attr('data-name'));
+            $('#editDoctorEmail').val(btn.attr('data-email'));
             $('#editDoctorActive').prop('checked', btn.data('active') === true || btn.data('active') === 'true');
             $('#editDoctorExperience').val(btn.data('experience'));
             $('#editDoctorBio').val(btn.data('bio') || '');
@@ -390,10 +518,59 @@
             });
         });
 
+        $('.change-password-doctor-btn').on('click', function () {
+            var btn = $(this);
+            $('#changePasswordDoctorId').val(btn.attr('data-userid'));
+            $('#changePasswordDoctorName').text(btn.attr('data-name'));
+            $('#changePasswordDoctorNew').val('');
+            $('#changePasswordDoctorConfirm').val('');
+            $('#changePasswordDoctorModal').modal('show');
+        });
+
+        $('#changePasswordDoctorSubmitBtn').on('click', function () {
+            var btn = $(this);
+            var id = $('#changePasswordDoctorId').val();
+            var newPassword = $('#changePasswordDoctorNew').val();
+            var confirmPassword = $('#changePasswordDoctorConfirm').val();
+
+            if (!newPassword) { showErrorModal('يرجى إدخال كلمة المرور الجديدة'); return; }
+            if (!confirmPassword) { showErrorModal('يرجى تأكيد كلمة المرور'); return; }
+            if (newPassword !== confirmPassword) { showErrorModal('كلمة المرور غير متطابقة'); return; }
+            if (newPassword.length < 8) { showErrorModal('كلمة المرور يجب أن تكون 8 أحرف على الأقل'); return; }
+
+            setButtonLoading(btn, true);
+
+            $.ajax({
+                url: '@Url.Action("ChangeDoctorPassword")/' + id,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    newPassword: newPassword,
+                    confirmPassword: confirmPassword
+                }),
+                success: function (res) {
+                    setButtonLoading(btn, false);
+                    if (res.success && res.data) {
+                        $('#changePasswordDoctorModal').modal('hide');
+                        showSuccessModal('تم تغيير كلمة المرور بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(res.message || 'حدث خطأ أثناء تغيير كلمة المرور');
+                    }
+                },
+                error: function (xhr) {
+                    setButtonLoading(btn, false);
+                    var msg = 'حدث خطأ أثناء تغيير كلمة المرور';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        });
+
         $('.delete-doctor-btn').on('click', function () {
             var btn = $(this);
             var id = btn.data('id');
-            var name = btn.data('name');
+            var name = btn.attr('data-name');
             showConfirmModal('هل أنت متأكد من حذف الطبيب <strong>' + name + '</strong>؟', function (confirmed) {
                 if (confirmed) {
                     $.ajax({

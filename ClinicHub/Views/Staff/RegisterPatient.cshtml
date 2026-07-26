@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "تسجيل مريض وافد";
+    Layout = "_StaffLayout";
+}
+
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <i class="bi bi-person-plus"></i>
+    </span>
+    تسجيل مريض وافد
+</h2>
+
+<div style="max-width: 600px;">
+    <div class="table-card" style="padding: var(--space-6);">
+        <form id="registerForm">
+            <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--clr-text);">اسم المريض</label>
+                    <input type="text" id="patientName" class="form-control" placeholder="أدخل اسم المريض" required />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--clr-text);">رقم الهاتف</label>
+                    <input type="tel" id="patientPhone" class="form-control" placeholder="010 xxxxxxxx" required />
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--clr-text);">اختيار الطبيب</label>
+                    <select id="doctorSelect" class="form-control" required>
+                        <option value="">-- جاري تحميل الأطباء --</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--clr-text);;">ملاحظات / الشكوى</label>
+                    <textarea id="complaint" class="form-control" rows="3" placeholder="الشكوى أو ملاحظات إضافية"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="align-self: flex-start; padding: 10px 32px;">
+                    <i class="bi bi-save"></i> تسجيل المريض
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        StaffDashboardService.getDoctors().then(function (doctors) {
+            StaffDashboardService.renderDoctorDropdown(doctors, 'doctorSelect');
+        });
+
+        $('#registerForm').on('submit', function (e) {
+            e.preventDefault();
+            var data = {
+                fullName: $('#patientName').val().trim(),
+                phoneNumber: $('#patientPhone').val().trim(),
+                doctorId: $('#doctorSelect').val(),
+                complaint: $('#complaint').val().trim(),
+                appointmentDate: new Date().toISOString().split('T')[0] + 'T00:00:00',
+                startTime: new Date().toTimeString().slice(0, 5),
+                endTime: new Date(Date.now() + 30 * 60 * 1000).toTimeString().slice(0, 5),
+                appointmentType: 0,
+                clinicId: localStorage.getItem('clinicId') || ''
+            };
+            if (!data.fullName || !data.phoneNumber || !data.doctorId) {
+                alert('يرجى ملء جميع الحقول المطلوبة');
+                return;
+            }
+            StaffDashboardService.registerPatient(data).then(function () {
+                $('#registerForm')[0].reset();
+                $('#doctorSelect').html('<option value="">-- اختر الطبيب --</option>');
+                StaffDashboardService.getDoctors().then(function (doctors) {
+                    StaffDashboardService.renderDoctorDropdown(doctors, 'doctorSelect');
+                });
+            });
+        });
+    </script>
+}

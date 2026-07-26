@@ -6,6 +6,7 @@
     var statusFilter = ViewBag.StatusFilter as string;
     var isActiveSelected = statusFilter == "نشط";
     var isInactiveSelected = statusFilter == "غير نشط";
+    var userTypesFilter = ViewBag.UserTypesFilter as string;
 }
 
 <div class="page-header">
@@ -22,6 +23,14 @@
 <div class="filter-bar">
     <form method="get" action="/Admin/Users" class="filter-bar" style="display: contents;">
         <input type="text" id="filterSearch" name="searchTerm" class="form-input" placeholder="بحث عن مستخدم..." value="@ViewBag.SearchTerm" />
+        <select id="filterUserTypes" name="userTypes" class="form-select" onchange="this.form.submit()">
+            <option value="">جميع الأدوار</option>
+            <option value="2" selected="@(userTypesFilter == "2")">مدير النظام</option>
+            <option value="16" selected="@(userTypesFilter == "16")">مالك عيادة</option>
+            <option value="4" selected="@(userTypesFilter == "4")">طبيب</option>
+            <option value="8" selected="@(userTypesFilter == "8")">موظف</option>
+            <option value="1" selected="@(userTypesFilter == "1")">مريض</option>
+        </select>
         <select id="filterStatus" name="status" class="form-select" onchange="this.form.submit()">
             <option value="">جميع الحالات</option>
             <option value="نشط" selected="@isActiveSelected">نشط</option>
@@ -156,11 +165,9 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="createRole">الدور</label>
-                        <select id="createRole" name="Role" class="form-select" required>
-                            <option value="1">مستخدم</option>
-                            <option value="4">طبيب</option>
-                            <option value="8">موظف</option>
-                        </select>
+                            <select id="createRole" name="Role" class="form-select" required>
+                                <option value="1">مستخدم</option>
+                            </select>
                     </div>
                     <div class="form-group" id="clinicGroup" style="display:none;">
                         <label class="form-label" for="createClinic">العيادة</label>

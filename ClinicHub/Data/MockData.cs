@@ -943,6 +943,100 @@ namespace ClinicHub.Data
             new() { Id = 4, Code = "#1021", Subject = "مشكلة في عرض التقارير", Reporter = "عيادات التخصصات الدقيقة", Priority = "عالية", PriorityClass = "badge-danger", Status = "قيد المعالجة", StatusClass = "badge-warning", Date = "2026-07-01 16:45", HasAttachment = false, Description = "لا تظهر التقارير الإحصائية بشكل صحيح منذ تحديث النظام الأخير. بعض البيانات مفقودة والرسوم البيانية لا تعمل.", Attachments = new() },
             new() { Id = 5, Code = "#1020", Subject = "اقتراح تحسين واجهة المستخدم", Reporter = "د. خالد الزهراني", Priority = "منخفضة", PriorityClass = "badge-success", Status = "تم الحل", StatusClass = "badge-success", Date = "2026-06-28 11:00", HasAttachment = false, Description = "اقتراح بإضافة زر للتبديل بين الوضع الفاتح والداكن في لوحة التحكم، وإمكانية تخصيص الألوان حسب كل عيادة.", Attachments = new() },
         };
+
+        // ========== Staff Mock Data ==========
+        public static List<MockStat> GetStaffDashboardStats() => new()
+        {
+            new() { Value = "24", Label = "مواعيد اليوم", IconColor = "primary", SvgPath = "M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" },
+            new() { Value = "18", Label = "تم تسجيل الوصول", IconColor = "green", SvgPath = "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" },
+            new() { Value = "6", Label = "قيد الانتظار", IconColor = "amber", SvgPath = "M13 3h-2v10l8.29 5.29 1-1.72L13 12.36V3zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" },
+            new() { Value = "8", Label = "تم الانتهاء", IconColor = "blue", SvgPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" },
+        };
+
+        public static List<MockStaffAppointment> GetStaffAppointments() => new()
+        {
+            new() { Id = 1, PatientName = "محمد عمر", PatientInitial = "م", DoctorName = "د. سارة أحمد", Specialty = "أمراض القلب", Date = "2026-07-26", Time = "09:00", Status = "مؤكد", StatusClass = "badge-success", Phone = "0501112222" },
+            new() { Id = 2, PatientName = "سارة أحمد", PatientInitial = "س", DoctorName = "د. عمار السيد", Specialty = "جلدية", Date = "2026-07-26", Time = "10:00", Status = "مؤكد", StatusClass = "badge-success", Phone = "0553334444" },
+            new() { Id = 3, PatientName = "خالد الزهراني", PatientInitial = "خ", DoctorName = "د. عبد الله ناصر", Specialty = "أعصاب", Date = "2026-07-26", Time = "10:30", Status = "قيد الانتظار", StatusClass = "badge-warning", Phone = "0505556666" },
+            new() { Id = 4, PatientName = "فاطمة الناصر", PatientInitial = "ف", DoctorName = "د. سارة أحمد", Specialty = "أمراض القلب", Date = "2026-07-26", Time = "11:00", Status = "قيد الانتظار", StatusClass = "badge-warning", Phone = "0557778888" },
+            new() { Id = 5, PatientName = "عبد الله السعيد", PatientInitial = "ع", DoctorName = "د. محمود حسن", Specialty = "جراحة القلب", Date = "2026-07-26", Time = "11:30", Status = "ملغي", StatusClass = "badge-danger", Phone = "0509990000" },
+            new() { Id = 6, PatientName = "نورة علي", PatientInitial = "ن", DoctorName = "د. نورة السعيد", Specialty = "علاج طبيعي", Date = "2026-07-26", Time = "12:00", Status = "منتهي", StatusClass = "badge-info", Phone = "0551113333" },
+        };
+
+        public static List<MockQueueItem> GetStaffQueue() => new()
+        {
+            new() { QueueNumber = 1, PatientName = "محمد عمر", PatientInitial = "م", DoctorName = "د. سارة أحمد", Time = "09:00", Status = "قيد الكشف", StatusClass = "badge-primary" },
+            new() { QueueNumber = 2, PatientName = "سارة أحمد", PatientInitial = "س", DoctorName = "د. عمار السيد", Time = "10:00", Status = "في الانتظار", StatusClass = "badge-warning" },
+            new() { QueueNumber = 3, PatientName = "خالد الزهراني", PatientInitial = "خ", DoctorName = "د. عبد الله ناصر", Time = "10:30", Status = "في الانتظار", StatusClass = "badge-warning" },
+            new() { QueueNumber = 4, PatientName = "فاطمة الناصر", PatientInitial = "ف", DoctorName = "د. سارة أحمد", Time = "11:00", Status = "تم التسجيل", StatusClass = "badge-info" },
+            new() { QueueNumber = 5, PatientName = "نورة علي", PatientInitial = "ن", DoctorName = "د. نورة السعيد", Time = "12:00", Status = "مكتمل", StatusClass = "badge-success" },
+        };
+
+        public static List<MockStaffAppointment> GetDoctorScheduleAppointments(int doctorId) => doctorId switch
+        {
+            1 => new()
+            {
+                new() { Id = 1, PatientName = "محمد عمر", PatientInitial = "م", Date = "2026-07-26", Time = "09:00", Status = "مؤكد", StatusClass = "badge-success" },
+                new() { Id = 2, PatientName = "فاطمة الناصر", PatientInitial = "ف", Date = "2026-07-26", Time = "11:00", Status = "قيد الانتظار", StatusClass = "badge-warning" },
+                new() { Id = 3, PatientName = "أحمد رضا", PatientInitial = "أ", Date = "2026-07-26", Time = "13:00", Status = "مؤكد", StatusClass = "badge-success" },
+            },
+            2 => new()
+            {
+                new() { Id = 4, PatientName = "سارة أحمد", PatientInitial = "س", Date = "2026-07-26", Time = "10:00", Status = "مؤكد", StatusClass = "badge-success" },
+                new() { Id = 5, PatientName = "ليلى محمود", PatientInitial = "ل", Date = "2026-07-26", Time = "14:00", Status = "قيد الانتظار", StatusClass = "badge-warning" },
+            },
+            _ => new()
+            {
+                new() { Id = 6, PatientName = "خالد الزهراني", PatientInitial = "خ", Date = "2026-07-26", Time = "10:30", Status = "قيد الانتظار", StatusClass = "badge-warning" },
+            }
+        };
+
+        // ========== Doctor Mock Data ==========
+        public static List<MockStat> GetDoctorDashboardStats() => new()
+        {
+            new() { Value = "8", Label = "مواعيد اليوم", IconColor = "primary", SvgPath = "M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" },
+            new() { Value = "3", Label = "قيد الانتظار", IconColor = "amber", SvgPath = "M13 3h-2v10l8.29 5.29 1-1.72L13 12.36V3z" },
+            new() { Value = "4", Label = "مكتملة", IconColor = "green", SvgPath = "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" },
+            new() { Value = "1", Label = "ملغاة", IconColor = "amber", SvgPath = "M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z" },
+        };
+
+        public static List<MockStaffAppointment> GetDoctorAppointments() => new()
+        {
+            new() { Id = 1, PatientName = "محمد عمر", PatientInitial = "م", Date = "2026-07-26", Time = "09:00", Status = "مؤكد", StatusClass = "badge-success", Specialty = "أمراض القلب" },
+            new() { Id = 2, PatientName = "فاطمة الناصر", PatientInitial = "ف", Date = "2026-07-26", Time = "11:00", Status = "قيد الانتظار", StatusClass = "badge-warning", Specialty = "أمراض القلب" },
+            new() { Id = 3, PatientName = "أحمد رضا", PatientInitial = "أ", Date = "2026-07-26", Time = "13:00", Status = "قيد الانتظار", StatusClass = "badge-warning", Specialty = "أمراض القلب" },
+            new() { Id = 4, PatientName = "نورة علي", PatientInitial = "ن", Date = "2026-07-25", Time = "09:00", Status = "مكتمل", StatusClass = "badge-info", Specialty = "أمراض القلب" },
+            new() { Id = 5, PatientName = "عمر حسن", PatientInitial = "ع", Date = "2026-07-25", Time = "10:00", Status = "مكتمل", StatusClass = "badge-info", Specialty = "أمراض القلب" },
+            new() { Id = 6, PatientName = "خالد الزهراني", PatientInitial = "خ", Date = "2026-07-24", Time = "15:00", Status = "ملغي", StatusClass = "badge-danger", Specialty = "أمراض القلب" },
+        };
+
+        public static List<MockDoctorPatient> GetDoctorPatients() => new()
+        {
+            new() { Id = 1, Name = "محمد عمر", Initials = "م", LastVisit = "2026-07-26", Phone = "0501112222", TotalVisits = 12, Condition = "ارتفاع ضغط الدم" },
+            new() { Id = 2, Name = "فاطمة الناصر", Initials = "ف", LastVisit = "2026-07-26", Phone = "0557778888", TotalVisits = 5, Condition = "فحص دوري للقلب" },
+            new() { Id = 3, Name = "أحمد رضا", Initials = "أ", LastVisit = "2026-07-24", Phone = "0566778899", TotalVisits = 8, Condition = "تصلب الشرايين" },
+            new() { Id = 4, Name = "نورة علي", Initials = "ن", LastVisit = "2026-07-20", Phone = "0551113333", TotalVisits = 3, Condition = "اضطراب نبضات القلب" },
+            new() { Id = 5, Name = "عمر حسن", Initials = "ع", LastVisit = "2026-07-18", Phone = "0504445555", TotalVisits = 15, Condition = "مرض الشريان التاجي" },
+        };
+
+        public static List<MockPatientHistory> GetPatientHistory(int patientId) => patientId switch
+        {
+            1 => new()
+            {
+                new() { Id = 1, Date = "2026-07-26", Diagnosis = "ارتفاع ضغط الدم - متابعة", Notes = "الضغط مستقر 120/80", Prescription = "ليسينوبريل 10مغ", Status = "مكتمل", StatusClass = "badge-success" },
+                new() { Id = 2, Date = "2026-06-15", Diagnosis = "متابعة ضغط الدم", Notes = "تحسن ملحوظ", Prescription = "ليسينوبريل 5مغ", Status = "مكتمل", StatusClass = "badge-success" },
+                new() { Id = 3, Date = "2026-05-01", Diagnosis = "فحص شامل", Notes = "نتائج سليمة", Prescription = "", Status = "مكتمل", StatusClass = "badge-success" },
+            },
+            2 => new()
+            {
+                new() { Id = 4, Date = "2026-07-26", Diagnosis = "فحص دوري للقلب", Notes = "نتائج سليمة", Prescription = "", Status = "مكتمل", StatusClass = "badge-success" },
+                new() { Id = 5, Date = "2026-06-10", Diagnosis = "ألم في الصدر", Notes = "تم عمل رسم قلب - النتيجة طبيعية", Prescription = "مسكنات", Status = "مكتمل", StatusClass = "badge-success" },
+            },
+            _ => new()
+            {
+                new() { Id = 6, Date = "2026-07-20", Diagnosis = "زيارة روتينية", Notes = "لا توجد شكوى", Prescription = "", Status = "مكتمل", StatusClass = "badge-success" },
+            }
+        };
     }
 
     // ========== User Models ==========
@@ -1112,7 +1206,55 @@ namespace ClinicHub.Data
         public string RequestDate { get; set; } = "";
     }
 
-    // ========== Support Tickets Models ==========
+    // ========== Staff/Doctor Appointment Models ==========
+public class MockStaffAppointment
+{
+    public int Id { get; set; }
+    public string PatientName { get; set; } = "";
+    public string PatientInitial { get; set; } = "";
+    public string DoctorName { get; set; } = "";
+    public string Specialty { get; set; } = "";
+    public string Date { get; set; } = "";
+    public string Time { get; set; } = "";
+    public string Status { get; set; } = "";
+    public string StatusClass { get; set; } = "badge-warning";
+    public string Phone { get; set; } = "";
+}
+
+public class MockQueueItem
+{
+    public int QueueNumber { get; set; }
+    public string PatientName { get; set; } = "";
+    public string PatientInitial { get; set; } = "";
+    public string DoctorName { get; set; } = "";
+    public string Time { get; set; } = "";
+    public string Status { get; set; } = "";
+    public string StatusClass { get; set; } = "badge-warning";
+}
+
+public class MockDoctorPatient
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Initials { get; set; } = "";
+    public string LastVisit { get; set; } = "";
+    public string Phone { get; set; } = "";
+    public int TotalVisits { get; set; }
+    public string Condition { get; set; } = "";
+}
+
+public class MockPatientHistory
+{
+    public int Id { get; set; }
+    public string Date { get; set; } = "";
+    public string Diagnosis { get; set; } = "";
+    public string Notes { get; set; } = "";
+    public string Prescription { get; set; } = "";
+    public string Status { get; set; } = "";
+    public string StatusClass { get; set; } = "badge-success";
+}
+
+// ========== Support Tickets Models ==========
     public class MockSupportTicket
     {
         public int Id { get; set; }

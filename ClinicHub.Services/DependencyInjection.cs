@@ -86,6 +86,12 @@ namespace ClinicHub.Services
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
+            services.AddHttpClient<IStaffDashboardService, StaffDashboardService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
             return services;
         }
     }

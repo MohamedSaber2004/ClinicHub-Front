@@ -15,6 +15,7 @@ namespace ClinicHub.Services.Routes.Api
             Verification = new VerificationRoutes(BaseRoute);
             Users = new UserRoutes(BaseRoute);
             Doctors = new DoctorRoutes(BaseRoute);
+            StaffDashboard = new StaffDashboardRoutes(BaseRoute);
             Staff = new StaffRoutes(BaseRoute);
             Clinics = new ClinicRoutes(BaseRoute);
             Plans = new PlanRoutes(BaseRoute);
@@ -22,6 +23,7 @@ namespace ClinicHub.Services.Routes.Api
             AdminSubscriptions = new AdminSubscriptionRoutes(BaseRoute);
         }
 
+        public static StaffDashboardRoutes StaffDashboard { get; private set; } = null!;
         public static AuthRoutes Auth { get; private set; } = null!;
         public static SpecializationRoutes Specializations { get; private set; } = null!;
         public static AttachmentRoutes Attachments { get; private set; } = null!;
@@ -130,6 +132,27 @@ namespace ClinicHub.Services.Routes.Api
             public string Create => $"{AdminClinicRoute}/doctors";
             public string Update(Guid id) => $"{_baseRoute}/doctors/{id}";
             public string Delete(Guid id) => $"{_baseRoute}/doctors/{id}";
+            public string ChangePassword(Guid id) => $"{AdminClinicRoute}/doctors/{id}/change-password";
+        }
+
+        public class StaffDashboardRoutes
+        {
+            public string BaseRoute { get; }
+            public StaffDashboardRoutes(string baseRoute)
+            {
+                BaseRoute = $"{baseRoute}/staff";
+            }
+
+            public string Stats => $"{BaseRoute}/dashboard/stats";
+            public string Queue => $"{BaseRoute}/queue";
+            public string Appointments => $"{BaseRoute}/appointments";
+            public string Approve(string id) => $"{BaseRoute}/appointments/{id}/approve";
+            public string Reject(string id) => $"{BaseRoute}/appointments/{id}/reject";
+            public string CheckIn(string id) => $"{BaseRoute}/appointments/{id}/check-in";
+            public string Complete(string id) => $"{BaseRoute}/appointments/{id}/complete";
+            public string RegisterPatient => $"{BaseRoute}/patients/register";
+            public string Doctors => $"{BaseRoute}/doctors";
+            public string DoctorSchedule(string doctorId) => $"{BaseRoute}/doctors/{doctorId}/schedule";
         }
 
         public class StaffRoutes
@@ -141,9 +164,11 @@ namespace ClinicHub.Services.Routes.Api
             }
 
             public string List => $"{BaseRoute}";
+            public string GetById(Guid id) => $"{BaseRoute}/{id}";
             public string Create => $"{BaseRoute}";
             public string Update(Guid id) => $"{BaseRoute}/{id}";
             public string Delete(Guid id) => $"{BaseRoute}/{id}";
+            public string ChangePassword(Guid id) => $"{BaseRoute}/{id}/change-password";
         }
 
         public class ClinicRoutes

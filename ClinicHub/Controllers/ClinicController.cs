@@ -280,6 +280,31 @@ namespace ClinicHub.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetDoctorById(Guid id)
+        {
+            try
+            {
+                var doctor = await _clinicDoctorService.GetDoctorByIdAsync(id);
+                if (doctor == null)
+                {
+                    Response.StatusCode = 404;
+                    return Json(new { success = false, message = "الطبيب غير موجود" });
+                }
+                return Json(new { success = true, data = doctor });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> UpdateDoctor(Guid id, [FromBody] UpdateDoctorRequest request)
         {
@@ -307,6 +332,31 @@ namespace ClinicHub.Controllers
             {
                 var result = await _clinicDoctorService.DeleteDoctorAsync(id);
                 return Json(new { success = result, message = result ? "تم حذف الطبيب بنجاح" : "فشل حذف الطبيب" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetStaffById(Guid id)
+        {
+            try
+            {
+                var staff = await _clinicStaffService.GetStaffByIdAsync(id);
+                if (staff == null)
+                {
+                    Response.StatusCode = 404;
+                    return Json(new { success = false, message = "الموظف غير موجود" });
+                }
+                return Json(new { success = true, data = staff });
             }
             catch (ApiException ex)
             {
@@ -365,6 +415,46 @@ namespace ClinicHub.Controllers
             {
                 Response.StatusCode = 500;
                 return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeStaffPassword(Guid id, [FromBody] ChangePasswordRequest request)
+        {
+            try
+            {
+                var result = await _clinicStaffService.ChangeStaffPasswordAsync(id, request);
+                return Json(new { success = true, data = result, message = "تم تغيير كلمة المرور بنجاح" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, data = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, data = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeDoctorPassword(Guid id, [FromBody] ChangePasswordRequest request)
+        {
+            try
+            {
+                var result = await _clinicDoctorService.ChangeDoctorPasswordAsync(id, request);
+                return Json(new { success = true, data = result, message = "تم تغيير كلمة المرور بنجاح" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, data = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, data = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
             }
         }
 

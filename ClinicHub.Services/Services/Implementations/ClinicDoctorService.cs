@@ -137,5 +137,29 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
             }
         }
+
+        public async Task<bool> ChangeDoctorPasswordAsync(Guid id, ChangePasswordRequest request)
+        {
+            try
+            {
+                var payload = new Dictionary<string, object?>
+                {
+                    ["newPassword"] = request.NewPassword,
+                    ["confirmPassword"] = request.ConfirmPassword
+                };
+
+                var json = JsonConvert.SerializeObject(payload);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PutAsync(DoctoryRoutes.Doctors.ChangePassword(id), content);
+                var result = await _deserializerService.DeserializeApiResponse<bool?>(response, "حدث خطأ في تغيير كلمة المرور");
+                return result ?? true;
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
     }
 }

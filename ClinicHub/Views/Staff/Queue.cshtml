@@ -1,0 +1,76 @@
+@{
+    ViewData["Title"] = "طابور المرضى";
+    Layout = "_StaffLayout";
+}
+
+@using ClinicHub.Services.ReponseModels
+@{
+    var queueItems = ViewBag.QueueItems as List<StaffQueueItemDto> ?? new List<StaffQueueItemDto>();
+    var doctors = ViewBag.Doctors as List<StaffDoctorDto> ?? new List<StaffDoctorDto>();
+}
+
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <i class="bi bi-people"></i>
+    </span>
+    طابور المرضى
+</h2>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">طابور الانتظار الحالي</h3>
+    </div>
+    <form method="get" action="@Url.Action("Queue")" class="filters-bar" style="display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--clr-border);flex-wrap:wrap;">
+        <select name="status" class="form-control" style="width:180px;">
+            <option value="">كل الحالات</option>
+            <option value="registered" selected="@(ViewBag.StatusFilter == "registered")">تم التسجيل</option>
+            <option value="waiting" selected="@(ViewBag.StatusFilter == "waiting")">في الانتظار</option>
+            <option value="in-progress" selected="@(ViewBag.StatusFilter == "in-progress")">قيد الكشف</option>
+            <option value="completed" selected="@(ViewBag.StatusFilter == "completed")">مكتمل</option>
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm" style="padding:4px 16px;">تصفية</button>
+        <a href="@Url.Action("Queue")" class="btn btn-outline-secondary btn-sm" style="padding:4px 16px;">مسح</a>
+    </form>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>المريض</th>
+                    <th>الطبيب</th>
+                    <th>الوقت</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody id="queueBody">
+                @if (queueItems.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted);">لا يوجد مرضى في الطابور</td>
+                    </tr>
+                }
+                @foreach (var item in queueItems)
+                {
+                    <tr>
+                        <td><span style="font-weight:700;font-size:16px;">@item.QueueNumber</span></td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div class="sidebar-profile-avatar" style="width:28px;height:28px;">
+                                    <span style="font-size:11px;">@item.Patient?.Initial</span>
+                                </div>
+                                @item.Patient?.Name
+                            </div>
+                        </td>
+                        <td>@item.Doctor?.Name</td>
+                        <td>@item.Time</td>
+                        <td class="status-cell"><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <partial name="_Pagination" />
+</div>
+
+@section Scripts {
+}

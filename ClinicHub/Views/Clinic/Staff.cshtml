@@ -10,41 +10,41 @@
     var activeFilter = ViewBag.ActiveFilter as bool?;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <h2 class="page-title mb-0">إدارة الموظفين</h2>
-    <button class="btn" id="addStaffBtn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 20px; border-radius: 5px;">
+    <button class="btn btn-primary" id="addStaffBtn">
         <i class="bi bi-person-plus me-1"></i> تسجيل موظف جديد
     </button>
 </div>
 
 @if (_user?.MaxStaff.HasValue == true)
 {
-    <div class="plan-info-bar" style="margin-bottom: 20px;">
+    <div class="plan-info-bar">
         <div class="plan-info-item">
             <span class="plan-info-label">الحد الأقصى للموظفين في باقتك</span>
             <span class="plan-info-value">@_user.MaxStaff موظف</span>
         </div>
-        <span style="font-size: 12px; color: var(--clr-text-secondary);">لزيادة الحد الأقصى، قم بترقية باقتك.</span>
+        <span class="small text-muted">لزيادة الحد الأقصى، قم بترقية باقتك.</span>
         <a href="/Clinic/MySubscription" class="plan-info-link">ترقية الباقة <i class="bi bi-arrow-left"></i></a>
     </div>
 }
 
-<div class="table-card" style="padding: 20px; margin-bottom: 24px;">
+<div class="table-card p-4 mb-4">
     <form method="get" action="@Url.Action("Staff")" class="row g-3 align-items-end">
         <div class="col-md-5">
-            <label class="form-label" style="font-weight: 600; font-size: 13px;">بحث</label>
-            <input type="text" name="searchTerm" class="form-control auth-form-control" style="padding: 8px 12px; font-size: 13px;" placeholder="ابحث باسم الموظف أو البريد الإلكتروني..." value="@searchTerm" />
+            <label class="form-label">بحث</label>
+            <input type="text" name="searchTerm" class="form-input form-input-sm w-100" placeholder="ابحث باسم الموظف أو البريد الإلكتروني..." value="@searchTerm" />
         </div>
         <div class="col-md-4">
-            <label class="form-label" style="font-weight: 600; font-size: 13px;">الحالة</label>
-            <select name="isActive" class="form-select auth-form-control" style="padding: 8px 12px; font-size: 13px;">
+            <label class="form-label">الحالة</label>
+            <select name="isActive" class="form-select form-input-sm w-100">
                 <option value="">الجميع</option>
                 <option value="true" selected="@(activeFilter == true)">نشط</option>
                 <option value="false" selected="@(activeFilter == false)">غير نشط</option>
             </select>
         </div>
         <div class="col-md-3">
-            <button type="submit" class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 8px 20px; border-radius: 5px; font-size: 13px; width: 100%;">
+            <button type="submit" class="btn btn-primary w-100">
                 <i class="bi bi-search me-1"></i> بحث
             </button>
         </div>
@@ -60,20 +60,20 @@
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
 
-<div class="table-card" style="padding: 24px;">
+<div class="table-card p-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 style="font-weight: 700; margin: 0;">قائمة الموظفين</h4>
+        <h4 class="fw-bold mb-0">قائمة الموظفين</h4>
         @if (pagination != null)
         {
-            <span style="font-size: 13px; color: var(--clr-text-secondary);">إجمالي: @pagination.TotalCount موظف</span>
+            <span class="text-md">إجمالي: @pagination.TotalCount موظف</span>
         }
     </div>
 
     @if (staffList.Count == 0)
     {
-        <div style="text-align: center; padding: 40px 20px; color: var(--clr-text-secondary);">
-            <i class="bi bi-person-badge" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
-            <p style="font-size: 16px;">لا يوجد موظفون مسجلون في العيادة</p>
+        <div class="empty-state">
+            <i class="bi bi-person-badge empty-state-icon"></i>
+            <p class="empty-desc">لا يوجد موظفون مسجلون في العيادة</p>
         </div>
     }
     else
@@ -95,8 +95,8 @@
                     {
                         <tr>
                             <td><strong>@staff.FullName</strong></td>
-                            <td style="font-size: 13px; color: var(--clr-text-secondary);">@staff.Email</td>
-                            <td dir="ltr" style="text-align: right;">@staff.PhoneNumber</td>
+                            <td class="text-md">@staff.Email</td>
+                            <td dir="ltr" class="text-start">@staff.PhoneNumber</td>
                             <td>
                                 @if (staff.IsActive)
                                 {
@@ -107,22 +107,31 @@
                                     <span class="badge badge-danger">غير نشط</span>
                                 }
                             </td>
-                            <td style="font-size: 13px; color: var(--clr-text-secondary);">@staff.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            <td class="text-md">@staff.CreatedAt.ToString("yyyy-MM-dd")</td>
                             <td>
-                                <div style="display: flex; gap: 6px;">
-                                    <button class="btn btn-sm edit-staff-btn"
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-secondary view-staff-btn"
+                                            data-id="@staff.Id"
+                                            title="عرض التفاصيل">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary edit-staff-btn"
                                             data-id="@staff.Id"
                                             data-name="@staff.FullName"
                                             data-email="@staff.Email"
                                             data-phone="@staff.PhoneNumber"
-                                            data-active="@staff.IsActive.ToString().ToLower()"
-                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-primary);">
+                                            data-active="@staff.IsActive.ToString().ToLower()">
                                         <i class="bi bi-pencil me-1"></i> تعديل
                                     </button>
-                                    <button class="btn btn-sm delete-staff-btn"
+                                    <button class="btn btn-sm btn-secondary change-password-staff-btn"
                                             data-id="@staff.Id"
                                             data-name="@staff.FullName"
-                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-danger);">
+                                            title="تغيير كلمة المرور">
+                                        <i class="bi bi-key me-1"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-delete delete-staff-btn"
+                                            data-id="@staff.Id"
+                                            data-name="@staff.FullName">
                                         <i class="bi bi-trash me-1"></i> حذف
                                     </button>
                                 </div>
@@ -135,7 +144,7 @@
 
         @if (pagination != null && pagination.TotalPages > 1)
         {
-            <nav class="pagination-nav" style="margin-top: 20px;">
+            <nav class="pagination-nav mt-4">
                 <ul class="pagination-list">
                     @if (pagination.HasPreviousPage)
                     {
@@ -168,34 +177,34 @@
 
 <div class="modal fade" id="createStaffModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-            <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
-                <h5 class="modal-title" style="font-weight: 700;">تسجيل موظف جديد</h5>
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">تسجيل موظف جديد</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="padding: var(--space-6);">
+            <div class="modal-body modal-body-custom">
                 <form id="createStaffForm">
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل</label>
-                        <input type="text" class="form-control auth-form-control" id="createStaffName" placeholder="الاسم الكامل" required style="padding: 8px 12px; font-size: 13px;" />
+                    <div class="form-group">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" class="form-input form-input-sm w-100" id="createStaffName" placeholder="الاسم الكامل" required />
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني</label>
-                        <input type="email" class="form-control auth-form-control" id="createStaffEmail" placeholder="البريد الإلكتروني" required style="padding: 8px 12px; font-size: 13px;" />
+                    <div class="form-group">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="email" class="form-input form-input-sm w-100" id="createStaffEmail" placeholder="البريد الإلكتروني" required />
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف</label>
-                        <input type="text" class="form-control auth-form-control" id="createStaffPhone" placeholder="رقم الهاتف" required style="padding: 8px 12px; font-size: 13px;" />
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="text" class="form-input form-input-sm w-100" id="createStaffPhone" placeholder="رقم الهاتف" required />
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">كلمة المرور</label>
-                        <input type="password" class="form-control auth-form-control" id="createStaffPassword" placeholder="كلمة المرور" required style="padding: 8px 12px; font-size: 13px;" />
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور</label>
+                        <input type="password" class="form-input form-input-sm w-100" id="createStaffPassword" placeholder="كلمة المرور" required />
                     </div>
                 </form>
             </div>
-            <div class="modal-footer" style="border-top: 1px solid var(--clr-border); padding: var(--space-4) var(--space-6);">
-                <button type="button" class="btn" data-bs-dismiss="modal" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-weight: 600;">إلغاء</button>
-                <button type="button" class="btn" id="createStaffSubmitBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-weight: 600;">تسجيل</button>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="createStaffSubmitBtn">تسجيل</button>
             </div>
         </div>
     </div>
@@ -203,27 +212,88 @@
 
 <div class="modal fade" id="editStaffModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-            <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
-                <h5 class="modal-title" style="font-weight: 700;">تعديل بيانات الموظف</h5>
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">تعديل بيانات الموظف</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="padding: var(--space-6);">
+            <div class="modal-body modal-body-custom">
                 <form id="editStaffForm">
                     <input type="hidden" id="editStaffId" />
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل</label>
-                        <input type="text" class="form-control auth-form-control" id="editStaffName" placeholder="الاسم الكامل" required style="padding: 8px 12px; font-size: 13px;" />
+                    <div class="form-group">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" class="form-input form-input-sm w-100" id="editStaffName" placeholder="الاسم الكامل" required />
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف</label>
-                        <input type="text" class="form-control auth-form-control" id="editStaffPhone" placeholder="رقم الهاتف" required style="padding: 8px 12px; font-size: 13px;" />
+                    <div class="form-group">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="text" class="form-input form-input-sm w-100" id="editStaffPhone" placeholder="رقم الهاتف" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الحالة</label>
+                        <label class="form-toggle">
+                            <input type="checkbox" id="editStaffActive" />
+                            <span class="toggle-track"></span>
+                            <span class="toggle-label" id="editStaffActiveLabel">غير نشط</span>
+                        </label>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer" style="border-top: 1px solid var(--clr-border); padding: var(--space-4) var(--space-6);">
-                <button type="button" class="btn" data-bs-dismiss="modal" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-weight: 600;">إلغاء</button>
-                <button type="button" class="btn" id="editStaffSubmitBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-weight: 600;">حفظ التغييرات</button>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="editStaffSubmitBtn">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">تفاصيل الموظف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-custom" id="viewStaffBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">تغيير كلمة مرور الموظف</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-custom">
+                <form id="changePasswordStaffForm">
+                    <input type="hidden" id="changePasswordStaffId" />
+                    <div class="form-group mb-3">
+                        <label class="form-label">الموظف</label>
+                        <p class="fw-bold mb-0" id="changePasswordStaffName"></p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">كلمة المرور الجديدة</label>
+                        <input type="password" class="form-input form-input-sm w-100" id="changePasswordStaffNew" placeholder="كلمة المرور الجديدة" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تأكيد كلمة المرور</label>
+                        <input type="password" class="form-input form-input-sm w-100" id="changePasswordStaffConfirm" placeholder="تأكيد كلمة المرور" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="changePasswordStaffSubmitBtn">حفظ كلمة المرور</button>
             </div>
         </div>
     </div>
@@ -231,6 +301,23 @@
 
 @section Scripts {
     <script>
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        function setButtonLoading(btn, isLoading) {
+            if (isLoading) {
+                btn.data('original-html', btn.html());
+                btn.prop('disabled', true);
+                btn.html('<span class="spinner-border spinner-border-sm me-1"></span> جاري...');
+            } else {
+                btn.prop('disabled', false);
+                btn.html(btn.data('original-html'));
+            }
+        }
+
         $('#addStaffBtn').on('click', function () {
             $('#createStaffName').val('');
             $('#createStaffEmail').val('');
@@ -240,6 +327,7 @@
         });
 
         $('#createStaffSubmitBtn').on('click', function () {
+            var btn = $(this);
             var name = $('#createStaffName').val().trim();
             var email = $('#createStaffEmail').val().trim();
             var phone = $('#createStaffPhone').val().trim();
@@ -249,6 +337,8 @@
             if (!email) { showErrorModal('يرجى إدخال البريد الإلكتروني'); return; }
             if (!phone) { showErrorModal('يرجى إدخال رقم الهاتف'); return; }
             if (!password) { showErrorModal('يرجى إدخال كلمة المرور'); return; }
+
+            setButtonLoading(btn, true);
 
             $.ajax({
                 url: '@Url.Action("CreateStaff")',
@@ -266,10 +356,12 @@
                         showSuccessModal('تم إضافة الموظف بنجاح');
                         setTimeout(function () { location.reload(); }, 1500);
                     } else {
+                        setButtonLoading(btn, false);
                         showErrorModal(res.message);
                     }
                 },
                 error: function (xhr) {
+                    setButtonLoading(btn, false);
                     var msg = 'حدث خطأ أثناء إضافة الموظف';
                     try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
                     showErrorModal(msg);
@@ -277,20 +369,33 @@
             });
         });
 
+        function updateActiveLabel() {
+            var isActive = $('#editStaffActive').is(':checked');
+            $('#editStaffActiveLabel').text(isActive ? 'نشط' : 'غير نشط');
+        }
+
+        $('#editStaffActive').on('change', updateActiveLabel);
+
         $('.edit-staff-btn').on('click', function () {
             var btn = $(this);
             $('#editStaffId').val(btn.data('id'));
-            $('#editStaffName').val(btn.data('name'));
-            $('#editStaffPhone').val(btn.data('phone'));
+            $('#editStaffName').val(btn.attr('data-name'));
+            $('#editStaffPhone').val(btn.attr('data-phone'));
+            var isActive = btn.data('active') === true || btn.data('active') === 'true';
+            $('#editStaffActive').prop('checked', isActive);
+            updateActiveLabel();
             $('#editStaffModal').modal('show');
         });
 
         $('#editStaffSubmitBtn').on('click', function () {
+            var btn = $(this);
             var id = $('#editStaffId').val();
             var name = $('#editStaffName').val().trim();
             var phone = $('#editStaffPhone').val().trim();
 
             if (!name) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
+
+            setButtonLoading(btn, true);
 
             $.ajax({
                 url: '@Url.Action("UpdateStaff")/' + id,
@@ -298,7 +403,8 @@
                 contentType: 'application/json',
                 data: JSON.stringify({
                     fullName: name,
-                    phoneNumber: phone || null
+                    phoneNumber: phone || null,
+                    isActive: $('#editStaffActive').is(':checked')
                 }),
                 success: function (res) {
                     if (res.success) {
@@ -306,11 +412,105 @@
                         showSuccessModal('تم تحديث بيانات الموظف بنجاح');
                         setTimeout(function () { location.reload(); }, 1500);
                     } else {
+                        setButtonLoading(btn, false);
                         showErrorModal(res.message);
                     }
                 },
                 error: function (xhr) {
+                    setButtonLoading(btn, false);
                     var msg = 'حدث خطأ أثناء تحديث الموظف';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        });
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            var d = new Date(dateStr);
+            return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })
+                + ' ' + d.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function renderStaffDetail(staff) {
+            var statusHtml = staff.isActive
+                ? '<span class="badge badge-success">نشط</span>'
+                : '<span class="badge badge-danger">غير نشط</span>';
+            return '<div class="detail-grid">'
+                + '<div class="detail-item"><span class="detail-label">الاسم الكامل</span><span class="detail-value">' + escapeHtml(staff.fullName) + '</span></div>'
+                + '<div class="detail-item"><span class="detail-label">البريد الإلكتروني</span><span class="detail-value">' + escapeHtml(staff.email) + '</span></div>'
+                + '<div class="detail-item"><span class="detail-label">رقم الهاتف</span><span class="detail-value" dir="ltr">' + escapeHtml(staff.phoneNumber) + '</span></div>'
+                + '<div class="detail-item"><span class="detail-label">الحالة</span><span class="detail-value">' + statusHtml + '</span></div>'
+                + '<div class="detail-item"><span class="detail-label">تاريخ التسجيل</span><span class="detail-value">' + formatDate(staff.createdAt) + '</span></div>'
+                + '</div>';
+        }
+
+        $('.view-staff-btn').on('click', function () {
+            var id = $(this).data('id');
+            $('#viewStaffBody').html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">جاري التحميل...</span></div></div>');
+            $('#viewStaffModal').modal('show');
+
+            $.ajax({
+                url: '@Url.Action("GetStaffById")/' + id,
+                type: 'GET',
+                success: function (res) {
+                    if (res.success && res.data) {
+                        $('#viewStaffBody').html(renderStaffDetail(res.data));
+                    } else {
+                        $('#viewStaffBody').html('<div class="text-center py-4 text-muted">' + (res.message || 'تعذر تحميل بيانات الموظف') + '</div>');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'تعذر تحميل بيانات الموظف';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    $('#viewStaffBody').html('<div class="text-center py-4 text-muted">' + msg + '</div>');
+                }
+            });
+        });
+
+        $('.change-password-staff-btn').on('click', function () {
+            var btn = $(this);
+            $('#changePasswordStaffId').val(btn.attr('data-id'));
+            $('#changePasswordStaffName').text(btn.attr('data-name'));
+            $('#changePasswordStaffNew').val('');
+            $('#changePasswordStaffConfirm').val('');
+            $('#changePasswordStaffModal').modal('show');
+        });
+
+        $('#changePasswordStaffSubmitBtn').on('click', function () {
+            var btn = $(this);
+            var id = $('#changePasswordStaffId').val();
+            var newPassword = $('#changePasswordStaffNew').val();
+            var confirmPassword = $('#changePasswordStaffConfirm').val();
+
+            if (!newPassword) { showErrorModal('يرجى إدخال كلمة المرور الجديدة'); return; }
+            if (!confirmPassword) { showErrorModal('يرجى تأكيد كلمة المرور'); return; }
+            if (newPassword !== confirmPassword) { showErrorModal('كلمة المرور غير متطابقة'); return; }
+            if (newPassword.length < 8) { showErrorModal('كلمة المرور يجب أن تكون 8 أحرف على الأقل'); return; }
+
+            setButtonLoading(btn, true);
+
+            $.ajax({
+                url: '@Url.Action("ChangeStaffPassword")/' + id,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    newPassword: newPassword,
+                    confirmPassword: confirmPassword
+                }),
+                success: function (res) {
+                    setButtonLoading(btn, false);
+                    if (res.success && res.data) {
+                        $('#changePasswordStaffModal').modal('hide');
+                        showSuccessModal('تم تغيير كلمة المرور بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(res.message || 'حدث خطأ أثناء تغيير كلمة المرور');
+                    }
+                },
+                error: function (xhr) {
+                    setButtonLoading(btn, false);
+                    var msg = 'حدث خطأ أثناء تغيير كلمة المرور';
                     try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
                     showErrorModal(msg);
                 }
@@ -320,9 +520,10 @@
         $('.delete-staff-btn').on('click', function () {
             var btn = $(this);
             var id = btn.data('id');
-            var name = btn.data('name');
+            var name = btn.attr('data-name');
             showConfirmModal('هل أنت متأكد من حذف الموظف <strong>' + name + '</strong>؟', function (confirmed) {
                 if (confirmed) {
+                    setButtonLoading(btn, true);
                     $.ajax({
                         url: '@Url.Action("DeleteStaff")/' + id,
                         type: 'POST',
@@ -331,10 +532,12 @@
                                 showSuccessModal('تم حذف الموظف بنجاح');
                                 setTimeout(function () { location.reload(); }, 1500);
                             } else {
+                                setButtonLoading(btn, false);
                                 showErrorModal(res.message);
                             }
                         },
                         error: function (xhr) {
+                            setButtonLoading(btn, false);
                             var msg = 'حدث خطأ أثناء حذف الموظف';
                             try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
                             showErrorModal(msg);

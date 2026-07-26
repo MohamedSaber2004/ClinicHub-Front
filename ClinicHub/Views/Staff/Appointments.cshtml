@@ -1,0 +1,118 @@
+@{
+    ViewData["Title"] = "المواعيد";
+    Layout = "_StaffLayout";
+}
+
+@using ClinicHub.Services.ReponseModels
+@{
+    var appointments = ViewBag.Appointments as IReadOnlyCollection<StaffAppointmentDto> ?? new List<StaffAppointmentDto>();
+}
+
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <i class="bi bi-calendar3"></i>
+    </span>
+    إدارة المواعيد
+</h2>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">جميع المواعيد</h3>
+    </div>
+    <form method="get" action="@Url.Action("Appointments")" class="filters-bar" style="display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--clr-border);flex-wrap:wrap;">
+        <select name="status" class="form-control" style="width:160px;">
+            <option value="">كل الحالات</option>
+            <option value="pending" selected="@(ViewBag.StatusFilter == "pending")">قيد الانتظار</option>
+            <option value="confirmed" selected="@(ViewBag.StatusFilter == "confirmed")">مؤكد</option>
+            <option value="cancelled" selected="@(ViewBag.StatusFilter == "cancelled")">ملغي</option>
+            <option value="completed" selected="@(ViewBag.StatusFilter == "completed")">منتهي</option>
+        </select>
+        <input type="date" name="date" class="form-control" style="width:180px;" value="@ViewBag.DateFilter" />
+        <input type="text" name="searchTerm" class="form-control" style="width:200px;" placeholder="بحث باسم المريض..." value="@ViewBag.SearchTerm" />
+        <button type="submit" class="btn btn-primary btn-sm" style="padding:4px 16px;">بحث</button>
+        <a href="@Url.Action("Appointments")" class="btn btn-outline-secondary btn-sm" style="padding:4px 16px;">مسح</a>
+    </form>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>المريض</th>
+                    <th>الطبيب</th>
+                    <th>التخصص</th>
+                    <th>التاريخ</th>
+                    <th>الوقت</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentsBody">
+                @if (appointments.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">لا توجد مواعيد</td>
+                    </tr>
+                }
+                @foreach (var app in appointments)
+                {
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div class="sidebar-profile-avatar" style="width:28px;height:28px;">
+                                    <span style="font-size:11px;">@app.Patient?.Initial</span>
+                                </div>
+                                @app.Patient?.Name
+                            </div>
+                        </td>
+                        <td>@app.Doctor?.Name</td>
+                        <td>@app.Specialty</td>
+                        <td>@app.Date</td>
+                        <td>@app.Time</td>
+                        <td class="status-cell"><span class="badge @app.StatusClass">@app.StatusLabel</span></td>
+                        <td class="appointment-actions" data-id="@app.Id">
+                            @if (app.Status == "pending")
+                            {
+                                <div style="display:flex;gap:4px;">
+                                    <button class="btn btn-sm btn-outline-success btn-approve" data-id="@app.Id"><i class="bi bi-check-lg"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-reject" data-id="@app.Id"><i class="bi bi-x-lg"></i></button>
+                                </div>
+                            }
+                            else if (app.Status == "confirmed" || app.Status == "accepted")
+                            {
+                                <button class="btn btn-sm btn-outline-primary btn-checkin" data-id="@app.Id"><i class="bi bi-box-arrow-in-right"></i> تسجيل وصول</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <partial name="_Pagination" />
+</div>
+
+@section Scripts {
+    <script>
+        $(document).on('click', '.btn-approve', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            StaffDashboardService.approveAppointment(id).then(function () {
+                location.reload();
+            });
+        });
+
+        $(document).on('click', '.btn-reject', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            StaffDashboardService.rejectAppointment(id, '').then(function () {
+                location.reload();
+            });
+        });
+
+        $(document).on('click', '.btn-checkin', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            StaffDashboardService.checkInPatient(id).then(function () {
+                location.reload();
+            });
+        });
+    </script>
+}

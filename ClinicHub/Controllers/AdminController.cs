@@ -691,7 +691,7 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Users")]
-        public async Task<IActionResult> Users(int pageNumber = 1, int pageSize = 20, string? searchTerm = null, string? status = null)
+        public async Task<IActionResult> Users(int pageNumber = 1, int pageSize = 20, string? searchTerm = null, string? status = null, string? userTypes = null)
         {
             try
             {
@@ -699,7 +699,8 @@ namespace ClinicHub.Controllers
                 {
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    SearchTerm = searchTerm
+                    SearchTerm = searchTerm,
+                    UserTypes = ParseUserTypes(userTypes) ?? new()
                 };
                 var paged = await _userService.GetAllUsersPagginatedAsync(request);
 
@@ -729,6 +730,7 @@ namespace ClinicHub.Controllers
                 ViewBag.Pagination = paged;
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.StatusFilter = status;
+                ViewBag.UserTypesFilter = userTypes;
 
             }
             catch (ApiException ex)

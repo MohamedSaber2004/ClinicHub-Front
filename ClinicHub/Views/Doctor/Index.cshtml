@@ -1,0 +1,95 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "لوحة تحكم الطبيب";
+    Layout = "_DoctorLayout";
+    var stats = ViewBag.Stats as List<MockStat> ?? new();
+    var appointments = ViewBag.Appointments as List<MockStaffAppointment> ?? new();
+}
+
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+        </svg>
+    </span>
+    لوحة تحكم الطبيب
+</h2>
+
+<div class="stats-grid">
+    @foreach (var stat in stats)
+    {
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-value">@stat.Value</span>
+                <span class="stat-label">@stat.Label</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--@stat.IconColor">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="@stat.SvgPath"/>
+                </svg>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">
+            <i class="bi bi-calendar3" style="margin-left: 6px;"></i>
+            أحدث المواعيد
+        </h3>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>المريض</th>
+                    <th>التاريخ</th>
+                    <th>الوقت</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var app in appointments)
+                {
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="sidebar-profile-avatar" style="width: 28px; height: 28px;">
+                                    <span style="font-size: 11px;">@app.PatientInitial</span>
+                                </div>
+                                @app.PatientName
+                            </div>
+                        </td>
+                        <td>@app.Date</td>
+                        <td>@app.Time</td>
+                        <td><span class="badge @app.StatusClass">@app.Status</span></td>
+                        <td>
+                            @if (app.Status == "قيد الانتظار")
+                            {
+                                <div style="display: flex; gap: 4px;">
+                                    <button class="btn btn-sm btn-outline-success" onclick="alert('تم قبول الموعد')">
+                                        <i class="bi bi-check-lg"></i> قبول
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="alert('تم رفض الموعد')">
+                                        <i class="bi bi-x-lg"></i> رفض
+                                    </button>
+                                </div>
+                            }
+                            else if (app.Status == "مؤكد")
+                            {
+                                <button class="btn btn-sm btn-outline-primary" onclick="alert('تم إكمال الموعد')">
+                                    <i class="bi bi-check2-circle"></i> إكمال
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -65,6 +65,33 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
+        public async Task<StaffDto?> GetStaffByIdAsync(Guid id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(DoctoryRoutes.Staff.GetById(id));
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errors = ApiErrorExtractor.ExtractErrors(body);
+                    var combined = string.Join(" ", errors);
+                    throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "الموظف غير موجود" : combined);
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<StaffDto?>>(body, _jsonSettings);
+                if (apiResponse != null && apiResponse.Success)
+                    return apiResponse.Data;
+
+                return JsonConvert.DeserializeObject<StaffDto>(body, _jsonSettings);
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
         public async Task<Guid> CreateStaffAsync(CreateStaffRequest request)
         {
             try
@@ -121,6 +148,30 @@ namespace ClinicHub.Services.Services.Implementations
             {
                 var response = await _httpClient.DeleteAsync(DoctoryRoutes.Staff.Delete(id));
                 return await _deserializerService.DeserializeApiResponse<bool>(response, "حدث خطأ في حذف الموظف");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<bool> ChangeStaffPasswordAsync(Guid id, ChangePasswordRequest request)
+        {
+            try
+            {
+                var payload = new Dictionary<string, object?>
+                {
+                    ["newPassword"] = request.NewPassword,
+                    ["confirmPassword"] = request.ConfirmPassword
+                };
+
+                var json = JsonConvert.SerializeObject(payload);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PutAsync(DoctoryRoutes.Staff.ChangePassword(id), content);
+                var result = await _deserializerService.DeserializeApiResponse<bool?>(response, "حدث خطأ في تغيير كلمة المرور");
+                return result ?? true;
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

@@ -10,5 +10,6 @@ namespace ClinicHub.Services.Contracts
         Task<DoctorDto> CreateDoctorAsync(CreateDoctorRequest request);
         Task<DoctorDto> UpdateDoctorAsync(Guid id, UpdateDoctorRequest request);
         Task<bool> DeleteDoctorAsync(Guid id);
+        Task<bool> ChangeDoctorPasswordAsync(Guid id, ChangePasswordRequest request);
     }
 }
