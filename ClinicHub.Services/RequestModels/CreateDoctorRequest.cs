@@ -19,11 +19,40 @@ namespace ClinicHub.Services.RequestModels
 
     public class CreateDoctorRequest
     {
+        [JsonPropertyName("clinicId")]
         public Guid ClinicId { get; set; }
-        public Guid UserId { get; set; }
+
+        [JsonPropertyName("specializationId")]
         public Guid SpecializationId { get; set; }
+
+        [JsonPropertyName("fullName")]
+        public string FullName { get; set; } = null!;
+
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = null!;
+
+        [JsonPropertyName("phoneNumber")]
+        public string PhoneNumber { get; set; } = null!;
+
+        [JsonPropertyName("password")]
+        public string Password { get; set; } = null!;
+
+        [JsonPropertyName("gender")]
+        public int Gender { get; set; }
+
+        [JsonPropertyName("birthDate")]
+        public string? BirthDate { get; set; }
+
+        [JsonPropertyName("bio")]
         public string? Bio { get; set; }
+
+        [JsonPropertyName("yearsOfExperience")]
         public int YearsOfExperience { get; set; }
+
+        [JsonPropertyName("doctorImage")]
+        public string? DoctorImage { get; set; }
+
+        [JsonPropertyName("availabilities")]
         public List<DoctorAvailabilityItem>? Availabilities { get; set; }
     }
 }

@@ -224,10 +224,16 @@ namespace ClinicHub.Controllers
                     return Json(new { success = false, message = "لم يتم العثور على العيادة المرتبطة بحسابك." });
                 }
 
-                var userId = Guid.Parse(body.GetProperty("userId").GetString()!);
                 var specializationId = Guid.Parse(body.GetProperty("specializationId").GetString()!);
-                var yearsOfExperience = body.GetProperty("yearsOfExperience").GetInt32();
+                var fullName = body.GetProperty("fullName").GetString()!;
+                var email = body.GetProperty("email").GetString()!;
+                var phoneNumber = body.GetProperty("phoneNumber").GetString()!;
+                var password = body.GetProperty("password").GetString()!;
+                var gender = body.GetProperty("gender").GetInt32();
+                var yearsOfExperience = body.TryGetProperty("yearsOfExperience", out var expEl) ? expEl.GetInt32() : 0;
                 var bio = body.TryGetProperty("bio", out var bioEl) ? bioEl.GetString() : null;
+                var birthDate = body.TryGetProperty("birthDate", out var bdEl) ? bdEl.GetString() : null;
+                var doctorImage = body.TryGetProperty("doctorImage", out var diEl) ? diEl.GetString() : null;
 
                 var availabilities = new List<DoctorAvailabilityItem>();
                 if (body.TryGetProperty("availabilities", out var availEl) && availEl.ValueKind == JsonValueKind.Array)
@@ -247,10 +253,16 @@ namespace ClinicHub.Controllers
                 var doctor = await _clinicDoctorService.CreateDoctorAsync(new CreateDoctorRequest
                 {
                     ClinicId = clinicId.Value,
-                    UserId = userId,
                     SpecializationId = specializationId,
+                    FullName = fullName,
+                    Email = email,
+                    PhoneNumber = phoneNumber,
+                    Password = password,
+                    Gender = gender,
+                    BirthDate = birthDate,
                     Bio = bio,
                     YearsOfExperience = yearsOfExperience,
+                    DoctorImage = doctorImage,
                     Availabilities = availabilities.Count > 0 ? availabilities : null
                 });
 

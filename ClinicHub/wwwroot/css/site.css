@@ -4891,6 +4891,83 @@ body {
   text-decoration: underline;
 }
 
+/* Stepper / Wizard */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) 0;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.stepper-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--clr-text-secondary);
+  background: var(--clr-bg);
+  border: 2px solid var(--clr-border);
+  transition: all var(--transition-base);
+}
+
+.stepper-step.active .stepper-circle {
+  color: #FFFFFF;
+  background: var(--clr-primary);
+  border-color: var(--clr-primary);
+}
+
+.stepper-step.completed .stepper-circle {
+  color: #FFFFFF;
+  background: var(--clr-success);
+  border-color: var(--clr-success);
+}
+
+.stepper-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+  white-space: nowrap;
+  transition: color var(--transition-base);
+}
+
+.stepper-step.active .stepper-label {
+  color: var(--clr-primary);
+}
+
+.stepper-step.completed .stepper-label {
+  color: var(--clr-success);
+}
+
+.stepper-line {
+  width: 60px;
+  height: 2px;
+  background: var(--clr-border);
+  margin: 0 var(--space-2);
+  margin-bottom: 22px;
+}
+
+.step-panel {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* User Search */
 .user-search-wrapper {
   position: relative;

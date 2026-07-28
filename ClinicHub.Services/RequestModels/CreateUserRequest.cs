@@ -12,8 +12,5 @@ namespace ClinicHub.Services.RequestModels
         public Gender Gender { get; set; }
         public UserType Role { get; set; }
         public Guid? ClinicId { get; set; }
-        public Guid? SpecializationId { get; set; }
-        public string? Bio { get; set; }
-        public int? YearsOfExperience { get; set; }
     }
 }

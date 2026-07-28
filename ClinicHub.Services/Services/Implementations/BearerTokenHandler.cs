@@ -16,8 +16,7 @@ namespace ClinicHub.Services.Services.Implementations
             "/auth/verify-reset-token",
             "/auth/reset-password",
             "/specializations/active",  // anonymous public endpoint for active specializations
-            "/clinics/register",
-            "/attachments/upload"
+            "/clinics/register"
         ];
 
         // Paths that are anonymous-friendly — send token only if one exists in the cookie.

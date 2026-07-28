@@ -96,7 +96,7 @@ namespace ClinicHub.Services.Services.Implementations
         {
             try
             {
-                var json = JsonConvert.SerializeObject(request);
+                var json = JsonConvert.SerializeObject(request, _jsonSettings);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(DoctoryRoutes.Doctors.Create, content);
                 return await _deserializerService.DeserializeApiResponse<DoctorDto>(response, "حدث خطأ في إضافة الطبيب");
@@ -112,7 +112,7 @@ namespace ClinicHub.Services.Services.Implementations
         {
             try
             {
-                var json = JsonConvert.SerializeObject(request);
+                var json = JsonConvert.SerializeObject(request, _jsonSettings);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PutAsync(DoctoryRoutes.Doctors.Update(id), content);
                 return await _deserializerService.DeserializeApiResponse<DoctorDto>(response, "حدث خطأ في تحديث الطبيب");

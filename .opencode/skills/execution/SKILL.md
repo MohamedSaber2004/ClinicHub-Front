@@ -128,8 +128,7 @@ catch (Exception ex)
 | Modals | `.modal-content-custom`, `.modal-header-custom`, `.modal-body-custom`, `.modal-footer-custom` |
 | Pagination | `.pagination-nav`, `.pagination-list`, `.pagination-link`, `.pagination-link--active` |
 | Status text | `.status-active`, `.status-inactive`, `.priority-high`, `.priority-medium`, `.priority-low` |
-| User search | `.user-search-wrapper`, `.user-search-results`, `.user-search-item`, `.user-search-item-name`, `.user-search-item-email`, `.user-search-empty` |
-| Selected user | `.selected-user-info`, `.selected-user-name`, `.user-change-btn` |
+| Stepper / Wizard | `.stepper`, `.stepper-step`, `.stepper-step.active`, `.stepper-step.completed`, `.stepper-circle`, `.stepper-label`, `.stepper-line`, `.step-panel` |
 | Availability rows | `.availability-row`, `.availability-day`, `.availability-from`, `.availability-to`, `.availability-slot`, `.availability-sep`, `.availability-remove-btn`, `.add-availability-btn` |
 
 ## Instructions
@@ -190,18 +189,12 @@ public async Task<IActionResult> SomeAction(Guid id)
 }
 ```
 
-#### Doctor creation with availability (ClinicOwner — AJAX)
-- Controller: `ClinicController.CreateDoctor` receives `JsonElement body`
-- Parses `userId`, `specializationId`, `yearsOfExperience`, `bio`, `availabilities`
+#### Doctor creation with availability (ClinicOwner — AJAX, 2-phase)
+- Controller: `ClinicController.CreateDoctor` receives `JsonElement body`  
+- **Phase 1**: Creates a new user via `_userService.CreateUserAsync(CreateUserRequest)` — accepts `fullName`, `email`, `phoneNumber`, `password`, `gender`, `birthDate`, `specializationId`, `bio`, `yearsOfExperience`
+- **Phase 2**: Creates doctor profile with availability via `_clinicDoctorService.CreateDoctorAsync(CreateDoctorRequest)` using the `userId` from Phase 1  
 - `availabilities` is a JSON array: `[{ dayOfWeek, startTime, endTime, slotDurationMinutes }]`
-- No longer creates user — expects existing `userId`
-- Uses `IClinicDoctorService.CreateDoctorAsync` with `CreateDoctorRequest` + `Availabilities`
-
-#### User search endpoint (ClinicOwner — AJAX autocomplete)
-- `ClinicController.SearchUsers(string term)` — GET endpoint
-- Returns `JSON { success, items: [{ id, fullName, email, phoneNumber }] }`
-- Queries `IUserService.GetAllUsersPagginatedAsync` with `IsUnassigned = true`
-- Used in "Add Doctor" form for selecting existing users via search-as-you-type
+- Returns `{ success, message, data: DoctorDto }`
 
 #### Admin CreateUser with availabilities
 - `AdminController.CreateUser` accepts additional `[FromForm] string? availabilitiesJson`
@@ -318,19 +311,67 @@ public async Task<IActionResult> SomeAction(Guid id)
 </td>
 ```
 
-### Step 5a: User search pattern (autocomplete + selected user badge)
+### Step 5a: Multi-step wizard (stepper + step panels)
+Use for multi-stage forms. Applies to "Add Doctor" flow (3 steps: personal info → professional info → working hours).
+
 ```html
-<div class="user-search-wrapper">
-    <input type="text" id="userSearch" class="form-control auth-form-control" placeholder="ابحث باسم المستخدم..." autocomplete="off" />
-    <input type="hidden" id="userId" />
-    <div class="user-search-results" id="userResults"></div>
+<!-- Stepper indicator -->
+<div class="stepper">
+    <div class="stepper-step active" data-step="1">
+        <div class="stepper-circle">1</div>
+        <div class="stepper-label">المعلومات الشخصية</div>
+    </div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="2">
+        <div class="stepper-circle">2</div>
+        <div class="stepper-label">المعلومات المهنية</div>
+    </div>
+    <div class="stepper-line"></div>
+    <div class="stepper-step" data-step="3">
+        <div class="stepper-circle">3</div>
+        <div class="stepper-label">أوقات العمل</div>
+    </div>
 </div>
-<div class="selected-user-info" id="userSelected" style="display:none;">
-    <span class="selected-user-name" id="userSelectedName"></span>
-    <button type="button" id="userChangeBtn" class="user-change-btn">تغيير</button>
-</div>
+
+<!-- Step panels -->
+<div class="step-panel" id="step1Panel">...</div>
+<div class="step-panel" id="step2Panel" style="display:none;">...</div>
+<div class="step-panel" id="step3Panel" style="display:none;">...</div>
+
+<!-- Navigation -->
+<button class="btn" id="stepPrevBtn">السابق</button>
+<button class="btn" id="stepNextBtn">التالي</button>
+<button class="btn" id="stepSubmitBtn" style="display:none;">إضافة الطبيب</button>
 ```
 
+Stepper JS pattern:
+```javascript
+var currentStep = 1, totalSteps = 3;
+
+function updateStepper(step) {
+    $('.stepper-step').each(function () {
+        var s = parseInt($(this).data('step'));
+        $(this).removeClass('active completed');
+        if (s === step) $(this).addClass('active');
+        else if (s < step) $(this).addClass('completed');
+    });
+    $('.step-panel').hide();
+    $('#step' + step + 'Panel').show();
+    $('#stepPrevBtn').toggle(step > 1);
+    $('#stepNextBtn').toggle(step < totalSteps);
+    $('#stepSubmitBtn').toggle(step === totalSteps);
+}
+
+function validateStep(step) {
+    // validate fields in current step, showErrorModal if invalid
+    return true;
+}
+
+$('#stepNextBtn').on('click', function () {
+    if (!validateStep(currentStep)) return;
+    goToStep(currentStep + 1);
+});
+```
 ### Step 5b: Availability rows pattern (dynamic add/remove)
 ```html
 <div id="availabilityContainer">

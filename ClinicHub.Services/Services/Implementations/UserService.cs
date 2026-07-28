@@ -130,15 +130,6 @@ namespace ClinicHub.Services.Services.Implementations
                 if (request.ClinicId.HasValue)
                     payload["ClinicId"] = request.ClinicId.Value;
 
-                if (request.SpecializationId.HasValue)
-                    payload["SpecializationId"] = request.SpecializationId.Value;
-
-                if (!string.IsNullOrWhiteSpace(request.Bio))
-                    payload["Bio"] = request.Bio;
-
-                if (request.YearsOfExperience.HasValue)
-                    payload["YearsOfExperience"] = request.YearsOfExperience.Value;
-
                 var json = JsonConvert.SerializeObject(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 

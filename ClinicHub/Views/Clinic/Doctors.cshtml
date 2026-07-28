@@ -1,5 +1,7 @@
 @using ClinicHub.Data
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Options
+@inject Microsoft.Extensions.Options.IOptions<Doctory> _doctoryOptions
 @{
     ViewData["Title"] = "إدارة الأطباء - Doctory";
     Layout = "_ClinicLayout";
@@ -9,6 +11,7 @@
     var specializations = ViewBag.Specializations as IReadOnlyCollection<SpecializationDto> ?? new List<SpecializationDto>();
     var searchTerm = ViewBag.SearchTerm as string;
     var selectedSpecId = ViewBag.SelectedSpecializationId as Guid?;
+    var attachmentBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -85,6 +88,7 @@
             <table class="custom-table">
                 <thead>
                     <tr>
+                        <th>الصورة</th>
                         <th>الاسم</th>
                         <th>البريد الإلكتروني</th>
                         <th>التخصص</th>
@@ -97,7 +101,22 @@
                 <tbody>
                     @foreach (var doctor in doctors)
                     {
+                        var imgUrl = !string.IsNullOrEmpty(doctor.ProfilePictureUrl)
+                            ? attachmentBaseUrl + "/files/" + doctor.ProfilePictureUrl.TrimStart('/')
+                            : null;
                         <tr>
+                            <td>
+                                @if (imgUrl != null)
+                                {
+                                    <img src="@imgUrl" alt="صورة" class="rounded" style="width: 40px; height: 40px; object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: var(--clr-surface-secondary); color: var(--clr-text-secondary); font-size: 14px;">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                }
+                            </td>
                             <td><strong>@doctor.UserName</strong></td>
                             <td style="font-size: 13px; color: var(--clr-text-secondary);">@doctor.UserEmail</td>
                             <td><span class="badge badge-info">@doctor.SpecializationName</span></td>
@@ -122,13 +141,7 @@
                                     </button>
                                     <button class="btn btn-sm edit-doctor-btn"
                                             data-id="@doctor.Id"
-                                            data-userid="@doctor.UserId"
-                                            data-name="@doctor.UserName"
-                                            data-email="@doctor.UserEmail"
-                                            data-specializationid="@doctor.SpecializationId"
-                                            data-bio="@doctor.Bio"
-                                            data-experience="@doctor.YearsOfExperience"
-                                            data-active="@doctor.IsActive.ToString().ToLower()"
+                                            title="تعديل"
                                             style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-primary);">
                                         <i class="bi bi-pencil me-1"></i> تعديل
                                     </button>
@@ -196,60 +209,91 @@
             </div>
             <div class="modal-body" style="padding: var(--space-6);">
                 <form id="createDoctorForm">
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">المستخدم</label>
-                        <div class="user-search-wrapper">
-                            <input type="text" class="form-control auth-form-control" id="createDoctorUserSearch" placeholder="ابحث باسم المستخدم أو البريد الإلكتروني..." style="padding: 8px 12px; font-size: 13px;" autocomplete="off" />
-                            <input type="hidden" id="createDoctorUserId" />
-                            <div class="user-search-results" id="createDoctorUserResults"></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control auth-form-control" id="createDoctorFullName" required style="padding: 8px 12px; font-size: 13px;" placeholder="مثال: أحمد علي" />
                         </div>
-                        <div class="selected-user-info" id="createDoctorUserSelected" style="display: none;">
-                            <span class="selected-user-name" id="createDoctorUserSelectedName"></span>
-                            <button type="button" id="createDoctorUserChangeBtn" class="user-change-btn">تغيير</button>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control auth-form-control" id="createDoctorEmail" required style="padding: 8px 12px; font-size: 13px;" placeholder="example@domain.com" />
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص</label>
-                        <select class="form-select auth-form-control" id="createDoctorSpecializationId" required style="padding: 8px 12px; font-size: 13px;">
-                            <option value="">اختر التخصص</option>
-                            @foreach (var spec in specializations)
-                            {
-                                <option value="@spec.Id">@spec.ArName</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">سنوات الخبرة</label>
-                        <input type="number" class="form-control auth-form-control" id="createDoctorExperience" value="0" min="0" required style="padding: 8px 12px; font-size: 13px;" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية (اختياري)</label>
-                        <textarea class="form-control auth-form-control" id="createDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;" placeholder="نبذة عن الطبيب..."></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">أوقات العمل (اختياري)</label>
-                        <div id="availabilityContainer">
-                            <div class="availability-row" data-index="0">
-                                <select class="availability-day form-select auth-form-control">
-                                    <option value="">اليوم</option>
-                                    <option value="0">الأحد</option>
-                                    <option value="1">الإثنين</option>
-                                    <option value="2">الثلاثاء</option>
-                                    <option value="3">الأربعاء</option>
-                                    <option value="4">الخميس</option>
-                                    <option value="5">الجمعة</option>
-                                    <option value="6">السبت</option>
-                                </select>
-                                <input type="time" class="availability-from form-control auth-form-control" value="09:00" />
-                                <span class="availability-sep">إلى</span>
-                                <input type="time" class="availability-to form-control auth-form-control" value="17:00" />
-                                <input type="number" class="availability-slot form-control auth-form-control" value="30" min="1" max="480" placeholder="دقيقة" />
-                                <button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control auth-form-control" id="createDoctorPhone" required style="padding: 8px 12px; font-size: 13px;" placeholder="+201234567890" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">كلمة المرور <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control auth-form-control" id="createDoctorPassword" required minlength="6" style="padding: 8px 12px; font-size: 13px;" placeholder="********" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الجنس <span class="text-danger">*</span></label>
+                            <select class="form-select auth-form-control" id="createDoctorGender" required style="padding: 8px 12px; font-size: 13px;">
+                                <option value="1">ذكر</option>
+                                <option value="2">أنثى</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">تاريخ الميلاد</label>
+                            <input type="date" class="form-control auth-form-control" id="createDoctorBirthDate" style="padding: 8px 12px; font-size: 13px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص <span class="text-danger">*</span></label>
+                            <select class="form-select auth-form-control" id="createDoctorSpecializationId" required style="padding: 8px 12px; font-size: 13px;">
+                                <option value="">اختر التخصص</option>
+                                @foreach (var spec in specializations)
+                                {
+                                    <option value="@spec.Id">@spec.ArName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">سنوات الخبرة</label>
+                            <input type="number" class="form-control auth-form-control" id="createDoctorExperience" value="0" min="0" style="padding: 8px 12px; font-size: 13px;" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">صورة الطبيب (اختياري)</label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="createDoctorImageInput" accept="image/*" class="form-control auth-form-control" style="padding: 8px 12px; font-size: 13px;" />
+                                <input type="hidden" id="createDoctorImage" />
+                                <div id="createDoctorImageStatus" class="upload-status-badge d-none align-items-center gap-2 mt-2">
+                                    <img id="createDoctorImagePreview" src="" alt="صورة الطبيب" class="rounded" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid var(--clr-border);" />
+                                    <span class="badge badge-success"><i class="bi bi-check-circle"></i> <span id="createDoctorImageFileName"></span></span>
+                                    <button type="button" class="btn btn-sm p-0 border-0 bg-transparent" id="removeDoctorImageBtn" style="color: var(--clr-danger); font-size: 12px; line-height: 1;" title="إزالة الصورة">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn">
-                            <i class="bi bi-plus-circle"></i> إضافة يوم
-                        </button>
+                        <div class="col-12">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية (اختياري)</label>
+                            <textarea class="form-control auth-form-control" id="createDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;" placeholder="نبذة عن الطبيب..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">أوقات العمل (اختياري)</label>
+                            <div id="availabilityContainer">
+                                <div class="availability-row" data-index="0">
+                                    <select class="availability-day form-select auth-form-control">
+                                        <option value="">اليوم</option>
+                                        <option value="0">الأحد</option>
+                                        <option value="1">الإثنين</option>
+                                        <option value="2">الثلاثاء</option>
+                                        <option value="3">الأربعاء</option>
+                                        <option value="4">الخميس</option>
+                                        <option value="5">الجمعة</option>
+                                        <option value="6">السبت</option>
+                                    </select>
+                                    <input type="time" class="availability-from form-control auth-form-control" value="09:00" />
+                                    <span class="availability-sep">إلى</span>
+                                    <input type="time" class="availability-to form-control auth-form-control" value="17:00" />
+                                    <input type="number" class="availability-slot form-control auth-form-control" value="30" min="1" max="480" placeholder="دقيقة" />
+                                    <button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>
+                                </div>
+                            </div>
+                            <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn">
+                                <i class="bi bi-plus-circle"></i> إضافة يوم
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -262,7 +306,7 @@
 </div>
 
 <div class="modal fade" id="editDoctorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
             <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
                 <h5 class="modal-title" style="font-weight: 700;">تعديل بيانات الطبيب</h5>
@@ -271,28 +315,77 @@
             <div class="modal-body" style="padding: var(--space-6);">
                 <form id="editDoctorForm">
                     <input type="hidden" id="editDoctorId" />
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم</label>
-                        <input type="text" class="form-control auth-form-control" id="editDoctorName" readonly style="padding: 8px 12px; font-size: 13px; background: var(--clr-table-header);" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني</label>
-                        <input type="email" class="form-control auth-form-control" id="editDoctorEmail" readonly style="padding: 8px 12px; font-size: 13px; background: var(--clr-table-header);" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الحالة</label>
-                        <div class="form-check form-switch" style="padding-top: 6px;">
-                            <input class="form-check-input" type="checkbox" id="editDoctorActive" style="transform: scale(1.2);">
-                            <label class="form-check-label" for="editDoctorActive" style="font-size: 13px; margin-right: 8px;">نشط</label>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل</label>
+                            <input type="text" class="form-control auth-form-control" id="editDoctorFullName" style="padding: 8px 12px; font-size: 13px;" />
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">سنوات الخبرة</label>
-                        <input type="number" class="form-control auth-form-control" id="editDoctorExperience" min="0" style="padding: 8px 12px; font-size: 13px;" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية</label>
-                        <textarea class="form-control auth-form-control" id="editDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;"></textarea>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني</label>
+                            <input type="email" class="form-control auth-form-control" id="editDoctorEmail" style="padding: 8px 12px; font-size: 13px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف</label>
+                            <input type="text" class="form-control auth-form-control" id="editDoctorPhone" style="padding: 8px 12px; font-size: 13px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">تاريخ الميلاد</label>
+                            <input type="date" class="form-control auth-form-control" id="editDoctorBirthDate" style="padding: 8px 12px; font-size: 13px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الجنس</label>
+                            <select class="form-select auth-form-control" id="editDoctorGender" style="padding: 8px 12px; font-size: 13px;">
+                                <option value="">اختر</option>
+                                <option value="1">ذكر</option>
+                                <option value="2">أنثى</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص</label>
+                            <select class="form-select auth-form-control" id="editDoctorSpecializationId" style="padding: 8px 12px; font-size: 13px;">
+                                <option value="">اختر التخصص</option>
+                                @foreach (var spec in specializations)
+                                {
+                                    <option value="@spec.Id">@spec.ArName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">سنوات الخبرة</label>
+                            <input type="number" class="form-control auth-form-control" id="editDoctorExperience" min="0" style="padding: 8px 12px; font-size: 13px;" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الحالة</label>
+                            <div class="form-check form-switch" style="padding-top: 8px;">
+                                <input class="form-check-input" type="checkbox" id="editDoctorActive" style="transform: scale(1.2);">
+                                <label class="form-check-label" for="editDoctorActive" style="font-size: 13px; margin-right: 8px;">نشط</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">صورة الطبيب</label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="editDoctorImageInput" accept="image/*" class="form-control auth-form-control" style="padding: 8px 12px; font-size: 13px;" />
+                                <input type="hidden" id="editDoctorImage" />
+                                <div id="editDoctorImageStatus" class="upload-status-badge d-none align-items-center gap-2 mt-2">
+                                    <img id="editDoctorImagePreview" src="" alt="صورة الطبيب" class="rounded" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid var(--clr-border);" />
+                                    <button type="button" class="btn btn-sm p-0 border-0 bg-transparent" id="editRemoveDoctorImageBtn" style="color: var(--clr-danger); font-size: 12px; line-height: 1;" title="إزالة الصورة">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية</label>
+                            <textarea class="form-control auth-form-control" id="editDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;" placeholder="نبذة عن الطبيب..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px;">أوقات العمل (اختياري)</label>
+                            <div id="editAvailabilityContainer">
+                            </div>
+                            <button type="button" id="addEditAvailabilityBtn" class="btn btn-sm add-availability-btn">
+                                <i class="bi bi-plus-circle"></i> إضافة يوم
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -387,14 +480,29 @@
             var statusHtml = doctor.isActive
                 ? '<span class="badge badge-success">نشط</span>'
                 : '<span class="badge badge-danger">غير نشط</span>';
-            return '<div class="detail-grid">'
-                + '<div class="detail-item"><span class="detail-label">الاسم الكامل</span><span class="detail-value">' + escapeHtml(doctor.userName) + '</span></div>'
-                + '<div class="detail-item"><span class="detail-label">البريد الإلكتروني</span><span class="detail-value">' + escapeHtml(doctor.userEmail) + '</span></div>'
+            var imgHtml = doctor.profilePictureUrl
+                ? '<img src="' + attachmentBaseUrl + '/files/' + doctor.profilePictureUrl.replace(/^files\//, '') + '" alt="صورة الطبيب" class="rounded" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid var(--clr-border);" />'
+                : '<div class="rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: var(--clr-surface-secondary); color: var(--clr-text-secondary); font-size: 28px;"><i class="bi bi-person"></i></div>';
+            var availHtml = '';
+            if (doctor.availabilities && doctor.availabilities.length > 0) {
+                availHtml = '<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">أوقات العمل</span><span class="detail-value">';
+                doctor.availabilities.forEach(function (a) {
+                    var dayName = DAY_NAMES[a.dayOfWeek] || 'اليوم ' + a.dayOfWeek;
+                    availHtml += '<div style="font-size: 13px; margin-bottom: 4px;">' + dayName + ': ' + a.startTime.slice(0, 5) + ' - ' + a.endTime.slice(0, 5) + ' (كل ' + a.slotDurationMinutes + ' دقيقة)</div>';
+                });
+                availHtml += '</span></div>';
+            }
+            return '<div style="display: flex; gap: 16px; margin-bottom: 16px;">' + imgHtml
+                + '<div><h5 style="margin: 0 0 4px;">' + escapeHtml(doctor.userName) + '</h5>'
+                + '<span style="color: var(--clr-text-secondary); font-size: 13px;">' + escapeHtml(doctor.userEmail) + '</span></div></div>'
+                + '<div class="detail-grid">'
+                + '<div class="detail-item"><span class="detail-label">رقم الهاتف</span><span class="detail-value">' + escapeHtml(doctor.userPhoneNumber || '-') + '</span></div>'
                 + '<div class="detail-item"><span class="detail-label">التخصص</span><span class="detail-value">' + escapeHtml(doctor.specializationName) + '</span></div>'
                 + '<div class="detail-item"><span class="detail-label">سنوات الخبرة</span><span class="detail-value">' + doctor.yearsOfExperience + ' سنة</span></div>'
                 + '<div class="detail-item"><span class="detail-label">الحالة</span><span class="detail-value">' + statusHtml + '</span></div>'
                 + (doctor.bio ? '<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">السيرة الذاتية</span><span class="detail-value">' + escapeHtml(doctor.bio) + '</span></div>' : '')
                 + '<div class="detail-item"><span class="detail-label">تاريخ الإضافة</span><span class="detail-value">' + formatDate(doctor.createdAt) + '</span></div>'
+                + availHtml
                 + '</div>';
         }
 
@@ -421,11 +529,8 @@
             });
         });
 
-        var searchTimeout = null;
-        var selectedUserId = null;
-        var selectedUserName = null;
-
         var DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        var attachmentBaseUrl = '@attachmentBaseUrl';
 
         function addAvailabilityRow(day, fromTime, toTime, slotMin) {
             var container = $('#availabilityContainer');
@@ -460,14 +565,18 @@
         });
 
         function resetCreateDoctorModal() {
-            $('#createDoctorUserSearch').val('').show();
-            $('#createDoctorUserId').val('');
-            $('#createDoctorUserSelected').hide();
-            $('#createDoctorUserResults').hide().empty();
-            selectedUserId = null;
-            selectedUserName = null;
+            $('#createDoctorFullName').val('');
+            $('#createDoctorEmail').val('');
+            $('#createDoctorPhone').val('');
+            $('#createDoctorPassword').val('');
+            $('#createDoctorGender').val('1');
+            $('#createDoctorBirthDate').val('');
             $('#createDoctorSpecializationId').val('');
             $('#createDoctorExperience').val(0);
+            $('#createDoctorImageInput').val('');
+            $('#createDoctorImage').val('');
+            $('#createDoctorImagePreview').attr('src', '');
+            $('#createDoctorImageStatus').addClass('d-none').css('display', '');
             $('#createDoctorBio').val('');
             $('#availabilityContainer').empty();
             addAvailabilityRow();
@@ -476,81 +585,76 @@
         $('#addDoctorBtn').on('click', function () {
             resetCreateDoctorModal();
             $('#createDoctorModal').modal('show');
-            setTimeout(function () { $('#createDoctorUserSearch').focus(); }, 500);
+            setTimeout(function () { $('#createDoctorFullName').focus(); }, 500);
         });
 
-        $('#createDoctorUserSearch').on('input', function () {
-            var term = $(this).val().trim();
-            var resultsEl = $('#createDoctorUserResults');
+        // Doctor image upload
+        $('#createDoctorImageInput').on('change', function () {
+            var file = this.files[0];
+            if (!file) return;
 
-            if (searchTimeout) clearTimeout(searchTimeout);
+            // Show local preview immediately
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#createDoctorImagePreview').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
 
-            if (term.length < 2) {
-                resultsEl.hide().empty();
-                return;
-            }
+            var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-            searchTimeout = setTimeout(function () {
-                $.ajax({
-                    url: '@Url.Action("SearchUsers")',
-                    type: 'GET',
-                    data: { term: term },
-                    success: function (res) {
-                        if (res.success && res.items.length > 0) {
-                            resultsEl.empty();
-                            res.items.forEach(function (u) {
-                                resultsEl.append(
-                                    '<div class="user-search-item" data-id="' + u.id + '" data-name="' + escapeHtml(u.fullName) + '" data-email="' + escapeHtml(u.email) + '">' +
-                                        '<span class="user-search-item-name">' + escapeHtml(u.fullName) + '</span>' +
-                                        '<span class="user-search-item-email">' + escapeHtml(u.email) + '</span>' +
-                                    '</div>'
-                                );
-                            });
-                            resultsEl.show();
-                        } else {
-                            resultsEl.html('<div class="user-search-empty">لا توجد نتائج</div>').show();
-                        }
-                    },
-                    error: function () {
-                        resultsEl.html('<div class="user-search-empty">حدث خطأ أثناء البحث</div>').show();
+            var formData = new FormData();
+            formData.append('file', file);
+
+            $.ajax({
+                url: '/Home/UploadDoctorImage',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: csrfToken ? { 'RequestVerificationToken': csrfToken } : {},
+                success: function (res) {
+                    if (res.success && res.message) {
+                        $('#createDoctorImage').val(res.message);
+                        $('#createDoctorImageFileName').text(res.message);
+                        var fullUrl = attachmentBaseUrl + '/files/' + res.message;
+                        $('#createDoctorImagePreview').attr('src', fullUrl);
+                        $('#createDoctorImageStatus').removeClass('d-none').css('display', 'flex');
+                    } else {
+                        showErrorModal(res.message || 'حدث خطأ أثناء رفع الصورة');
                     }
-                });
-            }, 300);
+                },
+                error: function (xhr) {
+                    var msg = 'حدث خطأ في الاتصال أثناء رفع الصورة';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
         });
 
-        $(document).on('click', '.user-search-item', function () {
-            var item = $(this);
-            selectedUserId = item.data('id');
-            selectedUserName = item.data('name');
-            $('#createDoctorUserId').val(selectedUserId);
-            $('#createDoctorUserSearch').hide();
-            $('#createDoctorUserResults').hide().empty();
-            $('#createDoctorUserSelectedName').text(item.data('name') + ' (' + item.data('email') + ')');
-            $('#createDoctorUserSelected').show();
-        });
-
-        $('#createDoctorUserChangeBtn').on('click', function () {
-            selectedUserId = null;
-            selectedUserName = null;
-            $('#createDoctorUserId').val('');
-            $('#createDoctorUserSearch').val('').show().focus();
-            $('#createDoctorUserSelected').hide();
-            $('#createDoctorUserResults').hide().empty();
-        });
-
-        $(document).on('click', function (e) {
-            if (!$(e.target).closest('.user-search-wrapper').length) {
-                $('#createDoctorUserResults').hide();
-            }
+        // Remove uploaded image
+        $('#removeDoctorImageBtn').on('click', function () {
+            $('#createDoctorImageInput').val('');
+            $('#createDoctorImage').val('');
+            $('#createDoctorImagePreview').attr('src', '');
+            $('#createDoctorImageStatus').addClass('d-none').css('display', '');
         });
 
         $('#createDoctorSubmitBtn').on('click', function () {
-            var userId = $('#createDoctorUserId').val();
+            var fullName = $('#createDoctorFullName').val().trim();
+            var email = $('#createDoctorEmail').val().trim();
+            var phoneNumber = $('#createDoctorPhone').val().trim();
+            var password = $('#createDoctorPassword').val();
+            var gender = parseInt($('#createDoctorGender').val());
+            var birthDate = $('#createDoctorBirthDate').val() || null;
             var specializationId = $('#createDoctorSpecializationId').val();
             var experience = parseInt($('#createDoctorExperience').val()) || 0;
-            var bio = $('#createDoctorBio').val().trim();
+            var doctorImage = $('#createDoctorImage').val().trim() || null;
+            var bio = $('#createDoctorBio').val().trim() || null;
 
-            if (!userId) { showErrorModal('يرجى اختيار مستخدم'); return; }
+            if (!fullName) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
+            if (!email) { showErrorModal('يرجى إدخال البريد الإلكتروني'); return; }
+            if (!phoneNumber) { showErrorModal('يرجى إدخال رقم الهاتف'); return; }
+            if (!password || password.length < 6) { showErrorModal('كلمة المرور يجب أن تكون 6 أحرف على الأقل'); return; }
             if (!specializationId) { showErrorModal('يرجى اختيار التخصص'); return; }
 
             var availabilities = [];
@@ -571,17 +675,25 @@
                 }
             });
 
+            var payload = {
+                fullName: fullName,
+                email: email,
+                phoneNumber: phoneNumber,
+                password: password,
+                gender: gender,
+                specializationId: specializationId,
+                yearsOfExperience: experience
+            };
+            if (birthDate) payload.birthDate = birthDate;
+            if (doctorImage) payload.doctorImage = doctorImage;
+            if (bio) payload.bio = bio;
+            if (availabilities.length > 0) payload.availabilities = availabilities;
+
             $.ajax({
                 url: '@Url.Action("CreateDoctor")',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({
-                    userId: userId,
-                    specializationId: specializationId,
-                    yearsOfExperience: experience,
-                    bio: bio || null,
-                    availabilities: availabilities.length > 0 ? availabilities : undefined
-                }),
+                data: JSON.stringify(payload),
                 success: function (res) {
                     if (res.success) {
                         $('#createDoctorModal').modal('hide');
@@ -599,33 +711,230 @@
             });
         });
 
+        // Edit doctor - fetch full data (user + doctor + availabilities)
+        var _editOriginals = {};
         $('.edit-doctor-btn').on('click', function () {
-            var btn = $(this);
-            $('#editDoctorId').val(btn.data('id'));
-            $('#editDoctorName').val(btn.attr('data-name'));
-            $('#editDoctorEmail').val(btn.attr('data-email'));
-            $('#editDoctorActive').prop('checked', btn.data('active') === true || btn.data('active') === 'true');
-            $('#editDoctorExperience').val(btn.data('experience'));
-            $('#editDoctorBio').val(btn.data('bio') || '');
-            $('#editDoctorModal').modal('show');
+            var id = $(this).data('id');
+            $('#editDoctorId').val(id);
+
+            // Reset form
+            $('#editDoctorFullName').val('');
+            $('#editDoctorEmail').val('');
+            $('#editDoctorPhone').val('');
+            $('#editDoctorBirthDate').val('');
+            $('#editDoctorGender').val('');
+            $('#editDoctorSpecializationId').val('');
+            $('#editDoctorExperience').val('');
+            $('#editDoctorActive').prop('checked', true);
+            $('#editDoctorBio').val('');
+            $('#editDoctorImageInput').val('');
+            $('#editDoctorImage').val('');
+            $('#editDoctorImagePreview').attr('src', '');
+            $('#editDoctorImageStatus').addClass('d-none').css('display', '');
+            $('#editAvailabilityContainer').empty();
+
+            $.ajax({
+                url: '@Url.Action("GetDoctorById")/' + id,
+                type: 'GET',
+                success: function (res) {
+                    if (res.success && res.data) {
+                        var d = res.data;
+                        $('#editDoctorFullName').val(d.userName || '');
+                        $('#editDoctorEmail').val(d.userEmail || '');
+                        $('#editDoctorPhone').val(d.userPhoneNumber || '');
+                        if (d.birthDate) {
+                            $('#editDoctorBirthDate').val(d.birthDate.slice(0, 10));
+                        }
+                        $('#editDoctorGender').val(d.gender != null ? String(d.gender) : '');
+                        $('#editDoctorSpecializationId').val(d.specializationId || '');
+                        $('#editDoctorExperience').val(d.yearsOfExperience || 0);
+                        $('#editDoctorActive').prop('checked', d.isActive !== false);
+                        $('#editDoctorBio').val(d.bio || '');
+
+                        var originalImage = '';
+                        if (d.profilePictureUrl) {
+                            var clean = d.profilePictureUrl.replace(/^files\//, '');
+                            originalImage = clean;
+                            $('#editDoctorImage').val(clean);
+                            $('#editDoctorImagePreview').attr('src', d.profilePictureUrl.startsWith('http') ? d.profilePictureUrl : attachmentBaseUrl + '/files/' + clean);
+                            $('#editDoctorImageStatus').removeClass('d-none').css('display', 'flex');
+                        }
+
+                        // Store original availabilities as serialized string for comparison
+                        var originalAvail = [];
+                        if (d.availabilities && d.availabilities.length > 0) {
+                            d.availabilities.forEach(function (a) {
+                                addEditAvailabilityRow(a.dayOfWeek, (a.startTime || '').slice(0, 5), (a.endTime || '').slice(0, 5), a.slotDurationMinutes || 30);
+                                originalAvail.push({ dayOfWeek: a.dayOfWeek, startTime: (a.startTime || '').slice(0, 5), endTime: (a.endTime || '').slice(0, 5), slotDurationMinutes: a.slotDurationMinutes || 30 });
+                            });
+                        }
+
+                        _editOriginals = {
+                            fullName: d.userName || '',
+                            email: d.userEmail || '',
+                            phone: d.userPhoneNumber || '',
+                            birthDate: d.birthDate ? d.birthDate.slice(0, 10) : '',
+                            gender: d.gender != null ? String(d.gender) : '',
+                            experience: d.yearsOfExperience || 0,
+                            isActive: d.isActive !== false,
+                            bio: d.bio || '',
+                            doctorImage: originalImage,
+                            availabilities: JSON.stringify(originalAvail)
+                        };
+
+                        $('#editDoctorModal').modal('show');
+                    } else {
+                        showErrorModal(res.message || 'تعذر تحميل بيانات الطبيب');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'تعذر تحميل بيانات الطبيب';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) {}
+                    showErrorModal(msg);
+                }
+            });
         });
 
+        function addEditAvailabilityRow(day, fromTime, toTime, slotMin) {
+            var container = $('#editAvailabilityContainer');
+            var index = container.children('.availability-row').length;
+            var row = $(
+                '<div class="availability-row" data-index="' + index + '">' +
+                    '<select class="availability-day form-select auth-form-control">' +
+                        '<option value="">اليوم</option>' +
+                        DAY_NAMES.map(function (name, i) {
+                            return '<option value="' + i + '"' + (day === i ? ' selected' : '') + '>' + name + '</option>';
+                        }).join('') +
+                    '</select>' +
+                    '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
+                    '<span class="availability-sep">إلى</span>' +
+                    '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
+                    '<input type="number" class="availability-slot form-control auth-form-control" value="' + (slotMin || '30') + '" min="1" max="480" placeholder="دقيقة" />' +
+                    '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>' +
+                '</div>'
+            );
+            row.find('.availability-remove-btn').on('click', function () {
+                row.remove();
+            });
+            container.append(row);
+        }
+
+        $('#addEditAvailabilityBtn').on('click', function () {
+            addEditAvailabilityRow();
+        });
+
+        // Edit doctor image upload
+        $('#editDoctorImageInput').on('change', function () {
+            var file = this.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#editDoctorImagePreview').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
+
+            var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            var formData = new FormData();
+            formData.append('file', file);
+
+            $.ajax({
+                url: '/Home/UploadDoctorImage',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: csrfToken ? { 'RequestVerificationToken': csrfToken } : {},
+                success: function (res) {
+                    if (res.success && res.message) {
+                        $('#editDoctorImage').val(res.message);
+                        var fullUrl = attachmentBaseUrl + '/files/' + res.message;
+                        $('#editDoctorImagePreview').attr('src', fullUrl);
+                        $('#editDoctorImageStatus').removeClass('d-none').css('display', 'flex');
+                    } else {
+                        showErrorModal(res.message || 'حدث خطأ أثناء رفع الصورة');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'حدث خطأ في الاتصال أثناء رفع الصورة';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        });
+
+        // Remove edited image
+        $('#editRemoveDoctorImageBtn').on('click', function () {
+            $('#editDoctorImageInput').val('');
+            $('#editDoctorImage').val('');
+            $('#editDoctorImagePreview').attr('src', '');
+            $('#editDoctorImageStatus').addClass('d-none').css('display', '');
+        });
+
+        // Submit edit - only send changed fields
         $('#editDoctorSubmitBtn').on('click', function () {
             var id = $('#editDoctorId').val();
+            var btn = $(this);
+            setButtonLoading(btn, true);
+
+            var payload = {};
+            var orig = _editOriginals;
+
+            var fullName = $('#editDoctorFullName').val().trim();
+            if (fullName !== orig.fullName) payload.fullName = fullName;
+
+            var email = $('#editDoctorEmail').val().trim();
+            if (email !== orig.email) payload.email = email;
+
+            var phone = $('#editDoctorPhone').val().trim();
+            if (phone !== orig.phone) payload.phoneNumber = phone;
+
+            var birthDate = $('#editDoctorBirthDate').val();
+            if (birthDate !== orig.birthDate) payload.birthDate = birthDate;
+
+            var gender = $('#editDoctorGender').val();
+            if (gender !== orig.gender) payload.gender = parseInt(gender);
+
+            var experience = $('#editDoctorExperience').val();
+            var expNum = experience ? parseInt(experience) : 0;
+            if (expNum !== orig.experience) payload.yearsOfExperience = expNum;
+
             var isActive = $('#editDoctorActive').is(':checked');
-            var experience = parseInt($('#editDoctorExperience').val()) || 0;
+            if (isActive !== orig.isActive) payload.isActive = isActive;
+
             var bio = $('#editDoctorBio').val().trim();
+            if (bio !== orig.bio) payload.bio = bio;
+
+            var doctorImage = $('#editDoctorImage').val().trim();
+            if (doctorImage !== orig.doctorImage) payload.doctorImage = doctorImage;
+
+            // Availabilities
+            var availRows = [];
+            $('#editAvailabilityContainer .availability-row').each(function () {
+                var row = $(this);
+                var day = parseInt(row.find('.availability-day').val());
+                var fromTime = row.find('.availability-from').val();
+                var toTime = row.find('.availability-to').val();
+                var slot = parseInt(row.find('.availability-slot').val()) || 30;
+                if (!isNaN(day) && day >= 0 && fromTime && toTime) {
+                    availRows.push({
+                        dayOfWeek: day,
+                        startTime: fromTime + ':00',
+                        endTime: toTime + ':00',
+                        slotDurationMinutes: slot
+                    });
+                }
+            });
+            var availStr = JSON.stringify(availRows);
+            if (availStr !== orig.availabilities) payload.availabilities = availRows;
 
             $.ajax({
                 url: '@Url.Action("UpdateDoctor")/' + id,
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({
-                    isActive: isActive,
-                    bio: bio || null,
-                    yearsOfExperience: experience || null
-                }),
+                data: JSON.stringify(payload),
                 success: function (res) {
+                    setButtonLoading(btn, false);
                     if (res.success) {
                         $('#editDoctorModal').modal('hide');
                         showSuccessModal('تم تحديث بيانات الطبيب بنجاح');
@@ -635,6 +944,7 @@
                     }
                 },
                 error: function (xhr) {
+                    setButtonLoading(btn, false);
                     var msg = 'حدث خطأ أثناء تحديث الطبيب';
                     try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
                     showErrorModal(msg);
