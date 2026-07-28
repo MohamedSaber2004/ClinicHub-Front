@@ -224,38 +224,25 @@ namespace ClinicHub.Controllers
                     return Json(new { success = false, message = "لم يتم العثور على العيادة المرتبطة بحسابك." });
                 }
 
-                var fullName = body.GetProperty("fullName").GetString() ?? "";
-                var email = body.GetProperty("email").GetString() ?? "";
-                var phoneNumber = body.GetProperty("phoneNumber").GetString() ?? "";
-                var password = body.GetProperty("password").GetString() ?? "";
-                var gender = body.GetProperty("gender").GetInt32();
-                var birthDate = body.TryGetProperty("birthDate", out var bdEl) ? bdEl.GetString() : null;
+                var userId = Guid.Parse(body.GetProperty("userId").GetString()!);
                 var specializationId = Guid.Parse(body.GetProperty("specializationId").GetString()!);
                 var yearsOfExperience = body.GetProperty("yearsOfExperience").GetInt32();
                 var bio = body.TryGetProperty("bio", out var bioEl) ? bioEl.GetString() : null;
 
-                var createUserResult = await _userService.CreateUserAsync(new CreateUserRequest
+                var availabilities = new List<DoctorAvailabilityItem>();
+                if (body.TryGetProperty("availabilities", out var availEl) && availEl.ValueKind == JsonValueKind.Array)
                 {
-                    FullName = fullName,
-                    Email = email,
-                    PhoneNumber = phoneNumber,
-                    Password = password,
-                    Gender = (Services.Enums.Gender)gender,
-                    BirthDate = !string.IsNullOrEmpty(birthDate) ? DateTime.Parse(birthDate) : null,
-                    Role = Services.Enums.UserType.Doctor,
-                    ClinicId = clinicId,
-                    SpecializationId = specializationId,
-                    Bio = bio,
-                    YearsOfExperience = yearsOfExperience
-                });
-
-                if (!createUserResult.Success)
-                {
-                    Response.StatusCode = 400;
-                    return Json(new { success = false, message = createUserResult.Message ?? "فشل إنشاء المستخدم" });
+                    foreach (var item in availEl.EnumerateArray())
+                    {
+                        availabilities.Add(new DoctorAvailabilityItem
+                        {
+                            DayOfWeek = item.GetProperty("dayOfWeek").GetInt32(),
+                            StartTime = item.GetProperty("startTime").GetString()!,
+                            EndTime = item.GetProperty("endTime").GetString()!,
+                            SlotDurationMinutes = item.TryGetProperty("slotDurationMinutes", out var slotEl) ? slotEl.GetInt32() : 30
+                        });
+                    }
                 }
-
-                var userId = createUserResult.Data;
 
                 var doctor = await _clinicDoctorService.CreateDoctorAsync(new CreateDoctorRequest
                 {
@@ -263,7 +250,8 @@ namespace ClinicHub.Controllers
                     UserId = userId,
                     SpecializationId = specializationId,
                     Bio = bio,
-                    YearsOfExperience = yearsOfExperience
+                    YearsOfExperience = yearsOfExperience,
+                    Availabilities = availabilities.Count > 0 ? availabilities : null
                 });
 
                 return Json(new { success = true, message = "تم إضافة الطبيب بنجاح", data = doctor });

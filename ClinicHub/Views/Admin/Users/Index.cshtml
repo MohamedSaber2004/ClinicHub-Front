@@ -129,7 +129,7 @@
 
 <form id="createUserForm" method="post" action="/Admin/Users/Create">
     <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content modal-content-custom">
                 <div class="modal-header-custom">
                     <h5 class="modal-title">إضافة مستخدم جديد</h5>
@@ -202,6 +202,32 @@
                     <div class="form-group" id="experienceGroup" style="display:none;">
                         <label class="form-label" for="createExperience">سنوات الخبرة</label>
                         <input type="number" id="createExperience" name="YearsOfExperience" class="form-input" placeholder="مثال: 5" min="0" />
+                    </div>
+                    <div class="form-group" id="availabilitiesGroup" style="display:none;">
+                        <label class="form-label">أوقات العمل (اختياري)</label>
+                        <div id="adminAvailabilityContainer">
+                            <div class="availability-row" data-index="0">
+                                <select class="availability-day form-select auth-form-control">
+                                    <option value="">اليوم</option>
+                                    <option value="0">الأحد</option>
+                                    <option value="1">الإثنين</option>
+                                    <option value="2">الثلاثاء</option>
+                                    <option value="3">الأربعاء</option>
+                                    <option value="4">الخميس</option>
+                                    <option value="5">الجمعة</option>
+                                    <option value="6">السبت</option>
+                                </select>
+                                <input type="time" class="availability-from form-control auth-form-control" value="09:00" />
+                                <span class="availability-sep">إلى</span>
+                                <input type="time" class="availability-to form-control auth-form-control" value="17:00" />
+                                <input type="number" class="availability-slot form-control auth-form-control" value="30" min="1" max="480" placeholder="دقيقة" />
+                                <button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" id="addAdminAvailabilityBtn" class="btn btn-sm add-availability-btn">
+                            <i class="bi bi-plus-circle"></i> إضافة يوم
+                        </button>
+                        <input type="hidden" id="createAvailabilitiesJson" name="availabilitiesJson" value="" />
                     </div>
                 </div>
                 <div class="modal-footer-custom">
@@ -376,11 +402,54 @@
 
         })();
 
+            var ADMIN_DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+            function addAdminAvailabilityRow(day, fromTime, toTime, slotMin) {
+                var container = document.getElementById('adminAvailabilityContainer');
+                var index = container.children.length;
+                var dayOpts = '<option value="">اليوم</option>' + ADMIN_DAY_NAMES.map(function (n, i) {
+                    return '<option value="' + i + '"' + (day === i ? ' selected' : '') + '>' + n + '</option>';
+                }).join('');
+                var row = document.createElement('div');
+                row.className = 'availability-row';
+                row.setAttribute('data-index', index);
+                row.innerHTML =
+                    '<select class="availability-day form-select auth-form-control">' + dayOpts + '</select>' +
+                    '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
+                    '<span class="availability-sep">إلى</span>' +
+                    '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
+                    '<input type="number" class="availability-slot form-control auth-form-control" value="' + (slotMin || '30') + '" min="1" max="480" placeholder="دقيقة" />' +
+                    '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>';
+                row.querySelector('.availability-remove-btn').addEventListener('click', function () { row.remove(); });
+                container.appendChild(row);
+            }
+
+            function serializeAdminAvailabilities() {
+                var rows = document.querySelectorAll('#adminAvailabilityContainer .availability-row');
+                var availabilities = [];
+                rows.forEach(function (row) {
+                    var day = parseInt(row.querySelector('.availability-day').value);
+                    var fromTime = row.querySelector('.availability-from').value;
+                    var toTime = row.querySelector('.availability-to').value;
+                    var slot = parseInt(row.querySelector('.availability-slot').value) || 30;
+                    if (!isNaN(day) && day >= 0 && fromTime && toTime) {
+                        availabilities.push({
+                            dayOfWeek: day,
+                            startTime: fromTime + ':00',
+                            endTime: toTime + ':00',
+                            slotDurationMinutes: slot
+                        });
+                    }
+                });
+                document.getElementById('createAvailabilitiesJson').value = JSON.stringify(availabilities);
+            }
+
             document.getElementById('createRole').addEventListener('change', function() {
                 var clinicGroup = document.getElementById('clinicGroup');
                 var doctorFields = document.getElementById('doctorFields');
                 var bioGroup = document.getElementById('bioGroup');
                 var experienceGroup = document.getElementById('experienceGroup');
+                var availabilitiesGroup = document.getElementById('availabilitiesGroup');
                 var val = parseInt(this.value);
                 var showClinic = val === 4 || val === 8 || val === 16;
                 var showDoctorFields = val === 4 || val === 16;
@@ -388,6 +457,22 @@
                 doctorFields.style.display = showDoctorFields ? '' : 'none';
                 bioGroup.style.display = showDoctorFields ? '' : 'none';
                 experienceGroup.style.display = showDoctorFields ? '' : 'none';
+                availabilitiesGroup.style.display = showDoctorFields ? '' : 'none';
+            });
+
+            document.getElementById('createUserForm').addEventListener('submit', function () {
+                serializeAdminAvailabilities();
+            });
+
+            document.getElementById('addAdminAvailabilityBtn').addEventListener('click', function () {
+                addAdminAvailabilityRow();
+            });
+
+            document.getElementById('addUserBtn').addEventListener('click', function () {
+                var container = document.getElementById('adminAvailabilityContainer');
+                container.innerHTML = '';
+                addAdminAvailabilityRow();
+                document.getElementById('createAvailabilitiesJson').value = '';
             });
 
         var successMsg = '@(TempData["SuccessMessage"] ?? "")';

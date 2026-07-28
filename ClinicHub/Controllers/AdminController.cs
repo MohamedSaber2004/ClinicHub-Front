@@ -808,7 +808,7 @@ namespace ClinicHub.Controllers
 
         [HttpPost]
         [Route("Admin/Users/Create")]
-        public async Task<IActionResult> CreateUser([FromForm] CreateUserRequest request)
+        public async Task<IActionResult> CreateUser([FromForm] CreateUserRequest request, [FromForm] string? availabilitiesJson)
         {
             try
             {

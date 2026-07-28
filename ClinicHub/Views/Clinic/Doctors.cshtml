@@ -188,7 +188,7 @@
 </div>
 
 <div class="modal fade" id="createDoctorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
             <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
                 <h5 class="modal-title" style="font-weight: 700;">إضافة طبيب جديد</h5>
@@ -197,32 +197,16 @@
             <div class="modal-body" style="padding: var(--space-6);">
                 <form id="createDoctorForm">
                     <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل</label>
-                        <input type="text" class="form-control auth-form-control" id="createDoctorName" placeholder="الاسم الكامل" required style="padding: 8px 12px; font-size: 13px;" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني</label>
-                        <input type="email" class="form-control auth-form-control" id="createDoctorEmail" placeholder="البريد الإلكتروني" required style="padding: 8px 12px; font-size: 13px;" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف</label>
-                        <input type="text" class="form-control auth-form-control" id="createDoctorPhone" placeholder="رقم الهاتف" required style="padding: 8px 12px; font-size: 13px;" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">الجنس</label>
-                        <select class="form-select auth-form-control" id="createDoctorGender" required style="padding: 8px 12px; font-size: 13px;">
-                            <option value="">اختر الجنس</option>
-                            <option value="1">ذكر</option>
-                            <option value="2">أنثى</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">تاريخ الميلاد (اختياري)</label>
-                        <input type="date" class="form-control auth-form-control" id="createDoctorBirthDate" style="padding: 8px 12px; font-size: 13px;" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px;">كلمة المرور</label>
-                        <input type="password" class="form-control auth-form-control" id="createDoctorPassword" placeholder="كلمة المرور" required style="padding: 8px 12px; font-size: 13px;" />
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">المستخدم</label>
+                        <div class="user-search-wrapper">
+                            <input type="text" class="form-control auth-form-control" id="createDoctorUserSearch" placeholder="ابحث باسم المستخدم أو البريد الإلكتروني..." style="padding: 8px 12px; font-size: 13px;" autocomplete="off" />
+                            <input type="hidden" id="createDoctorUserId" />
+                            <div class="user-search-results" id="createDoctorUserResults"></div>
+                        </div>
+                        <div class="selected-user-info" id="createDoctorUserSelected" style="display: none;">
+                            <span class="selected-user-name" id="createDoctorUserSelectedName"></span>
+                            <button type="button" id="createDoctorUserChangeBtn" class="user-change-btn">تغيير</button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص</label>
@@ -241,6 +225,31 @@
                     <div class="mb-3">
                         <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية (اختياري)</label>
                         <textarea class="form-control auth-form-control" id="createDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;" placeholder="نبذة عن الطبيب..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px;">أوقات العمل (اختياري)</label>
+                        <div id="availabilityContainer">
+                            <div class="availability-row" data-index="0">
+                                <select class="availability-day form-select auth-form-control">
+                                    <option value="">اليوم</option>
+                                    <option value="0">الأحد</option>
+                                    <option value="1">الإثنين</option>
+                                    <option value="2">الثلاثاء</option>
+                                    <option value="3">الأربعاء</option>
+                                    <option value="4">الخميس</option>
+                                    <option value="5">الجمعة</option>
+                                    <option value="6">السبت</option>
+                                </select>
+                                <input type="time" class="availability-from form-control auth-form-control" value="09:00" />
+                                <span class="availability-sep">إلى</span>
+                                <input type="time" class="availability-to form-control auth-form-control" value="17:00" />
+                                <input type="number" class="availability-slot form-control auth-form-control" value="30" min="1" max="480" placeholder="دقيقة" />
+                                <button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn">
+                            <i class="bi bi-plus-circle"></i> إضافة يوم
+                        </button>
                     </div>
                 </form>
             </div>
@@ -412,51 +421,166 @@
             });
         });
 
-        $('#addDoctorBtn').on('click', function () {
-            $('#createDoctorName').val('');
-            $('#createDoctorEmail').val('');
-            $('#createDoctorPhone').val('');
-            $('#createDoctorPassword').val('');
-            $('#createDoctorGender').val('');
-            $('#createDoctorBirthDate').val('');
+        var searchTimeout = null;
+        var selectedUserId = null;
+        var selectedUserName = null;
+
+        var DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+        function addAvailabilityRow(day, fromTime, toTime, slotMin) {
+            var container = $('#availabilityContainer');
+            var index = container.children('.availability-row').length;
+            var row = $(
+                '<div class="availability-row" data-index="' + index + '">' +
+                    '<select class="availability-day form-select auth-form-control">' +
+                        '<option value="">اليوم</option>' +
+                        DAY_NAMES.map(function (name, i) {
+                            return '<option value="' + i + '"' + (day === i ? ' selected' : '') + '>' + name + '</option>';
+                        }).join('') +
+                    '</select>' +
+                    '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
+                    '<span class="availability-sep">إلى</span>' +
+                    '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
+                    '<input type="number" class="availability-slot form-control auth-form-control" value="' + (slotMin || '30') + '" min="1" max="480" placeholder="دقيقة" />' +
+                    '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>' +
+                '</div>'
+            );
+            row.find('.availability-remove-btn').on('click', function () {
+                row.remove();
+            });
+            container.append(row);
+        }
+
+        $('#addAvailabilityBtn').on('click', function () {
+            addAvailabilityRow();
+        });
+
+        $(document).on('click', '.availability-remove-btn', function () {
+            $(this).closest('.availability-row').remove();
+        });
+
+        function resetCreateDoctorModal() {
+            $('#createDoctorUserSearch').val('').show();
+            $('#createDoctorUserId').val('');
+            $('#createDoctorUserSelected').hide();
+            $('#createDoctorUserResults').hide().empty();
+            selectedUserId = null;
+            selectedUserName = null;
             $('#createDoctorSpecializationId').val('');
             $('#createDoctorExperience').val(0);
             $('#createDoctorBio').val('');
+            $('#availabilityContainer').empty();
+            addAvailabilityRow();
+        }
+
+        $('#addDoctorBtn').on('click', function () {
+            resetCreateDoctorModal();
             $('#createDoctorModal').modal('show');
+            setTimeout(function () { $('#createDoctorUserSearch').focus(); }, 500);
+        });
+
+        $('#createDoctorUserSearch').on('input', function () {
+            var term = $(this).val().trim();
+            var resultsEl = $('#createDoctorUserResults');
+
+            if (searchTimeout) clearTimeout(searchTimeout);
+
+            if (term.length < 2) {
+                resultsEl.hide().empty();
+                return;
+            }
+
+            searchTimeout = setTimeout(function () {
+                $.ajax({
+                    url: '@Url.Action("SearchUsers")',
+                    type: 'GET',
+                    data: { term: term },
+                    success: function (res) {
+                        if (res.success && res.items.length > 0) {
+                            resultsEl.empty();
+                            res.items.forEach(function (u) {
+                                resultsEl.append(
+                                    '<div class="user-search-item" data-id="' + u.id + '" data-name="' + escapeHtml(u.fullName) + '" data-email="' + escapeHtml(u.email) + '">' +
+                                        '<span class="user-search-item-name">' + escapeHtml(u.fullName) + '</span>' +
+                                        '<span class="user-search-item-email">' + escapeHtml(u.email) + '</span>' +
+                                    '</div>'
+                                );
+                            });
+                            resultsEl.show();
+                        } else {
+                            resultsEl.html('<div class="user-search-empty">لا توجد نتائج</div>').show();
+                        }
+                    },
+                    error: function () {
+                        resultsEl.html('<div class="user-search-empty">حدث خطأ أثناء البحث</div>').show();
+                    }
+                });
+            }, 300);
+        });
+
+        $(document).on('click', '.user-search-item', function () {
+            var item = $(this);
+            selectedUserId = item.data('id');
+            selectedUserName = item.data('name');
+            $('#createDoctorUserId').val(selectedUserId);
+            $('#createDoctorUserSearch').hide();
+            $('#createDoctorUserResults').hide().empty();
+            $('#createDoctorUserSelectedName').text(item.data('name') + ' (' + item.data('email') + ')');
+            $('#createDoctorUserSelected').show();
+        });
+
+        $('#createDoctorUserChangeBtn').on('click', function () {
+            selectedUserId = null;
+            selectedUserName = null;
+            $('#createDoctorUserId').val('');
+            $('#createDoctorUserSearch').val('').show().focus();
+            $('#createDoctorUserSelected').hide();
+            $('#createDoctorUserResults').hide().empty();
+        });
+
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.user-search-wrapper').length) {
+                $('#createDoctorUserResults').hide();
+            }
         });
 
         $('#createDoctorSubmitBtn').on('click', function () {
-            var name = $('#createDoctorName').val().trim();
-            var email = $('#createDoctorEmail').val().trim();
-            var phone = $('#createDoctorPhone').val().trim();
-            var password = $('#createDoctorPassword').val();
-            var gender = $('#createDoctorGender').val();
-            var birthDate = $('#createDoctorBirthDate').val();
+            var userId = $('#createDoctorUserId').val();
             var specializationId = $('#createDoctorSpecializationId').val();
             var experience = parseInt($('#createDoctorExperience').val()) || 0;
             var bio = $('#createDoctorBio').val().trim();
 
-            if (!name) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
-            if (!email) { showErrorModal('يرجى إدخال البريد الإلكتروني'); return; }
-            if (!phone) { showErrorModal('يرجى إدخال رقم الهاتف'); return; }
-            if (!password) { showErrorModal('يرجى إدخال كلمة المرور'); return; }
-            if (!gender) { showErrorModal('يرجى اختيار الجنس'); return; }
+            if (!userId) { showErrorModal('يرجى اختيار مستخدم'); return; }
             if (!specializationId) { showErrorModal('يرجى اختيار التخصص'); return; }
+
+            var availabilities = [];
+            $('.availability-row').each(function () {
+                var row = $(this);
+                var day = parseInt(row.find('.availability-day').val());
+                var fromTime = row.find('.availability-from').val();
+                var toTime = row.find('.availability-to').val();
+                var slot = parseInt(row.find('.availability-slot').val()) || 30;
+
+                if (!isNaN(day) && day >= 0 && fromTime && toTime) {
+                    availabilities.push({
+                        dayOfWeek: day,
+                        startTime: fromTime + ':00',
+                        endTime: toTime + ':00',
+                        slotDurationMinutes: slot
+                    });
+                }
+            });
 
             $.ajax({
                 url: '@Url.Action("CreateDoctor")',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
-                    fullName: name,
-                    email: email,
-                    phoneNumber: phone,
-                    password: password,
-                    gender: parseInt(gender),
-                    birthDate: birthDate,
+                    userId: userId,
                     specializationId: specializationId,
                     yearsOfExperience: experience,
-                    bio: bio || null
+                    bio: bio || null,
+                    availabilities: availabilities.length > 0 ? availabilities : undefined
                 }),
                 success: function (res) {
                     if (res.success) {
