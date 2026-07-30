@@ -181,16 +181,10 @@
                 <div class="detail-section-header"><h5>معلومات العيادة</h5></div>
                 <div id="updateClinicErrors" class="validation-summary" style="display:none"></div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="form-group">
-                            <label class="form-label">اسم العيادة (عربي)</label>
+                            <label class="form-label">اسم العيادة</label>
                             <input type="text" name="nameAr" class="form-input" value="@clinic.NameAr" disabled />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">اسم العيادة (إنجليزي)</label>
-                            <input type="text" name="name" class="form-input" value="@clinic.Name" disabled />
                         </div>
                     </div>
                 </div>
@@ -218,33 +212,21 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="form-group">
-                            <label class="form-label">الوصف (عربي)</label>
+                            <label class="form-label">الوصف</label>
                             <textarea name="arDescription" class="form-input form-textarea" rows="2" disabled>@clinic.ArDescription</textarea>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">الوصف (إنجليزي)</label>
-                            <textarea name="description" class="form-input form-textarea" rows="2" disabled>@clinic.Description</textarea>
                         </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">العنوان (عربي)</label>
+                            <label class="form-label">العنوان</label>
                             <input type="text" name="addressAr" class="form-input" value="@clinic.AddressAr" disabled />
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">العنوان (إنجليزي)</label>
-                            <input type="text" name="address" class="form-input" value="@clinic.Address" disabled />
-                        </div>
-                    </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">رقم الهاتف</label>
                             <input type="text" name="phone" class="form-input" value="@clinic.Phone" disabled />
@@ -451,11 +433,8 @@
                 var whEnd = formatTime(form.querySelector('[name="workingHoursEnd"]').value);
                 var data = {
                     nameAr: form.querySelector('[name="nameAr"]').value,
-                    name: form.querySelector('[name="name"]').value,
                     arDescription: form.querySelector('[name="arDescription"]').value,
-                    description: form.querySelector('[name="description"]').value,
                     addressAr: form.querySelector('[name="addressAr"]').value,
-                    address: form.querySelector('[name="address"]').value,
                     phone: form.querySelector('[name="phone"]').value,
                     email: form.querySelector('[name="email"]').value,
                     website: form.querySelector('[name="website"]').value,
