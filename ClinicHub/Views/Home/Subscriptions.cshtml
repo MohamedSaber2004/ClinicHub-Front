@@ -90,14 +90,7 @@
                             </ul>
                         </div>
                         <div class="plan-footer">
-                            @if (isAuthenticated)
-                            {
-                                <button type="button" class="btn btn-primary btn-lg plan-cta-full btn-subscribe" data-plan-id="@plan.Id">اشترك الآن</button>
-                            }
-                            else
-                            {
-                                <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary btn-lg plan-cta-full">ابدأ الآن</a>
-                            }
+                            <button type="button" class="btn btn-primary btn-lg plan-cta-full btn-subscribe" data-plan-id="@plan.Id">اشترك الآن</button>
                         </div>
                     </div>
                 }
@@ -165,6 +158,29 @@
     </div>
 </section>
 
+<!-- Register-Required Modal (unauthenticated subscribe attempt) -->
+<div class="modal fade" id="registerRequiredModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+            <div class="modal-body" style="padding: var(--space-6); text-align: center;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--clr-primary-light); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--clr-primary)"/>
+                    </svg>
+                </div>
+                <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-2);">يجب عليك التسجيل أولاً</h3>
+                <p style="font-family: var(--ff-primary); font-size: var(--fs-md); color: var(--clr-text-secondary); margin: 0 0 var(--space-5);">
+                    لإتمام الاشتراك في الباقة، يرجى إنشاء حساب عيادتك أولاً ثم تسجيل الدخول.
+                </p>
+                <div style="display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap;">
+                    <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary" style="min-width: 140px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إنشاء حساب جديد</a>
+                    <a href="@HomeRoutes.Account.Login()" class="btn btn-secondary" style="min-width: 140px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">تسجيل الدخول</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         (function() {
@@ -187,6 +203,12 @@
 
             document.querySelectorAll('.btn-subscribe').forEach(function(btn) {
                 btn.addEventListener('click', function() {
+                    var isAuthenticated = @(isAuthenticated ? "true" : "false");
+                    if (!isAuthenticated) {
+                        var requiredModal = new bootstrap.Modal(document.getElementById('registerRequiredModal'));
+                        requiredModal.show();
+                        return;
+                    }
                     var planId = this.getAttribute('data-plan-id');
                     if (!planId) {
                         var card = this.closest('.plan-card');

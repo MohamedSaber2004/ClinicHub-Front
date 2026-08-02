@@ -651,6 +651,11 @@ namespace ClinicHub.Controllers
         [Route("Clinic/Subscribe")]
         public async Task<IActionResult> Subscribe(Guid planId, int period = 0)
         {
+            if (!Request.Cookies.ContainsKey("AccessToken"))
+            {
+                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Subscriptions", "Home") });
+            }
+
             try
             {
                 if (planId == Guid.Empty)
