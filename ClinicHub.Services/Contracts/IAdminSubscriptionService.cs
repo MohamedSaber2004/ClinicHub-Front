@@ -6,6 +6,7 @@ namespace ClinicHub.Services.Contracts
     public interface IAdminSubscriptionService
     {
         Task<PagginatedResult<SubscriptionDto>> GetSubscriptionsAsync(GetPaginatedSubscriptionsRequest request);
+        Task<SubscriptionDto> CreateSubscriptionAsync(CreateSubscriptionRequest request);
         Task<string> RevokeSubscriptionAsync(RevokeSubscriptionRequest request);
         Task<List<PlanDto>> GetAllPlansAsync();
         Task<PlanDto> CreatePlanAsync(PlanDto plan);

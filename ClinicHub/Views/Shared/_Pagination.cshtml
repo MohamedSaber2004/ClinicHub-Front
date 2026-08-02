@@ -15,6 +15,11 @@
     var patientId = ViewBag.PatientId;
     var patientName = ViewBag.PatientName as string;
     var isUnassigned = ViewBag.IsUnassigned as bool?;
+    var paymentType = ViewBag.TypeFilter;
+    var paymentMethod = ViewBag.MethodFilter;
+    var paymentFromDate = ViewBag.FromDateFilter;
+    var paymentToDate = ViewBag.ToDateFilter;
+    var paymentMonth = ViewBag.MonthFilter;
     if (pagination == null || totalCount == 0) return;
 }
 
@@ -23,7 +28,7 @@
         @if (hasPrev)
         {
             <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber - 1, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned })">
+                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber - 1, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned, type = paymentType, method = paymentMethod, fromDate = paymentFromDate, toDate = paymentToDate, month = paymentMonth })">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                     </svg>
@@ -36,7 +41,7 @@
         {
             <li class="pagination-item">
                 <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")"
-                   href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = i, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned })">
+                   href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = i, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned, type = paymentType, method = paymentMethod, fromDate = paymentFromDate, toDate = paymentToDate, month = paymentMonth })">
                     @i
                 </a>
             </li>
@@ -45,7 +50,7 @@
         @if (hasNext)
         {
             <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber + 1, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned })">
+                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber + 1, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned, type = paymentType, method = paymentMethod, fromDate = paymentFromDate, toDate = paymentToDate, month = paymentMonth })">
                     التالي
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>

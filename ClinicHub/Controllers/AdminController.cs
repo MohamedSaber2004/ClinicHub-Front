@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
@@ -25,8 +26,10 @@ namespace ClinicHub.Controllers
         private readonly IAdminSubscriptionService _adminSubscriptionService;
         private readonly IAdminDashboardService _adminDashboardService;
         private readonly IAuthService _authService;
+        private readonly IAdminPaymentService _adminPaymentService;
+        private readonly IAdService _adService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
@@ -40,6 +43,8 @@ namespace ClinicHub.Controllers
             _adminSubscriptionService = adminSubscriptionService;
             _adminDashboardService = adminDashboardService;
             _authService = authService;
+            _adminPaymentService = adminPaymentService;
+            _adService = adService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -605,6 +610,7 @@ namespace ClinicHub.Controllers
         [Route("Admin/SubscriptionManagement")]
         public async Task<IActionResult> SubscriptionManagement(int? status = null, Guid? planId = null, Guid? clinicId = null, int pageNumber = 1, int pageSize = 20)
         {
+            ViewBag.Clinics = new List<ClinicLookupDto>();
             try
             {
                 var request = new GetPaginatedSubscriptionsRequest
@@ -619,6 +625,9 @@ namespace ClinicHub.Controllers
                 ViewBag.Subscriptions = result.Items;
                 ViewBag.Pagination = result;
                 ViewBag.Plans = await _adminSubscriptionService.GetAllPlansAsync();
+
+                var clinicsResponse = await _clinicService.GetAllClinicsForViewingOnlyAsync(new GetAllCLinicsForViewingOnly());
+                ViewBag.Clinics = clinicsResponse?.Data ?? new List<ClinicLookupDto>();
             }
             catch (ApiException ex)
             {
@@ -627,6 +636,30 @@ namespace ClinicHub.Controllers
                 ViewBag.Plans = new List<PlanDto>();
             }
             return View("SubscriptionManagement");
+        }
+
+        [HttpPost]
+        [Route("Admin/SubscriptionManagement/Create")]
+        public async Task<IActionResult> CreateSubscription([FromBody] CreateSubscriptionRequest request)
+        {
+            try
+            {
+                if (request == null || request.ClinicId == Guid.Empty || request.PlanId == Guid.Empty)
+                    return Json(new { success = false, message = "بيانات الاشتراك غير صالحة" });
+
+                var subscription = await _adminSubscriptionService.CreateSubscriptionAsync(request);
+                return Json(new { success = true, message = "تم إنشاء الاشتراك بنجاح", data = subscription });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
 
         [HttpPost]
@@ -725,17 +758,306 @@ namespace ClinicHub.Controllers
             }
         }
 
-        public IActionResult Payments()
+        public async Task<IActionResult> Payments(
+            int pageNumber = 1,
+            int pageSize = 20,
+            int? type = null,
+            int? status = null,
+            int? method = null,
+            string? fromDate = null,
+            string? toDate = null,
+            string? searchTerm = null,
+            string? month = null)
         {
-            ViewBag.Stats = MockData.GetPaymentStats();
-            ViewBag.Payments = MockData.GetPayments();
+            ViewBag.Stats = null;
+            ViewBag.Payments = new List<AdminPaymentDto>();
+            ViewBag.Clinics = new List<ClinicLookupDto>();
+            ViewBag.EligibleClinics = new List<EligibleClinicDto>();
+            ViewBag.AdPackages = new List<AdPackageDto>();
+
+            if (string.IsNullOrWhiteSpace(month) || !DateTime.TryParseExact(month, "yyyy-MM", null, System.Globalization.DateTimeStyles.None, out var selectedMonth))
+            {
+                selectedMonth = DateTime.Today;
+                month = selectedMonth.ToString("yyyy-MM");
+            }
+            ViewBag.Month = month;
+            ViewBag.MonthFilter = month;
+            var statsFromDate = new DateTime(selectedMonth.Year, selectedMonth.Month, 1);
+            var statsToDate = statsFromDate.AddMonths(1).AddDays(-1);
+
+            try
+            {
+                var request = new GetAdminPaymentsRequest
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    Type = type,
+                    Status = status,
+                    Method = method,
+                    FromDate = DateTime.TryParse(fromDate, out var fd) ? fd : null,
+                    ToDate = DateTime.TryParse(toDate, out var td) ? td : null,
+                    SearchTerm = searchTerm
+                };
+                var paged = await _adminPaymentService.GetPaymentsAsync(request);
+                ViewBag.Payments = paged.Items;
+                ViewBag.Pagination = paged;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Payments = new List<AdminPaymentDto>();
+            }
+
+            try
+            {
+                ViewBag.Stats = await _adminPaymentService.GetPaymentStatsAsync(statsFromDate, statsToDate);
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage ??= ex.Message;
+                ViewBag.Stats = null;
+            }
+
+            try
+            {
+                var clinicsResponse = await _clinicService.GetAllClinicsForViewingOnlyAsync(new GetAllCLinicsForViewingOnly());
+                ViewBag.Clinics = clinicsResponse?.Data ?? new List<ClinicLookupDto>();
+            }
+            catch (ApiException)
+            {
+                ViewBag.Clinics = new List<ClinicLookupDto>();
+            }
+
+            try
+            {
+                ViewBag.EligibleClinics = await _adminPaymentService.GetEligibleClinicsAsync() ?? new List<EligibleClinicDto>();
+            }
+            catch (ApiException)
+            {
+                ViewBag.EligibleClinics = new List<EligibleClinicDto>();
+            }
+
+            try
+            {
+                ViewBag.AdPackages = await _adminPaymentService.GetAdPackagesAsync() ?? new List<AdPackageDto>();
+            }
+            catch (ApiException)
+            {
+                ViewBag.AdPackages = new List<AdPackageDto>();
+            }
+
+            ViewBag.TypeFilter = type?.ToString();
+            ViewBag.StatusFilter = status?.ToString();
+            ViewBag.MethodFilter = method?.ToString();
+            ViewBag.FromDateFilter = fromDate;
+            ViewBag.ToDateFilter = toDate;
+            ViewBag.SearchTerm = searchTerm;
             return View();
         }
 
-        public IActionResult PaymentsDetails(int id)
+        [Route("Admin/PaymentsDetails/{id:guid}")]
+        public async Task<IActionResult> PaymentsDetails(Guid id)
         {
-            ViewBag.Detail = MockData.GetPaymentDetail(id);
+            ViewBag.Detail = null;
+            try
+            {
+                ViewBag.Detail = await _adminPaymentService.GetPaymentDetailAsync(id);
+            }
+            catch (ApiException ex) when (ex.StatusCode == 404)
+            {
+                ViewBag.ErrorMessage = "المعاملة غير موجودة";
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
             return View("PaymentsDetails");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateManualPayment([FromBody] CreateManualPaymentRequest request)
+        {
+            try
+            {
+                if (request == null || request.PayerId == Guid.Empty || request.Amount <= 0)
+                    return Json(new { success = false, message = "بيانات الدفعة غير صالحة" });
+
+                var payment = await _adminPaymentService.CreateManualPaymentAsync(request);
+                return Json(new { success = true, message = "تم تسجيل الدفعة بنجاح", data = payment });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RefundPayment(Guid id, [FromBody] RefundPaymentRequest request)
+        {
+            try
+            {
+                await _adminPaymentService.RefundPaymentAsync(id, request?.Reason);
+                return Json(new { success = true, message = "تم استرداد المبلغ بنجاح" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAdsOrder([FromBody] CreateAdsOrderRequest request)
+        {
+            try
+            {
+                if (request == null || request.ClinicId == Guid.Empty || request.AdPackageId == Guid.Empty)
+                    return Json(new { success = false, message = "بيانات طلب الإعلان غير صالحة" });
+
+                if (string.IsNullOrWhiteSpace(request.ReturnUrl))
+                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult?type=ads";
+
+                var result = await _adminPaymentService.CreateAdsOrderAsync(request);
+                return Json(new { success = true, message = "تم إنشاء طلب الإعلان بنجاح", data = result });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [Route("Admin/Ads")]
+        public async Task<IActionResult> Ads(int pageNumber = 1, int pageSize = 20, int? status = null)
+        {
+            ViewBag.Ads = new List<AdDto>();
+            ViewBag.Packages = new List<AdPackageDto>();
+
+            try
+            {
+                var paged = await _adService.GetAdsAsync(pageNumber, pageSize, status);
+                ViewBag.Ads = paged.Items;
+                ViewBag.Pagination = paged;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+
+            try
+            {
+                ViewBag.Packages = await _adService.GetAllPackagesAsync() ?? new List<AdPackageDto>();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage ??= ex.Message;
+            }
+
+            ViewBag.StatusFilter = status?.ToString();
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeactivateAd(Guid id, [FromBody] JsonElement body)
+        {
+            try
+            {
+                var reason = body.TryGetProperty("reason", out var r) ? r.GetString() : null;
+                await _adService.DeactivateAdAsync(id, reason);
+                return Json(new { success = true, message = "تم إلغاء الإعلان بنجاح" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAdPackage([FromBody] UpsertAdPackageRequest request)
+        {
+            try
+            {
+                if (request == null || request.Price <= 0 || request.DurationDays <= 0)
+                    return Json(new { success = false, message = "بيانات الباقة غير صالحة" });
+
+                var result = await _adService.CreatePackageAsync(request);
+                return Json(new { success = true, message = "تمت إضافة الباقة بنجاح", data = result });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateAdPackage(Guid id, [FromBody] UpsertAdPackageRequest request)
+        {
+            try
+            {
+                if (request == null || request.Price <= 0 || request.DurationDays <= 0)
+                    return Json(new { success = false, message = "بيانات الباقة غير صالحة" });
+
+                var result = await _adService.UpdatePackageAsync(id, request);
+                return Json(new { success = true, message = "تم تعديل الباقة بنجاح", data = result });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteAdPackage(Guid id)
+        {
+            try
+            {
+                await _adService.DeletePackageAsync(id);
+                return Json(new { success = true, message = "تم حذف الباقة بنجاح" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
 
         [Route("Admin/Users")]

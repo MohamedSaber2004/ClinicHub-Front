@@ -1,0 +1,469 @@
+@using ClinicHub.Services.ReponseModels
+@{
+    ViewData["Title"] = "إدارة الإعلانات";
+    Layout = "_AdminLayout";
+    var ads = ViewBag.Ads as IReadOnlyCollection<AdDto> ?? new List<AdDto>();
+    var packages = ViewBag.Packages as IReadOnlyCollection<AdPackageDto> ?? new List<AdPackageDto>();
+    var statusFilter = ViewBag.StatusFilter as string;
+
+    string GetStatusText(int status) => status switch
+    {
+        0 => "معلق الدفع",
+        1 => "نشط",
+        2 => "منتهي",
+        3 => "ملغي",
+        _ => "غير معروف"
+    };
+
+    string GetStatusClass(int status) => status switch
+    {
+        0 => "badge-warning",
+        1 => "badge-success",
+        2 => "badge-info",
+        3 => "badge-danger",
+        _ => "badge-info"
+    };
+}
+
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+            </svg>
+        </span>
+        إدارة الإعلانات
+    </h2>
+    <div class="page-header-actions">
+        <button type="button" class="btn btn-primary" id="addPackageBtn" data-bs-toggle="modal" data-bs-target="#packageModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            إضافة باقة إعلانية
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<ul class="nav nav-tabs mb-3" id="adsTabs" role="tablist">
+    <li class="nav-item"><button class="nav-link active" id="ads-tab" data-bs-toggle="tab" data-bs-target="#adsPane" type="button" role="tab">الإعلانات</button></li>
+    <li class="nav-item"><button class="nav-link" id="packages-tab" data-bs-toggle="tab" data-bs-target="#packagesPane" type="button" role="tab">باقات الإعلانات</button></li>
+</ul>
+
+<div class="tab-content">
+    <!-- Ads Tab -->
+    <div class="tab-pane fade show active" id="adsPane" role="tabpanel">
+        <form class="filter-bar" method="get" action="@AdminRoutes.Pages.Ads()">
+            <select name="status" class="form-select">
+                <option value="" selected="@(string.IsNullOrEmpty(statusFilter))">جميع الحالات</option>
+                <option value="0" selected="@(statusFilter == "0")">معلق الدفع</option>
+                <option value="1" selected="@(statusFilter == "1")">نشط</option>
+                <option value="2" selected="@(statusFilter == "2")">منتهي</option>
+                <option value="3" selected="@(statusFilter == "3")">ملغي</option>
+            </select>
+            <button type="submit" class="btn btn-primary">بحث</button>
+            <a href="@AdminRoutes.Pages.Ads()" class="btn btn-secondary">مسح</a>
+        </form>
+
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>العيادة</th>
+                            <th>الباقة</th>
+                            <th>المدة</th>
+                            <th>المبلغ</th>
+                            <th>الفترة</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ads.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-state">
+                                        <p>لا توجد إعلانات مطابقة.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var ad in ads)
+                            {
+                                <tr>
+                                    <td class="text-md-medium">@ad.ClinicName</td>
+                                    <td class="text-md">@ad.PackageNameAr</td>
+                                    <td class="text-md">@ad.DurationDays يوم</td>
+                                    <td class="text-md">@ad.Amount.ToString("N2") ج.م</td>
+                                    <td class="text-md">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-") → @(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                                    <td><span class="badge @GetStatusClass(ad.Status)">@GetStatusText(ad.Status)</span></td>
+                                    <td class="table-actions">
+                                        @if (ad.Status == 0)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-success" onclick="recordCashPayment('@ad.Id', '@ad.ClinicId', '@ad.Amount.ToString("F2")')">تسجيل دفعة نقدية</button>
+                                        }
+                                        @if (ad.Status == 0 || ad.Status == 1)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="deactivateAd('@ad.Id')">إلغاء</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <partial name="_Pagination" />
+    </div>
+
+    <!-- Packages Tab -->
+    <div class="tab-pane fade" id="packagesPane" role="tabpanel">
+        <div class="table-card">
+            <div class="table-card-header">
+                <h3 class="table-card-title">
+                    <span class="subtitle-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                        </svg>
+                    </span>
+                    الباقات
+                </h3>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>الوصف</th>
+                            <th>السعر</th>
+                            <th>المدة</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (packages.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <p>لا توجد باقات إعلانية. أضف باقة جديدة لبدء بيع الإعلانات.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var pkg in packages)
+                            {
+                                <tr>
+                                    <td class="text-md-medium">@(pkg.NameAr ?? pkg.Name)</td>
+                                    <td class="text-md">@(pkg.DescriptionAr ?? pkg.Description)</td>
+                                    <td class="text-md">@pkg.Price.ToString("N2") ج.م</td>
+                                    <td class="text-md">@pkg.DurationDays يوم</td>
+                                    <td>
+                                        @if (pkg.IsActive)
+                                        {
+                                            <span class="badge badge-success">نشطة</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">موقوفة</span>
+                                        }
+                                    </td>
+                                    <td class="table-actions">
+                                        <button type="button" class="btn btn-sm @(pkg.IsActive ? "btn-danger" : "btn-success")" title="@(pkg.IsActive ? "تعطيل الباقة" : "تفعيل الباقة")" onclick="togglePackage('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower())">@(pkg.IsActive ? "تعطيل" : "تفعيل")</button>
+                                        <button type="button" class="btn-icon" title="تعديل" onclick="openPackageModal('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower())">
+                                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                        </button>
+                                        <button type="button" class="btn-icon" title="حذف" onclick="deletePackage('@pkg.Id')">
+                                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deactivate Ad Modal -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إلغاء الإعلان</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="deactivateAdId" value="" />
+                <p class="form-hint">سيتم إزالة الإعلان من التطبيق فوراً ولا يمكن إعادة تفعيله لاحقاً.</p>
+                <div class="form-group">
+                    <label class="form-label">سبب الإلغاء <span class="text-muted">(اختياري)</span></label>
+                    <textarea id="deactivateReason" class="form-textarea" maxlength="200" rows="3" placeholder="مثال: محتوى مخالف"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+                <button type="button" class="btn btn-danger" id="deactivateSubmitBtn">تأكيد الإلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Package Modal -->
+<div class="modal fade" id="packageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title" id="packageModalTitle">إضافة باقة إعلانية</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="packageId" value="" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الاسم (إنجليزي)</label>
+                            <input type="text" id="packageName" class="form-input" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الاسم (عربي)</label>
+                            <input type="text" id="packageNameAr" class="form-input" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الوصف (إنجليزي)</label>
+                            <input type="text" id="packageDescription" class="form-input" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الوصف (عربي)</label>
+                            <input type="text" id="packageDescriptionAr" class="form-input" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">السعر (ج.م)</label>
+                            <input type="number" id="packagePrice" class="form-input" min="0" step="0.01" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المدة (أيام)</label>
+                            <input type="number" id="packageDuration" class="form-input" min="1" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-toggle">
+                        <input type="checkbox" id="packageActive" checked />
+                        <span class="toggle-track"></span>
+                        <span class="toggle-label">الباقة نشطة</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="packageSubmitBtn">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var pendingDeactivateId = null;
+
+        function deactivateAd(id) {
+            pendingDeactivateId = id;
+            document.getElementById('deactivateReason').value = '';
+            var modal = new bootstrap.Modal(document.getElementById('deactivateModal'));
+            modal.show();
+        }
+
+        function togglePackage(id, name, nameAr, description, descriptionAr, price, duration, isActive) {
+            var action = isActive ? 'تعطيل' : 'تفعيل';
+            showConfirmModal('هل تريد ' + action + ' باقة "' + nameAr + '"؟', function () {
+                fetch('/Admin/UpdateAdPackage?id=' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        nameAr: nameAr,
+                        description: description,
+                        descriptionAr: descriptionAr,
+                        price: parseFloat(price),
+                        durationDays: parseInt(duration),
+                        isActive: !isActive
+                    })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    if (result.success) {
+                        showSuccessModal(result.message || 'تم ' + action + ' الباقة بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(result.message || 'حدث خطأ أثناء ' + action + ' الباقة');
+                    }
+                })
+                .catch(function () { showErrorModal('عذراً، حدث خطأ أثناء ' + action + ' الباقة'); });
+            });
+        }
+
+        function recordCashPayment(adId, clinicId, amount) {
+            showConfirmModal('هل تريد تسجيل دفعة نقدية لهذا الإعلان؟ سيتم تفعيله فوراً.', function () {
+                fetch('/Admin/CreateManualPayment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        payerId: clinicId,
+                        type: 2,
+                        amount: parseFloat(amount),
+                        method: 0,
+                        notes: 'دفعة نقدية لإعلان ' + adId
+                    })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    if (result.success) {
+                        showSuccessModal(result.message || 'تم تسجيل الدفعة بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(result.message || 'حدث خطأ أثناء تسجيل الدفعة');
+                    }
+                })
+                .catch(function () { showErrorModal('عذراً، حدث خطأ أثناء تسجيل الدفعة'); });
+            });
+        }
+
+        function openPackageModal(id, name, nameAr, description, descriptionAr, price, duration, isActive) {
+            document.getElementById('packageModalTitle').textContent = id ? 'تعديل باقة إعلانية' : 'إضافة باقة إعلانية';
+            document.getElementById('packageId').value = id || '';
+            document.getElementById('packageName').value = name;
+            document.getElementById('packageNameAr').value = nameAr;
+            document.getElementById('packageDescription').value = description;
+            document.getElementById('packageDescriptionAr').value = descriptionAr;
+            document.getElementById('packagePrice').value = price;
+            document.getElementById('packageDuration').value = duration;
+            document.getElementById('packageActive').checked = isActive;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var deactivateBtn = document.getElementById('deactivateSubmitBtn');
+            if (deactivateBtn) {
+                deactivateBtn.addEventListener('click', function () {
+                    if (!pendingDeactivateId) return;
+                    var reason = document.getElementById('deactivateReason').value.trim();
+                    deactivateBtn.disabled = true;
+                    deactivateBtn.textContent = 'جارِ الإلغاء...';
+
+                    fetch('/Admin/DeactivateAd?id=' + pendingDeactivateId, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason: reason || null })
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (result) {
+                        if (result.success) {
+                            showSuccessModal(result.message || 'تم إلغاء الإعلان بنجاح');
+                            setTimeout(function () { location.reload(); }, 1500);
+                        } else {
+                            deactivateBtn.disabled = false;
+                            deactivateBtn.textContent = 'تأكيد الإلغاء';
+                            showErrorModal(result.message || 'حدث خطأ أثناء إلغاء الإعلان');
+                        }
+                    })
+                    .catch(function () {
+                        deactivateBtn.disabled = false;
+                        deactivateBtn.textContent = 'تأكيد الإلغاء';
+                        showErrorModal('عذراً، حدث خطأ أثناء إلغاء الإعلان');
+                    });
+                });
+            }
+
+            document.getElementById('addPackageBtn').addEventListener('click', function () {
+                openPackageModal('', '', '', '', '', '', '', true);
+            });
+
+            document.getElementById('packageSubmitBtn').addEventListener('click', function () {
+                var id = document.getElementById('packageId').value;
+                var name = document.getElementById('packageName').value.trim();
+                var nameAr = document.getElementById('packageNameAr').value.trim();
+                var description = document.getElementById('packageDescription').value.trim();
+                var descriptionAr = document.getElementById('packageDescriptionAr').value.trim();
+                var price = parseFloat(document.getElementById('packagePrice').value);
+                var duration = parseInt(document.getElementById('packageDuration').value);
+                var isActive = document.getElementById('packageActive').checked;
+
+                if (!name || !nameAr) { showErrorModal('يرجى إدخال اسم الباقة'); return; }
+                if (!price || price <= 0) { showErrorModal('يرجى إدخال سعر صحيح'); return; }
+                if (!duration || duration <= 0) { showErrorModal('يرجى إدخال مدة صحيحة'); return; }
+
+                var url = id ? '/Admin/UpdateAdPackage?id=' + id : '/Admin/CreateAdPackage';
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        nameAr: nameAr,
+                        description: description,
+                        descriptionAr: descriptionAr,
+                        price: price,
+                        durationDays: duration,
+                        isActive: isActive
+                    })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    if (result.success) {
+                        showSuccessModal(result.message || 'تم الحفظ بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(result.message || 'حدث خطأ أثناء الحفظ');
+                    }
+                })
+                .catch(function () { showErrorModal('عذراً، حدث خطأ أثناء الحفظ'); });
+            });
+        });
+
+        function deletePackage(id) {
+            showConfirmModal('هل تريد حذف هذه الباقة؟', function () {
+                fetch('/Admin/DeleteAdPackage?id=' + id, {
+                    method: 'POST'
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    if (result.success) {
+                        showSuccessModal(result.message || 'تم حذف الباقة بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(result.message || 'حدث خطأ أثناء حذف الباقة');
+                    }
+                })
+                .catch(function () { showErrorModal('عذراً، حدث خطأ أثناء حذف الباقة'); });
+            });
+        }
+    </script>
+}

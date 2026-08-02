@@ -13,7 +13,7 @@
         3 => "مكتمل",
         4 => "محجوز مؤقتاً",
         5 => "لم يحضر",
-        6 => "مقبول",
+        6 => "بانتظار الدفع",
         7 => "مرفوض",
         _ => "غير معروف"
     };
@@ -21,12 +21,12 @@
     string StatusClass(int? s) => s switch
     {
         0 => "badge-warning",
-        1 => "badge-info",
+        1 => "badge-success",
         2 => "badge-danger",
         3 => "badge-success",
         4 => "badge-primary",
         5 => "badge-danger",
-        6 => "badge-primary",
+        6 => "badge-warning",
         7 => "badge-danger",
         _ => "badge-secondary"
     };
@@ -51,8 +51,8 @@
         <select name="status" class="form-select">
             <option value="">جميع الحالات</option>
             <option value="0" selected="@(ViewBag.StatusFilter == "0")">قيد الانتظار</option>
+            <option value="6" selected="@(ViewBag.StatusFilter == "6")">بانتظار الدفع</option>
             <option value="1" selected="@(ViewBag.StatusFilter == "1")">مؤكد</option>
-            <option value="6" selected="@(ViewBag.StatusFilter == "6")">مقبول</option>
             <option value="3" selected="@(ViewBag.StatusFilter == "3")">مكتمل</option>
             <option value="2" selected="@(ViewBag.StatusFilter == "2")">ملغى</option>
             <option value="7" selected="@(ViewBag.StatusFilter == "7")">مرفوض</option>
@@ -89,13 +89,7 @@
                         <td>
                             <div class="table-user">
                                 <span class="table-avatar">@Initial(patientName)</span>
-                                <span>
-                                    <span class="table-user-name">@patientName</span>
-                                    @if (!string.IsNullOrWhiteSpace(app.PatientPhoneNumber))
-                                    {
-                                        <small class="table-user-sub">@app.PatientPhoneNumber</small>
-                                    }
-                                </span>
+                                <span class="table-user-name">@patientName</span>
                             </div>
                         </td>
                         <td>@app.AppointmentDate</td>
@@ -106,7 +100,7 @@
                             @if (app.Status == 0)
                             {
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-outline-success" onclick="updateStatus('@app.Id', 1)">
+                                    <button class="btn btn-sm btn-outline-success" onclick="acceptAppointment('@app.Id')">
                                         <i class="bi bi-check-lg"></i> قبول
                                     </button>
                                     <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('@app.Id', 2)">
@@ -114,7 +108,11 @@
                                     </button>
                                 </div>
                             }
-                            else if (app.Status == 1 || app.Status == 6)
+                            else if (app.Status == 6)
+                            {
+                                <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>
+                            }
+                            else if (app.Status == 1)
                             {
                                 <button class="btn btn-sm btn-outline-primary" onclick="updateStatus('@app.Id', 3)">
                                     <i class="bi bi-check2-circle"></i> إكمال
@@ -135,6 +133,16 @@
 
 @section Scripts {
     <script>
+        window.acceptAppointment = function (appointmentId) {
+            if (typeof showConfirmModal === 'function') {
+                showConfirmModal('بعد القبول سيتم إرسال رابط الدفع للمريض لإتمام الدفع. هل تريد المتابعة؟', function () {
+                    updateStatus(appointmentId, 6);
+                });
+            } else {
+                updateStatus(appointmentId, 6);
+            }
+        };
+
         window.updateStatus = async function (appointmentId, statusCode) {
             let notes = null;
             if (statusCode === 2) {
@@ -152,9 +160,9 @@
                     throw new Error(data.message || ('HTTP ' + res.status));
                 }
                 if (typeof showSuccessModal === 'function') {
-                    showSuccessModal('تم تحديث حالة الموعد بنجاح');
+                    showSuccessModal(data.message || 'تم تحديث حالة الموعد بنجاح');
                 } else {
-                    alert('تم تحديث حالة الموعد بنجاح');
+                    alert(data.message || 'تم تحديث حالة الموعد بنجاح');
                 }
                 location.reload();
             } catch (err) {

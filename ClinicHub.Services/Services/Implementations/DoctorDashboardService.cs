@@ -100,7 +100,7 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
-        public async Task<bool> UpdateStatusAsync(Guid id, int status, string? notes = null)
+        public async Task<AppointmentAcceptResponseDto?> UpdateStatusAsync(Guid id, int status, string? notes = null)
         {
             try
             {
@@ -108,7 +108,15 @@ namespace ClinicHub.Services.Services.Implementations
                 var json = JsonConvert.SerializeObject(payload, _jsonSettings);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PutAsync(DoctoryRoutes.DoctorDashboard.Status(id), content);
-                return await _deserializerService.DeserializeApiResponse<bool>(response, "حدث خطأ في تحديث حالة الموعد");
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errors = ApiErrorExtractor.ExtractErrors(body);
+                    throw new ApiException((int)response.StatusCode, string.Join(" ", errors));
+                }
+
+                return AcceptResponseParser.Parse(body);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -117,12 +125,20 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
-        public async Task<bool> AcceptAppointmentAsync(Guid id)
+        public async Task<AppointmentAcceptResponseDto?> AcceptAppointmentAsync(Guid id)
         {
             try
             {
                 var response = await _httpClient.PutAsync(DoctoryRoutes.DoctorDashboard.AcceptAppointment(id), null);
-                return await _deserializerService.DeserializeApiResponse<bool>(response, "حدث خطأ في قبول الموعد");
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errors = ApiErrorExtractor.ExtractErrors(body);
+                    throw new ApiException((int)response.StatusCode, string.Join(" ", errors));
+                }
+
+                return AcceptResponseParser.Parse(body);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

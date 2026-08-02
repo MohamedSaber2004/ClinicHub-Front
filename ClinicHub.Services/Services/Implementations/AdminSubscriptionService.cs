@@ -60,6 +60,35 @@ namespace ClinicHub.Services.Services.Implementations
             return JsonConvert.DeserializeObject<PagginatedResult<SubscriptionDto>>(dataJson, _jsonSettings)!;
         }
 
+        public async Task<SubscriptionDto> CreateSubscriptionAsync(CreateSubscriptionRequest request)
+        {
+            try
+            {
+                var json = JsonConvert.SerializeObject(request, _jsonSettings);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(DoctoryRoutes.AdminSubscriptions.CreateSubscription, content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                    var combined = string.Join(" ", errorMessages);
+                    throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في إنشاء الاشتراك" : combined);
+                }
+
+                var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+                var dataToken = obj?["data"] ?? obj?["Data"];
+                var dataJson = dataToken?.ToString() ?? responseBody;
+                return JsonConvert.DeserializeObject<SubscriptionDto>(dataJson, _jsonSettings)!;
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
         public async Task<string> RevokeSubscriptionAsync(RevokeSubscriptionRequest request)
         {
             var url = DoctoryRoutes.AdminSubscriptions.RevokeSubscription(request.SubscriptionId);

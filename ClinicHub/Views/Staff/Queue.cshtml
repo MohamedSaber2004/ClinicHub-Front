@@ -18,18 +18,21 @@
 
 <div class="table-card">
     <div class="table-card-header">
-        <h3 class="table-card-title">طابور الانتظار الحالي</h3>
+        <h3 class="table-card-title">
+            <span class="subtitle-icon"><i class="bi bi-people"></i></span>
+            طابور الانتظار الحالي
+        </h3>
     </div>
-    <form method="get" action="@Url.Action("Queue")" class="filters-bar" style="display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--clr-border);flex-wrap:wrap;">
-        <select name="status" class="form-control" style="width:180px;">
+    <form method="get" action="@Url.Action("Queue")" class="filter-bar table-filter-bar">
+        <select name="status" class="form-select">
             <option value="">كل الحالات</option>
             <option value="registered" selected="@(ViewBag.StatusFilter == "registered")">تم التسجيل</option>
             <option value="waiting" selected="@(ViewBag.StatusFilter == "waiting")">في الانتظار</option>
             <option value="in-progress" selected="@(ViewBag.StatusFilter == "in-progress")">قيد الكشف</option>
             <option value="completed" selected="@(ViewBag.StatusFilter == "completed")">مكتمل</option>
         </select>
-        <button type="submit" class="btn btn-primary btn-sm" style="padding:4px 16px;">تصفية</button>
-        <a href="@Url.Action("Queue")" class="btn btn-outline-secondary btn-sm" style="padding:4px 16px;">مسح</a>
+        <button type="submit" class="btn btn-primary btn-sm">تصفية</button>
+        <a href="@Url.Action("Queue")" class="btn btn-outline-secondary btn-sm">مسح</a>
     </form>
     <div class="table-responsive">
         <table class="custom-table">
@@ -46,24 +49,22 @@
                 @if (queueItems.Count == 0)
                 {
                     <tr>
-                        <td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted);">لا يوجد مرضى في الطابور</td>
+                        <td colspan="5" class="table-empty">لا يوجد مرضى في الطابور</td>
                     </tr>
                 }
                 @foreach (var item in queueItems)
                 {
                     <tr>
-                        <td><span style="font-weight:700;font-size:16px;">@item.QueueNumber</span></td>
+                        <td><span class="queue-number">@item.QueueNumber</span></td>
                         <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div class="sidebar-profile-avatar" style="width:28px;height:28px;">
-                                    <span style="font-size:11px;">@item.Patient?.Initial</span>
-                                </div>
-                                @item.Patient?.Name
+                            <div class="table-user">
+                                <span class="table-avatar">@item.Patient?.Initial</span>
+                                <span class="table-user-name">@item.Patient?.Name</span>
                             </div>
                         </td>
                         <td>@item.Doctor?.Name</td>
                         <td>@item.Time</td>
-                        <td class="status-cell"><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
+                        <td><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
                     </tr>
                 }
             </tbody>

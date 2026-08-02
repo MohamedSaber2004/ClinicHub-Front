@@ -7,6 +7,8 @@
 @{
     var stats = ViewBag.Stats as StaffDashboardStatsDto;
     var queueItems = ViewBag.QueueItems as List<StaffQueueItemDto> ?? new List<StaffQueueItemDto>();
+    var pendingRequests = ViewBag.PendingRequests as IReadOnlyCollection<StaffAppointmentDto> ?? new List<StaffAppointmentDto>();
+    string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
 <h2 class="page-title">
@@ -60,13 +62,91 @@
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
             </div>
         </div>
+        @if (stats.PendingRequests > 0)
+        {
+            <div class="stat-card stat-card--highlight">
+                <div class="stat-info">
+                    <span class="stat-value">@stats.PendingRequests</span>
+                    <span class="stat-label">طلبات تنتظر القبول</span>
+                </div>
+                <div class="icon-wrapper icon-wrapper--amber">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                </div>
+            </div>
+        }
     }
 </div>
+
+@* ---- Pending Appointment Requests ---- *@
+@if (pendingRequests.Count > 0)
+{
+    <div class="table-card" id="pendingRequestsCard">
+        <div class="table-card-header">
+            <h3 class="table-card-title">
+                <span class="subtitle-icon"><i class="bi bi-bell-fill"></i></span>
+                طلبات الحجز المعلقة
+                <span class="badge badge-warning ms-2">@pendingRequests.Count</span>
+            </h3>
+            <a href="@Url.Action("Appointments", new { status = "pending" })" class="btn btn-sm btn-secondary">عرض الكل</a>
+        </div>
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>المريض</th>
+                        <th>الطبيب</th>
+                        <th>التخصص</th>
+                        <th>التاريخ</th>
+                        <th>الوقت</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingRequestsBody">
+                    @foreach (var req in pendingRequests)
+                    {
+                        <tr id="req-@req.Id">
+                            <td>
+                                <div class="table-user">
+                                    <span class="table-avatar">@(string.IsNullOrWhiteSpace(req.Patient?.Initial) ? Initial(req.Patient?.Name) : req.Patient!.Initial)</span>
+                                    <span class="table-user-name">@req.Patient?.Name</span>
+                                </div>
+                            </td>
+                            <td>@req.Doctor?.Name</td>
+                            <td>@req.Specialty</td>
+                            <td>@req.Date</td>
+                            <td>@req.Time</td>
+                            <td class="table-actions">
+                                <button class="btn btn-sm btn-outline-success btn-approve-dash" data-id="@req.Id" title="قبول — سيتم إرسال رابط الدفع للمريض">
+                                    <i class="bi bi-check-lg"></i> قبول
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-reject-dash" data-id="@req.Id" title="رفض">
+                                    <i class="bi bi-x-lg"></i> رفض
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else if (stats != null)
+{
+    <div class="table-card">
+        <div class="table-card-header">
+            <h3 class="table-card-title">
+                <span class="subtitle-icon"><i class="bi bi-bell"></i></span>
+                طلبات الحجز المعلقة
+            </h3>
+        </div>
+        <p class="table-empty">لا توجد طلبات حجز تنتظر الموافقة</p>
+    </div>
+}
 
 <div class="table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">
-            <i class="bi bi-people" style="margin-left: 6px;"></i>
+            <span class="subtitle-icon"><i class="bi bi-people"></i></span>
             طابور المرضى الحالي
         </h3>
     </div>
@@ -85,24 +165,22 @@
                 @if (queueItems.Count == 0)
                 {
                     <tr>
-                        <td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted);">لا يوجد مرضى في الطابور</td>
+                        <td colspan="5" class="table-empty">لا يوجد مرضى في الطابور</td>
                     </tr>
                 }
                 @foreach (var item in queueItems)
                 {
                     <tr>
-                        <td><span style="font-weight:700;font-size:16px;">@item.QueueNumber</span></td>
+                        <td><span class="queue-number">@item.QueueNumber</span></td>
                         <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div class="sidebar-profile-avatar" style="width:28px;height:28px;">
-                                    <span style="font-size:11px;">@item.Patient?.Initial</span>
-                                </div>
-                                @item.Patient?.Name
+                            <div class="table-user">
+                                <span class="table-avatar">@item.Patient?.Initial</span>
+                                <span class="table-user-name">@item.Patient?.Name</span>
                             </div>
                         </td>
                         <td>@item.Doctor?.Name</td>
                         <td>@item.Time</td>
-                        <td class="status-cell"><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
+                        <td><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
                     </tr>
                 }
             </tbody>
@@ -111,4 +189,54 @@
 </div>
 
 @section Scripts {
+    <script>
+        $(document).on('click', '.btn-approve-dash', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            showConfirmModal('بعد القبول سيتم إرسال رابط الدفع للمريض لإتمام الدفع. هل تريد المتابعة؟', function () {
+                $.ajax({
+                    url: '/Staff/ApproveAppointment',
+                    method: 'POST',
+                    data: { id: id },
+                    success: function (res) {
+                        if (res && res.success) {
+                            showSuccessModal('تم قبول الحجز وتم إرسال رابط الدفع للمريض');
+                            $('#req-' + id).fadeOut(400, function () { $(this).remove(); });
+                        } else {
+                            showErrorModal((res && res.message) || 'حدث خطأ أثناء القبول');
+                        }
+                    },
+                    error: function (xhr) {
+                        var msg = (xhr.responseJSON && xhr.responseJSON.message) || 'حدث خطأ أثناء القبول';
+                        showErrorModal(msg);
+                    }
+                });
+            });
+        });
+
+        $(document).on('click', '.btn-reject-dash', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            var reason = prompt('يرجى إدخال سبب الرفض (اختياري):');
+            if (reason === null) return;
+            $.ajax({
+                url: '/Staff/RejectAppointment',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ reason: reason || '' }),
+                success: function (res) {
+                    if (res && res.success) {
+                        showSuccessModal('تم رفض الحجز');
+                        $('#req-' + id).fadeOut(400, function () { $(this).remove(); });
+                    } else {
+                        showErrorModal((res && res.message) || 'حدث خطأ أثناء الرفض');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) || 'حدث خطأ أثناء الرفض';
+                    showErrorModal(msg);
+                }
+            });
+        });
+    </script>
 }

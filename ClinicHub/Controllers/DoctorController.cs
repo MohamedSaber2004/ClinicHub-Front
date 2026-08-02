@@ -212,7 +212,15 @@ namespace ClinicHub.Controllers
                     : null;
 
                 var result = await _doctorDashboardService.UpdateStatusAsync(appointmentId, status, notes);
-                return Json(new { success = true, data = result, message = "تم تحديث حالة الموعد بنجاح" });
+                var message = status switch
+                {
+                    6 => "تم قبول الحجز وتم إرسال رابط الدفع للمريض",
+                    2 => "تم رفض الحجز",
+                    3 => "تم إكمال الموعد",
+                    5 => "تم تسجيل الحالة",
+                    _ => "تم تحديث حالة الموعد بنجاح"
+                };
+                return Json(new { success = true, data = result, message });
             }
             catch (ApiException ex)
             {

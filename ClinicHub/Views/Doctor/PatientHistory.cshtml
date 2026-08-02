@@ -14,7 +14,7 @@
         3 => "مكتمل",
         4 => "محجوز مؤقتاً",
         5 => "لم يحضر",
-        6 => "مقبول",
+        6 => "بانتظار الدفع",
         7 => "مرفوض",
         _ => "غير معروف"
     };
@@ -22,12 +22,12 @@
     string StatusClass(int? s) => s switch
     {
         0 => "badge-warning",
-        1 => "badge-info",
+        1 => "badge-success",
         2 => "badge-danger",
         3 => "badge-success",
         4 => "badge-primary",
         5 => "badge-danger",
-        6 => "badge-primary",
+        6 => "badge-warning",
         7 => "badge-danger",
         _ => "badge-secondary"
     };

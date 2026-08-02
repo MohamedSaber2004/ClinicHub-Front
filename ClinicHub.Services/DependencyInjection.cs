@@ -116,6 +116,19 @@ namespace ClinicHub.Services
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
+            services.AddHttpClient<IAdminPaymentService, AdminPaymentService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<IAdService, AdService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>()
+            .AddHttpMessageHandler<ClinicHeaderHandler>();
+
             return services;
         }
     }

@@ -30,7 +30,8 @@ namespace ClinicHub.Services.Services.Implementations
             ["in-progress"] = ("قيد الكشف", "badge-primary"),
             ["waiting"] = ("في الانتظار", "badge-warning"),
             ["registered"] = ("تم التسجيل", "badge-info"),
-            ["accepted"] = ("مقبول", "badge-success"),
+            ["accepted"] = ("بانتظار الدفع", "badge-warning"),
+            ["awaiting-payment"] = ("بانتظار الدفع", "badge-warning"),
             ["rejected"] = ("مرفوض", "badge-danger"),
             ["noshow"] = ("لم يحضر", "badge-danger")
         };
@@ -250,12 +251,20 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
-        public async Task<bool> ApproveAppointmentAsync(string id)
+        public async Task<AppointmentAcceptResponseDto?> ApproveAppointmentAsync(string id)
         {
             try
             {
                 var response = await _httpClient.PutAsync(DoctoryRoutes.StaffDashboard.Approve(id), null);
-                return await _deserializerService.DeserializeApiResponse<bool>(response, "حدث خطأ في تأكيد الموعد");
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errors = ApiErrorExtractor.ExtractErrors(body);
+                    throw new ApiException((int)response.StatusCode, string.Join(" ", errors));
+                }
+
+                return AcceptResponseParser.Parse(body);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

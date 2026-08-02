@@ -1,9 +1,20 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "المدفوعات";
     Layout = "_AdminLayout";
-    var stats = ViewBag.Stats as List<MockStat> ?? new();
-    var payments = ViewBag.Payments as List<MockPayment> ?? new();
+    var stats = ViewBag.Stats as PaymentStatsDto;
+    var payments = ViewBag.Payments as IReadOnlyCollection<AdminPaymentDto> ?? new List<AdminPaymentDto>();
+    var pagination = ViewBag.Pagination as PagginatedResult<AdminPaymentDto>;
+    var clinics = ViewBag.Clinics as IReadOnlyCollection<ClinicLookupDto> ?? new List<ClinicLookupDto>();
+    var eligibleClinics = ViewBag.EligibleClinics as IReadOnlyCollection<EligibleClinicDto> ?? new List<EligibleClinicDto>();
+    var adPackages = ViewBag.AdPackages as IReadOnlyCollection<AdPackageDto> ?? new List<AdPackageDto>();
+    var typeFilter = ViewBag.TypeFilter as string;
+    var statusFilter = ViewBag.StatusFilter as string;
+    var methodFilter = ViewBag.MethodFilter as string;
+    var fromDateFilter = ViewBag.FromDateFilter as string;
+    var toDateFilter = ViewBag.ToDateFilter as string;
+    var searchTerm = ViewBag.SearchTerm as string;
+    var month = ViewBag.Month as string;
 }
 
 <div class="page-header">
@@ -16,57 +27,108 @@
         </span>
         المدفوعات والمعاملات المالية
     </h2>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manualPaymentModal">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-        تسجيل دفعة يدوية
-    </button>
+    <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#adsModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+            </svg>
+            طلب خدمة إعلانية
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manualPaymentModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            تسجيل دفعة يدوية
+        </button>
+    </div>
 </div>
 
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
 <!-- KPI Stat Cards -->
+<div class="stats-header">
+    <h3 class="stats-title">إحصائيات الشهر</h3>
+    <form class="stats-month-form" method="get" action="@AdminRoutes.Pages.Payments()">
+        <input type="month" name="month" id="statsMonthInput" class="form-input" value="@month" title="اختر الشهر" />
+    </form>
+</div>
 <div class="stats-grid">
-    @foreach (var stat in stats)
-    {
-        <div class="stat-card">
-            <div class="stat-info">
-                <span class="stat-value">@stat.Value</span>
-                <span class="stat-label">@stat.Label</span>
-            </div>
-            <div class="icon-wrapper icon-wrapper--@stat.IconColor">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="@stat.SvgPath"/>
-                </svg>
-            </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">@(stats?.TodayRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-label">إيرادات الشهر</span>
         </div>
-    }
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">@(stats?.SubscriptionsRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-label">إيرادات الاشتراكات</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--blue">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-.95 6.5-.1.6-.38 1-.8 1.03-.66.05-1.16-.43-1.8-.85-.88-.58-1.38-.94-2.23-1.51-.99-.65-.35-1.01.2-1.59.14-.15 2.61-2.39 2.66-2.6.01-.03.01-.15-.06-.21-.07-.07-.19-.05-.27-.03-.11.03-1.88 1.2-5.32 3.52-.5.34-.96.51-1.37.5-.45-.01-1.31-.25-1.95-.46-.79-.25-1.42-.39-1.36-.86.03-.24.35-.48 1.08-.73 4.74-2.07 7.9-3.43 9.5-4.09 2.22-.91 2.68-1.07 2.98-1.08.07 0 .18.02.26.11.08.1.1.23.09.33z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">@(stats?.AppointmentsRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-label">إيرادات المواعيد</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--green">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">@(stats?.AdsRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-label">إيرادات الإعلانات</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--amber">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+            </svg>
+        </div>
+    </div>
 </div>
 
 <!-- Filter Bar -->
-<div class="filter-bar">
-    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن معاملة..." />
-    <select id="filterType" class="form-select">
-        <option value="">جميع الأنواع</option>
-        <option value="اشتراك عيادة">اشتراك عيادة</option>
-        <option value="عمولة طبيب">عمولة طبيب</option>
-        <option value="موعد مريض">موعد مريض</option>
-        <option value="خدمة إعلانية">خدمة إعلانية</option>
+<form class="filter-bar" method="get" action="@AdminRoutes.Pages.Payments()">
+    <input type="hidden" name="month" value="@month" />
+    <input type="text" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو الكود أو الرقم المرجعي..." value="@searchTerm" />
+    <select name="type" class="form-select">
+        <option value="" selected="@(string.IsNullOrEmpty(typeFilter))">جميع الأنواع</option>
+        <option value="0" selected="@(typeFilter == "0")">موعد مريض</option>
+        <option value="1" selected="@(typeFilter == "1")">اشتراك عيادة</option>
+        <option value="2" selected="@(typeFilter == "2")">خدمة إعلانية</option>
     </select>
-    <select id="filterMethod" class="form-select">
-        <option value="">جميع طرق الدفع</option>
-        <option value="Paymob - بطاقة">Paymob - بطاقة ائتمان</option>
-        <option value="Paymob - محفظة">Paymob - محفظة إلكترونية</option>
-        <option value="تحويل بنكي">تحويل بنكي</option>
-        <option value="نقدي">نقدي</option>
+    <select name="method" class="form-select">
+        <option value="" selected="@(string.IsNullOrEmpty(methodFilter))">جميع طرق الدفع</option>
+        <option value="0" selected="@(methodFilter == "0")">نقدي</option>
+        <option value="1" selected="@(methodFilter == "1")">Paymob - محفظة إلكترونية</option>
     </select>
-    <select id="filterStatus" class="form-select">
-        <option value="">جميع الحالات</option>
-        <option value="ناجح">ناجح</option>
-        <option value="معلق">معلق</option>
-        <option value="فاشل">فاشل</option>
-        <option value="مسترد">مسترد</option>
+    <select name="status" class="form-select">
+        <option value="" selected="@(string.IsNullOrEmpty(statusFilter))">جميع الحالات</option>
+        <option value="0" selected="@(statusFilter == "0")">معلق</option>
+        <option value="1" selected="@(statusFilter == "1")">ناجح</option>
+        <option value="2" selected="@(statusFilter == "2")">فاشل</option>
+        <option value="3" selected="@(statusFilter == "3")">مسترد</option>
     </select>
-</div>
+    <input type="date" name="fromDate" class="form-input" value="@fromDateFilter" title="من تاريخ" />
+    <input type="date" name="toDate" class="form-input" value="@toDateFilter" title="إلى تاريخ" />
+    <button type="submit" class="btn btn-primary">بحث</button>
+    <a href="@AdminRoutes.Pages.Payments()" class="btn btn-secondary">مسح</a>
+</form>
 
 <!-- Payments Table -->
 <div class="table-card">
@@ -81,39 +143,61 @@
                     <th>طريقة الدفع</th>
                     <th>الحالة</th>
                     <th>التاريخ</th>
+                    <th>رقم مرجعي</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var p in payments)
+                @if (payments.Count == 0)
                 {
                     <tr>
-                        <td class="text-md">@p.Code</td>
-                        <td class="text-md-medium">
-    <span class="row-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
-        </svg>
-    </span>
-    @p.Payer
-</td>
-                        <td><span class="badge @p.TypeClass">@p.Type</span></td>
-                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@p.Amount @MockData.CurrencySymbol</td>
-                        <td class="text-md">@p.Method</td>
-                        <td><span class="badge @p.StatusClass">@p.Status</span></td>
-                        <td class="text-md">@p.Date</td>
-                        <td>
-                            <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(p.Id)" title="التفاصيل">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                </svg>
-                            </a>
+                        <td colspan="9" class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
+                            <p style="font-size: var(--fs-lg); margin-bottom: 0;">لا توجد مدفوعات مطابقة</p>
                         </td>
                     </tr>
+                }
+                else
+                {
+                    foreach (var p in payments)
+                    {
+                        var typeText = p.Type switch { 0 => "موعد مريض", 1 => "اشتراك عيادة", 2 => "خدمة إعلانية", _ => "غير معروف" };
+                        var typeClass = p.Type switch { 0 => "badge-info", 1 => "badge-primary", 2 => "badge-warning", _ => "badge-info" };
+                        var statusText = p.Status switch { 0 => "معلق", 1 => "ناجح", 2 => "فاشل", 3 => "مسترد", _ => "غير معروف" };
+                        var statusClass = p.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", _ => "badge-info" };
+                        var methodText = p.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة", _ => "غير معروف" };
+                        <tr>
+                            <td class="text-md">@p.Code</td>
+                            <td class="text-md-medium">
+                                <span class="row-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                                @p.Payer
+                            </td>
+                            <td><span class="badge @typeClass">@typeText</span></td>
+                            <td class="text-md-medium" style="direction: ltr; text-align: right;">@p.Amount.ToString("N2") ج.م</td>
+                            <td class="text-md">@methodText</td>
+                            <td><span class="badge @statusClass">@statusText</span></td>
+                            <td class="text-md">@p.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-md" style="direction: ltr; text-align: right;">@p.RefNumber</td>
+                            <td>
+                                <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(p.Id)" title="التفاصيل">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
     </div>
+    @if (pagination != null)
+    {
+        <partial name="_Pagination" model="pagination" />
+    }
 </div>
 
 <!-- Manual Payment Modal -->
@@ -125,62 +209,118 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body-custom">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">الدافع</label>
-                            <select class="form-select">
-                                <option value="">اختر الدافع</option>
-                                <option>مجمع عيادات السلام الطبي</option>
-                                <option>مستشفى النور التخصصي</option>
-                                <option>د. عمار السيد</option>
-                                <option>د. سارة أحمد</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">نوع الدفعة</label>
-                            <select class="form-select">
-                                <option>اشتراك عيادة</option>
-                                <option>عمولة طبيب</option>
-                                <option>خدمة إعلانية</option>
-                                <option>أخرى</option>
-                            </select>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">العيادة</label>
+                    <select id="manualPayer" class="form-select">
+                        <option value="">اختر العيادة</option>
+                        @if (clinics.Count == 0)
+                        {
+                            <option value="" disabled>لا توجد عيادات متاحة</option>
+                        }
+                        else
+                        {
+                            foreach (var clinic in clinics)
+                            {
+                                <option value="@clinic.Id">@clinic.Name</option>
+                            }
+                        }
+                    </select>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">المبلغ</label>
-                            <input type="number" class="form-input" placeholder="0.00 @MockData.CurrencySymbol" />
+                            <input type="number" id="manualAmount" class="form-input" min="0" step="0.01" placeholder="0.00 ج.م" />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">طريقة الدفع</label>
-                            <select class="form-select">
-                                <option>نقدي</option>
-                                <option>تحويل بنكي</option>
-                                <option>Paymob - بطاقة ائتمان</option>
-                                <option>Paymob - محفظة إلكترونية</option>
+                            <select id="manualMethod" class="form-select">
+                                <option value="0">نقدي</option>
+                                <option value="1">Paymob - محفظة إلكترونية</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">الوصف / ملاحظات</label>
-                    <textarea class="form-textarea" placeholder="وصف الدفعة..." rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">تاريخ الدفعة</label>
-                    <input type="date" class="form-input" />
+                    <label class="form-label">الوصف / ملاحظات <span class="text-muted">(اختياري)</span></label>
+                    <textarea id="manualNotes" class="form-textarea" maxlength="500" placeholder="وصف الدفعة..." rows="2"></textarea>
                 </div>
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary">تسجيل الدفعة</button>
+                <button type="button" class="btn btn-primary" id="manualSubmitBtn">تسجيل الدفعة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ads Order Modal -->
+<div class="modal fade" id="adsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">طلب خدمة إعلانية</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">العيادة</label>
+                            <select id="adsClinic" class="form-select">
+                                <option value="">اختر العيادة</option>
+                                @if (eligibleClinics.Count == 0)
+                                {
+                                    <option value="" disabled>لا توجد عيادات مؤهلة للإعلانات</option>
+                                }
+                                else
+                                {
+                                    foreach (var clinic in eligibleClinics)
+                                    {
+                                        <option value="@clinic.Id">@clinic.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الباقة</label>
+                            <select id="adsPackage" class="form-select" onchange="onAdsPackageChange()">
+                                <option value="">اختر الباقة</option>
+                                @foreach (var pkg in adPackages)
+                                {
+                                    <option value="@pkg.Id" data-duration="@pkg.DurationDays" data-price="@pkg.Price">@(pkg.NameAr ?? pkg.Name) (@pkg.DurationDays يوم)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المدة (أيام)</label>
+                            <select id="adsDuration" class="form-select" onchange="onAdsDurationChange()" disabled>
+                                <option value="">اختر المدة</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">السعر</label>
+                            <input type="text" id="adsPrice" class="form-input" readonly placeholder="0.00 ج.م" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <p class="form-hint">سيتم تحويلك إلى بوابة الدفع Paymob لإتمام عملية الدفع، وبعد التأكيد تظهر الدفعة في الجدول.</p>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="adsSubmitBtn">إتمام الطلب والدفع</button>
             </div>
         </div>
     </div>
@@ -188,31 +328,146 @@
 
 @section Scripts {
     <script>
-        (function() {
-            function filterTable() {
-                var searchVal = document.getElementById('filterSearch').value.trim().toLowerCase();
-                var typeVal = document.getElementById('filterType').value;
-                var methodVal = document.getElementById('filterMethod').value;
-                var statusVal = document.getElementById('filterStatus').value;
-                var rows = document.querySelectorAll('.custom-table tbody tr');
-                rows.forEach(function(row) {
-                    var code = row.cells[0].textContent.trim().toLowerCase();
-                    var payer = row.cells[1].textContent.trim().toLowerCase();
-                    var type = row.cells[2].textContent.trim();
-                    var method = row.cells[4].textContent.trim();
-                    var status = row.cells[5].textContent.trim();
-                    var matchSearch = !searchVal || code.indexOf(searchVal) !== -1 || payer.indexOf(searchVal) !== -1;
-                    var matchType = !typeVal || type === typeVal;
-                    var matchMethod = !methodVal || method.indexOf(methodVal) !== -1;
-                    var matchStatus = !statusVal || status === statusVal;
-                    row.style.display = matchSearch && matchType && matchMethod && matchStatus ? '' : 'none';
+        var MAX_DURATION_MULTIPLES = 12;
+
+        function fillAdsDurationOptions(opt) {
+            var durationSelect = document.getElementById('adsDuration');
+            durationSelect.innerHTML = '';
+            if (!opt || !opt.value) {
+                durationSelect.disabled = true;
+                document.getElementById('adsPrice').value = '';
+                return;
+            }
+            var baseDays = parseInt(opt.getAttribute('data-duration'));
+            for (var i = 1; i <= MAX_DURATION_MULTIPLES; i++) {
+                var days = baseDays * i;
+                var option = document.createElement('option');
+                option.value = days;
+                option.textContent = days + ' يوم';
+                if (i === 1) option.selected = true;
+                durationSelect.appendChild(option);
+            }
+            durationSelect.disabled = false;
+            onAdsDurationChange();
+        }
+
+        function onAdsPackageChange() {
+            var select = document.getElementById('adsPackage');
+            fillAdsDurationOptions(select.options[select.selectedIndex]);
+        }
+
+        function onAdsDurationChange() {
+            var select = document.getElementById('adsPackage');
+            var opt = select.options[select.selectedIndex];
+            var duration = parseInt(document.getElementById('adsDuration').value);
+            if (opt && opt.value && duration > 0) {
+                var baseDays = parseInt(opt.getAttribute('data-duration'));
+                var price = parseFloat(opt.getAttribute('data-price'));
+                var amount = price * (duration / baseDays);
+                document.getElementById('adsPrice').value = amount.toFixed(2) + ' ج.م';
+            } else {
+                document.getElementById('adsPrice').value = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var monthInput = document.getElementById('statsMonthInput');
+            if (monthInput) {
+                monthInput.addEventListener('change', function () { monthInput.form.submit(); });
+            }
+
+            var manualBtn = document.getElementById('manualSubmitBtn');
+            if (manualBtn) {
+                manualBtn.addEventListener('click', function () {
+                    var payerId = document.getElementById('manualPayer').value;
+                    var amount = parseFloat(document.getElementById('manualAmount').value);
+                    var method = document.getElementById('manualMethod').value;
+                    var notes = document.getElementById('manualNotes').value.trim();
+
+                    if (!payerId) { showErrorModal('يرجى اختيار العيادة'); return; }
+                    if (!amount || amount <= 0) { showErrorModal('يرجى إدخال مبلغ صحيح'); return; }
+
+                    manualBtn.disabled = true;
+                    manualBtn.textContent = 'جاري التسجيل...';
+
+                    fetch('/Admin/CreateManualPayment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            payerId: payerId,
+                            type: 1,
+                            amount: amount,
+                            method: parseInt(method),
+                            notes: notes || null
+                        })
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (result) {
+                        if (result.success) {
+                            showSuccessModal(result.message || 'تم تسجيل الدفعة بنجاح');
+                            setTimeout(function () { location.reload(); }, 1500);
+                        } else {
+                            manualBtn.disabled = false;
+                            manualBtn.textContent = 'تسجيل الدفعة';
+                            showErrorModal(result.message || 'حدث خطأ أثناء تسجيل الدفعة');
+                        }
+                    })
+                    .catch(function () {
+                        manualBtn.disabled = false;
+                        manualBtn.textContent = 'تسجيل الدفعة';
+                        showErrorModal('عذراً، حدث خطأ أثناء تسجيل الدفعة');
+                    });
                 });
             }
 
-            document.getElementById('filterSearch').addEventListener('input', filterTable);
-            document.getElementById('filterType').addEventListener('change', filterTable);
-            document.getElementById('filterMethod').addEventListener('change', filterTable);
-            document.getElementById('filterStatus').addEventListener('change', filterTable);
-        })();
+            var adsBtn = document.getElementById('adsSubmitBtn');
+            if (adsBtn) {
+                adsBtn.addEventListener('click', function () {
+                    var clinicId = document.getElementById('adsClinic').value;
+                    var packageSelect = document.getElementById('adsPackage');
+                    var opt = packageSelect.options[packageSelect.selectedIndex];
+                    var packageId = opt ? opt.value : '';
+                    var duration = parseInt(document.getElementById('adsDuration').value);
+
+                    if (!clinicId) { showErrorModal('يرجى اختيار العيادة'); return; }
+                    if (!packageId) { showErrorModal('يرجى اختيار الباقة'); return; }
+                    if (!duration || duration <= 0) { showErrorModal('يرجى اختيار المدة بالأيام'); return; }
+                    var baseDays = parseInt(opt.getAttribute('data-duration'));
+                    if (duration % baseDays !== 0) { showErrorModal('المدة يجب أن تكون مضاعفاً صحيحاً لمدة الباقة'); return; }
+
+                    adsBtn.disabled = true;
+                    adsBtn.textContent = 'جاري إنشاء الطلب...';
+
+                    fetch('/Admin/CreateAdsOrder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            clinicId: clinicId,
+                            adPackageId: packageId,
+                            durationDays: duration
+                        })
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (result) {
+                        if (result.success && result.data && result.data.paymobRedirectUrl) {
+                            showSuccessModal('تم إنشاء الطلب بنجاح، جارِ فتح بوابة الدفع...');
+                            window.open(result.data.paymobRedirectUrl, '_blank');
+                            setTimeout(function () { location.reload(); }, 2000);
+                        } else if (result.success) {
+                            showSuccessModal(result.message || 'تم إنشاء الطلب بنجاح');
+                        } else {
+                            adsBtn.disabled = false;
+                            adsBtn.textContent = 'إتمام الطلب والدفع';
+                            showErrorModal(result.message || 'حدث خطأ أثناء إنشاء الطلب');
+                        }
+                    })
+                    .catch(function () {
+                        adsBtn.disabled = false;
+                        adsBtn.textContent = 'إتمام الطلب والدفع';
+                        showErrorModal('عذراً، حدث خطأ أثناء إنشاء الطلب');
+                    });
+                });
+            }
+        });
     </script>
 }

@@ -104,15 +104,27 @@ namespace ClinicHub.Controllers
         {
             try
             {
-                var stats = await _staffDashboardService.GetStatsAsync();
-                ViewBag.Stats = stats;
+                var statsTask = _staffDashboardService.GetStatsAsync();
+                var queueTask = _staffDashboardService.GetQueueAsync();
+                var pendingTask = _staffDashboardService.GetAppointmentsAsync("pending", null, null, 1, 1);
 
-                var queue = await _staffDashboardService.GetQueueAsync();
+                await Task.WhenAll(statsTask, queueTask, pendingTask);
+
+                var stats = statsTask.Result;
+                var queue = queueTask.Result;
+
+                ViewBag.Stats = stats;
                 ViewBag.QueueItems = queue.Take(5).ToList();
 
                 stats.Waiting = queue.Count(q =>
                     string.Equals(q.Status, "waiting", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(q.Status, "registered", StringComparison.OrdinalIgnoreCase));
+
+                stats.PendingRequests = pendingTask.Result.TotalCount;
+
+                // Load first 5 pending appointment requests for dashboard card
+                var pendingFull = await _staffDashboardService.GetAppointmentsAsync("pending", null, null, 1, 5);
+                ViewBag.PendingRequests = pendingFull.Items;
             }
             catch (ApiException ex)
             {
@@ -194,7 +206,24 @@ namespace ClinicHub.Controllers
             }
             return View();
         }
-        public IActionResult RegisterPatient() => View();
+        public async Task<IActionResult> RegisterPatient()
+        {
+            try
+            {
+                var doctors = await _staffDashboardService.GetDoctorsAsync();
+                ViewBag.Doctors = doctors;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Doctors = new List<StaffDoctorDto>();
+            }
+            catch (Exception)
+            {
+                ViewBag.Doctors = new List<StaffDoctorDto>();
+            }
+            return View();
+        }
 
         public IActionResult DoctorSchedule(int doctorId)
         {
@@ -268,7 +297,7 @@ namespace ClinicHub.Controllers
             try
             {
                 var result = await _staffDashboardService.ApproveAppointmentAsync(id);
-                return Json(new { success = true, data = result, message = "تم تأكيد الموعد بنجاح" });
+                return Json(new { success = true, data = result, message = "تم قبول الحجز وتم إرسال رابط الدفع للمريض" });
             }
             catch (ApiException ex)
             {

@@ -1,8 +1,8 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "تفاصيل المعاملة";
     Layout = "_AdminLayout";
-    var d = ViewBag.Detail as MockPaymentDetail ?? new();
+    var d = ViewBag.Detail as PaymentDetailDto;
 }
 
 <div class="detail-page">
@@ -13,6 +13,21 @@
         </svg>
         العودة إلى القائمة
     </a>
+
+    @if (d == null)
+    {
+        <div class="alert alert-danger">@(ViewBag.ErrorMessage ?? "المعاملة غير موجودة")</div>
+        return;
+    }
+
+    @{
+        var typeText = d.Type switch { 0 => "موعد مريض", 1 => "اشتراك عيادة", 2 => "خدمة إعلانية", _ => "غير معروف" };
+        var typeClass = d.Type switch { 0 => "badge-info", 1 => "badge-primary", 2 => "badge-warning", _ => "badge-info" };
+        var statusText = d.Status switch { 0 => "معلق", 1 => "ناجح", 2 => "فاشل", 3 => "مسترد", _ => "غير معروف" };
+        var statusClass = d.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", _ => "badge-info" };
+        var methodText = d.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة إلكترونية", _ => "غير معروف" };
+        var payerTypeText = d.PayerType == "Clinic" ? "عيادة" : "مريض";
+    }
 
     <!-- Detail Header -->
     <div class="detail-header">
@@ -25,11 +40,11 @@
                 </span>
                 معاملة @d.Code
             </h2>
-            <span class="detail-subtitle">@d.Date</span>
+            <span class="detail-subtitle">@d.Date.ToString("yyyy-MM-dd HH:mm")</span>
         </div>
         <div class="detail-header-amount">
-            <span class="detail-amount">@d.Amount @MockData.CurrencySymbol</span>
-            <span class="badge @d.StatusClass" style="font-size: 14px; padding: 4px 16px;">@d.Status</span>
+            <span class="detail-amount">@d.Amount.ToString("N2") ج.م</span>
+            <span class="badge @statusClass" style="font-size: 14px; padding: 4px 16px;">@statusText</span>
         </div>
     </div>
 
@@ -51,15 +66,15 @@
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">النوع</span>
-                    <span class="detail-info-value">@d.PayerType</span>
+                    <span class="detail-info-value">@payerTypeText</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">البريد الإلكتروني</span>
-                    <span class="detail-info-value">@d.PayerEmail</span>
+                    <span class="detail-info-value">@(string.IsNullOrWhiteSpace(d.PayerEmail) ? "—" : d.PayerEmail)</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">رقم الهاتف</span>
-                    <span class="detail-info-value">@d.PayerPhone</span>
+                    <span class="detail-info-value">@(string.IsNullOrWhiteSpace(d.PayerPhone) ? "—" : d.PayerPhone)</span>
                 </div>
             </div>
         </div>
@@ -74,16 +89,20 @@
             </h3>
             <div class="detail-info-list">
                 <div class="detail-info-row">
-                    <span class="detail-info-label">ID المعاملة</span>
-                    <span class="detail-info-value">@d.TransactionId</span>
+                    <span class="detail-info-label">النوع</span>
+                    <span class="detail-info-value"><span class="badge @typeClass">@typeText</span></span>
                 </div>
                 <div class="detail-info-row">
-                    <span class="detail-info-label">النوع</span>
-                    <span class="detail-info-value"><span class="badge @d.TypeClass">@d.Type</span></span>
+                    <span class="detail-info-label">العنصر</span>
+                    <span class="detail-info-value">@d.ItemName</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">طريقة الدفع</span>
-                    <span class="detail-info-value">@d.Method</span>
+                    <span class="detail-info-value">@methodText</span>
+                </div>
+                <div class="detail-info-row">
+                    <span class="detail-info-label">ID المعاملة</span>
+                    <span class="detail-info-value" style="direction: ltr; text-align: right;">@(string.IsNullOrWhiteSpace(d.TransactionId) ? "—" : d.TransactionId)</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">رقم المرجع</span>
@@ -91,7 +110,7 @@
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">تاريخ الإنشاء</span>
-                    <span class="detail-info-value">@d.Date 10:30</span>
+                    <span class="detail-info-value">@d.Date.ToString("yyyy-MM-dd HH:mm")</span>
                 </div>
             </div>
         </div>
@@ -123,8 +142,8 @@
                     <tr>
                         <td class="text-md-medium">@d.ItemName</td>
                         <td class="text-md">1</td>
-                        <td class="text-md" style="direction: ltr; text-align: right;">@d.Amount @MockData.CurrencySymbol</td>
-                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@d.Amount @MockData.CurrencySymbol</td>
+                        <td class="text-md" style="direction: ltr; text-align: right;">@d.Amount.ToString("N2") ج.م</td>
+                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@d.Amount.ToString("N2") ج.م</td>
                     </tr>
                 </tbody>
             </table>
@@ -142,15 +161,22 @@
             سجل المعاملة
         </h3>
         <div class="timeline">
-            @foreach (var entry in d.Timeline)
+            @if (d.Timeline.Count == 0)
             {
-                <div class="timeline-item">
-                    <div class="timeline-marker timeline-marker--@entry.Marker"></div>
-                    <div class="timeline-content">
-                        <span class="timeline-date">@entry.Date</span>
-                        <span class="timeline-text">@entry.Text</span>
+                <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">لا يوجد سجل للمعاملة</p>
+            }
+            else
+            {
+                foreach (var entry in d.Timeline)
+                {
+                    <div class="timeline-item">
+                        <div class="timeline-marker timeline-marker--@entry.Marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date">@entry.Date.ToString("yyyy-MM-dd HH:mm")</span>
+                            <span class="timeline-text">@entry.Text</span>
+                        </div>
                     </div>
-                </div>
+                }
             }
         </div>
     </div>
@@ -166,7 +192,86 @@
             ملاحظات
         </h3>
         <div class="detail-notes">
-            <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">@d.Notes</p>
+            <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">@(string.IsNullOrWhiteSpace(d.Notes) ? "لا توجد ملاحظات" : d.Notes)</p>
+        </div>
+    </div>
+
+    <!-- Refund Action -->
+    @if (d.Status == 1)
+    {
+        <div class="detail-card" style="margin-top: var(--space-4);">
+            <div class="detail-section-header">
+                <h3 class="detail-card-title">استرداد المبلغ</h3>
+            </div>
+            <p class="text-md" style="color: var(--clr-text-secondary); margin-bottom: var(--space-4);">يمكنك استرداد المبلغ للدافع. سيتم إعادة المبلغ عبر قناة الدفع الأصلية.</p>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#refundModal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+                </svg>
+                استرداد المبلغ
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Refund Modal -->
+<div class="modal fade" id="refundModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">استرداد المبلغ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="form-group">
+                    <label class="form-label">سبب الاسترداد</label>
+                    <textarea id="refundReason" class="form-textarea" maxlength="500" placeholder="أدخل سبب الاسترداد..." rows="3"></textarea>
+                </div>
+                <p class="text-md" style="color: var(--clr-danger); margin: var(--space-3) 0 0;">سيتم استرداد مبلغ @d.Amount.ToString("N2") ج.م. هذا الإجراء لا يمكن التراجع عنه.</p>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="refundSubmitBtn">تأكيد الاسترداد</button>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var refundBtn = document.getElementById('refundSubmitBtn');
+            if (!refundBtn) return;
+
+            refundBtn.addEventListener('click', function () {
+                var reason = document.getElementById('refundReason').value.trim();
+                if (!reason) { showErrorModal('يرجى إدخال سبب الاسترداد'); return; }
+
+                refundBtn.disabled = true;
+                refundBtn.textContent = 'جاري الاسترداد...';
+
+                fetch('/Admin/RefundPayment/@d.Id', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: reason })
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    if (result.success) {
+                        showSuccessModal(result.message || 'تم استرداد المبلغ بنجاح');
+                        setTimeout(function () { location.reload(); }, 1500);
+                    } else {
+                        refundBtn.disabled = false;
+                        refundBtn.textContent = 'تأكيد الاسترداد';
+                        showErrorModal(result.message || 'حدث خطأ أثناء الاسترداد');
+                    }
+                })
+                .catch(function () {
+                    refundBtn.disabled = false;
+                    refundBtn.textContent = 'تأكيد الاسترداد';
+                    showErrorModal('عذراً، حدث خطأ أثناء الاسترداد');
+                });
+            });
+        });
+    </script>
+}

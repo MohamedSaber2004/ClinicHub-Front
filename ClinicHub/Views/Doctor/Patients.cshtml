@@ -33,7 +33,6 @@
                 <tr>
                     <th>المريض</th>
                     <th>العمر / الجنس</th>
-                    <th>الهاتف</th>
                     <th>عدد الزيارات</th>
                     <th>آخر زيارة</th>
                     <th>الإجراء</th>
@@ -43,7 +42,7 @@
                 @if (patients.Count == 0)
                 {
                     <tr>
-                        <td colspan="6" class="table-empty">لا يوجد مرضى مطابقون للبحث</td>
+                    <td colspan="5" class="table-empty">لا يوجد مرضى مطابقون للبحث</td>
                     </tr>
                 }
                 @foreach (var p in patients)
@@ -56,7 +55,6 @@
                             </div>
                         </td>
                         <td>@AgeLabel(p.Age) / @GenderLabel(p.Gender)</td>
-                        <td>@(string.IsNullOrWhiteSpace(p.PhoneNumber) ? "—" : p.PhoneNumber)</td>
                         <td><span class="badge badge-info">@p.TotalVisits</span></td>
                         <td>@LastVisitLabel(p.LastVisitDate)</td>
                         <td>

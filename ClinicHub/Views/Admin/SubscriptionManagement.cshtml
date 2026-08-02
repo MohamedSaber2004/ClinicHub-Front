@@ -4,6 +4,7 @@
     Layout = "_AdminLayout";
     var subscriptions = ViewBag.Subscriptions as IReadOnlyCollection<SubscriptionDto> ?? new List<SubscriptionDto>();
     var plans = ViewBag.Plans as List<PlanDto> ?? new();
+    var clinics = ViewBag.Clinics as IReadOnlyCollection<ClinicLookupDto> ?? new List<ClinicLookupDto>();
     var pagination = ViewBag.Pagination as PagginatedResult<SubscriptionDto>;
 }
 
@@ -16,6 +17,12 @@
         </span>
         إدارة الاشتراكات
     </h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSubscriptionModal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        إضافة اشتراك
+    </button>
 </div>
 
 @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
@@ -88,8 +95,148 @@
     }
 </div>
 
+<!-- Create Subscription Modal -->
+<div class="modal fade" id="createSubscriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إضافة اشتراك</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-md" style="color: var(--clr-text-secondary); margin: 0 0 var(--space-4);">سيتم إنشاء اشتراك نشط للعيادة مباشرة، وتفعيل لوحة تحكم صاحب العيادة فورًا.</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">العيادة</label>
+                            <select id="subClinic" class="form-select">
+                                <option value="">اختر العيادة</option>
+                                @if (clinics.Count == 0)
+                                {
+                                    <option value="" disabled>لا توجد عيادات متاحة</option>
+                                }
+                                else
+                                {
+                                    foreach (var clinic in clinics)
+                                    {
+                                        <option value="@clinic.Id">@clinic.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الباقة</label>
+                            <select id="subPlan" class="form-select" onchange="updateSubPrice()">
+                                <option value="">اختر الباقة</option>
+                                @if (plans.Count == 0)
+                                {
+                                    <option value="" disabled>لا توجد باقات متاحة</option>
+                                }
+                                else
+                                {
+                                    foreach (var plan in plans.Where(p => p.IsActive))
+                                    {
+                                        <option value="@plan.Id" data-monthly="@plan.PriceMonthly" data-yearly="@plan.PriceYearly">@plan.NameAr</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المدة</label>
+                            <select id="subPeriod" class="form-select" onchange="updateSubPrice()">
+                                <option value="0" selected>شهري</option>
+                                <option value="1">سنوي</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">تاريخ البدء</label>
+                            <input type="date" id="subStartDate" class="form-input" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">السعر</label>
+                    <input type="text" id="subPrice" class="form-input" readonly placeholder="0.00 ج.م" />
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="subSubmitBtn">إنشاء الاشتراك</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        function updateSubPrice() {
+            var planSelect = document.getElementById('subPlan');
+            var opt = planSelect.options[planSelect.selectedIndex];
+            var period = document.getElementById('subPeriod').value;
+            if (opt && opt.value) {
+                var price = period === '0' ? parseFloat(opt.getAttribute('data-monthly')) : parseFloat(opt.getAttribute('data-yearly'));
+                document.getElementById('subPrice').value = price.toFixed(2) + ' ج.م';
+            } else {
+                document.getElementById('subPrice').value = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('subStartDate').value = new Date().toISOString().split('T')[0];
+
+            var subBtn = document.getElementById('subSubmitBtn');
+            if (subBtn) {
+                subBtn.addEventListener('click', function () {
+                    var clinicId = document.getElementById('subClinic').value;
+                    var planId = document.getElementById('subPlan').value;
+                    var period = document.getElementById('subPeriod').value;
+                    var startDate = document.getElementById('subStartDate').value;
+
+                    if (!clinicId) { showErrorModal('يرجى اختيار العيادة'); return; }
+                    if (!planId) { showErrorModal('يرجى اختيار الباقة'); return; }
+                    if (!startDate) { showErrorModal('يرجى تحديد تاريخ البدء'); return; }
+
+                    subBtn.disabled = true;
+                    subBtn.textContent = 'جاري الإنشاء...';
+
+                    fetch('/Admin/SubscriptionManagement/Create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            clinicId: clinicId,
+                            planId: planId,
+                            period: parseInt(period),
+                            startDate: startDate
+                        })
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (result) {
+                        if (result.success) {
+                            showSuccessModal(result.message || 'تم إنشاء الاشتراك بنجاح');
+                            setTimeout(function () { location.reload(); }, 1500);
+                        } else {
+                            subBtn.disabled = false;
+                            subBtn.textContent = 'إنشاء الاشتراك';
+                            showErrorModal(result.message || 'حدث خطأ أثناء إنشاء الاشتراك');
+                        }
+                    })
+                    .catch(function () {
+                        subBtn.disabled = false;
+                        subBtn.textContent = 'إنشاء الاشتراك';
+                        showErrorModal('عذراً، حدث خطأ أثناء إنشاء الاشتراك');
+                    });
+                });
+            }
+        });
+
         function revokeSubscription(id, clinicName, btnElement) {
             showConfirmModal('هل أنت متأكد من إلغاء اشتراك "' + clinicName + '"؟', function(confirmed) {
                 if (!confirmed) return;

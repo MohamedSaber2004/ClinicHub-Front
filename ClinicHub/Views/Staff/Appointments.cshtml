@@ -6,6 +6,7 @@
 @using ClinicHub.Services.ReponseModels
 @{
     var appointments = ViewBag.Appointments as IReadOnlyCollection<StaffAppointmentDto> ?? new List<StaffAppointmentDto>();
+    string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
 <h2 class="page-title">
@@ -17,20 +18,26 @@
 
 <div class="table-card">
     <div class="table-card-header">
-        <h3 class="table-card-title">جميع المواعيد</h3>
+        <h3 class="table-card-title">
+            <span class="subtitle-icon">
+                <i class="bi bi-calendar3"></i>
+            </span>
+            جميع المواعيد
+        </h3>
     </div>
-    <form method="get" action="@Url.Action("Appointments")" class="filters-bar" style="display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--clr-border);flex-wrap:wrap;">
-        <select name="status" class="form-control" style="width:160px;">
+    <form method="get" action="@Url.Action("Appointments")" class="filter-bar table-filter-bar">
+        <select name="status" class="form-select">
             <option value="">كل الحالات</option>
             <option value="pending" selected="@(ViewBag.StatusFilter == "pending")">قيد الانتظار</option>
+            <option value="accepted" selected="@(ViewBag.StatusFilter == "accepted")">بانتظار الدفع</option>
             <option value="confirmed" selected="@(ViewBag.StatusFilter == "confirmed")">مؤكد</option>
             <option value="cancelled" selected="@(ViewBag.StatusFilter == "cancelled")">ملغي</option>
             <option value="completed" selected="@(ViewBag.StatusFilter == "completed")">منتهي</option>
         </select>
-        <input type="date" name="date" class="form-control" style="width:180px;" value="@ViewBag.DateFilter" />
-        <input type="text" name="searchTerm" class="form-control" style="width:200px;" placeholder="بحث باسم المريض..." value="@ViewBag.SearchTerm" />
-        <button type="submit" class="btn btn-primary btn-sm" style="padding:4px 16px;">بحث</button>
-        <a href="@Url.Action("Appointments")" class="btn btn-outline-secondary btn-sm" style="padding:4px 16px;">مسح</a>
+        <input type="date" name="date" class="form-input" value="@ViewBag.DateFilter" title="تاريخ الموعد" />
+        <input type="text" name="searchTerm" class="form-input" placeholder="بحث باسم المريض..." value="@ViewBag.SearchTerm" />
+        <button type="submit" class="btn btn-primary btn-sm">بحث</button>
+        <a href="@Url.Action("Appointments")" class="btn btn-outline-secondary btn-sm">مسح</a>
     </form>
     <div class="table-responsive">
         <table class="custom-table">
@@ -49,36 +56,38 @@
                 @if (appointments.Count == 0)
                 {
                     <tr>
-                        <td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">لا توجد مواعيد</td>
+                        <td colspan="7" class="table-empty">لا توجد مواعيد</td>
                     </tr>
                 }
                 @foreach (var app in appointments)
                 {
                     <tr>
                         <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div class="sidebar-profile-avatar" style="width:28px;height:28px;">
-                                    <span style="font-size:11px;">@app.Patient?.Initial</span>
-                                </div>
-                                @app.Patient?.Name
+                            <div class="table-user">
+                                <span class="table-avatar">@(string.IsNullOrWhiteSpace(app.Patient?.Initial) ? Initial(app.Patient?.Name) : app.Patient.Initial)</span>
+                                <span class="table-user-name">@app.Patient?.Name</span>
                             </div>
                         </td>
                         <td>@app.Doctor?.Name</td>
                         <td>@app.Specialty</td>
                         <td>@app.Date</td>
                         <td>@app.Time</td>
-                        <td class="status-cell"><span class="badge @app.StatusClass">@app.StatusLabel</span></td>
+                        <td><span class="badge @app.StatusClass">@app.StatusLabel</span></td>
                         <td class="appointment-actions" data-id="@app.Id">
                             @if (app.Status == "pending")
                             {
-                                <div style="display:flex;gap:4px;">
-                                    <button class="btn btn-sm btn-outline-success btn-approve" data-id="@app.Id"><i class="bi bi-check-lg"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger btn-reject" data-id="@app.Id"><i class="bi bi-x-lg"></i></button>
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-outline-success btn-approve" data-id="@app.Id" title="قبول — سيتم إرسال رابط الدفع للمريض"><i class="bi bi-check-lg"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-reject" data-id="@app.Id" title="رفض"><i class="bi bi-x-lg"></i></button>
                                 </div>
                             }
-                            else if (app.Status == "confirmed" || app.Status == "accepted")
+                            else if (app.Status == "confirmed")
                             {
                                 <button class="btn btn-sm btn-outline-primary btn-checkin" data-id="@app.Id"><i class="bi bi-box-arrow-in-right"></i> تسجيل وصول</button>
+                            }
+                            else if (app.Status == "accepted" || app.Status == "awaiting-payment")
+                            {
+                                <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>
                             }
                         </td>
                     </tr>
@@ -94,15 +103,21 @@
         $(document).on('click', '.btn-approve', function () {
             var id = $(this).data('id');
             if (!id) return;
-            StaffDashboardService.approveAppointment(id).then(function () {
-                location.reload();
+            showConfirmModal('بعد القبول سيتم إرسال رابط الدفع للمريض لإتمام الدفع. هل تريد المتابعة؟', function () {
+                StaffDashboardService.approveAppointment(id).then(function () {
+                    showSuccessModal('تم قبول الحجز وتم إرسال رابط الدفع للمريض');
+                    location.reload();
+                });
             });
         });
 
         $(document).on('click', '.btn-reject', function () {
             var id = $(this).data('id');
             if (!id) return;
-            StaffDashboardService.rejectAppointment(id, '').then(function () {
+            var reason = prompt('يرجى إدخال سبب الرفض (اختياري):');
+            if (reason === null) return;
+            StaffDashboardService.rejectAppointment(id, reason || '').then(function () {
+                showSuccessModal('تم رفض الحجز');
                 location.reload();
             });
         });

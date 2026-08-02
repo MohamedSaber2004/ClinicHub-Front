@@ -305,7 +305,7 @@ else
                     success: function (res) {
                         setButtonLoading(btn, false);
                         if (res.success) {
-                            showSuccessModal(res.message || 'تم تأكيد الحجز بنجاح.');
+                            showSuccessModal(res.message || 'تم إرسال طلب الحجز بنجاح، وسيتم إعلامك بعد موافقة العيادة.');
                             $('#bookingPatientName').val('');
                             $('#bookingPatientPhone').val('');
                             loadSlots();
@@ -315,7 +315,7 @@ else
                     },
                     error: function (xhr) {
                         setButtonLoading(btn, false);
-                        var msg = 'حدث خطأ أثناء تأكيد الحجز.';
+                        var msg = 'حدث خطأ أثناء إرسال طلب الحجز.';
                         try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
                         showErrorModal(msg);
                     }

@@ -12,7 +12,7 @@ namespace ClinicHub.Routes
             public static string Doctors() => $"{Base}/Doctors";
             public static string Support() => $"{Base}/Support";
             public static string Payments() => $"{Base}/Payments";
-            public static string PaymentsDetails(int id) => $"{Base}/PaymentsDetails/{id}";
+            public static string PaymentsDetails(Guid id) => $"{Base}/PaymentsDetails/{id}";
             public static string Users() => $"{Base}/Users";
             public static string UsersOverview(int id) => $"{Base}/Users/Overview/{id}";
             public static string UsersVisits(int id) => $"{Base}/Users/Visits/{id}";
@@ -26,6 +26,7 @@ namespace ClinicHub.Routes
             public static string PendingClinics() => $"{Base}/PendingClinics";
             public static string PlanManagement() => $"{Base}/PlanManagement";
             public static string SubscriptionManagement() => $"{Base}/SubscriptionManagement";
+            public static string Ads() => $"{Base}/Ads";
         }
     }
 }

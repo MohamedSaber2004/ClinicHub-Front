@@ -1,12 +1,325 @@
+@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
-    ViewData["Title"] = "أدوات تسويقية - Doctory";
+    ViewData["Title"] = "الخدمات الإعلانية - Doctory";
     Layout = "_ClinicLayout";
+    var ads = ViewBag.Ads as IReadOnlyCollection<AdDto> ?? new List<AdDto>();
+    var packages = ViewBag.Packages as IReadOnlyCollection<AdPackageDto> ?? new List<AdPackageDto>();
+    var currentUser = ViewBag.CurrentUser as CurrentUserContext;
+    var canBuy = currentUser != null && currentUser.HasFeature(PlanFeature.MarketingTools) && currentUser.HasActivePlan;
+
+    string GetStatusText(int status) => status switch
+    {
+        0 => "معلق الدفع",
+        1 => "نشط",
+        2 => "منتهي",
+        3 => "ملغي",
+        _ => "غير معروف"
+    };
+
+    string GetStatusClass(int status) => status switch
+    {
+        0 => "badge-warning",
+        1 => "badge-success",
+        2 => "badge-info",
+        3 => "badge-danger",
+        _ => "badge-info"
+    };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="page-title mb-0">أدوات تسويقية</h2>
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+            </svg>
+        </span>
+        الخدمات الإعلانية
+    </h2>
+    @if (canBuy)
+    {
+        <div class="page-header-actions">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buyAdModal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                شراء إعلان جديد
+            </button>
+        </div>
+    }
 </div>
 
-<div class="table-card" style="padding: 24px;">
-    <p style="color: var(--text-muted);">سيتم إضافة محتوى صفحة الأدوات التسويقية قريباً</p>
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+@if (!canBuy)
+{
+    <div class="detail-card upsell-card">
+        <div class="upsell-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"/>
+            </svg>
+        </div>
+        <div class="upsell-body">
+            <h4 class="upsell-title">الخدمات الإعلانية متاحة في الباقات المتقدمة</h4>
+            <p class="upsell-text">قم بترقية اشتراكك للاستفادة من إعلاناتك في التطبيق وزيادة وصول العيادة للعملاء.</p>
+            <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary">ترقية الباقة</a>
+        </div>
+    </div>
+}
+
+@if (packages.Count > 0)
+{
+    <div class="packages-row">
+        @foreach (var pkg in packages)
+        {
+            <div class="package-mini-card">
+                <div class="package-mini-name">@(pkg.NameAr ?? pkg.Name)</div>
+                <div class="package-mini-desc">@(pkg.DescriptionAr ?? pkg.Description)</div>
+                <div class="package-mini-price">@pkg.Price.ToString("N2") ج.م / @pkg.DurationDays يوم</div>
+            </div>
+        }
+    </div>
+}
+
+<!-- My Ads -->
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">
+            <span class="subtitle-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                </svg>
+            </span>
+            إعلاناتي
+        </h3>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>الباقة</th>
+                    <th>المدة</th>
+                    <th>المبلغ</th>
+                    <th>بداية</th>
+                    <th>نهاية</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ads.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <p>لا توجد إعلانات بعد. ابدأ بشراء إعلانك الأول لظهور عيادتك في التطبيق.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var ad in ads)
+                    {
+                        <tr>
+                            <td class="text-md-medium">@ad.PackageNameAr</td>
+                            <td class="text-md">@ad.DurationDays يوم</td>
+                            <td class="text-md">@ad.Amount.ToString("N2") ج.م</td>
+                            <td class="text-md">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            <td class="text-md">@(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            <td><span class="badge @GetStatusClass(ad.Status)">@GetStatusText(ad.Status)</span></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
+
+@if (canBuy)
+{
+    <!-- Buy Ad Modal -->
+    <div class="modal fade" id="buyAdModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header-custom">
+                    <h5 class="modal-title">شراء إعلان جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body-custom">
+                    @if (packages.Count == 0)
+                    {
+                        <div class="empty-state"><p>لا توجد باقات متاحة حالياً. حاول لاحقاً.</p></div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">الباقة</label>
+                                    <select id="buyPackage" class="form-select" onchange="onBuyPackageChange()">
+                                        <option value="">اختر الباقة</option>
+                                        @foreach (var pkg in packages)
+                                        {
+                                            <option value="@pkg.Id" data-duration="@pkg.DurationDays" data-price="@pkg.Price">@(pkg.NameAr ?? pkg.Name) (@pkg.DurationDays يوم)</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">المدة (أيام)</label>
+                                    <select id="buyDuration" class="form-select" onchange="updateBuyPrice()" disabled>
+                                        <option value="">اختر المدة</option>
+                                    </select>
+                                    <p class="form-hint">المدة تكون مضاعفاً صحيحاً لمدة الباقة.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">السعر المقدر</label>
+                            <input type="text" id="buyPrice" class="form-input" readonly placeholder="0.00 ج.م" />
+                        </div>
+                        <p class="form-hint">يتم الدفع عبر بوابة Paymob، ويظهر إعلانك فور اكتمال الدفع.</p>
+                    }
+                </div>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="buySubmitBtn">إتمام الطلب والدفع</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        var MAX_DURATION_MULTIPLES = 12;
+        var hasPendingAds = @(ads.Any(a => a.Status == 0) ? "true" : "false");
+
+        function fillDurationOptions(opt) {
+            var durationSelect = document.getElementById('buyDuration');
+            durationSelect.innerHTML = '';
+            if (!opt || !opt.value) {
+                durationSelect.disabled = true;
+                document.getElementById('buyPrice').value = '';
+                return;
+            }
+            var baseDays = parseInt(opt.getAttribute('data-duration'));
+            for (var i = 1; i <= MAX_DURATION_MULTIPLES; i++) {
+                var days = baseDays * i;
+                var option = document.createElement('option');
+                option.value = days;
+                option.textContent = days + ' يوم';
+                if (i === 1) option.selected = true;
+                durationSelect.appendChild(option);
+            }
+            durationSelect.disabled = false;
+            updateBuyPrice();
+        }
+
+        function onBuyPackageChange() {
+            var select = document.getElementById('buyPackage');
+            fillDurationOptions(select.options[select.selectedIndex]);
+        }
+
+        function updateBuyPrice() {
+            var select = document.getElementById('buyPackage');
+            var opt = select.options[select.selectedIndex];
+            var duration = parseInt(document.getElementById('buyDuration').value);
+            if (opt && opt.value && duration > 0) {
+                var baseDays = parseInt(opt.getAttribute('data-duration'));
+                var price = parseFloat(opt.getAttribute('data-price'));
+                var amount = price * (duration / baseDays);
+                document.getElementById('buyPrice').value = amount.toFixed(2) + ' ج.م';
+            } else {
+                document.getElementById('buyPrice').value = '';
+            }
+        }
+
+        function pollAdActivation() {
+            if (!hasPendingAds) return;
+            var attempts = 0;
+            var maxAttempts = 5;
+            var timer = setInterval(function () {
+                attempts++;
+                fetch('/Clinic/GetMyAdsJson', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    if (!result.success || !result.data) return;
+                    var pending = result.data.filter(function (a) { return a.status === 0; }).length;
+                    if (pending === 0) {
+                        clearInterval(timer);
+                        showSuccessModal('تم تأكيد الدفع وتفعيل إعلانك بنجاح. سيظهر في التطبيق الآن.');
+                        setTimeout(function () { location.reload(); }, 2000);
+                    }
+                })
+                .catch(function () { /* silent — retry on next tick */ });
+                if (attempts >= maxAttempts) clearInterval(timer);
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var durationSelect = document.getElementById('buyDuration');
+            if (durationSelect) {
+                var packageSelect = document.getElementById('buyPackage');
+                if (packageSelect.options.length > 1) {
+                    fillDurationOptions(packageSelect.options[packageSelect.selectedIndex]);
+                }
+            }
+
+            var buyBtn = document.getElementById('buySubmitBtn');
+            if (buyBtn) {
+                buyBtn.addEventListener('click', function () {
+                    var packageSelect = document.getElementById('buyPackage');
+                    var opt = packageSelect.options[packageSelect.selectedIndex];
+                    var packageId = opt ? opt.value : '';
+                    var duration = parseInt(document.getElementById('buyDuration').value);
+
+                    if (!packageId) { showErrorModal('يرجى اختيار الباقة'); return; }
+                    if (!duration || duration <= 0) { showErrorModal('يرجى اختيار المدة بالأيام'); return; }
+                    var baseDays = parseInt(opt.getAttribute('data-duration'));
+                    if (duration % baseDays !== 0) { showErrorModal('المدة يجب أن تكون مضاعفاً صحيحاً لمدة الباقة'); return; }
+
+                    buyBtn.disabled = true;
+                    buyBtn.textContent = 'جاري إنشاء الطلب...';
+
+                    fetch('/Clinic/CreateAdOrder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            adPackageId: packageId,
+                            durationDays: duration
+                        })
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (result) {
+                        if (result.success && result.data && result.data.paymobRedirectUrl) {
+                            showSuccessModal('تم إنشاء الطلب بنجاح، جارِ فتح بوابة الدفع...');
+                            window.open(result.data.paymobRedirectUrl, '_blank');
+                            setTimeout(function () { location.reload(); }, 2000);
+                        } else if (result.success) {
+                            showSuccessModal(result.message || 'تم إنشاء الطلب بنجاح');
+                        } else {
+                            buyBtn.disabled = false;
+                            buyBtn.textContent = 'إتمام الطلب والدفع';
+                            showErrorModal(result.message || 'حدث خطأ أثناء إنشاء الطلب');
+                        }
+                    })
+                    .catch(function () {
+                        buyBtn.disabled = false;
+                        buyBtn.textContent = 'إتمام الطلب والدفع';
+                        showErrorModal('عذراً، حدث خطأ أثناء إنشاء الطلب');
+                    });
+                });
+            }
+
+            pollAdActivation();
+        });
+    </script>
+}

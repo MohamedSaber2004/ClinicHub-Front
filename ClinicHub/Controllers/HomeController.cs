@@ -217,9 +217,10 @@ public class HomeController : BaseController
             return View();
         }
 
-        public IActionResult PaymentResult(bool success = false)
+        public IActionResult PaymentResult(bool success = false, string? type = null)
         {
             ViewBag.PaymentSuccess = success;
+            ViewBag.PaymentType = type;
             return View();
         }
 

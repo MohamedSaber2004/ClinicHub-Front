@@ -24,6 +24,9 @@ namespace ClinicHub.Services.Routes.Api
             AdminDashboard = new AdminDashboardRoutes(BaseRoute);
             DoctorDashboard = new DoctorDashboardRoutes(BaseRoute);
             ClinicDashboard = new ClinicDashboardRoutes(BaseRoute);
+            AdminPayments = new AdminPaymentsRoutes(BaseRoute);
+            AdminAds = new AdminAdsRoutes(BaseRoute);
+            Ads = new AdsRoutes(BaseRoute);
         }
 
         public static StaffDashboardRoutes StaffDashboard { get; private set; } = null!;
@@ -41,6 +44,9 @@ namespace ClinicHub.Services.Routes.Api
         public static AdminDashboardRoutes AdminDashboard { get; private set; } = null!;
         public static DoctorDashboardRoutes DoctorDashboard { get; private set; } = null!;
         public static ClinicDashboardRoutes ClinicDashboard { get; private set; } = null!;
+        public static AdminPaymentsRoutes AdminPayments { get; private set; } = null!;
+        public static AdminAdsRoutes AdminAds { get; private set; } = null!;
+        public static AdsRoutes Ads { get; private set; } = null!;
 
         public class AuthRoutes
         {
@@ -248,6 +254,7 @@ namespace ClinicHub.Services.Routes.Api
             public string UpdatePlan(Guid id) => $"{AdminRoute}/plans/{id}";
             public string DeletePlan(Guid id) => $"{AdminRoute}/plans/{id}";
             public string ListSubscriptions => $"{DashboardRoute}/subscriptions";
+            public string CreateSubscription => $"{DashboardRoute}/subscriptions";
             public string RevokeSubscription(Guid id) => $"{DashboardRoute}/subscriptions/{id}/revoke";
         }
 
@@ -297,6 +304,53 @@ namespace ClinicHub.Services.Routes.Api
             public string Bookings => $"{_baseRoute}/bookings";
             public string AcceptBooking => $"{_baseRoute}/bookings/accept";
             public string RejectBooking => $"{_baseRoute}/bookings/reject";
+        }
+
+        public class AdminPaymentsRoutes
+        {
+            private readonly string _baseRoute;
+            public AdminPaymentsRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/admin/payments";
+            }
+
+            public string List => $"{_baseRoute}";
+            public string Stats => $"{_baseRoute}/stats";
+            public string Detail(Guid id) => $"{_baseRoute}/{id}";
+            public string Manual => $"{_baseRoute}/manual";
+            public string Refund(Guid id) => $"{_baseRoute}/{id}/refund";
+        }
+
+        public class AdminAdsRoutes
+        {
+            private readonly string _baseRoute;
+            public AdminAdsRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/admin/ads";
+            }
+
+            public string List => $"{_baseRoute}";
+            public string EligibleClinics => $"{_baseRoute}/eligible-clinics";
+            public string Packages => $"{_baseRoute}/packages";
+            public string Package(Guid id) => $"{_baseRoute}/packages/{id}";
+            public string Orders => $"{_baseRoute}/orders";
+            public string Deactivate(Guid id) => $"{_baseRoute}/{id}/deactivate";
+        }
+
+        public class AdsRoutes
+        {
+            private readonly string _apiBase;
+            private readonly string _baseRoute;
+            public AdsRoutes(string baseRoute)
+            {
+                _apiBase = baseRoute;
+                _baseRoute = $"{baseRoute}/ads";
+            }
+
+            public string MyAds(Guid clinicId) => $"{_apiBase}/clinics/{clinicId}/ads";
+            public string CreateOrder(Guid clinicId) => $"{_apiBase}/clinics/{clinicId}/ads/orders";
+            public string Packages => $"{_baseRoute}/packages";
+            public string PublicActive => $"{_apiBase}/public/ads/active";
         }
     }
 }

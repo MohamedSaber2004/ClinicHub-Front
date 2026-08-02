@@ -24,6 +24,8 @@ namespace ClinicHub.Controllers
         private readonly IClinicService _clinicService;
         private readonly IAuthService _authService;
         private readonly IOptions<GoogleMapsOptions> _googleMapsOptions;
+        private readonly IAdService _adService;
+        private readonly IClinicDashboardService _clinicDashboardService;
 
         public ClinicController(
             ISubscriptionService subscriptionService,
@@ -35,7 +37,9 @@ namespace ClinicHub.Controllers
             IAttachmentService attachmentService,
             IClinicService clinicService,
             IAuthService authService,
-            IOptions<GoogleMapsOptions> googleMapsOptions)
+            IOptions<GoogleMapsOptions> googleMapsOptions,
+            IAdService adService,
+            IClinicDashboardService clinicDashboardService)
         {
             _subscriptionService = subscriptionService;
             _planService = planService;
@@ -47,6 +51,8 @@ namespace ClinicHub.Controllers
             _clinicService = clinicService;
             _authService = authService;
             _googleMapsOptions = googleMapsOptions;
+            _adService = adService;
+            _clinicDashboardService = clinicDashboardService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -112,9 +118,73 @@ namespace ClinicHub.Controllers
             await next();
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            try
+            {
+                var statsTask = _clinicDashboardService.GetStatsAsync();
+                var pendingTask = _clinicDashboardService.GetBookingsAsync("pending", 1, 5);
+
+                await Task.WhenAll(statsTask, pendingTask);
+
+                ViewBag.DashboardStats = statsTask.Result;
+                ViewBag.PendingBookings = pendingTask.Result.Items;
+                ViewBag.PendingCount = pendingTask.Result.TotalCount;
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = ex.Message;
+                ViewBag.DashboardStats = null;
+                ViewBag.PendingBookings = new List<ClinicBookingDto>();
+                ViewBag.PendingCount = 0;
+            }
+            catch (Exception)
+            {
+                ViewBag.DashboardStats = null;
+                ViewBag.PendingBookings = new List<ClinicBookingDto>();
+                ViewBag.PendingCount = 0;
+            }
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AcceptBooking(Guid id)
+        {
+            try
+            {
+                var result = await _clinicDashboardService.AcceptBookingAsync(id);
+                return Json(new { success = true, data = result, message = "تم قبول الحجز وتم إرسال رابط الدفع للمريض" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectBooking(Guid id, [FromBody] ClinicRejectRequest? body)
+        {
+            try
+            {
+                var result = await _clinicDashboardService.RejectBookingAsync(id, body?.Reason);
+                return Json(new { success = true, data = result, message = "تم رفض الحجز بنجاح" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
 
         public IActionResult Appointments()
@@ -612,9 +682,86 @@ namespace ClinicHub.Controllers
             }
         }
 
-        public IActionResult Marketing()
+        public async Task<IActionResult> Marketing()
         {
+            var clinicId = CurrentUser?.ClinicId ?? Guid.Empty;
+            ViewBag.Ads = new List<AdDto>();
+            ViewBag.Packages = new List<AdPackageDto>();
+
+            try
+            {
+                ViewBag.Ads = await _adService.GetMyAdsAsync(clinicId) ?? new List<AdDto>();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+
+            try
+            {
+                ViewBag.Packages = await _adService.GetPackagesAsync() ?? new List<AdPackageDto>();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage ??= ex.Message;
+            }
+
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateAdOrder([FromBody] CreateAdsOrderRequest request)
+        {
+            var clinicId = CurrentUser?.ClinicId ?? Guid.Empty;
+            try
+            {
+                if (clinicId == Guid.Empty || request == null || request.AdPackageId == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "بيانات طلب الإعلان غير صالحة" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.ReturnUrl))
+                {
+                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult?type=ads";
+                }
+
+                var result = await _adService.CreateOrderAsync(clinicId, request);
+                return Json(new { success = true, message = "تم إنشاء طلب الإعلان بنجاح", data = result });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetMyAdsJson()
+        {
+            var clinicId = CurrentUser?.ClinicId ?? Guid.Empty;
+            try
+            {
+                if (clinicId == Guid.Empty)
+                    return Json(new { success = false, message = "معرف العيادة غير متوفر" });
+
+                var ads = await _adService.GetMyAdsAsync(clinicId) ?? new List<AdDto>();
+                return Json(new { success = true, data = ads });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
 
         public IActionResult Support()
@@ -893,4 +1040,9 @@ namespace ClinicHub.Controllers
             }
         }
     }
+}
+
+public class ClinicRejectRequest
+{
+    public string? Reason { get; set; }
 }

@@ -8,7 +8,7 @@ namespace ClinicHub.Services.Contracts
         Task<StaffDashboardStatsDto> GetStatsAsync();
         Task<PagginatedResult<StaffAppointmentDto>> GetAppointmentsAsync(string? status = null, string? date = null, string? patientName = null, int pageNumber = 1, int pageSize = 10);
         Task<List<StaffQueueItemDto>> GetQueueAsync();
-        Task<bool> ApproveAppointmentAsync(string id);
+        Task<AppointmentAcceptResponseDto?> ApproveAppointmentAsync(string id);
         Task<bool> RejectAppointmentAsync(string id, string? reason = null);
         Task<bool> CheckInPatientAsync(string id);
         Task<bool> CompleteAppointmentAsync(string id);

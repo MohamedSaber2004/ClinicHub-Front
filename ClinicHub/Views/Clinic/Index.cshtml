@@ -1,14 +1,19 @@
 @using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "إدارة العيادات - Doctory";
     Layout = "_ClinicLayout";
     var _user = ViewBag.CurrentUser as CurrentUserContext;
+    var dashStats = ViewBag.DashboardStats as ClinicDashboardStatsDto;
+    var pendingBookings = ViewBag.PendingBookings as IReadOnlyCollection<ClinicBookingDto> ?? new List<ClinicBookingDto>();
+    int pendingCount = ViewBag.PendingCount ?? 0;
+    string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="page-title mb-0">لوحة إدارة وتشغيل العيادات اليومي</h2>
     <div class="text-muted" style="font-size: 14px; font-weight: 500;">
-        <i class="bi bi-clock-history me-1"></i> آخر تحديث: اليوم، 05:48 م
+        <i class="bi bi-clock-history me-1"></i> آخر تحديث: @DateTime.Now.ToString("hh:mm tt")
     </div>
 </div>
 
@@ -45,14 +50,12 @@
 
 <!-- Statistics Grid -->
 <div class="stats-grid">
-    <!-- Today's Visits -->
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">45</span>
+            <span class="stat-value">@(dashStats?.TodayVisits ?? 0)</span>
             <span class="stat-label">زيارات اليوم</span>
         </div>
         <div class="stat-icon-wrapper icon-wrapper icon-wrapper--blue">
-            <!-- Calendar SVG -->
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
                 <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
@@ -62,28 +65,24 @@
         </div>
     </div>
 
-    <!-- Active Clinics -->
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">6</span>
-            <span class="stat-label">العيادات النشطة</span>
+            <span class="stat-value">@(dashStats?.WeeklyVisits ?? 0)</span>
+            <span class="stat-label">زيارات الأسبوع</span>
         </div>
         <div class="stat-icon-wrapper icon-wrapper icon-wrapper--primary">
-            <!-- Clinic SVG -->
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z" fill="currentColor"/>
             </svg>
         </div>
     </div>
 
-    <!-- Patients in Queue -->
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">14</span>
-            <span class="stat-label">مرضى في الانتظار</span>
+            <span class="stat-value">@(dashStats?.MonthlyVisits ?? 0)</span>
+            <span class="stat-label">زيارات الشهر</span>
         </div>
         <div class="stat-icon-wrapper icon-wrapper icon-wrapper--amber">
-            <!-- Clock/Hourglass SVG -->
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
                 <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -91,112 +90,204 @@
         </div>
     </div>
 
-    <!-- Completed Appointments -->
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">28</span>
-            <span class="stat-label">حالات تم علاجها</span>
+            <span class="stat-value">@(dashStats?.MonthlyIncome.ToString("N0") ?? "0") ج.م</span>
+            <span class="stat-label">إيرادات الشهر</span>
         </div>
         <div class="stat-icon-wrapper icon-wrapper icon-wrapper--green">
-            <!-- Check Circle SVG -->
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
                 <path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
             </svg>
         </div>
     </div>
+
+    @if (pendingCount > 0)
+    {
+        <div class="stat-card stat-card--highlight">
+            <div class="stat-info">
+                <span class="stat-value">@pendingCount</span>
+                <span class="stat-label">طلبات تنتظر القبول</span>
+            </div>
+            <div class="stat-icon-wrapper icon-wrapper icon-wrapper--amber">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            </div>
+        </div>
+    }
 </div>
 
-<!-- Dashboard grid: Tables and Quick actions -->
-<div class="dashboard-tables-grid">
-    <!-- Today's Appointments -->
-    <div class="table-card">
-        <div class="table-card-header d-flex justify-content-between align-items-center">
-            <h3 class="table-card-title mb-0">مواعيد العيادات اليوم</h3>
-            <a href="@ClinicRoutes.Pages.Appointments()" class="btn btn-sm btn-link" style="color: var(--primary-color); text-decoration: none; font-size: 13px; font-weight: 600;">عرض الكل <i class="bi bi-arrow-left"></i></a>
-        </div>
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>المريض</th>
-                        <th>العيادة</th>
-                        <th>الوقت</th>
-                        <th>الحالة</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>عزير بن محمد</strong></td>
-                        <td>عيادة القلب</td>
-                        <td>10:00 ص</td>
-                        <td><span class="badge badge-success">تم الكشف</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>حارس عبد الكريم</strong></td>
-                        <td>عيادة الأعصاب</td>
-                        <td>11:30 ص</td>
-                        <td><span class="badge badge-warning">قيد الانتظار</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>حمزة الرفاعي</strong></td>
-                        <td>عيادة النساء والولادة</td>
-                        <td>12:15 م</td>
-                        <td><span class="badge badge-info">قيد الكشف</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>سارة أحمد</strong></td>
-                        <td>عيادة الجلدية</td>
-                        <td>01:00 م</td>
-                        <td><span class="badge badge-warning">قيد الانتظار</span></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+<!-- Pending Booking Requests -->
+<div class="table-card" id="pendingBookingsCard">
+    <div class="table-card-header">
+        <h3 class="table-card-title">
+            <span class="subtitle-icon"><i class="bi bi-bell-fill"></i></span>
+            طلبات الحجز المعلقة
+            @if (pendingCount > 0)
+            {
+                <span class="badge badge-warning ms-2">@pendingCount</span>
+            }
+        </h3>
+        <a href="@ClinicRoutes.Pages.Appointments()" class="btn btn-sm btn-secondary">عرض الكل</a>
     </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>المريض</th>
+                    <th>الطبيب</th>
+                    <th>التاريخ</th>
+                    <th>الوقت</th>
+                    <th>نوع الحجز</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="pendingBookingsBody">
+                @if (pendingBookings.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="table-empty">لا توجد طلبات حجز تنتظر الموافقة</td>
+                    </tr>
+                }
+                @foreach (var b in pendingBookings)
+                {
+                    <tr id="booking-@b.Id">
+                        <td>
+                            <div class="table-user">
+                                <span class="table-avatar">@Initial(b.PatientName)</span>
+                                <span class="table-user-name">@b.PatientName</span>
+                            </div>
+                        </td>
+                        <td>@b.DoctorName</td>
+                        <td>@b.RequestedDate</td>
+                        <td>@b.RequestedTime</td>
+                        <td>@(b.AppointmentType == "home" ? "منزلي" : "في العيادة")</td>
+                        <td class="table-actions">
+                            <button class="btn btn-sm btn-outline-success btn-accept-booking" data-id="@b.Id" title="قبول — سيتم إرسال رابط الدفع للمريض">
+                                <i class="bi bi-check-lg"></i> قبول
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-reject-booking" data-id="@b.Id" title="رفض">
+                                <i class="bi bi-x-lg"></i> رفض
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    <!-- Active Clinics Status -->
+<!-- Dashboard grid: Today's overview -->
+<div class="dashboard-tables-grid">
+    <!-- Today's Stats Summary -->
     <div class="table-card">
         <div class="table-card-header">
-            <h3 class="table-card-title mb-0">حالة العيادات والتشغيل الفعلي</h3>
+            <h3 class="table-card-title mb-0">ملخص الإيرادات</h3>
         </div>
         <div class="table-responsive">
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th>العيادة</th>
-                        <th>الطبيب المتواجد</th>
-                        <th>رقم الغرفة</th>
-                        <th>الحالة التشغيلية</th>
+                        <th>الفترة</th>
+                        <th>الزيارات</th>
+                        <th>الإيرادات</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>عيادة القلب</td>
-                        <td><strong>د. سمير المنشاوي</strong></td>
-                        <td>غرفة 101</td>
-                        <td><span class="badge badge-success">مفتوح</span></td>
+                        <td><strong>اليوم</strong></td>
+                        <td>@(dashStats?.TodayVisits ?? 0)</td>
+                        <td>@(dashStats?.TodayIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
-                        <td>عيادة الجلدية</td>
-                        <td><strong>د. عمار السليمان</strong></td>
-                        <td>غرفة 102</td>
-                        <td><span class="badge badge-success">مفتوح</span></td>
+                        <td><strong>الأسبوع</strong></td>
+                        <td>@(dashStats?.WeeklyVisits ?? 0)</td>
+                        <td>@(dashStats?.WeeklyIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
-                        <td>عيادة الأعصاب</td>
-                        <td><strong>د. عبد الله الرويلي</strong></td>
-                        <td>غرفة 103</td>
-                        <td><span class="badge badge-warning">في استراحة</span></td>
+                        <td><strong>الشهر</strong></td>
+                        <td>@(dashStats?.MonthlyVisits ?? 0)</td>
+                        <td>@(dashStats?.MonthlyIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
-                        <td>عيادة العظام</td>
-                        <td><strong>د. خالد العتيبي</strong></td>
-                        <td>غرفة 104</td>
-                        <td><span class="badge badge-success">مفتوح</span></td>
+                        <td><strong>السنة</strong></td>
+                        <td>@(dashStats?.YearlyVisits ?? 0)</td>
+                        <td>@(dashStats?.YearlyIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <!-- Quick Actions -->
+    <div class="table-card">
+        <div class="table-card-header">
+            <h3 class="table-card-title mb-0">روابط سريعة</h3>
+        </div>
+        <div class="p-3">
+            <a href="@ClinicRoutes.Pages.Appointments()" class="btn btn-secondary btn-sm mb-2" style="width:100%; display:block;">
+                <i class="bi bi-calendar3 me-1"></i> إدارة المواعيد
+            </a>
+            <a href="@ClinicRoutes.Pages.Doctors()" class="btn btn-secondary btn-sm mb-2" style="width:100%; display:block;">
+                <i class="bi bi-person-badge me-1"></i> إدارة الأطباء
+            </a>
+            <a href="@ClinicRoutes.Pages.Staff()" class="btn btn-secondary btn-sm mb-2" style="width:100%; display:block;">
+                <i class="bi bi-people me-1"></i> إدارة الموظفين
+            </a>
+            <a href="@ClinicRoutes.Pages.Settings()" class="btn btn-secondary btn-sm" style="width:100%; display:block;">
+                <i class="bi bi-gear me-1"></i> إعدادات العيادة
+            </a>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).on('click', '.btn-accept-booking', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            showConfirmModal('بعد القبول سيتم إرسال رابط الدفع للمريض لإتمام الدفع. هل تريد المتابعة؟', function () {
+                $.ajax({
+                    url: '/Clinic/AcceptBooking',
+                    method: 'POST',
+                    data: { id: id },
+                    success: function (res) {
+                        if (res && res.success) {
+                            showSuccessModal('تم قبول الحجز وتم إرسال رابط الدفع للمريض');
+                            $('#booking-' + id).fadeOut(400, function () { $(this).remove(); });
+                        } else {
+                            showErrorModal((res && res.message) || 'حدث خطأ أثناء القبول');
+                        }
+                    },
+                    error: function (xhr) {
+                        showErrorModal((xhr.responseJSON && xhr.responseJSON.message) || 'حدث خطأ أثناء القبول');
+                    }
+                });
+            });
+        });
+
+        $(document).on('click', '.btn-reject-booking', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            var reason = prompt('يرجى إدخال سبب الرفض (اختياري):');
+            if (reason === null) return;
+            $.ajax({
+                url: '/Clinic/RejectBooking?id=' + id,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ reason: reason || '' }),
+                success: function (res) {
+                    if (res && res.success) {
+                        showSuccessModal('تم رفض الحجز');
+                        $('#booking-' + id).fadeOut(400, function () { $(this).remove(); });
+                    } else {
+                        showErrorModal((res && res.message) || 'حدث خطأ أثناء الرفض');
+                    }
+                },
+                error: function (xhr) {
+                    showErrorModal((xhr.responseJSON && xhr.responseJSON.message) || 'حدث خطأ أثناء الرفض');
+                }
+            });
+        });
+    </script>
+}

@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "نتيجة الدفع - Doctory";
     var success = ViewBag.PaymentSuccess as bool? ?? false;
+    var isAds = (ViewBag.PaymentType as string) == "ads";
 }
 
 <section class="payment-result-section">
@@ -13,15 +14,40 @@
                         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
                     </svg>
                 </div>
-                <h1 class="text-h1">تم تفعيل الاشتراك بنجاح</h1>
-                <p class="result-desc">
-                    شكراً لك! تم تفعيل اشتراك عيادتك بنجاح. يمكنك الآن الاستمتاع بجميع ميزات المنصة.
-                </p>
+                @if (isAds)
+                {
+                    <h1 class="text-h1">تم دفع الإعلان بنجاح</h1>
+                    <p class="result-desc">
+                        شكراً لك! تم تأكيد عملية دفع الإعلان، وسيظهر إعلانك في التطبيق خلال لحظات قليلة.
+                    </p>
+                }
+                else
+                {
+                    <h1 class="text-h1">تم تفعيل الاشتراك بنجاح</h1>
+                    <p class="result-desc">
+                        شكراً لك! تم تفعيل اشتراك عيادتك بنجاح. يمكنك الآن الاستمتاع بجميع ميزات المنصة.
+                    </p>
+                }
                 <div class="result-redirect-notice">
-                    سيتم العودة للرئيسية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...
+                    @if (isAds)
+                    {
+                        <span>سيتم تحويلك إلى صفحة الخدمات الإعلانية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...</span>
+                    }
+                    else
+                    {
+                        <span>سيتم العودة للرئيسية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...</span>
+                    }
                 </div>
                 <div class="result-actions">
-                    <a href="/" target="_top" class="btn btn-primary btn-lg">العودة للرئيسية الآن</a>
+                    @if (isAds)
+                    {
+                        <a href="@ClinicRoutes.Pages.Marketing()" target="_top" class="btn btn-primary btn-lg">الخدمات الإعلانية</a>
+                        <a href="/" target="_top" class="btn btn-secondary btn-lg">العودة للرئيسية</a>
+                    }
+                    else
+                    {
+                        <a href="/" target="_top" class="btn btn-primary btn-lg">العودة للرئيسية الآن</a>
+                    }
                 </div>
             }
             else
@@ -31,16 +57,41 @@
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="white"/>
                     </svg>
                 </div>
-                <h1 class="text-h1">فشلت عملية الدفع</h1>
-                <p class="result-desc">
-                    حدث خطأ أثناء معالجة عملية الدفع. يرجى المحاولة مرة أخرى أو اختيار باقة مختلفة.
-                </p>
+                @if (isAds)
+                {
+                    <h1 class="text-h1">فشلت عملية دفع الإعلان</h1>
+                    <p class="result-desc">
+                        حدث خطأ أثناء معالجة عملية دفع الإعلان. يمكنك المحاولة مرة أخرى من صفحة الخدمات الإعلانية.
+                    </p>
+                }
+                else
+                {
+                    <h1 class="text-h1">فشلت عملية الدفع</h1>
+                    <p class="result-desc">
+                        حدث خطأ أثناء معالجة عملية الدفع. يرجى المحاولة مرة أخرى أو اختيار باقة مختلفة.
+                    </p>
+                }
                 <div class="result-redirect-notice">
-                    سيتم العودة للرئيسية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...
+                    @if (isAds)
+                    {
+                        <span>سيتم تحويلك إلى صفحة الخدمات الإعلانية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...</span>
+                    }
+                    else
+                    {
+                        <span>سيتم العودة للرئيسية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...</span>
+                    }
                 </div>
-                <div class="result-actions" style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
-                    <a href="/" target="_top" class="btn btn-secondary btn-lg">العودة للرئيسية</a>
-                    <a href="@HomeRoutes.Pages.Subscriptions()" target="_top" class="btn btn-primary btn-lg">عودة للباقات</a>
+                <div class="result-actions result-actions--row">
+                    @if (isAds)
+                    {
+                        <a href="@ClinicRoutes.Pages.Marketing()" target="_top" class="btn btn-primary btn-lg">العودة للخدمات الإعلانية</a>
+                        <a href="/" target="_top" class="btn btn-secondary btn-lg">العودة للرئيسية</a>
+                    }
+                    else
+                    {
+                        <a href="/" target="_top" class="btn btn-secondary btn-lg">العودة للرئيسية</a>
+                        <a href="@HomeRoutes.Pages.Subscriptions()" target="_top" class="btn btn-primary btn-lg">عودة للباقات</a>
+                    }
                 </div>
             }
         </div>
@@ -52,23 +103,25 @@
         (function() {
             var seconds = 5;
             var timerEl = document.getElementById('countdownTimer');
+            var isAds = @(isAds.ToString().ToLower());
             
-            function redirectToHome() {
+            function redirectTo() {
                 // Solution 3: Dynamic multi-environment base URL resolution
                 var currentOrigin = window.location.origin;
                 if (!currentOrigin) {
                     currentOrigin = window.location.protocol + "//" + window.location.host;
                 }
                 var baseUrl = currentOrigin + '/';
+                var target = isAds ? baseUrl + 'Clinic/Marketing' : baseUrl;
 
                 if (window.self !== window.top) {
                     try {
-                        window.top.location.href = baseUrl;
+                        window.top.location.href = target;
                     } catch (e) {
-                        window.location.href = baseUrl;
+                        window.location.href = target;
                     }
                 } else {
-                    window.location.href = baseUrl;
+                    window.location.href = target;
                 }
             }
 
@@ -80,11 +133,11 @@
                     }
                     if (seconds <= 0) {
                         clearInterval(interval);
-                        redirectToHome();
+                        redirectTo();
                     }
                 }, 1000);
             } else {
-                setTimeout(redirectToHome, 5000);
+                setTimeout(redirectTo, 5000);
             }
         })();
     </script>
