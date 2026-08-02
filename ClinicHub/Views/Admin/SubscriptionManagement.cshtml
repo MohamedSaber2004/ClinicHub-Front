@@ -54,9 +54,11 @@
                         var statusText = sub.Status switch { 0 => "نشط", 1 => "ملغي", 2 => "منتهي", 3 => "ملغي من الإدارة", _ => "غير معروف" };
                         var statusClass = sub.Status switch { 0 => "badge-success", 1 => "badge-warning", 2 => "badge-danger", 3 => "badge-danger", _ => "badge-info" };
                         var periodText = sub.Period == 0 ? "شهري" : "سنوي";
+                        var currentPlan = plans.FirstOrDefault(p => p.Id == sub.PlanId);
+                        var planNameText = !string.IsNullOrWhiteSpace(currentPlan?.NameAr) ? currentPlan.NameAr : sub.PlanName;
                         <tr>
                             <td class="text-md-medium">@sub.ClinicName</td>
-                            <td><span class="badge badge-info">@sub.PlanName</span></td>
+                            <td><span class="badge badge-info">@planNameText</span></td>
                             <td class="text-md">@periodText</td>
                             <td class="text-md">@sub.Amount.ToString("N0") ج.م</td>
                             <td class="text-md">@sub.StartDate.ToString("yyyy-MM-dd")</td>

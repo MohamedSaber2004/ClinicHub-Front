@@ -1,5 +1,7 @@
 @using ClinicHub.Data
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Options
+@inject ClinicHub.Services.Contracts.IAttachmentUrlResolver _attachmentUrlResolver
 @{
     ViewData["Title"] = "إدارة الموظفين - Doctory";
     Layout = "_ClinicLayout";
@@ -8,6 +10,7 @@
     var pagination = ViewBag.Pagination as PagginatedResult<StaffDto>;
     var searchTerm = ViewBag.SearchTerm as string;
     var activeFilter = ViewBag.ActiveFilter as bool?;
+    var attachmentBaseUrl = _attachmentUrlResolver.Resolve("x").Replace("/files/x", "");
 }
 
 <div class="page-header">
@@ -82,6 +85,7 @@
             <table class="custom-table">
                 <thead>
                     <tr>
+                        <th>الصورة</th>
                         <th>الاسم</th>
                         <th>البريد الإلكتروني</th>
                         <th>رقم الهاتف</th>
@@ -94,6 +98,21 @@
                     @foreach (var staff in staffList)
                     {
                         <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="staff-card-avatar" style="width:40px;height:40px;flex-shrink:0;">
+                                        @if (!string.IsNullOrEmpty(staff.Image))
+                                        {
+                                            <img src="@_attachmentUrlResolver.Resolve(staff.Image)" alt="@staff.FullName" style="width:40px;height:40px;object-fit:cover;border-radius:50%;" />
+                                        }
+                                        else
+                                        {
+                                            <span class="staff-card-initial" style="width:40px;height:40px;font-size:16px;border-radius:50%;">@staff.FullName.Substring(0, 1)</span>
+                                        }
+                                    </div>
+                                    @* <span class="text-xs text-muted" style="white-space:nowrap;" title="@staff.Image">@(!string.IsNullOrEmpty(staff.Image) ? staff.Image : "-")</span> *@
+                                </div>
+                            </td>
                             <td><strong>@staff.FullName</strong></td>
                             <td class="text-md">@staff.Email</td>
                             <td dir="ltr" class="text-start">@staff.PhoneNumber</td>
@@ -120,7 +139,8 @@
                                             data-name="@staff.FullName"
                                             data-email="@staff.Email"
                                             data-phone="@staff.PhoneNumber"
-                                            data-active="@staff.IsActive.ToString().ToLower()">
+                                            data-active="@staff.IsActive.ToString().ToLower()"
+                                            data-image="@staff.Image">
                                         <i class="bi bi-pencil me-1"></i> تعديل
                                     </button>
                                     <button class="btn btn-sm btn-secondary change-password-staff-btn"
@@ -200,6 +220,19 @@
                         <label class="form-label">كلمة المرور</label>
                         <input type="password" class="form-input form-input-sm w-100" id="createStaffPassword" placeholder="كلمة المرور" required />
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">الصورة الشخصية (اختياري)</label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="createStaffImageInput" accept="image/*" class="form-input form-input-sm w-100" />
+                                <input type="hidden" id="createStaffImage" />
+                                <div id="createStaffImageStatus" class="d-none align-items-center gap-2 mt-2" style="display:none;">
+                                    <img id="createStaffImagePreview" src="" alt="صورة الموظف" style="width:60px;height:60px;object-fit:cover;border-radius:50%;border:1px solid var(--clr-border);" />
+                                    <button type="button" id="removeCreateStaffImageBtn" class="btn btn-sm p-0 border-0 bg-transparent" style="color:var(--clr-danger);font-size:12px;" title="إزالة الصورة">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer modal-footer-custom">
@@ -220,6 +253,8 @@
             <div class="modal-body modal-body-custom">
                 <form id="editStaffForm">
                     <input type="hidden" id="editStaffId" />
+                    <input type="hidden" id="editStaffRemoveImage" value="false" />
+
                     <div class="form-group">
                         <label class="form-label">الاسم الكامل</label>
                         <input type="text" class="form-input form-input-sm w-100" id="editStaffName" placeholder="الاسم الكامل" required />
@@ -227,6 +262,19 @@
                     <div class="form-group">
                         <label class="form-label">رقم الهاتف</label>
                         <input type="text" class="form-input form-input-sm w-100" id="editStaffPhone" placeholder="رقم الهاتف" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الصورة الشخصية (اختياري)</label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="editStaffImageInput" accept="image/*" class="form-input form-input-sm w-100" />
+                            <input type="hidden" id="editStaffImage" />
+                            <div id="editStaffImageStatus" class="d-none align-items-center gap-2 mt-2" style="display:none;">
+                                <img id="editStaffImagePreview" src="" alt="صورة الموظف" style="width:60px;height:60px;object-fit:cover;border-radius:50%;border:1px solid var(--clr-border);" />
+                                <button type="button" id="removeEditStaffImageBtn" class="btn btn-sm p-0 border-0 bg-transparent" style="color:var(--clr-danger);font-size:12px;" title="إزالة الصورة">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">الحالة</label>
@@ -301,6 +349,8 @@
 
 @section Scripts {
     <script>
+        var attachmentBaseUrl = '@attachmentBaseUrl';
+
         function escapeHtml(text) {
             var div = document.createElement('div');
             div.appendChild(document.createTextNode(text));
@@ -318,12 +368,75 @@
             }
         }
 
+        function resetCreateStaffImageStatus() {
+            $('#createStaffImageInput').val('');
+            $('#createStaffImage').val('');
+            $('#createStaffImageStatus').hide().addClass('d-none');
+        }
+
+        function resetEditStaffImageStatus() {
+            $('#editStaffImageInput').val('');
+            $('#editStaffImage').val('');
+            $('#editStaffImageStatus').hide().addClass('d-none');
+        }
+
+        function uploadStaffImage(fileInput, hiddenInput, statusDiv, previewImg) {
+            var file = fileInput[0].files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
+
+            var formData = new FormData();
+            formData.append('file', file);
+
+            $.ajax({
+                url: '/Home/UploadStaffImage',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.success && res.message) {
+                        hiddenInput.val(res.message);
+                        previewImg.attr('src', attachmentBaseUrl + '/files/' + res.message);
+                        statusDiv.show().removeClass('d-none').css('display', 'flex');
+                    } else {
+                        showErrorModal(res.message || 'حدث خطأ أثناء رفع الصورة');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = 'حدث خطأ في الاتصال أثناء رفع الصورة';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        }
+
+        // ---- Create Staff ----
         $('#addStaffBtn').on('click', function () {
             $('#createStaffName').val('');
             $('#createStaffEmail').val('');
             $('#createStaffPhone').val('');
             $('#createStaffPassword').val('');
+            resetCreateStaffImageStatus();
             $('#createStaffModal').modal('show');
+        });
+
+        $('#createStaffImageInput').on('change', function () {
+            uploadStaffImage(
+                $(this),
+                $('#createStaffImage'),
+                $('#createStaffImageStatus'),
+                $('#createStaffImagePreview')
+            );
+        });
+
+        $('#removeCreateStaffImageBtn').on('click', function () {
+            resetCreateStaffImageStatus();
         });
 
         $('#createStaffSubmitBtn').on('click', function () {
@@ -332,6 +445,7 @@
             var email = $('#createStaffEmail').val().trim();
             var phone = $('#createStaffPhone').val().trim();
             var password = $('#createStaffPassword').val();
+            var image = $('#createStaffImage').val().trim();
 
             if (!name) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
             if (!email) { showErrorModal('يرجى إدخال البريد الإلكتروني'); return; }
@@ -340,16 +454,21 @@
 
             setButtonLoading(btn, true);
 
+            var formData = new FormData();
+            formData.append('fullName', name);
+            formData.append('email', email);
+            formData.append('phoneNumber', phone);
+            formData.append('password', password);
+            if (image) {
+                formData.append('image', image);
+            }
+
             $.ajax({
                 url: '@Url.Action("CreateStaff")',
                 type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    fullName: name,
-                    email: email,
-                    phoneNumber: phone,
-                    password: password
-                }),
+                processData: false,
+                contentType: false,
+                data: formData,
                 success: function (res) {
                     if (res.success) {
                         $('#createStaffModal').modal('hide');
@@ -369,6 +488,7 @@
             });
         });
 
+        // ---- Edit Staff ----
         function updateActiveLabel() {
             var isActive = $('#editStaffActive').is(':checked');
             $('#editStaffActiveLabel').text(isActive ? 'نشط' : 'غير نشط');
@@ -384,7 +504,30 @@
             var isActive = btn.data('active') === true || btn.data('active') === 'true';
             $('#editStaffActive').prop('checked', isActive);
             updateActiveLabel();
+            $('#editStaffRemoveImage').val('false');
+            resetEditStaffImageStatus();
+            var image = btn.attr('data-image');
+            if (image) {
+                var clean = image.replace(/^files\//, '');
+                $('#editStaffImage').val(clean);
+                $('#editStaffImagePreview').attr('src', attachmentBaseUrl + '/files/' + clean);
+                $('#editStaffImageStatus').show().removeClass('d-none').css('display', 'flex');
+            }
             $('#editStaffModal').modal('show');
+        });
+
+        $('#editStaffImageInput').on('change', function () {
+            uploadStaffImage(
+                $(this),
+                $('#editStaffImage'),
+                $('#editStaffImageStatus'),
+                $('#editStaffImagePreview')
+            );
+        });
+
+        $('#removeEditStaffImageBtn').on('click', function () {
+            $('#editStaffRemoveImage').val('true');
+            resetEditStaffImageStatus();
         });
 
         $('#editStaffSubmitBtn').on('click', function () {
@@ -392,20 +535,30 @@
             var id = $('#editStaffId').val();
             var name = $('#editStaffName').val().trim();
             var phone = $('#editStaffPhone').val().trim();
+            var image = $('#editStaffImage').val().trim();
 
             if (!name) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
 
             setButtonLoading(btn, true);
 
+            var formData = new FormData();
+            formData.append('fullName', name);
+            formData.append('phoneNumber', phone || '');
+            formData.append('isActive', $('#editStaffActive').is(':checked') ? 'true' : 'false');
+            if (image) {
+                formData.append('image', image);
+            }
+            var removeImage = $('#editStaffRemoveImage').val();
+            if (removeImage === 'true') {
+                formData.append('removeImage', 'true');
+            }
+
             $.ajax({
                 url: '@Url.Action("UpdateStaff")/' + id,
                 type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    fullName: name,
-                    phoneNumber: phone || null,
-                    isActive: $('#editStaffActive').is(':checked')
-                }),
+                processData: false,
+                contentType: false,
+                data: formData,
                 success: function (res) {
                     if (res.success) {
                         $('#editStaffModal').modal('hide');
@@ -425,6 +578,7 @@
             });
         });
 
+        // ---- View Staff ----
         function formatDate(dateStr) {
             if (!dateStr) return '-';
             var d = new Date(dateStr);
@@ -436,7 +590,11 @@
             var statusHtml = staff.isActive
                 ? '<span class="badge badge-success">نشط</span>'
                 : '<span class="badge badge-danger">غير نشط</span>';
-            return '<div class="detail-grid">'
+            var imageHtml = staff.image
+                ? '<div class="text-center mb-3"><img src="' + attachmentBaseUrl + '/files/' + staff.image.replace(/^files\//, '') + '" alt="' + escapeHtml(staff.fullName) + '" style="width:100px;height:100px;object-fit:cover;border-radius:50%;border:2px solid var(--clr-border);" /></div>'
+                : '<div class="text-center mb-3"><span style="display:inline-flex;align-items:center;justify-content:center;width:100px;height:100px;border-radius:50%;background:var(--clr-primary);color:#fff;font-size:36px;font-weight:700;">' + (staff.fullName ? staff.fullName.charAt(0) : '') + '</span></div>';
+            return imageHtml
+                + '<div class="detail-grid">'
                 + '<div class="detail-item"><span class="detail-label">الاسم الكامل</span><span class="detail-value">' + escapeHtml(staff.fullName) + '</span></div>'
                 + '<div class="detail-item"><span class="detail-label">البريد الإلكتروني</span><span class="detail-value">' + escapeHtml(staff.email) + '</span></div>'
                 + '<div class="detail-item"><span class="detail-label">رقم الهاتف</span><span class="detail-value" dir="ltr">' + escapeHtml(staff.phoneNumber) + '</span></div>'
@@ -468,6 +626,7 @@
             });
         });
 
+        // ---- Change Password ----
         $('.change-password-staff-btn').on('click', function () {
             var btn = $(this);
             $('#changePasswordStaffId').val(btn.attr('data-id'));
@@ -517,6 +676,7 @@
             });
         });
 
+        // ---- Delete Staff ----
         $('.delete-staff-btn').on('click', function () {
             var btn = $(this);
             var id = btn.data('id');

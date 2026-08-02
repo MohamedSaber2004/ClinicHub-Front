@@ -82,10 +82,9 @@ namespace ClinicHub.Services.Services.Implementations
                 }
                 else
                 {
-                    var excluded = new HashSet<UserType> { UserType.None, UserType.Doctor, UserType.ClinicOwner };
                     foreach (var userType in Enum.GetValues<UserType>())
                     {
-                        if (!excluded.Contains(userType))
+                        if (userType != UserType.None)
                             url += $"&UserTypes={(int)userType}";
                     }
                 }

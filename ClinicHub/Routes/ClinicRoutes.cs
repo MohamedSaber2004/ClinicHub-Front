@@ -8,9 +8,8 @@ namespace ClinicHub.Routes
         {
             public static string Index() => $"{Base}/Index";
             public static string Appointments() => $"{Base}/Appointments";
+            public static string AppointmentRevenue() => $"{Base}/AppointmentRevenue";
             public static string MedicalRecords() => $"{Base}/MedicalRecords";
-            public static string Billing() => $"{Base}/Billing";
-            public static string Inventory() => $"{Base}/Inventory";
             public static string PatientPortal() => $"{Base}/PatientPortal";
             public static string Staff() => $"{Base}/Staff";
             public static string Doctors() => $"{Base}/Doctors";
@@ -20,6 +19,7 @@ namespace ClinicHub.Routes
             public static string Support() => $"{Base}/Support";
             public static string Settings() => $"{Base}/Settings";
             public static string MySubscription() => $"{Base}/MySubscription";
+            public static string Profile() => $"{Base}/Profile";
             public static string Subscribe() => $"{Base}/Subscribe";
             public static string CancelSubscription() => $"{Base}/CancelSubscription";
         }

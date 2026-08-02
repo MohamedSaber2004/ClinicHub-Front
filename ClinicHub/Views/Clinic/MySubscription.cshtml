@@ -42,6 +42,8 @@ else
     var statusText = subscription.Status switch { 0 => "نشط", 1 => "ملغي", 2 => "منتهي", 3 => "ملغي من الإدارة", _ => "غير معروف" };
     var statusClass = subscription.Status switch { 0 => "badge-success", 1 => "badge-warning", 2 => "badge-danger", 3 => "badge-danger", _ => "badge-info" };
     var periodText = subscription.Period == 0 ? "شهري" : "سنوي";
+    var currentPlan = plans.FirstOrDefault(p => p.Id == subscription.PlanId);
+    var planNameText = !string.IsNullOrWhiteSpace(currentPlan?.NameAr) ? currentPlan.NameAr : subscription.PlanName;
 
     <div class="subscription-status-card">
         <div class="row g-4">
@@ -53,7 +55,7 @@ else
                     <div class="subs-detail-body">
                         <div class="subs-detail-row">
                             <span class="subs-detail-label">الباقة</span>
-                            <span class="subs-detail-value">@subscription.PlanName</span>
+                            <span class="subs-detail-value">@planNameText</span>
                         </div>
                         <div class="subs-detail-row">
                             <span class="subs-detail-label">المدة</span>

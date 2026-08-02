@@ -1,51 +1,66 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "مرضاي";
     Layout = "_DoctorLayout";
-    var patients = ViewBag.Patients as List<MockDoctorPatient> ?? new();
+
+    var patients = ViewBag.Patients as IReadOnlyCollection<DoctorPatientDto> ?? new List<DoctorPatientDto>();
+
+    string GenderLabel(int? g) => g == 0 ? "ذكر" : g == 1 ? "أنثى" : "غير محدد";
+    string AgeLabel(int? age) => age.HasValue ? $"{age} سنة" : "غير محدد";
+    string LastVisitLabel(DateTime d) => d.Year > 2000 ? d.ToString("yyyy-MM-dd") : "—";
+    string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
 <h2 class="page-title">
     <span class="page-title-icon">
         <i class="bi bi-people"></i>
     </span>
-    قائمة المرضى
+    مرضاي
 </h2>
 
 <div class="table-card">
     <div class="table-card-header">
-        <h3 class="table-card-title">مرضاي المسجلون</h3>
+        <h3 class="table-card-title">قائمة المرضى</h3>
     </div>
+    <form method="get" action="@Url.Action("Patients")" class="filter-bar table-filter-bar">
+        <input type="text" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
+        <button type="submit" class="btn btn-primary btn-sm">بحث</button>
+        <a href="@Url.Action("Patients")" class="btn btn-outline-secondary btn-sm">مسح</a>
+    </form>
     <div class="table-responsive">
         <table class="custom-table">
             <thead>
                 <tr>
                     <th>المريض</th>
-                    <th>آخر زيارة</th>
-                    <th>رقم الهاتف</th>
+                    <th>العمر / الجنس</th>
+                    <th>الهاتف</th>
                     <th>عدد الزيارات</th>
-                    <th>الحالة</th>
+                    <th>آخر زيارة</th>
                     <th>الإجراء</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var patient in patients)
+                @if (patients.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="table-empty">لا يوجد مرضى مطابقون للبحث</td>
+                    </tr>
+                }
+                @foreach (var p in patients)
                 {
                     <tr>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div class="sidebar-profile-avatar" style="width: 28px; height: 28px;">
-                                    <span style="font-size: 11px;">@patient.Initials</span>
-                                </div>
-                                @patient.Name
+                            <div class="table-user">
+                                <span class="table-avatar">@Initial(p.FullName)</span>
+                                <span class="table-user-name">@p.FullName</span>
                             </div>
                         </td>
-                        <td>@patient.LastVisit</td>
-                        <td>@patient.Phone</td>
-                        <td>@patient.TotalVisits</td>
-                        <td>@patient.Condition</td>
+                        <td>@AgeLabel(p.Age) / @GenderLabel(p.Gender)</td>
+                        <td>@(string.IsNullOrWhiteSpace(p.PhoneNumber) ? "—" : p.PhoneNumber)</td>
+                        <td><span class="badge badge-info">@p.TotalVisits</span></td>
+                        <td>@LastVisitLabel(p.LastVisitDate)</td>
                         <td>
-                            <a class="btn btn-sm btn-outline-primary" href="@DoctorRoutes.Pages.PatientHistory(patient.Id)">
+                            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("PatientHistory", new { patientId = p.UserId, name = p.FullName })">
                                 <i class="bi bi-clock-history"></i> عرض التاريخ
                             </a>
                         </td>
@@ -54,4 +69,5 @@
             </tbody>
         </table>
     </div>
+    <partial name="_Pagination" />
 </div>

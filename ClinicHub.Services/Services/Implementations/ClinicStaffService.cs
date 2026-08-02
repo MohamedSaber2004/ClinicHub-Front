@@ -47,7 +47,7 @@ namespace ClinicHub.Services.Services.Implementations
                 if (!response.IsSuccessStatusCode)
                 {
                     var errors = ApiErrorExtractor.ExtractErrors(body);
-                    var combined = string.Join(" ", errors);
+                    var combined = string.Join("\n", errors);
                     throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في جلب الموظفين" : combined);
                 }
 
@@ -75,7 +75,7 @@ namespace ClinicHub.Services.Services.Implementations
                 if (!response.IsSuccessStatusCode)
                 {
                     var errors = ApiErrorExtractor.ExtractErrors(body);
-                    var combined = string.Join(" ", errors);
+                    var combined = string.Join("\n", errors);
                     throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "الموظف غير موجود" : combined);
                 }
 
@@ -104,7 +104,7 @@ namespace ClinicHub.Services.Services.Implementations
                 var errors = ApiErrorExtractor.ExtractErrors(body);
                 if (!response.IsSuccessStatusCode)
                 {
-                    var combined = string.Join(" ", errors);
+                    var combined = string.Join("\n", errors);
                     throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في إضافة الموظف" : combined);
                 }
 
@@ -116,7 +116,7 @@ namespace ClinicHub.Services.Services.Implementations
                 if (dataToken != null && Guid.TryParse(dataToken.ToString(), out var dataId))
                     return dataId;
 
-                var errorsCombined = string.Join(" ", errors);
+                var errorsCombined = string.Join("\n", errors);
                 throw new ApiException(400, string.IsNullOrWhiteSpace(errorsCombined) ? "فشل إضافة الموظف" : errorsCombined);
             }
             catch (ApiException) { throw; }

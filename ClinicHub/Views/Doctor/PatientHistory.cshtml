@@ -1,16 +1,50 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "تاريخ المريض";
     Layout = "_DoctorLayout";
+
     var patientName = ViewBag.PatientName as string ?? "مريض";
-    var history = ViewBag.History as List<MockPatientHistory> ?? new();
+    var history = ViewBag.History as IReadOnlyCollection<PatientHistoryDto> ?? new List<PatientHistoryDto>();
+
+    string StatusLabel(int? s) => s switch
+    {
+        0 => "قيد الانتظار",
+        1 => "مؤكد",
+        2 => "ملغى",
+        3 => "مكتمل",
+        4 => "محجوز مؤقتاً",
+        5 => "لم يحضر",
+        6 => "مقبول",
+        7 => "مرفوض",
+        _ => "غير معروف"
+    };
+
+    string StatusClass(int? s) => s switch
+    {
+        0 => "badge-warning",
+        1 => "badge-info",
+        2 => "badge-danger",
+        3 => "badge-success",
+        4 => "badge-primary",
+        5 => "badge-danger",
+        6 => "badge-primary",
+        7 => "badge-danger",
+        _ => "badge-secondary"
+    };
+
+    string TypeLabel(int t) => t == 1 ? "منزلي" : "في العيادة";
+    string TimeRange(string? from, string? to)
+    {
+        string Only(string? t) => string.IsNullOrEmpty(t) || t.Length < 5 ? "—" : t[..5];
+        return $"{Only(from)} - {Only(to)}";
+    }
 }
 
 <h2 class="page-title">
     <span class="page-title-icon">
         <i class="bi bi-clock-history"></i>
     </span>
-    تاريخ المريض - @patientName
+    السجل الطبي: @patientName
 </h2>
 
 <div class="table-card">
@@ -22,30 +56,39 @@
             <thead>
                 <tr>
                     <th>التاريخ</th>
-                    <th>التشخيص</th>
-                    <th>ملاحظات</th>
-                    <th>الوصفة</th>
+                    <th>الوقت</th>
+                    <th>نوع الزيارة</th>
+                    <th>الشكوى</th>
+                    <th>الأمراض المزمنة</th>
                     <th>الحالة</th>
                 </tr>
             </thead>
             <tbody>
+                @if (history.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="table-empty">لا توجد زيارات سابقة لهذا المريض</td>
+                    </tr>
+                }
                 @foreach (var item in history)
                 {
                     <tr>
-                        <td>@item.Date</td>
-                        <td>@item.Diagnosis</td>
-                        <td>@item.Notes</td>
-                        <td>@(!string.IsNullOrEmpty(item.Prescription) ? item.Prescription : "—")</td>
-                        <td><span class="badge @item.StatusClass">@item.Status</span></td>
+                        <td>@item.AppointmentDate</td>
+                        <td>@TimeRange(item.StartTime, item.EndTime)</td>
+                        <td>@TypeLabel(item.AppointmentType)</td>
+                        <td>@(string.IsNullOrWhiteSpace(item.Complaint) ? "—" : item.Complaint)</td>
+                        <td>@(string.IsNullOrWhiteSpace(item.ChronicDiseases) ? "—" : item.ChronicDiseases)</td>
+                        <td><span class="badge @StatusClass(item.Status)">@StatusLabel(item.Status)</span></td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
+    <partial name="_Pagination" />
 </div>
 
-<div style="margin-top: var(--space-5);">
-    <a class="btn btn-outline-secondary" href="@DoctorRoutes.Pages.Patients()">
+<div class="mt-4">
+    <a class="btn btn-outline-secondary" href="@Url.Action("Patients")">
         <i class="bi bi-arrow-right"></i> العودة لقائمة المرضى
     </a>
 </div>

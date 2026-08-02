@@ -50,7 +50,12 @@ namespace ClinicHub.Services
             })
             .AddHttpMessageHandler<BearerTokenHandler>();
 
-            services.AddScoped<IDoctorService, DoctorService>();
+            services.AddHttpClient<IDoctorService, DoctorService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
             services.AddScoped<IAttachmentUrlResolver, AttachmentUrlResolver>();
             services.AddSingleton<IDeserializerService, DeserializerService>();
 
@@ -91,6 +96,25 @@ namespace ClinicHub.Services
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
             .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<IAdminDashboardService, AdminDashboardService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<IDoctorDashboardService, DoctorDashboardService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
+            services.AddHttpClient<IClinicDashboardService, ClinicDashboardService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>()
+            .AddHttpMessageHandler<ClinicHeaderHandler>();
 
             return services;
         }

@@ -1,3 +1,4 @@
+@inject ClinicHub.Services.Contracts.IAttachmentUrlResolver _attachmentUrlResolver
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -8,8 +9,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -35,6 +34,19 @@
                         bool IsActive(string ctrl, string? action = null) =>
                             currentController == ctrl && (action == null || currentAction == action);
                         var _user = ViewBag.CurrentUser as CurrentUserContext;
+                        var _profile = ViewBag.HeaderProfile as UserProfileDto;
+                        var _profileName = !string.IsNullOrWhiteSpace(_profile?.FullName) ? _profile.FullName : (_user?.Role == UserRole.ClinicOwner ? "عيادة الرحمة" : "عيادة");
+                        var _profileRoleLabel = _profile?.Role switch
+                        {
+                            "SuperAdmin" => "المشرف العام",
+                            "ClinicOwner" => "مالك عيادة",
+                            "ClinicManager" => "مدير عيادة",
+                            "Doctor" => "طبيب",
+                            "Staff" => "موظف عيادة",
+                            _ => (_user?.Role switch { UserRole.SystemAdmin => "المشرف العام", UserRole.ClinicOwner => "مالك عيادة", UserRole.ClinicManager => "مدير عيادة", UserRole.Doctor => "طبيب", UserRole.ClinicStaff => "موظف عيادة", _ => "مستخدم" })
+                        };
+                        var _profileInitial = !string.IsNullOrWhiteSpace(_profile?.FullName) ? _profile.FullName.Substring(0, 1) : (_user?.Role switch { UserRole.ClinicOwner => "م", UserRole.ClinicManager => "م", UserRole.Doctor => "ط", UserRole.ClinicStaff => "م", _ => "ع" });
+                        var _profilePic = _attachmentUrlResolver.Resolve(_profile?.ProfilePictureUrl);
                     }
                     @if (_user?.Has(Permission.ViewClinicDashboard) == true)
                     {
@@ -54,15 +66,13 @@
                         bool canShowAppointments = _user?.Has(Permission.ManageAppointments) == true && _user?.HasFeature(PlanFeature.ManageAppointments) == true;
                         bool canShowOnlineBooking = _user?.Has(Permission.ManageAppointments) == true && _user?.HasFeature(PlanFeature.OnlineBooking) == true;
                         bool canShowMedicalRecords = _user?.Has(Permission.ManageMedicalRecords) == true && _user?.HasFeature(PlanFeature.ManagePatientRecords) == true;
-                        bool canShowBilling = _user?.Has(Permission.ManageBilling) == true;
-                        bool canShowInventory = _user?.Has(Permission.ManageInventory) == true;
                         bool canShowStaff = _user?.Has(Permission.ManageClinicStaff) == true && _user?.HasFeature(PlanFeature.ManageStaff) == true;
                         bool canShowDoctors = _user?.Has(Permission.ManageClinicDoctors) == true && _user?.HasFeature(PlanFeature.ManageDoctors) == true;
                         bool canShowReports = (_user?.HasFeature(PlanFeature.BasicReports) == true || _user?.HasFeature(PlanFeature.AdvancedReports) == true) && _user?.HasActivePlan == true;
                         bool canShowMarketing = _user?.HasFeature(PlanFeature.MarketingTools) == true && _user?.HasActivePlan == true;
                         bool canShowPrioritySupport = _user?.HasFeature(PlanFeature.PrioritySupport) == true && _user?.HasActivePlan == true;
                     }
-                    @if (canShowAppointments || canShowOnlineBooking || canShowMedicalRecords || canShowBilling || canShowInventory || canShowStaff || canShowDoctors || canShowReports || canShowMarketing || canShowPrioritySupport)
+                    @if (canShowAppointments || canShowOnlineBooking || canShowMedicalRecords || canShowStaff || canShowDoctors || canShowReports || canShowMarketing || canShowPrioritySupport)
                     {
                         <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الخدمات التشغيلية</div>
                     }
@@ -86,20 +96,6 @@
                         <a class="sidebar-item @(IsActive("Clinic", "MedicalRecords") ? "active" : "")" href="@ClinicRoutes.Pages.MedicalRecords()" style="padding-right: 20px;">
                             <i class="bi bi-folder2-open" style="color: var(--primary-color);"></i>
                             <span>السجل الطبي الإلكتروني</span>
-                        </a>
-                    }
-                    @if (canShowBilling)
-                    {
-                        <a class="sidebar-item @(IsActive("Clinic", "Billing") ? "active" : "")" href="@ClinicRoutes.Pages.Billing()" style="padding-right: 20px;">
-                            <i class="bi bi-credit-card" style="color: var(--primary-color);"></i>
-                            <span>الفواتير والمالية</span>
-                        </a>
-                    }
-                    @if (canShowInventory)
-                    {
-                        <a class="sidebar-item @(IsActive("Clinic", "Inventory") ? "active" : "")" href="@ClinicRoutes.Pages.Inventory()" style="padding-right: 20px;">
-                            <i class="bi bi-box-seam" style="color: var(--primary-color);"></i>
-                            <span>إدارة المخزون</span>
                         </a>
                     }
                     @if (canShowStaff)
@@ -139,6 +135,11 @@
                     }
                     @if (_user?.Has(Permission.ManageClinicSettings) == true)
                     {
+                        <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">المالية</div>
+                        <a class="sidebar-item @(IsActive("Clinic", "AppointmentRevenue") ? "active" : "")" href="@ClinicRoutes.Pages.AppointmentRevenue()" style="padding-right: 20px;">
+                            <i class="bi bi-wallet2" style="color: var(--primary-color);"></i>
+                            <span>إيرادات المواعيد</span>
+                        </a>
                         <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الإعدادات</div>
                         <a class="sidebar-item @(IsActive("Clinic", "Settings") ? "active" : "")" href="@ClinicRoutes.Pages.Settings()" style="padding-right: 20px;">
                             <i class="bi bi-gear" style="color: var(--primary-color);"></i>
@@ -149,17 +150,24 @@
             </nav>
             <div class="sidebar-bottom">
                 <hr style="width: 100%; border: none; border-top: 1px solid var(--clr-border); margin: 0; padding: 0;" />
-                <a class="sidebar-profile" style="cursor: default;">
+                <a class="sidebar-profile" href="@ClinicRoutes.Pages.Profile()">
                     <div class="sidebar-profile-avatar">
-                        <span>@(_user?.Role switch { UserRole.ClinicOwner => "م", UserRole.ClinicManager => "م", UserRole.Doctor => "ط", UserRole.ClinicStaff => "م", _ => "ع" })</span>
+                        @if (!string.IsNullOrWhiteSpace(_profilePic))
+                        {
+                            <img src="@_profilePic" alt="@_profileName" class="header-avatar-img" />
+                        }
+                        else
+                        {
+                            <span>@_profileInitial</span>
+                        }
                     </div>
                     <div class="sidebar-profile-info">
-                        <span class="sidebar-profile-name">@(_user?.Role == UserRole.ClinicOwner ? "عيادة الرحمة" : "عيادة")</span>
-                        <span class="sidebar-profile-role">@(_user?.Role switch { UserRole.ClinicOwner => "إدارة العيادة", UserRole.ClinicManager => "مدير العيادة", UserRole.Doctor => "طبيب", UserRole.ClinicStaff => "طاقم طبي", _ => "إدارة العيادة" })</span>
+                        <span class="sidebar-profile-name">@_profileName</span>
+                        <span class="sidebar-profile-role">@_profileRoleLabel</span>
                     </div>
                     @if (!string.IsNullOrEmpty(_user?.PlanName))
                     {
-                        <span class="sidebar-plan-badge" style="font-size: 10px; font-weight: 700; color: var(--clr-primary); background: rgba(47, 156, 202, 0.1); padding: 2px 8px; border-radius: 4px; white-space: nowrap; margin-right: auto;">@_user.PlanName</span>
+                        <span class="sidebar-plan-badge" style="font-size: 10px; font-weight: 700; color: var(--clr-primary); background: rgba(7, 100, 83, 0.1); padding: 2px 8px; border-radius: 4px; white-space: nowrap; margin-right: auto;">@_user.PlanName</span>
                     }
                 </a>
                 <a href="#" class="sidebar-item" id="logoutBtn">
@@ -180,17 +188,22 @@
                     <i class="bi bi-chevron-double-right"></i>
                 </button>
                 <div style="flex:1"></div>
-                <div class="header-user" style="cursor: default;">
+                <a class="header-user" href="@ClinicRoutes.Pages.Profile()">
                     <div class="user-info">
-                        <span class="user-name">@(_user?.Role switch { UserRole.ClinicOwner => "مدير العيادة", UserRole.ClinicManager => "مدير العيادة", UserRole.Doctor => "طبيب", UserRole.ClinicStaff => "طاقم طبي", _ => "طاقم الإدارة الطبية" })</span>
-                        <span class="user-role">@(_user?.Role switch { UserRole.ClinicOwner => "مالك عيادة", UserRole.ClinicManager => "مدير عيادة", UserRole.Doctor => "دكتور", UserRole.ClinicStaff => "موظف", _ => "مدير العيادات" })</span>
+                        <span class="user-name">@_profileName</span>
+                        <span class="user-role">@_profileRoleLabel</span>
                     </div>
-                    <svg class="user-avatar" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
-                        <circle cx="18" cy="14" r="6" fill="#66748C"/>
-                        <path d="M6 30C6 24.4772 11.3726 21 18 21C24.6274 21 30 24.4772 30 30" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
-                    </svg>
-                </div>
+                    <div class="sidebar-profile-avatar header-avatar">
+                        @if (!string.IsNullOrWhiteSpace(_profilePic))
+                        {
+                            <img src="@_profilePic" alt="@_profileName" class="header-avatar-img" />
+                        }
+                        else
+                        {
+                            <span>@_profileInitial</span>
+                        }
+                    </div>
+                </a>
             </header>
 
             <!-- Main Render Area -->

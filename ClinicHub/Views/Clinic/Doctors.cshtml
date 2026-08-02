@@ -1,7 +1,7 @@
 @using ClinicHub.Data
 @using ClinicHub.Services.ReponseModels
 @using ClinicHub.Services.Options
-@inject Microsoft.Extensions.Options.IOptions<Doctory> _doctoryOptions
+@inject ClinicHub.Services.Contracts.IAttachmentUrlResolver _attachmentUrlResolver
 @{
     ViewData["Title"] = "إدارة الأطباء - Doctory";
     Layout = "_ClinicLayout";
@@ -11,7 +11,7 @@
     var specializations = ViewBag.Specializations as IReadOnlyCollection<SpecializationDto> ?? new List<SpecializationDto>();
     var searchTerm = ViewBag.SearchTerm as string;
     var selectedSpecId = ViewBag.SelectedSpecializationId as Guid?;
-    var attachmentBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
+    var attachmentBaseUrl = _attachmentUrlResolver.Resolve("x").Replace("/files/x", "");
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -102,7 +102,7 @@
                     @foreach (var doctor in doctors)
                     {
                         var imgUrl = !string.IsNullOrEmpty(doctor.ProfilePictureUrl)
-                            ? attachmentBaseUrl + "/files/" + doctor.ProfilePictureUrl.TrimStart('/')
+                            ? _attachmentUrlResolver.Resolve(doctor.ProfilePictureUrl)
                             : null;
                         <tr>
                             <td>

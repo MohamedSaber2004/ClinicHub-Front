@@ -13,5 +13,7 @@ namespace ClinicHub.Services.ReponseModels
         public bool IsActive { get; set; }
         public IList<UserType> Roles { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
+        public string? Image { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }

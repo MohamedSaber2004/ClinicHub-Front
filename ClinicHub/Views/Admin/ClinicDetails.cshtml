@@ -1,7 +1,8 @@
 @{
     ViewData["Title"] = "تفاصيل العيادة";
     Layout = "_AdminLayout";
-    var clinic = ViewBag.Clinic as ClinicManagmentDto;
+    var clinicDetails = ViewBag.Clinic as ClinicDetailsDto;
+    var clinic = clinicDetails ?? (ViewBag.Clinic as ClinicManagmentDto);
 }
 
 <style>
@@ -12,6 +13,21 @@
     .working-days-checkboxes { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .working-days-checkboxes .checkbox-inline { display: flex; align-items: center; gap: 4px; font-size: var(--fs-sm); cursor: pointer; }
     .working-days-checkboxes .checkbox-inline input { width: auto; }
+    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4); }
+    .staff-card { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; align-items: flex-start; gap: var(--space-4); transition: box-shadow var(--transition-base); }
+    .staff-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .staff-card-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--clr-primary-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; color: var(--clr-primary); }
+    .staff-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .staff-card-initial { font-size: 20px; font-weight: 800; line-height: 1; }
+    .staff-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .staff-card-name { font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0; }
+    .staff-card-role { font-size: 13px; color: var(--clr-text-secondary); }
+    .staff-card-contact { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+    .staff-contact-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--clr-text-secondary); text-decoration: none; transition: color var(--transition-base); }
+    .staff-contact-link:hover { color: var(--clr-primary); }
+    .staff-contact-link svg { flex-shrink: 0; opacity: 0.6; }
+    .staff-card-exp { flex-shrink: 0; align-self: center; }
+    .staff-exp-badge { background: var(--clr-primary-light); color: var(--clr-primary); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
 </style>
 
 @if (clinic == null)
@@ -27,11 +43,16 @@
     var clinicName = clinic.NameAr ?? clinic.Name;
     var clinicSpec = clinic.SpecializationNameAr ?? clinic.SpecializationName;
     var clinicDesc = clinic.ArDescription ?? clinic.Description;
-    var hasRating = clinic.Rating.HasValue;
-    var avgRating = hasRating ? clinic.Rating!.Value : 0;
+    var avgRating = clinicDetails?.AverageRating ?? clinic.Rating ?? 0;
+    var totalRatings = clinicDetails?.TotalRatings ?? 0;
+    var hasRating = avgRating > 0;
     var fullStars = (int)Math.Floor(avgRating);
     var hasHalf = hasRating && avgRating - fullStars >= 0.5;
     var emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+
+    var doctors = clinicDetails?.Doctors ?? new List<DoctorBriefDto>();
+    var staffList = clinicDetails?.Staff ?? new List<StaffBriefDto>();
+    var recentRatings = clinicDetails?.RecentRatings ?? new List<RatingDto>();
 }
 
 <!-- Clinic Header -->
@@ -131,6 +152,18 @@
                 <div class="clinic-stat-card">
                     <span class="clinic-stat-value">@avgRating.ToString("F1")</span>
                     <span class="clinic-stat-label">متوسط التقييم</span>
+                </div>
+                <div class="clinic-stat-card">
+                    <span class="clinic-stat-value">@totalRatings</span>
+                    <span class="clinic-stat-label">إجمالي التقييمات</span>
+                </div>
+                <div class="clinic-stat-card">
+                    <span class="clinic-stat-value">@doctors.Count</span>
+                    <span class="clinic-stat-label">الأطباء</span>
+                </div>
+                <div class="clinic-stat-card">
+                    <span class="clinic-stat-value">@staffList.Count</span>
+                    <span class="clinic-stat-label">الموظفين</span>
                 </div>
             </div>
             @if (!string.IsNullOrEmpty(clinicDesc))
@@ -288,43 +321,150 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">شعار العيادة</label>
-                            <div id="editClinicLogoPreview" class="upload-preview" style="margin-bottom:var(--space-2)">
-                                @if (!string.IsNullOrEmpty(clinic.Logo))
-                                {
-                                    <img id="editClinicLogoImg" src="@clinic.Logo" alt="شعار العيادة" style="max-width:200px;max-height:120px;border-radius:var(--radius-md);border:1px solid var(--clr-border);" />
-                                }
-                                else
-                                {
-                                    <img id="editClinicLogoImg" src="" alt="شعار العيادة" style="max-width:200px;max-height:120px;border-radius:var(--radius-md);border:1px solid var(--clr-border);display:none;" />
-                                }
-                                <span id="editClinicLogoStatus" style="font-size:var(--fs-sm);color:var(--clr-text-secondary);display:block;margin-top:var(--space-1);"></span>
-                            </div>
-                            <input type="file" id="editClinicLogoInput" class="form-input edit-field" accept="image/*" disabled />
-                            <input type="hidden" name="logo" value="@clinic.Logo" />
-                        </div>
-                    </div>
-                </div>
+                
             </div>
             </form>
         </div>
 
         <!-- ======== DOCTORS TAB ======== -->
         <div class="tab-pane fade" id="docs" role="tabpanel">
-            <div class="empty-state"><p>لا يوجد أطباء في هذه العيادة بعد.</p></div>
+            @if (doctors.Count == 0)
+            {
+                <div class="empty-state"><p>لا يوجد أطباء في هذه العيادة بعد.</p></div>
+            }
+            else
+            {
+                <div class="staff-grid">
+                    @foreach (var doc in doctors)
+                    {
+                        <div class="staff-card">
+                            <div class="staff-card-avatar">
+                                @if (!string.IsNullOrEmpty(doc.Image))
+                                {
+                                    <img src="@doc.Image" alt="@doc.Name" />
+                                }
+                                else
+                                {
+                                    <span class="staff-card-initial">@(doc.Name?.Length > 0 ? doc.Name[0].ToString() : "ط")</span>
+                                }
+                            </div>
+                            <div class="staff-card-body">
+                                <h4 class="staff-card-name">@doc.Name</h4>
+                                <span class="staff-card-role">@(doc.SpecializationArName ?? doc.SpecializationEnName)</span>
+                                <div class="staff-card-contact">
+                                    @if (!string.IsNullOrEmpty(doc.Email))
+                                    {
+                                        <a href="mailto:@doc.Email" class="staff-contact-link">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                                            @doc.Email
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrEmpty(doc.Phone))
+                                    {
+                                        <a href="tel:@doc.Phone" class="staff-contact-link">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                                            @doc.Phone
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                            @if (doc.YearsOfExperience > 0)
+                            {
+                                <div class="staff-card-exp">
+                                    <span class="staff-exp-badge">@doc.YearsOfExperience+ سنوات</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
         </div>
 
         <!-- ======== STAFF TAB ======== -->
         <div class="tab-pane fade" id="stf" role="tabpanel">
-            <div class="empty-state"><p>لا يوجد موظفين.</p></div>
+            @if (staffList.Count == 0)
+            {
+                <div class="empty-state"><p>لا يوجد موظفين.</p></div>
+            }
+            else
+            {
+                <div class="staff-grid">
+                    @foreach (var s in staffList)
+                    {
+                        <div class="staff-card">
+                            <div class="staff-card-avatar" style="background:var(--clr-info-light, #e8f0fe);color:var(--clr-info);">
+                                <span class="staff-card-initial">@(s.FullName?.Length > 0 ? s.FullName[0].ToString() : "م")</span>
+                            </div>
+                            <div class="staff-card-body">
+                                <h4 class="staff-card-name">@s.FullName</h4>
+                                <div class="staff-card-contact">
+                                    @if (!string.IsNullOrEmpty(s.Email))
+                                    {
+                                        <a href="mailto:@s.Email" class="staff-contact-link">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                                            @s.Email
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrEmpty(s.PhoneNumber))
+                                    {
+                                        <a href="tel:@s.PhoneNumber" class="staff-contact-link">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                                            @s.PhoneNumber
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
         </div>
 
         <!-- ======== RATINGS TAB ======== -->
         <div class="tab-pane fade" id="ratings" role="tabpanel">
-            <div class="empty-state"><p>لا توجد تقييمات بعد.</p></div>
+            @if (recentRatings.Count == 0)
+            {
+                <div class="empty-state"><p>لا توجد تقييمات بعد.</p></div>
+            }
+            else
+            {
+                <div class="ratings-header-card">
+                    <div class="rhc-score">
+                        <span class="rhc-number">@avgRating.ToString("F1")</span>
+                        <div class="stars-inline">
+                            @for (int i = 0; i < fullStars; i++) { <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                            @if (hasHalf) { <svg width="16" height="16" viewBox="0 0 24 24"><defs><clipPath id="rhcHalf"><rect x="0" y="0" width="8" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#rhcHalf)"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB" clip-path="url(#rhcHalf)"/></svg> }
+                            @for (int i = 0; i < emptyStars; i++) { <svg width="16" height="16" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                        </div>
+                        <span class="rhc-count">@totalRatings تقييم</span>
+                    </div>
+                </div>
+                <div class="ratings-list">
+                    @foreach (var r in recentRatings)
+                    {
+                        var rFullStars = r.Value;
+                        var rEmptyStars = 5 - rFullStars;
+                        var initial = r.UserName?.Length > 0 ? r.UserName[0].ToString() : "م";
+                        <div class="rating-full-card">
+                            <div class="rfc-avatar">@initial</div>
+                            <div class="rfc-content">
+                                <div class="rfc-header">
+                                    <span class="rfc-name">@r.UserName</span>
+                                    <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
+                                </div>
+                                <div>
+                                    @for (int i = 0; i < rFullStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                    @for (int i = 0; i < rEmptyStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                </div>
+                                @if (!string.IsNullOrEmpty(r.Review))
+                                {
+                                    <p class="rfc-comment">@r.Review</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
         </div>
 
         </div>
@@ -405,29 +545,12 @@
 
             cancelBtn.addEventListener('click', cancelEdit);
 
-            var logoInput = document.getElementById('editClinicLogoInput');
-            logoInput.addEventListener('change', function() {
-                var file = this.files && this.files[0];
-                var preview = document.getElementById('editClinicLogoPreview');
-                var img = document.getElementById('editClinicLogoImg');
-                var status = document.getElementById('editClinicLogoStatus');
-                if (file) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        img.src = e.target.result;
-                        img.style.display = 'block';
-                        status.textContent = file.name + ' - جاري التحميل...';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
             function formatTime(val) {
                 if (!val) return null;
                 return val.indexOf(':') >= 0 && val.split(':').length === 2 ? val + ':00' : val;
             }
 
-            function buildPayload(logoUrl) {
+            function buildPayload() {
                 var specId = form.querySelector('[name="specializationId"]').value;
                 var whStart = formatTime(form.querySelector('[name="workingHoursStart"]').value);
                 var whEnd = formatTime(form.querySelector('[name="workingHoursEnd"]').value);
@@ -440,7 +563,6 @@
                     website: form.querySelector('[name="website"]').value,
                     specializationId: specId || '00000000-0000-0000-0000-000000000000',
                     workingHours: form.querySelector('[name="workingHours"]').value,
-                    logo: logoUrl || '',
                     workingDays: []
                 };
                 if (whStart) data.workingHoursStart = whStart;
@@ -479,47 +601,15 @@
                 clearErrors();
 
                 var dayChecks = form.querySelectorAll('[name="workingDays"]:checked');
-                var logoFile = logoInput.files && logoInput.files[0];
 
                 saveBtn.disabled = true;
                 saveBtn.textContent = 'جاري الحفظ...';
 
-                if (logoFile) {
-                    var fd = new FormData();
-                    fd.append('file', logoFile);
-                    fetch('@Url.Action("UploadClinicImage", "Admin")', {
-                        method: 'POST',
-                        headers: { 'RequestVerificationToken': csrfToken },
-                        body: fd
-                    })
-                    .then(function(r) { return r.json(); })
-                    .then(function(imgResult) {
-                        if (imgResult.success) {
-                            var data = buildPayload(imgResult.url);
-                            data.workingDays = [];
-                            dayChecks.forEach(function(c) { data.workingDays.push(parseInt(c.value)); });
-                            if (data.workingDays.length === 0) delete data.workingDays;
-                            sendUpdateRequest(data);
-                        } else {
-                            saveBtn.disabled = false;
-                            saveBtn.textContent = 'حفظ التغييرات';
-                            showErrors(imgResult.error || imgResult.message || 'فشل رفع الصورة');
-                            showErrorModal(imgResult.error || 'فشل رفع الصورة');
-                        }
-                    })
-                    .catch(function() {
-                        saveBtn.disabled = false;
-                        saveBtn.textContent = 'حفظ التغييرات';
-                        showErrors('فشل رفع الصورة');
-                        showErrorModal('فشل رفع الصورة');
-                    });
-                } else {
-                    var data = buildPayload(form.querySelector('[name="logo"]').value);
-                    data.workingDays = [];
-                    dayChecks.forEach(function(c) { data.workingDays.push(parseInt(c.value)); });
-                    if (data.workingDays.length === 0) delete data.workingDays;
-                    sendUpdateRequest(data);
-                }
+                var data = buildPayload();
+                data.workingDays = [];
+                dayChecks.forEach(function(c) { data.workingDays.push(parseInt(c.value)); });
+                if (data.workingDays.length === 0) delete data.workingDays;
+                sendUpdateRequest(data);
             }
 
             saveBtn.addEventListener('click', submitUpdate);

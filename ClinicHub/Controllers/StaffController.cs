@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
 using ClinicHub.Services.Contracts;
+using ClinicHub.Services.Enums;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.RequestModels;
@@ -11,10 +12,20 @@ namespace ClinicHub.Controllers
     public class StaffController : BaseController
     {
         private readonly IStaffDashboardService _staffDashboardService;
+        private readonly IAuthService _authService;
+        private readonly IAttachmentService _attachmentService;
 
-        public StaffController(IStaffDashboardService staffDashboardService)
+        public StaffController(IStaffDashboardService staffDashboardService, IAuthService authService, IAttachmentService attachmentService)
         {
             _staffDashboardService = staffDashboardService;
+            _authService = authService;
+            _attachmentService = attachmentService;
+        }
+
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        {
+            await LoadHeaderProfileAsync(_authService);
+            await base.OnActionExecutionAsync(context, next);
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -29,6 +40,64 @@ namespace ClinicHub.Controllers
                 HasActivePlan = true
             };
             base.OnActionExecuting(context);
+        }
+
+        public async Task<IActionResult> Profile()
+        {
+            try
+            {
+                ViewBag.Profile = await _authService.GetProfileAsync();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"حدث خطأ غير متوقع: {ex.Message}";
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile()
+        {
+            try
+            {
+                string? profileImageUrl = null;
+                var file = Request.Form.Files.GetFile("imageFile");
+                if (file != null && file.Length > 0)
+                {
+                    profileImageUrl = await _attachmentService.UploadAttachmentAsync(new UploadAttachmentRequest(file, 1, MediaType.Image));
+                }
+
+                var fullName = Request.Form["fullName"].ToString();
+                var phoneNumber = Request.Form["phoneNumber"].ToString();
+                var birthDateText = Request.Form["birthDate"].ToString();
+                var genderText = Request.Form["gender"].ToString();
+
+                var request = new UpdateProfileRequest
+                {
+                    FullName = string.IsNullOrWhiteSpace(fullName) ? null : fullName,
+                    PhoneNumber = string.IsNullOrWhiteSpace(phoneNumber) ? null : phoneNumber,
+                    BirthDate = DateTime.TryParse(birthDateText, out var birthDate) ? birthDate : null,
+                    Gender = int.TryParse(genderText, out var gender) ? gender : null,
+                    ProfileImageUrl = profileImageUrl
+                };
+
+                var success = await _authService.UpdateProfileAsync(request);
+                return Json(new { success, message = success ? "تم تحديث الملف الشخصي بنجاح" : "فشل تحديث الملف الشخصي" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
 
         public async Task<IActionResult> Index()

@@ -1,3 +1,4 @@
+@inject ClinicHub.Services.Contracts.IAttachmentUrlResolver _attachmentUrlResolver
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -31,6 +32,19 @@
                         var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
                         bool IsActive(string ctrl, string? action = null) =>
                             currentController == ctrl && (action == null || currentAction == action);
+                        var _user = ViewBag.CurrentUser as CurrentUserContext;
+                        var _profile = ViewBag.HeaderProfile as UserProfileDto;
+                        var _profileName = !string.IsNullOrWhiteSpace(_profile?.FullName) ? _profile.FullName : "موظف الاستقبال";
+                        var _profileRoleLabel = _profile?.Role switch
+                        {
+                            "SuperAdmin" => "المشرف العام",
+                            "ClinicOwner" => "مالك عيادة",
+                            "Doctor" => "طبيب",
+                            "Staff" => "موظف عيادة",
+                            _ => (_user?.Role switch { UserRole.SystemAdmin => "المشرف العام", UserRole.ClinicOwner => "مالك عيادة", UserRole.ClinicManager => "مدير عيادة", UserRole.Doctor => "طبيب", UserRole.ClinicStaff => "موظف عيادة", _ => "مستخدم" })
+                        };
+                        var _profileInitial = !string.IsNullOrWhiteSpace(_profile?.FullName) ? _profile.FullName.Substring(0, 1) : "م";
+                        var _profilePic = _attachmentUrlResolver.Resolve(_profile?.ProfilePictureUrl);
                     }
                     <a class="sidebar-item @(IsActive("Staff", "Index") ? "active" : "")" href="@StaffRoutes.Pages.Index()">
                         <i class="bi bi-speedometer2"></i>
@@ -53,13 +67,20 @@
             </nav>
             <div class="sidebar-bottom">
                 <hr style="width: 100%; border: none; border-top: 1px solid var(--clr-border); margin: 0; padding: 0;" />
-                <a class="sidebar-profile" style="cursor: default;">
+                <a class="sidebar-profile" href="@StaffRoutes.Pages.Profile()">
                     <div class="sidebar-profile-avatar">
-                        <span>م</span>
+                        @if (!string.IsNullOrWhiteSpace(_profilePic))
+                        {
+                            <img src="@_profilePic" alt="@_profileName" class="header-avatar-img" />
+                        }
+                        else
+                        {
+                            <span>@_profileInitial</span>
+                        }
                     </div>
                     <div class="sidebar-profile-info">
-                        <span class="sidebar-profile-name">طاقم الاستقبال</span>
-                        <span class="sidebar-profile-role">موظف عيادة</span>
+                        <span class="sidebar-profile-name">@_profileName</span>
+                        <span class="sidebar-profile-role">@_profileRoleLabel</span>
                     </div>
                 </a>
                 <a href="#" class="sidebar-item" id="logoutBtn">
@@ -78,17 +99,22 @@
                     <i class="bi bi-chevron-double-right"></i>
                 </button>
                 <div style="flex:1"></div>
-                <div class="header-user" style="cursor: default;">
+                <a class="header-user" href="@StaffRoutes.Pages.Profile()">
                     <div class="user-info">
-                        <span class="user-name">موظف الاستقبال</span>
-                        <span class="user-role">طاقم طبي</span>
+                        <span class="user-name">@_profileName</span>
+                        <span class="user-role">@_profileRoleLabel</span>
                     </div>
-                    <svg class="user-avatar" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="18" cy="18" r="18" fill="#F2F5F9"/>
-                        <circle cx="18" cy="14" r="6" fill="#66748C"/>
-                        <path d="M6 30C6 24.4772 11.3726 21 18 21C24.6274 21 30 24.4772 30 30" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
-                    </svg>
-                </div>
+                    <div class="sidebar-profile-avatar header-avatar">
+                        @if (!string.IsNullOrWhiteSpace(_profilePic))
+                        {
+                            <img src="@_profilePic" alt="@_profileName" class="header-avatar-img" />
+                        }
+                        else
+                        {
+                            <span>@_profileInitial</span>
+                        }
+                    </div>
+                </a>
             </header>
 
             <main role="main" class="content-body">

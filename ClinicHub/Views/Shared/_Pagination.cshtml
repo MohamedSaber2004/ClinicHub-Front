@@ -10,6 +10,10 @@
     var searchTerm = ViewBag.SearchTerm as string;
     var status = ViewBag.StatusFilter as string;
     var date = ViewBag.DateFilter as string;
+    var startDate = ViewBag.StartDate as string;
+    var endDate = ViewBag.EndDate as string;
+    var patientId = ViewBag.PatientId;
+    var patientName = ViewBag.PatientName as string;
     var isUnassigned = ViewBag.IsUnassigned as bool?;
     if (pagination == null || totalCount == 0) return;
 }
@@ -19,7 +23,7 @@
         @if (hasPrev)
         {
             <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber - 1, pageSize, isFamous = currentFilter, searchTerm, status, date, isUnassigned })">
+                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber - 1, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned })">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                     </svg>
@@ -32,7 +36,7 @@
         {
             <li class="pagination-item">
                 <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")"
-                   href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = i, pageSize, isFamous = currentFilter, searchTerm, status, date, isUnassigned })">
+                   href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = i, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned })">
                     @i
                 </a>
             </li>
@@ -41,7 +45,7 @@
         @if (hasNext)
         {
             <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber + 1, pageSize, isFamous = currentFilter, searchTerm, status, date, isUnassigned })">
+                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber + 1, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, isUnassigned })">
                     التالي
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>

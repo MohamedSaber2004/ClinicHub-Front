@@ -1,0 +1,251 @@
+@using ClinicHub.Data
+@using ClinicHub.Services.Contracts
+@using ClinicHub.Services.ReponseModels
+@inject IAttachmentUrlResolver _attachmentUrlResolver
+@{
+    var profile = ViewBag.Profile as UserProfileDto ?? ViewBag.HeaderProfile as UserProfileDto;
+
+    string FullName() => !string.IsNullOrWhiteSpace(profile?.FullName) ? profile.FullName : "مستخدم";
+    string Initial() => !string.IsNullOrWhiteSpace(profile?.FullName) ? profile.FullName.Substring(0, 1) : "م";
+    string AvatarUrl() => _attachmentUrlResolver.Resolve(profile?.ProfilePictureUrl);
+    string RoleLabel()
+    {
+        var apiRole = profile?.Role;
+        if (!string.IsNullOrWhiteSpace(apiRole) && apiRole != "User")
+        {
+            return apiRole switch
+            {
+                "SuperAdmin" => "المشرف العام",
+                "ClinicOwner" => "مالك عيادة",
+                "ClinicManager" => "مدير عيادة",
+                "Doctor" => "طبيب",
+                "Staff" => "موظف عيادة",
+                _ => "مستخدم"
+            };
+        }
+        return (ViewBag.CurrentUser as CurrentUserContext)?.Role switch
+        {
+            UserRole.SystemAdmin => "المشرف العام",
+            UserRole.ClinicOwner => "مالك عيادة",
+            UserRole.ClinicManager => "مدير عيادة",
+            UserRole.Doctor => "طبيب",
+            UserRole.ClinicStaff => "موظف عيادة",
+            _ => "مستخدم"
+        };
+    }
+    string GenderText() => profile?.Gender switch
+    {
+        1 => "ذكر",
+        2 => "أنثى",
+        3 => "آخر",
+        _ => "غير محدد"
+    };
+    string BirthDateText() => profile?.BirthDate?.ToString("yyyy-MM-dd") ?? "";
+    var profilePictureUrl = AvatarUrl();
+}
+
+<div class="profile-page">
+    <div class="profile-card">
+        <div class="profile-card-header">
+            <div class="profile-avatar-large">
+                @if (!string.IsNullOrWhiteSpace(profilePictureUrl))
+                {
+                    <img src="@profilePictureUrl" alt="@FullName()" class="profile-avatar-img" />
+                }
+                else
+                {
+                    <span>@Initial()</span>
+                }
+            </div>
+            <div class="profile-name-row">
+                <h2 class="profile-full-name">@FullName()</h2>
+                @if (profile?.IsFreelanceDoctor == true)
+                {
+                    <span class="badge badge-info profile-freelance-badge">طبيب مستقل</span>
+                }
+            </div>
+            <p class="profile-role-label">@RoleLabel()</p>
+            <button type="button" class="btn profile-edit-btn" id="editProfileBtn">
+                <i class="bi bi-pencil-square"></i> تعديل الملف الشخصي
+            </button>
+        </div>
+        <div class="profile-card-body">
+            <div class="profile-field">
+                <span class="profile-field-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="currentColor"/>
+                    </svg>
+                </span>
+                <span class="profile-field-label">البريد الإلكتروني</span>
+                <span class="profile-field-value" dir="ltr">@(profile?.Email ?? "—")</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-field-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="currentColor"/>
+                    </svg>
+                </span>
+                <span class="profile-field-label">رقم الهاتف</span>
+                <span class="profile-field-value" dir="ltr">@(string.IsNullOrWhiteSpace(profile?.PhoneNumber) ? "—" : profile.PhoneNumber)</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-field-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
+                    </svg>
+                </span>
+                <span class="profile-field-label">النوع</span>
+                <span class="profile-field-value">@GenderText()</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-field-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h2v2H7v-2zm0 4h2v2H7v-2zm4-4h2v2h-2v-2zm0 4h2v2h-2v-2zm4-4h2v2h-2v-2zm0 4h2v2h-2v-2z" fill="currentColor"/>
+                    </svg>
+                </span>
+                <span class="profile-field-label">تاريخ الميلاد</span>
+                <span class="profile-field-value">@(string.IsNullOrWhiteSpace(BirthDateText()) ? "—" : BirthDateText())</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-field-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="currentColor"/>
+                    </svg>
+                </span>
+                <span class="profile-field-label">الصلاحية</span>
+                <span class="profile-field-value">@RoleLabel()</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">تعديل الملف الشخصي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-custom">
+                <form id="editProfileForm">
+                    <div class="form-group mb-3">
+                        <label class="form-label">الصورة الشخصية</label>
+                        <input type="file" class="form-input" id="profileImageInput" accept="image/*" />
+                        <div id="profileImageStatus" class="profile-image-status">
+                            <img id="profileImagePreview" src="@profilePictureUrl" alt="الصورة الشخصية" />
+                            <button type="button" id="removeProfileImageBtn" class="btn-icon" title="إزالة الصورة">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" class="form-input" id="profileFullName" value="@FullName()" maxlength="100" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" class="form-input" id="profilePhone" dir="ltr" value="@(profile?.PhoneNumber ?? "")" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">تاريخ الميلاد</label>
+                        <input type="date" class="form-input" id="profileBirthDate" value="@BirthDateText()" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">النوع</label>
+                        <select class="form-select" id="profileGender">
+                            <option value="">غير محدد</option>
+                            <option value="1" selected="@(profile?.Gender == 1)">ذكر</option>
+                            <option value="2" selected="@(profile?.Gender == 2)">أنثى</option>
+                            <option value="3" selected="@(profile?.Gender == 3)">آخر</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="profileSaveBtn">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var profileUpdateUrl = '@Url.Action("UpdateProfile")';
+        var profileImageBase = '@profilePictureUrl';
+        var originalPreview = profileImageBase;
+
+        function resetProfileImageStatus() {
+            $('#profileImageInput').val('');
+            if (originalPreview) {
+                $('#profileImagePreview').attr('src', originalPreview);
+                $('#profileImageStatus').show();
+            } else {
+                $('#profileImagePreview').attr('src', '');
+                $('#profileImageStatus').hide();
+            }
+        }
+
+        $('#profileImageInput').on('change', function () {
+            var file = this.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $('#profileImagePreview').attr('src', e.target.result);
+                $('#profileImageStatus').show();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        $('#removeProfileImageBtn').on('click', function () {
+            resetProfileImageStatus();
+        });
+
+        $('#editProfileBtn').on('click', function () {
+            resetProfileImageStatus();
+            $('#editProfileModal').modal('show');
+        });
+
+        $('#profileSaveBtn').on('click', function () {
+            var btn = $(this);
+            var fullName = $('#profileFullName').val().trim();
+            if (!fullName) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
+
+            var formData = new FormData();
+            formData.append('fullName', fullName);
+            formData.append('phoneNumber', $('#profilePhone').val().trim());
+            formData.append('birthDate', $('#profileBirthDate').val());
+            formData.append('gender', $('#profileGender').val());
+            var fileInput = $('#profileImageInput')[0];
+            if (fileInput.files && fileInput.files[0]) {
+                formData.append('imageFile', fileInput.files[0]);
+            }
+
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> جاري الحفظ...');
+
+            $.ajax({
+                url: profileUpdateUrl,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    btn.prop('disabled', false).html('حفظ التغييرات');
+                    if (res.success) {
+                        $('#editProfileModal').modal('hide');
+                        showSuccessModal(res.message || 'تم تحديث الملف الشخصي بنجاح');
+                        setTimeout(function () { window.location.reload(); }, 1500);
+                    } else {
+                        showErrorModal(res.message || 'حدث خطأ أثناء تحديث الملف الشخصي');
+                    }
+                },
+                error: function (xhr) {
+                    btn.prop('disabled', false).html('حفظ التغييرات');
+                    var msg = 'حدث خطأ في الاتصال أثناء تحديث الملف الشخصي';
+                    try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                    showErrorModal(msg);
+                }
+            });
+        });
+    });
+</script>

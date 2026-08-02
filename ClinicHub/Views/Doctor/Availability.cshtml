@@ -1,0 +1,220 @@
+@using ClinicHub.Data
+@{
+    ViewData["Title"] = "أوقات العمل المتاحة";
+    Layout = "_DoctorLayout";
+    var stats = ViewBag.Stats as List<MockStat> ?? new();
+    var typicalDuration = (int)(ViewBag.TypicalDuration ?? 30);
+    var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
+}
+
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </span>
+    أوقات العمل المتاحة
+</h2>
+
+@if (hasError)
+{
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
+    </div>
+}
+
+<div class="stats-grid">
+    @foreach (var stat in stats)
+    {
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-value" @(stat.Label == "مدة الحجز النموذجية" ? "id=\"statDurationValue\"" : "")>@stat.Value</span>
+                <span class="stat-label">@stat.Label</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--@stat.IconColor">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="@stat.SvgPath"/>
+                </svg>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="detail-card">
+    <div class="detail-section-header">
+        <h5>جدول العمل الأسبوعي</h5>
+        <span class="badge badge-info" id="typicalDurationBadge">مدة الحجز النموذجية: @typicalDuration دقيقة</span>
+    </div>
+    <p class="form-hint mb-3">حدد أيام ومواعيد تواجدك في العيادة. اترك الوقت فارغاً ليكون اليوم عطلة. مدة الحجز تُحدد لكل يوم على حدة — يمكنك اختيار مدة مختلفة لكل يوم (مثلاً 30 دقيقة في يوم و45 دقيقة في يوم آخر).</p>
+    <div id="availabilityContainer"></div>
+    <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn mt-2">
+        <i class="bi bi-plus-circle"></i> إضافة يوم
+    </button>
+    <div class="mt-4">
+        <button type="button" class="btn btn-primary" id="saveAvailabilityBtn">
+            <i class="bi bi-check2"></i> حفظ أوقات العمل
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            var initialAvailability = @Html.Raw(ViewBag.AvailabilityJson);
+
+            function setButtonLoading(btn, isLoading) {
+                if (isLoading) {
+                    btn.data('original-html', btn.html());
+                    btn.prop('disabled', true);
+                    btn.html('<span class="spinner-border spinner-border-sm me-1"></span> جاري الحفظ...');
+                } else {
+                    btn.prop('disabled', false);
+                    btn.html(btn.data('original-html'));
+                }
+            }
+
+            function updateTypicalDuration() {
+                var freq = {};
+                var hasValue = false;
+                $('.availability-slot').each(function () {
+                    var val = parseInt($(this).val(), 10);
+                    if (val > 0) {
+                        freq[val] = (freq[val] || 0) + 1;
+                        hasValue = true;
+                    }
+                });
+                if (!hasValue) return;
+
+                var typical = Object.keys(freq).map(Number)
+                    .sort(function (a, b) { return freq[b] - freq[a]; })[0];
+
+                $('#typicalDurationBadge').text('مدة الحجز النموذجية: ' + typical + ' دقيقة');
+                var statEl = document.getElementById('statDurationValue');
+                if (statEl) statEl.textContent = typical + ' دقيقة';
+            }
+
+            function addAvailabilityRow(id, day, fromTime, toTime, slotMin) {
+                var container = $('#availabilityContainer');
+                var row = $(
+                    '<div class="availability-row">' +
+                        '<select class="availability-day form-select auth-form-control">' +
+                            '<option value="">اليوم</option>' +
+                            DAY_NAMES.map(function (name, i) {
+                                return '<option value="' + i + '"' + (day === i ? ' selected' : '') + '>' + name + '</option>';
+                            }).join('') +
+                        '</select>' +
+                        '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
+                        '<span class="availability-sep">إلى</span>' +
+                        '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
+                        '<input type="number" class="availability-slot form-control auth-form-control" value="' + (slotMin || '30') + '" min="1" max="480" placeholder="دقيقة" />' +
+                        '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>' +
+                    '</div>'
+                );
+                if (id && id !== '00000000-0000-0000-0000-000000000000') row.attr('data-id', id);
+                container.append(row);
+                updateTypicalDuration();
+            }
+
+            if (Array.isArray(initialAvailability) && initialAvailability.length > 0) {
+                initialAvailability.forEach(function (item) {
+                    var start = item.startTime ? item.startTime.substring(0, 5) : '09:00';
+                    var end = item.endTime ? item.endTime.substring(0, 5) : '17:00';
+                    addAvailabilityRow(item.id, item.dayOfWeek, start, end, item.slotDurationMinutes || 30);
+                });
+            } else {
+                addAvailabilityRow();
+            }
+
+            $('#addAvailabilityBtn').on('click', function () {
+                addAvailabilityRow();
+            });
+
+            $('#availabilityContainer').on('input change', '.availability-slot', updateTypicalDuration);
+
+            $(document).on('click', '.availability-remove-btn', function () {
+                $(this).closest('.availability-row').remove();
+                updateTypicalDuration();
+            });
+
+            function buildDaysPayload() {
+                var days = [];
+                var valid = true;
+                var filled = 0;
+                $('.availability-row').each(function () {
+                    var day = $(this).find('.availability-day').val();
+                    var from = $(this).find('.availability-from').val();
+                    var to = $(this).find('.availability-to').val();
+                    if (!day) { valid = false; return false; }
+                    if ((from && !to) || (!from && to)) { valid = false; return false; }
+                    if (!from || !to) return true;
+
+                    if (to <= from) { valid = false; return false; }
+
+                    var slotMin = parseInt($(this).find('.availability-slot').val(), 10);
+                    if (!slotMin || slotMin < 1 || slotMin > 480) { valid = false; return false; }
+
+                    filled++;
+                    var item = {
+                        dayOfWeek: parseInt(day, 10),
+                        startTime: from + ':00',
+                        endTime: to + ':00',
+                        slotDurationMinutes: slotMin || 30
+                    };
+                    var id = $(this).attr('data-id');
+                    if (id) item.id = id;
+                    days.push(item);
+                });
+                return { valid: valid, filled: filled, days: days };
+            }
+
+            $('#saveAvailabilityBtn').on('click', function () {
+                var payload = buildDaysPayload();
+
+                if (!payload.valid) {
+                    showErrorModal('يرجى التأكد من البيانات: اختيار اليوم، وقت نهاية بعد وقت البداية، ومدة حجز بين 1 و 480 دقيقة لكل صف.');
+                    return;
+                }
+                if (payload.filled === 0) {
+                    showErrorModal('يرجى تحديد يوم عمل واحد على الأقل بوقت بداية ونهاية.');
+                    return;
+                }
+
+                var btn = $(this);
+                setButtonLoading(btn, true);
+
+                $.ajax({
+                    url: '@Url.Action("SaveAvailability")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ days: payload.days }),
+                    success: function (res) {
+                        setButtonLoading(btn, false);
+                        if (res.success) {
+                            $('#availabilityContainer').empty();
+                            if (Array.isArray(res.data) && res.data.length > 0) {
+                                res.data.forEach(function (item) {
+                                    var start = item.startTime ? item.startTime.substring(0, 5) : '09:00';
+                                    var end = item.endTime ? item.endTime.substring(0, 5) : '17:00';
+                                    addAvailabilityRow(item.id, item.dayOfWeek, start, end, item.slotDurationMinutes || 30);
+                                });
+                            } else {
+                                addAvailabilityRow();
+                            }
+                            showSuccessModal(res.message || 'تم حفظ أوقات العمل المتاحة بنجاح.');
+                        } else {
+                            showErrorModal(res.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        setButtonLoading(btn, false);
+                        var msg = 'حدث خطأ أثناء حفظ أوقات العمل.';
+                        try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                        showErrorModal(msg);
+                    }
+                });
+            });
+        })();
+    </script>
+}

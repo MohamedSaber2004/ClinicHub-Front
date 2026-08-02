@@ -161,5 +161,36 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
             }
         }
+
+        public async Task<AvailableSlotsDto?> GetAvailableSlotsAsync(Guid clinicId, Guid doctorId, string date)
+        {
+            try
+            {
+                var url = $"{DoctoryRoutes.Doctors.Slots(clinicId, doctorId)}?date={Uri.EscapeDataString(date)}";
+                var response = await _httpClient.GetAsync(url);
+                return await _deserializerService.DeserializeApiResponse<AvailableSlotsDto>(response, "حدث خطأ في جلب المواعيد المتاحة");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<string> BookAppointmentAsync(BookAppointmentRequest request)
+        {
+            try
+            {
+                var json = JsonConvert.SerializeObject(request, _jsonSettings);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(DoctoryRoutes.Doctors.BookAppointment, content);
+                return await _deserializerService.DeserializeApiResponse<string>(response, "حدث خطأ في تأكيد الحجز");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
     }
 }

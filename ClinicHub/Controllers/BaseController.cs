@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
+using ClinicHub.Services.Contracts;
+using ClinicHub.Services.Exceptions;
+using ClinicHub.Services.ReponseModels;
 
 namespace ClinicHub.Controllers
 {
@@ -13,6 +16,24 @@ namespace ClinicHub.Controllers
         {
             ViewBag.CurrentUser = CurrentUser;
             base.OnActionExecuting(context);
+        }
+
+        /// <summary>
+        /// Loads the logged-in user profile (GET /auth/profile) for the layout header.
+        /// Fails silently so pages render with fallback placeholders when the API is unreachable.
+        /// </summary>
+        protected async Task LoadHeaderProfileAsync(IAuthService authService)
+        {
+            try
+            {
+                ViewBag.HeaderProfile = await authService.GetProfileAsync();
+            }
+            catch (ApiException)
+            {
+            }
+            catch (Exception)
+            {
+            }
         }
 
         protected IActionResult RedirectJson(string? redirectUrl)

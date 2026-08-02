@@ -11,6 +11,7 @@ namespace ClinicHub.Routes
             public static string Queue() => $"{Base}/Queue";
             public static string RegisterPatient() => $"{Base}/RegisterPatient";
             public static string DoctorSchedule(int doctorId) => $"{Base}/DoctorSchedule/{doctorId}";
+            public static string Profile() => $"{Base}/Profile";
         }
     }
 }

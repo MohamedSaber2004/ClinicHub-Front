@@ -29,10 +29,12 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly string _getAllClinicsForViewingOnly;
         private readonly string _getAllClinicsPaginated;
         private readonly Func<Guid, string> _getClinicById;
+        private readonly Func<Guid, string> _getClinicDetails;
         private readonly string _createClinic;
         private readonly Func<Guid, string> _updateClinic;
         private readonly Func<Guid, string> _activateClinic;
         private readonly Func<Guid, string> _deactivateClinic;
+        private readonly string _settings;
 
         public ClinicService(HttpClient httpClient, IOptions<Doctory> doctoryOptions, IDeserializerService deserializerService)
         {
@@ -43,10 +45,12 @@ namespace ClinicHub.Services.Services.Implementations
             _getAllClinicsForViewingOnly = DoctoryRoutes.Doctors.GetAllClinicsForViewingOnly;
             _getAllClinicsPaginated = DoctoryRoutes.Clinics.GetAll;
             _getClinicById = DoctoryRoutes.Clinics.GetById;
+            _getClinicDetails = DoctoryRoutes.Clinics.Details;
             _createClinic = DoctoryRoutes.Clinics.Create;
             _updateClinic = DoctoryRoutes.Clinics.Update;
             _activateClinic = DoctoryRoutes.Clinics.Activate;
             _deactivateClinic = DoctoryRoutes.Clinics.Deactivate;
+            _settings = DoctoryRoutes.Clinics.Settings;
         }
 
         public async Task<ApiResponse<ClinicManagmentDto>> CreateClinicAsync(CreateClinicRequest request)
@@ -193,6 +197,27 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
+        public async Task<ApiResponse<ClinicDetailsDto>> GetClinicDetailsAsync(GetClinicByIdRequest request)
+        {
+            try
+            {
+                var url = _getClinicDetails(request.Id);
+                var response = await _httpClient.GetAsync(url);
+                var data = await _deserializerService.DeserializeApiResponse<ClinicDetailsDto>(response, "حدث خطأ في جلب تفاصيل العيادة");
+
+                return new ApiResponse<ClinicDetailsDto>
+                {
+                    Success = true,
+                    Data = data
+                };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
         public async Task<ApiResponse<ClinicManagmentDto>> UpdateClinicAsync(UpdateClinicRequest request)
         {
             try
@@ -319,6 +344,85 @@ namespace ClinicHub.Services.Services.Implementations
                     };
 
                 throw new ApiException(500, "حدث خطأ في إلغاء تفعيل العيادة");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<ClinicSettingsDto>> GetClinicSettingsAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(_settings);
+                var data = await _deserializerService.DeserializeApiResponse<ClinicSettingsDto>(response, "حدث خطأ في جلب إعدادات العيادة");
+
+                return new ApiResponse<ClinicSettingsDto>
+                {
+                    Success = true,
+                    Data = data
+                };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<ClinicSettingsDto>> UpdateClinicSettingsAsync(UpdateClinicSettingsRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    throw new ApiException(400, "بيانات إعدادات العيادة مطلوبة");
+
+                var payload = new JObject
+                {
+                    ["name"] = request.Name,
+                    ["specializationId"] = request.SpecializationId.ToString(),
+                    ["consultationFee"] = request.ConsultationFee,
+                    ["maxAdvanceBookingDays"] = request.MaxAdvanceBookingDays,
+                    ["reservationTtlMinutes"] = request.ReservationTtlMinutes,
+                    ["isActive"] = request.IsActive
+                };
+                AddIfNotNull(payload, "description", request.Description);
+                AddIfNotNull(payload, "phone", request.Phone);
+                AddIfNotNull(payload, "managerName", request.ManagerName);
+                AddIfNotNull(payload, "location", request.Location);
+                AddIfNotNull(payload, "currency", request.Currency);
+                if (request.Latitude.HasValue && request.Longitude.HasValue)
+                {
+                    payload["latitude"] = request.Latitude.Value;
+                    payload["longitude"] = request.Longitude.Value;
+                }
+
+                var json = payload.ToString(Formatting.None);
+                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync(_settings, content);
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errs = ApiErrorExtractor.ExtractErrors(body);
+                    var combined = string.Join("<br />", errs);
+                    if (string.IsNullOrWhiteSpace(combined))
+                        combined = "حدث خطأ في حفظ إعدادات العيادة";
+                    throw new ApiException((int)response.StatusCode, combined);
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<ClinicSettingsDto>>(body, _jsonSettings);
+                if (apiResponse?.Data != null)
+                    return new ApiResponse<ClinicSettingsDto>
+                    {
+                        Success = true,
+                        Data = apiResponse.Data,
+                        Message = apiResponse.Message ?? "تم حفظ إعدادات العيادة بنجاح"
+                    };
+
+                throw new ApiException(500, "حدث خطأ في حفظ إعدادات العيادة");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

@@ -193,5 +193,47 @@ namespace ClinicHub.Services.Services.Implementations
 
             return true;
         }
+
+        public async Task<UserProfileDto> GetProfileAsync()
+        {
+            var response = await _httpClient.GetAsync(DoctoryRoutes.Auth.Profile);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في جلب الملف الشخصي" : combined);
+            }
+
+            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+            var dataJson = dataToken?.ToString() ?? responseBody;
+            return JsonConvert.DeserializeObject<UserProfileDto>(dataJson, _jsonSettings) ?? new UserProfileDto();
+        }
+
+        public async Task<bool> UpdateProfileAsync(UpdateProfileRequest request)
+        {
+            var json = JsonConvert.SerializeObject(request, _jsonSettings);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PatchAsync(DoctoryRoutes.Auth.UpdateProfile, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تحديث الملف الشخصي" : combined);
+            }
+
+            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+
+            if (dataToken != null && dataToken.Type == JTokenType.Boolean)
+                return dataToken.Value<bool>();
+
+            return true;
+        }
     }
 }

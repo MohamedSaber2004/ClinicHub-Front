@@ -12,5 +12,7 @@ namespace ClinicHub.Services.Contracts
         Task<Unit> ForgetPasswordAsync(ForgetPasswordRequest request);
         Task<bool> VerifyResetTokenAsync(VerifyResetTokenRequest request);
         Task<bool> ResetPasswordAsync(ResetPasswordRequest request);
+        Task<UserProfileDto> GetProfileAsync();
+        Task<bool> UpdateProfileAsync(UpdateProfileRequest request);
     }
 }

@@ -1,5 +1,18 @@
 namespace ClinicHub.Data
 {
+    /// <summary>مولّد معرفات موحّدة ثابتة (Guid) للبيانات التجريبية — يضمن تطابق المعرفات بين القوائم والتفاصيل.</summary>
+    public static class MockIds
+    {
+        public static Guid User(int id) => Guid.Parse($"00000000-0000-0000-0000-{id:D12}");
+        public static Guid Payment(int id) => Guid.Parse($"10000000-0000-0000-0000-{id:D12}");
+        public static Guid Visit(int id) => Guid.Parse($"20000000-0000-0000-0000-{id:D12}");
+        public static Guid Patient(int id) => Guid.Parse($"30000000-0000-0000-0000-{id:D12}");
+        public static Guid History(int id) => Guid.Parse($"40000000-0000-0000-0000-{id:D12}");
+        public static Guid Doctor(int id) => Guid.Parse($"50000000-0000-0000-0000-{id:D12}");
+        public static Guid Ticket(int id) => Guid.Parse($"60000000-0000-0000-0000-{id:D12}");
+        public static Guid AppointmentRevenue(int id) => Guid.Parse($"70000000-0000-0000-0000-{id:D12}");
+    }
+
     // --- Dashboard Models ---
     public class MockStat
     {
@@ -622,11 +635,11 @@ namespace ClinicHub.Data
                         DoctorId = 2, DoctorName = "د. سارة أحمد", Specialty = "أمراض القلب", Degree = "أخصائي", Photo = "", IsActive = true, IsPrimary = true,
                         WorkingDays = new()
                         {
-                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
-                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "09:00", EndTime = "17:00", IsAvailable = true },
-                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "09:00", EndTime = "17:00", IsAvailable = true },
-                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
-                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "09:00", EndTime = "13:00", IsAvailable = true },
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "09:00", EndTime = "15:00", IsAvailable = true, SlotDurationMinutes = 30 },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "09:00", EndTime = "17:00", IsAvailable = true, SlotDurationMinutes = 30 },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "09:00", EndTime = "17:00", IsAvailable = true, SlotDurationMinutes = 30 },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "09:00", EndTime = "15:00", IsAvailable = true, SlotDurationMinutes = 45 },
+                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "09:00", EndTime = "13:00", IsAvailable = true, SlotDurationMinutes = 30 },
                             new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
                             new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
                         },
@@ -638,10 +651,10 @@ namespace ClinicHub.Data
                         DoctorId = 7, DoctorName = "د. محمود حسن", Specialty = "جراحة القلب", Degree = "استشاري", Photo = "", IsActive = true, IsPrimary = false,
                         WorkingDays = new()
                         {
-                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
-                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "10:00", EndTime = "14:00", IsAvailable = true, SlotDurationMinutes = 45 },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "10:00", EndTime = "14:00", IsAvailable = true, SlotDurationMinutes = 45 },
                             new() { Day = "Tuesday", DayAr = "الثلاثاء", IsAvailable = false },
-                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "10:00", EndTime = "14:00", IsAvailable = true, SlotDurationMinutes = 45 },
                             new() { Day = "Thursday", DayAr = "الخميس", IsAvailable = false },
                             new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
                             new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
@@ -657,11 +670,11 @@ namespace ClinicHub.Data
                         DoctorId = 4, DoctorName = "د. عبد الله ناصر", Specialty = "الأمراض العصبية", Degree = "أخصائي", Photo = "", IsActive = false, IsPrimary = true,
                         WorkingDays = new()
                         {
-                            new() { Day = "Sunday", DayAr = "الأحد", IsAvailable = false },
-                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "09:00", EndTime = "17:00", IsAvailable = true },
-                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "09:00", EndTime = "17:00", IsAvailable = true },
-                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
-                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "09:00", EndTime = "15:00", IsAvailable = true },
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "09:00", EndTime = "17:00", IsAvailable = true, SlotDurationMinutes = 45 },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "09:00", EndTime = "17:00", IsAvailable = true, SlotDurationMinutes = 45 },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "09:00", EndTime = "17:00", IsAvailable = true, SlotDurationMinutes = 45 },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "09:00", EndTime = "15:00", IsAvailable = true, SlotDurationMinutes = 45 },
+                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "09:00", EndTime = "15:00", IsAvailable = true, SlotDurationMinutes = 45 },
                             new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
                             new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
                         },
@@ -676,11 +689,11 @@ namespace ClinicHub.Data
                         DoctorId = 3, DoctorName = "د. خالد الزهراني", Specialty = "جراحة العظام", Degree = "استشاري", Photo = "", IsActive = true, IsPrimary = true,
                         WorkingDays = new()
                         {
-                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "10:00", EndTime = "18:00", IsAvailable = true },
-                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "10:00", EndTime = "18:00", IsAvailable = true },
-                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "10:00", EndTime = "18:00", IsAvailable = true },
-                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "10:00", EndTime = "18:00", IsAvailable = true },
-                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "10:00", EndTime = "14:00", IsAvailable = true },
+                            new() { Day = "Sunday", DayAr = "الأحد", StartTime = "10:00", EndTime = "18:00", IsAvailable = true, SlotDurationMinutes = 60 },
+                            new() { Day = "Monday", DayAr = "الإثنين", StartTime = "10:00", EndTime = "18:00", IsAvailable = true, SlotDurationMinutes = 60 },
+                            new() { Day = "Tuesday", DayAr = "الثلاثاء", StartTime = "10:00", EndTime = "18:00", IsAvailable = true, SlotDurationMinutes = 60 },
+                            new() { Day = "Wednesday", DayAr = "الأربعاء", StartTime = "10:00", EndTime = "18:00", IsAvailable = true, SlotDurationMinutes = 60 },
+                            new() { Day = "Thursday", DayAr = "الخميس", StartTime = "10:00", EndTime = "14:00", IsAvailable = true, SlotDurationMinutes = 60 },
                             new() { Day = "Friday", DayAr = "الجمعة", IsAvailable = false },
                             new() { Day = "Saturday", DayAr = "السبت", IsAvailable = false },
                         },
@@ -1000,6 +1013,40 @@ namespace ClinicHub.Data
             new() { Value = "1", Label = "ملغاة", IconColor = "amber", SvgPath = "M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z" },
         };
 
+        public static MockDoctorClinicConfig? GetDoctorAvailabilityConfig(int doctorId) =>
+            GetClinicDoctors(ClinicId_Heart).FirstOrDefault(d => d.DoctorId == doctorId);
+
+        public static List<MockStat> GetDoctorAvailabilityStats(int doctorId)
+        {
+            var config = GetDoctorAvailabilityConfig(doctorId);
+            if (config == null)
+                return new();
+
+            var activeDays = config.WorkingDays.Count(w => w.IsAvailable);
+            var totalHours = config.WorkingDays
+                .Where(w => w.IsAvailable && !string.IsNullOrEmpty(w.StartTime) && !string.IsNullOrEmpty(w.EndTime))
+                .Sum(w => (TimeSpan.TryParse(w.EndTime, out var end) && TimeSpan.TryParse(w.StartTime, out var start))
+                    ? (end - start).TotalHours
+                    : 0);
+
+            // مدة الحجز النموذجية: الأكثر تكراراً عبر صفوف أوقات العمل (لا تُعرض 30 كقيمة ثابتة)
+            var durations = config.WorkingDays
+                .Where(w => w.IsAvailable && w.SlotDurationMinutes > 0)
+                .Select(w => w.SlotDurationMinutes)
+                .ToList();
+            var typicalDuration = durations.Count > 0
+                ? durations.GroupBy(d => d).OrderByDescending(g => g.Count()).First().Key
+                : 30;
+
+            return new()
+            {
+                new() { Value = activeDays.ToString(), Label = "أيام العمل الأسبوعية", IconColor = "green", SvgPath = "M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z" },
+                new() { Value = totalHours.ToString("0.#"), Label = "ساعات العمل أسبوعياً", IconColor = "primary", SvgPath = "M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" },
+                new() { Value = $"{typicalDuration} دقيقة", Label = "مدة الحجز", IconColor = "amber", SvgPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" },
+                new() { Value = config.SessionLimitPerDay.ToString(), Label = "أقصى مواعيد يومياً", IconColor = "blue", SvgPath = "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" },
+            };
+        }
+
         public static List<MockStaffAppointment> GetDoctorAppointments() => new()
         {
             new() { Id = 1, PatientName = "محمد عمر", PatientInitial = "م", Date = "2026-07-26", Time = "09:00", Status = "مؤكد", StatusClass = "badge-success", Specialty = "أمراض القلب" },
@@ -1037,6 +1084,22 @@ namespace ClinicHub.Data
                 new() { Id = 6, Date = "2026-07-20", Diagnosis = "زيارة روتينية", Notes = "لا توجد شكوى", Prescription = "", Status = "مكتمل", StatusClass = "badge-success" },
             }
         };
+
+        public static List<MockAppointmentPayment> GetAppointmentRevenues() => new()
+    {
+        new() { Id = 1, PatientName = "محمد عمر", PatientInitial = "م", DoctorName = "د. سارة أحمد", Date = "2026-07-29", Time = "09:00", Amount = 300, Method = "نقداً", MethodClass = "badge-primary", Status = "مدفوعة", StatusClass = "badge-success" },
+        new() { Id = 2, PatientName = "فاطمة الناصر", PatientInitial = "ف", DoctorName = "د. عمار السيد", Date = "2026-07-29", Time = "11:00", Amount = 250, Method = "بطاقة", MethodClass = "badge-info", Status = "مدفوعة", StatusClass = "badge-success" },
+        new() { Id = 3, PatientName = "أحمد رضا", PatientInitial = "أ", DoctorName = "د. عبد الله ناصر", Date = "2026-07-28", Time = "13:00", Amount = 400, Method = "بطاقة", MethodClass = "badge-info", Status = "مدفوعة", StatusClass = "badge-success" },
+        new() { Id = 4, PatientName = "نورة علي", PatientInitial = "ن", DoctorName = "د. نورة السعيد", Date = "2026-07-28", Time = "10:00", Amount = 350, Method = "محفظة إلكترونية", MethodClass = "badge-warning", Status = "مدفوعة", StatusClass = "badge-success" },
+        new() { Id = 5, PatientName = "عمر حسن", PatientInitial = "ع", DoctorName = "د. خالد الزهراني", Date = "2026-07-27", Time = "12:00", Amount = 500, Method = "نقداً", MethodClass = "badge-primary", Status = "مدفوعة", StatusClass = "badge-success" },
+        new() { Id = 6, PatientName = "سارة أحمد", PatientInitial = "س", DoctorName = "د. محمود حسن", Date = "2026-07-26", Time = "09:30", Amount = 275, Method = "بطاقة", MethodClass = "badge-info", Status = "معلقة", StatusClass = "badge-warning" },
+        new() { Id = 7, PatientName = "ليلى محمود", PatientInitial = "ل", DoctorName = "د. سارة أحمد", Date = "2026-07-25", Time = "14:00", Amount = 320, Method = "نقداً", MethodClass = "badge-primary", Status = "مدفوعة", StatusClass = "badge-success" },
+        new() { Id = 8, PatientName = "خالد إبراهيم", PatientInitial = "خ", DoctorName = "د. عمار السيد", Date = "2026-07-24", Time = "10:30", Amount = 240, Method = "محفظة إلكترونية", MethodClass = "badge-warning", Status = "مدفوعة", StatusClass = "badge-success" },
+        new() { Id = 9, PatientName = "هدى ناصر", PatientInitial = "ه", DoctorName = "د. نورة السعيد", Date = "2026-07-23", Time = "11:30", Amount = 380, Method = "بطاقة", MethodClass = "badge-info", Status = "مستردة", StatusClass = "badge-danger" },
+        new() { Id = 10, PatientName = "عبد الله السعيد", PatientInitial = "ع", DoctorName = "د. عبد الله ناصر", Date = "2026-07-22", Time = "15:00", Amount = 450, Method = "نقداً", MethodClass = "badge-primary", Status = "مدفوعة", StatusClass = "badge-success" },
+        new() { Id = 11, PatientName = "منى سعيد", PatientInitial = "م", DoctorName = "د. خالد الزهراني", Date = "2026-07-21", Time = "09:45", Amount = 310, Method = "بطاقة", MethodClass = "badge-info", Status = "مدفوعة", StatusClass = "badge-success" },
+            new() { Id = 12, PatientName = "أحمد عبد الله", PatientInitial = "أ", DoctorName = "د. سارة أحمد", Date = "2026-07-20", Time = "12:30", Amount = 265, Method = "نقداً", MethodClass = "badge-primary", Status = "معلقة", StatusClass = "badge-warning" },
+        };
     }
 
     // ========== User Models ==========
@@ -1047,6 +1110,7 @@ namespace ClinicHub.Data
         public string Email { get; set; } = "";
         public string Phone { get; set; } = "";
         public string Initials { get; set; } = "";
+        public string Image { get; set; } = "";
         public string RegistrationDate { get; set; } = "";
         public string Status { get; set; } = "";
         public string StatusClass { get; set; } = "badge-success";
@@ -1062,6 +1126,7 @@ namespace ClinicHub.Data
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Initials { get; set; } = "";
+        public string Image { get; set; } = "";
         public string Email { get; set; } = "";
         public string Phone { get; set; } = "";
         public string RegistrationDate { get; set; } = "";
@@ -1138,6 +1203,9 @@ namespace ClinicHub.Data
         public string StartTime { get; set; } = "09:00";
         public string EndTime { get; set; } = "17:00";
         public bool IsAvailable { get; set; } = true;
+
+        /// <summary>مدة الحجز لهذا الصف (الفترة) — 1–480 دقيقة. القيمة 30 مجرد افتراضي للصف الجديد.</summary>
+        public int SlotDurationMinutes { get; set; } = 30;
     }
 
     public class MockDoctorClinicConfig
@@ -1316,6 +1384,22 @@ public class MockPatientHistory
         public int Period { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; } = "EGP";
+    }
+
+    // ========== Appointment Revenue Models ==========
+    public class MockAppointmentPayment
+    {
+        public int Id { get; set; }
+        public string PatientName { get; set; } = "";
+        public string PatientInitial { get; set; } = "";
+        public string DoctorName { get; set; } = "";
+        public string Date { get; set; } = "";
+        public string Time { get; set; } = "";
+        public decimal Amount { get; set; }
+        public string Method { get; set; } = "";
+        public string MethodClass { get; set; } = "badge-info";
+        public string Status { get; set; } = "";
+        public string StatusClass { get; set; } = "badge-success";
     }
 
 }

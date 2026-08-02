@@ -13,11 +13,11 @@ Execute code in a structured, step-by-step manner. Every implementation consumes
 ```
 ASP.NET Core 8 MVC (RTL/Arabic)
 ├── Controllers/ — Pass data via ViewBag only (no @model directives)
-│   ├── BaseController — abstract base: CurrentUser, IsAjaxRequest, RedirectJson(), Fail()
+│   ├── BaseController — abstract base: CurrentUser, IsAjaxRequest, RedirectJson(), Fail(), LoadHeaderProfileAsync()
 │   ├── HomeController — public pages (subscriptions, clinic registration, attachments)
 │   ├── AccountController — auth (login, forgot/reset password, verification)
 │   ├── AdminController — system admin (clinics, doctors, specializations, payments, users, support)
-│   ├── ClinicController — clinic owner/manager (appointments, doctors, staff, billing, settings)
+│   ├── ClinicController — clinic owner/manager (appointments, doctors, staff, settings)
 │   ├── DoctorController — doctor panel (appointments, patients, history)
 │   └── StaffController — reception/front-desk (queue, appointments, register patient)
 ├── Services/Contracts/ — Service interfaces (IAuthService, IClinicService, IDoctorService, etc.)
@@ -28,7 +28,7 @@ ASP.NET Core 8 MVC (RTL/Arabic)
 │   ├── Roles.cs — Flag enums: Permission, PlanFeature, UserRole, ClinicStaffRole
 │   └── CurrentUserContext.cs — User context DTO with HasPermission/HasFeature
 ├── Routes/ — Static route helpers per area (AdminRoutes.Pages.Index(), etc.)
-├── Views/Shared/ — Layouts + partials (_Pagination, _SuccessModal, _ErrorModal, _ConfirmModal)
+├── Views/Shared/ — Layouts + partials (_Pagination, _ProfilePage, _SuccessModal, _ErrorModal, _ConfirmModal)
 └── wwwroot/css/
     ├── design-system.css — Design tokens + utility classes
     └── site.css — Layout styles (sidebar, tables, cards, grid)
@@ -41,30 +41,36 @@ All controllers consume backend API through typed service interfaces injected vi
 ### Available Services
 | Interface | Purpose | Used By |
 |-----------|---------|---------|
-| `IAuthService` | Login, refresh, logout | AccountController |
+| `IAuthService` | Login, refresh, logout, my-profile (`GET /auth/profile` → `GetProfileAsync()`, `PATCH /auth/profile/update` → `UpdateProfileAsync()`) | AccountController + Admin/Clinic/Doctor/Staff (profile) |
 | `IPlanService` | Subscription plans CRUD | HomeController, AdminController, ClinicController |
 | `ISubscriptionService` | Clinic subscriptions, registration | HomeController, ClinicController |
 | `IAdminSubscriptionService` | Admin subscription management | AdminController |
 | `ISpecializationService` | Medical specializations CRUD | HomeController, AdminController, ClinicController |
-| `IClinicService` | Clinic management (CRUD, activate/deactivate) | AdminController |
-| `IClinicDoctorService` | Clinic-specific doctor management (create with availability) | ClinicController |
+| `IClinicService` | Clinic management (CRUD, activate/deactivate, details) | AdminController |
+| `IClinicDoctorService` | Clinic-specific doctor management (create with availability); also patient-booking slots fetch + appointment booking (`GetAvailableSlotsAsync(clinicId, doctorId, date)`, `BookAppointmentAsync(request)`) | ClinicController |
 | `IClinicStaffService` | Clinic-specific staff management | ClinicController |
-| `IDoctorService` | Doctor management (admin) | AdminController |
+| `IDoctorService` | Doctor management (admin) + own availability load/save (week replace) | AdminController, DoctorController |
 | `IUserService` | User management, search (SearchUsers with IsUnassigned flag) | AdminController, ClinicController |
 | `IUserVerificationService` | Verification requests management | AdminController |
 | `IStaffDashboardService` | Staff dashboard (stats, queue, appointments) | StaffController |
-| `IAttachmentService` | File uploads | HomeController, AdminController |
-| `IAttachmentUrlResolver` | Resolve attachment URLs | AdminController |
+| `IAttachmentService` | File uploads | HomeController, AdminController, ClinicController, DoctorController, StaffController |
+| `IAttachmentUrlResolver` | Resolve attachment URLs (full URL from relative path) | AdminController, all dashboard layouts |
 
 ### Response Models Pattern
 - `ApiResponse<T>` — wrapper: `IsSuccess`, `Data`, `Errors`
 - `PagginatedResult<T>` — paginated list: `Items`, `TotalCount`, `TotalPages`, `PageNumber`, `PageSize`, `HasPreviousPage`, `HasNextPage`
-- DTOs per domain: `PlanDto`, `SpecializationDto`, `ClinicManagmentDto`, `DoctorDto`, `StaffDto`, `StaffDashboardStatsDto`, `StaffAppointmentDto`, `StaffQueueItemDto`, etc.
+- DTOs per domain: `PlanDto`, `SpecializationDto`, `ClinicManagmentDto`, `ClinicDetailsDto` (extends ClinicManagmentDto with Doctors, Staff, Ratings), `DoctorBriefDto`, `StaffBriefDto`, `RatingDto`, `DoctorDto`, `StaffDto` (has `Image` property for profile picture), `StaffDashboardStatsDto`, `StaffAppointmentDto`, `StaffQueueItemDto`, `UserProfileDto` (`Id`, `FullName`, `Email`, `Gender` int 1-3 nullable, `PhoneNumber`, `BirthDate` nullable, `ProfilePictureUrl` relative `/files/...` — resolve via `IAttachmentUrlResolver.Resolve()`, `Language` string ("1"=en/"2"=ar), `Role` string — one of `User`/`Doctor`/`Staff`/`ClinicOwner`/`SuperAdmin`, `IsFreelanceDoctor` bool), etc.
+- Slots DTOs (patient booking): `AvailableSlotsDto` (`DoctorId`, `ClinicId`, `RequestedDate`, `Days`), `SlotDayDto` (`DayOfWeek` string — numeric tolerated, `WorkingHours`, `SlotDurationMinutes`, `Slots`), `WorkingHoursDto` (`From`, `To`), `SlotDto` (`Id`, `StartTime`, `EndTime`, `IsAvailable`). One `days` entry per availability row — same weekday may repeat with different durations.
 
 ### Request Models
 - `CreateDoctorRequest` now supports `Availabilities` (List of `DoctorAvailabilityItem`)
 - `DoctorAvailabilityItem` DTO: `DayOfWeek` (int 0-6), `StartTime` (string HH:mm:ss), `EndTime` (string HH:mm:ss), `SlotDurationMinutes` (int, default 30)
+- `BookAppointmentRequest` (patient booking): `ClinicId`, `DoctorId`, `Date` (YYYY-MM-DD), `StartTime`, `EndTime` — must be exactly the slot times returned by the slots endpoint; `PatientName`, `PatientPhone`
 - `CreateUserRequest` used for admin user creation (accepts `availabilitiesJson` as additional form param)
+- `CreateStaffRequest` has `FullName`, `Email`, `PhoneNumber`, `Password`, `ClinicId`, `Image` (string?)
+- `UpdateStaffRequest` has `FullName`, `PhoneNumber`, `IsActive`, `Image` (string?)
+- `UploadAttachmentRequest` — used for image uploads before creating/updating entities; accepts `IFormFile`, `int place` (1=User/Images, 5=Clinic/Images, 7=Doctor/Images, 13=Specialization/Icons), `MediaType` enum
+- `UpdateProfileRequest` — my-profile update (`PATCH /auth/profile/update`): all fields optional — `FullName`, `PhoneNumber`, `BirthDate` (must not be in the future), `Gender` 1-3, `ProfileImageUrl` (path from avatar upload)
 
 ### Controller DI Pattern
 ```csharp
@@ -130,6 +136,13 @@ catch (Exception ex)
 | Status text | `.status-active`, `.status-inactive`, `.priority-high`, `.priority-medium`, `.priority-low` |
 | Stepper / Wizard | `.stepper`, `.stepper-step`, `.stepper-step.active`, `.stepper-step.completed`, `.stepper-circle`, `.stepper-label`, `.stepper-line`, `.step-panel` |
 | Availability rows | `.availability-row`, `.availability-day`, `.availability-from`, `.availability-to`, `.availability-slot`, `.availability-sep`, `.availability-remove-btn`, `.add-availability-btn` |
+| Staff/Doctor cards grid | `.staff-grid` (grid container), `.staff-card` (card), `.staff-card-avatar`, `.staff-card-initial`, `.staff-card-body`, `.staff-card-name`, `.staff-card-role`, `.staff-card-contact`, `.staff-contact-link`, `.staff-card-exp`, `.staff-exp-badge` |
+| Clinic detail header | `.clinic-detail-header`, `.cdh-image`, `.cdh-image-placeholder`, `.cdh-info`, `.cdh-name`, `.cdh-specs`, `.cdh-meta`, `.cdh-rating`, `.cdh-status`, `.cdh-desc`, `.cdh-contact`, `.cdh-actions` |
+| Clinic stats row | `.clinic-stats-row`, `.clinic-stat-card`, `.clinic-stat-value`, `.clinic-stat-label` |
+| Detail cards | `.detail-card`, `.detail-section-header`, `.detail-grid-2col`, `.detail-field`, `.detail-field-label`, `.detail-field-value` |
+| Working hours table | `.wh-table` with table/th/td |
+| Profile page | `.profile-page`, `.profile-card` (+`-header`/`-body`), `.profile-avatar-large`, `.profile-avatar-img`, `.profile-name-row`, `.profile-full-name`, `.profile-role-label`, `.profile-freelance-badge`, `.profile-edit-btn`, `.profile-field` (+`-icon`/`-label`/`-value`), `.profile-image-status`, `.header-avatar`, `.header-avatar-img` |
+| Online booking slots | `.slot-segment` (+`-header`/`-title`/`-hours`), `.slot-duration-badge`, `.slot-grid`, `.slot-btn` (+`--selected`/`--disabled`), `.booking-filters`, `.booking-filter-group`, `.booking-empty`, `.booking-summary` (+`-item`) |
 
 ## Instructions
 
@@ -171,6 +184,36 @@ public async Task<IActionResult> SomeAction(Guid id, int pageNumber = 1, int pag
 }
 ```
 
+#### 404 Fallback pattern (endpoint not yet implemented)
+```csharp
+ViewBag.Doctors = new List<DoctorBriefDto>();
+ViewBag.Staff = new List<StaffBriefDto>();
+ViewBag.RecentRatings = new List<RatingDto>();
+
+try
+{
+    var details = await _service.GetClinicDetailsAsync(...);
+    // populate ViewBag with DTO data
+}
+catch (ApiException ex) when (ex.StatusCode == 404)
+{
+    try
+    {
+        var fallback = await _service.GetBasicDataAsync(...);
+        // populate ViewBag with basic data
+    }
+    catch (ApiException)
+    {
+        ViewBag.ErrorMessage = "...";
+        ViewBag.Clinic = null;
+    }
+}
+catch (ApiException ex)
+{
+    ViewBag.ErrorMessage = ex.Message;
+}
+```
+
 #### JSON API endpoint (for AJAX)
 ```csharp
 [HttpPost]
@@ -200,6 +243,26 @@ public async Task<IActionResult> SomeAction(Guid id)
 - `AdminController.CreateUser` accepts additional `[FromForm] string? availabilitiesJson`
 - `availabilitiesJson` is a hidden input populated by JS before form submit
 - Serializes working hours rows to JSON before POST
+
+#### Staff create/edit with image upload (ClinicController — multipart form, 2-step)
+- **Step 1**: Upload image via `_attachmentService.UploadAttachmentAsync(new UploadAttachmentRequest(file, 1, MediaType.Image))` where `1` = User/Images
+- **Step 2**: Set `request.Image = fileName` from upload response, then call `_clinicStaffService.CreateStaffAsync(request)` or `_clinicStaffService.UpdateStaffAsync(id, request)`
+- Controller reads form fields via `Request.Form["fieldName"]` and file via `Request.Form.Files.GetFile("imageFile")`
+- View sends `FormData` with `imageFile` appended when user selects a file
+- Image display URL: `{attachmentBaseUrl}/files/{filename}` (use `_doctoryOptions.Value.BaseUrl` in views, injected via `@inject IOptions<Doctory>`)
+
+#### Profile feature (all dashboards — Admin/Clinic/Doctor/Staff)
+- **GET** `Profile()` per controller → `ViewBag.Profile` (UserProfileDto) via `_authService.GetProfileAsync()`; 3-layer error handling
+- **POST** `UpdateProfile()` — multipart form (not JSON): fields `fullName`, `phoneNumber`, `birthDate`, `gender`, optional `imageFile`; when a file is present, upload first via `_attachmentService.UploadAttachmentAsync(new UploadAttachmentRequest(file, 1, MediaType.Image))` (place `1` = User/Images), then build `UpdateProfileRequest` (only non-empty values) → `_authService.UpdateProfileAsync(request)`; returns `Json(new { success, message })` (on ApiException set `Response.StatusCode = ex.StatusCode`)
+- **Layout header hydration**: every dashboard controller's `OnActionExecutionAsync` calls `await LoadHeaderProfileAsync(_authService)` (BaseController helper, silent-fail) → `ViewBag.HeaderProfile` (UserProfileDto) → layouts render real name/initial/photo with fallback placeholders. Layouts inject `IAttachmentUrlResolver` to build avatar URLs
+- **Shared view**: `Views/Shared/_ProfilePage.cshtml` — reads `ViewBag.Profile` (falls back to `ViewBag.HeaderProfile`); role label from `profile.Role` string switch; freelance badge when `IsFreelanceDoctor`; edit modal (name/phone/birthdate/gender/avatar) posts `FormData` to `@Url.Action("UpdateProfile")` (resolves per-area); script must NOT use `@section` inside a partial — wrap in `document.addEventListener('DOMContentLoaded', ...)`
+- **Area pages**: `Views/{Admin,Clinic,Doctor,Staff}/Profile.cshtml` — thin views: set `ViewData["Title"]` + `Layout` + `<partial name="_ProfilePage" />`
+- **Routes**: `ClinicRoutes.Pages.Profile()`, `DoctorRoutes.Pages.Profile()`, `StaffRoutes.Pages.Profile()` (Admin already had `Profile()`); header/sidebar user blocks link to the area profile page
+
+#### UserService.GetAllUsersPagginatedAsync query behavior
+- When `UserTypes` list is **empty** (no filter): sends ALL non-None `UserType` enum values (User, SuperAdmin, Doctor, Staff, ClinicOwner) to the API
+- When `UserTypes` list has values: sends only those specific `UserType` values
+- Role filter values: `2`=SuperAdmin, `16`=ClinicOwner, `8`=Staff, `1`=User
 
 ### Step 5: View construction patterns
 
@@ -311,6 +374,95 @@ public async Task<IActionResult> SomeAction(Guid id)
 </td>
 ```
 
+#### Attachment base URL injection (for image display in views)
+```cshtml
+@using ClinicHub.Services.Options
+@inject Microsoft.Extensions.Options.IOptions<Doctory> _doctoryOptions
+@{
+    var attachmentBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
+}
+```
+Use `attachmentBaseUrl` to construct image URLs: `@(attachmentBaseUrl)/files/@filename`
+Pass to JS via: `var attachmentBaseUrl = '@attachmentBaseUrl';`
+
+#### View cast pattern (fallback-safe for inherited DTOs)
+```cshtml
+@{
+    var clinicDetails = ViewBag.Clinic as ClinicDetailsDto;
+    var clinic = clinicDetails ?? (ViewBag.Clinic as ClinicManagmentDto);
+    var doctors = clinicDetails?.Doctors ?? new List<DoctorBriefDto>();
+    var staffList = clinicDetails?.Staff ?? new List<StaffBriefDto>();
+    var recentRatings = clinicDetails?.RecentRatings ?? new List<RatingDto>();
+    var avgRating = clinicDetails?.AverageRating ?? clinic.Rating ?? 0;
+    var totalRatings = clinicDetails?.TotalRatings ?? 0;
+}
+```
+
+#### Tab-based detail page pattern (clinic details)
+```cshtml
+<div class="detail-tabs mt-3">
+    <ul class="nav nav-tabs" id="clinicTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" id="ov-tab" data-bs-toggle="tab" data-bs-target="#ov" type="button" role="tab">نظرة عامة</button></li>
+        <li class="nav-item"><button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs" type="button" role="tab">الأطباء</button></li>
+        <li class="nav-item"><button class="nav-link" id="stf-tab" data-bs-toggle="tab" data-bs-target="#stf" type="button" role="tab">الموظفين</button></li>
+        <li class="nav-item"><button class="nav-link" id="ratings-tab" data-bs-toggle="tab" data-bs-target="#ratings" type="button" role="tab">التقييمات</button></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="ov" role="tabpanel">...</div>
+        <div class="tab-pane fade" id="docs" role="tabpanel">...</div>
+        <div class="tab-pane fade" id="stf" role="tabpanel">...</div>
+        <div class="tab-pane fade" id="ratings" role="tabpanel">...</div>
+    </div>
+</div>
+```
+
+#### Staff/Doctor card grid pattern (replace tables for profile lists)
+```html
+<div class="staff-grid">
+    <div class="staff-card">
+        <div class="staff-card-avatar">
+            <img src="..." alt="..." />
+            <!-- or: <span class="staff-card-initial">أ</span> -->
+        </div>
+        <div class="staff-card-body">
+            <h4 class="staff-card-name">الاسم</h4>
+            <span class="staff-card-role">الدور/التخصص</span>
+            <div class="staff-card-contact">
+                <a href="mailto:..." class="staff-contact-link">البريد</a>
+                <a href="tel:..." class="staff-contact-link">الهاتف</a>
+            </div>
+        </div>
+        <div class="staff-card-exp">
+            <span class="staff-exp-badge">5+ سنوات</span>
+        </div>
+    </div>
+</div>
+```
+
+#### Ratings list pattern
+```html
+<div class="ratings-header-card">
+    <div class="rhc-score">
+        <span class="rhc-number">4.5</span>
+        <div class="stars-inline"><!-- SVG stars --></div>
+        <span class="rhc-count">12 تقييم</span>
+    </div>
+</div>
+<div class="ratings-list">
+    <div class="rating-full-card">
+        <div class="rfc-avatar">م</div>
+        <div class="rfc-content">
+            <div class="rfc-header">
+                <span class="rfc-name">المستخدم</span>
+                <span class="rfc-date">2026-07-20</span>
+            </div>
+            <div><!-- stars --></div>
+            <p class="rfc-comment">نص المراجعة</p>
+        </div>
+    </div>
+</div>
+```
+
 ### Step 5a: Multi-step wizard (stepper + step panels)
 Use for multi-stage forms. Applies to "Add Doctor" flow (3 steps: personal info → professional info → working hours).
 
@@ -409,6 +561,18 @@ $('.availability-row').each(function() {
     });
 });
 ```
+
+### Step 5c: Dynamic slot duration (مدة الحجز الديناميكية) — one endpoint per consumer
+
+The booking duration belongs to **one availability row** — never hard-code `30` as authoritative. `30` is only a prefill for new rows / fallback for legacy rows (stored 0). Authoritative spec: `docs/dynamic-slot-duration.md`.
+
+- **Patient booking page** (`Clinic/OnlineBooking`): consumes the **slots** endpoint only — `GET /api/v1/clinics/{clinicId}/doctors/{doctorId}/slots?date=YYYY-MM-DD` via `IClinicDoctorService.GetAvailableSlotsAsync(clinicId, doctorId, date)`. Response `data.days[]` has **one entry per availability row** (`dayOfWeek`, `workingHours {from,to}`, `slotDurationMinutes`, `slots[{id,startTime,endTime,isAvailable}]`). Render each entry as its own segment labeled with the duration (e.g. "30 دقيقة لكل موعد"); same weekday can appear twice with different durations. `isAvailable:false` = overlaps a booked appointment; render disabled.
+  - **Booking-window clamp**: date input `min=today`, `max=today+maxAdvanceBookingDays` (default 30, from clinic settings endpoint → `ClinicSettingsDto.MaxAdvanceBookingDays`). Dates beyond the window → HTTP 400 localized `Booking.InvalidDate`; the page shows the localized message (also JS-guards client-side).
+  - **Submit**: `BookSlot` controller action posts `BookAppointmentRequest` with the **exact** `startTime`+`endTime` from the returned slot — made-up times → HTTP 400 localized `AppointmentMessages.DoctorNotAvailableAtThisTime`. Errors surface via `showErrorModal(res.message)` (localized, Arabic via `Accept-Language: ar` on the HttpClient).
+  - Controller actions: `ClinicController.OnlineBooking()` (ViewBag: `ClinicId`, `Doctors` list, `MaxAdvanceBookingDays`; silent fallback for settings), `GetDoctorSlots(doctorId, date)` and `BookSlot([FromBody] JsonElement)` JSON endpoints with 3-layer error handling.
+- **Doctor dashboard** (`Doctor/Availability`): `GET/PUT /api/v1/doctors/availability(/week)` via `IDoctorService` — flat rows with per-row `slotDurationMinutes`. Duration input **inside each row** (`.availability-slot`); typical-duration badge/stat = most frequent value, recomputed live on every edit/add/remove (JS `updateTypicalDuration`). Empty schedule → seed Sun–Thu 09:00–17:00 rows, 30 min, **no ids**. Save: rows from server keep `data-id`, new rows omit id; re-render from response (fresh ids). Client validates: endTime after startTime, duration 1–480.
+- **Clinic settings** (`Clinic/Settings`): `GET /api/v1/admin/clinics/settings` — `slotDurationMinutes` = typical (most frequent) duration, **read-only**, labeled "تُدار من أوقات عمل الأطباء". Fallback chain: live most-frequent (computed from `IClinicDoctorService.GetDoctorsAsync` availabilities in `ClinicController.Settings` → `ViewBag.TypicalSlotDuration`) → `settings?.SlotDurationMinutes` → 30; silently falls back on fetch failure (no error banner).
+- CSS for the booking page: `.slot-segment`, `.slot-segment-header`, `.slot-segment-title`, `.slot-segment-hours`, `.slot-duration-badge`, `.slot-grid`, `.slot-btn`, `.slot-btn--selected`, `.slot-btn--disabled`, `.booking-filters`, `.booking-filter-group`, `.booking-empty`, `.booking-summary`, `.booking-summary-item`.
 
 ### Step 6: Follow conventions strictly
 - Use design token variables, never hardcoded colors/spacing

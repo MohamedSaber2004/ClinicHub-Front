@@ -1,12 +1,331 @@
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "حجز أونلاين - Doctory";
     Layout = "_ClinicLayout";
+    var doctors = ViewBag.Doctors as List<DoctorDto> ?? new List<DoctorDto>();
+    var maxDays = (int)(ViewBag.MaxAdvanceBookingDays ?? 30);
+    var clinicId = (Guid)(ViewBag.ClinicId ?? Guid.Empty);
+    var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+    var maxDate = DateTime.Today.AddDays(maxDays).ToString("yyyy-MM-dd");
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="page-title mb-0">حجز أونلاين</h2>
-</div>
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+            <rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 2v4M16 2v4M3 9h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="9" cy="14" r="1" fill="currentColor"/>
+            <circle cx="13" cy="14" r="1" fill="currentColor"/>
+            <circle cx="17" cy="14" r="1" fill="currentColor"/>
+        </svg>
+    </span>
+    حجز أونلاين
+</h2>
 
-<div class="table-card" style="padding: 24px;">
-    <p style="color: var(--text-muted);">سيتم إضافة محتوى صفحة الحجز أونلاين قريباً</p>
-</div>
+@if (hasError)
+{
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
+    </div>
+}
+
+@if (clinicId == Guid.Empty)
+{
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> لم يتم العثور على العيادة المرتبطة بحسابك.
+    </div>
+}
+else
+{
+    <div class="detail-card settings-card">
+        <div class="detail-section-header">
+            <h5>اختيار الطبيب والتاريخ</h5>
+        </div>
+        <div class="filter-bar booking-filters">
+            <div class="form-group booking-filter-group">
+                <label class="form-label">الطبيب</label>
+                <select class="form-select" id="bookingDoctorSelect">
+                    <option value="">اختر الطبيب</option>
+                    @foreach (var doctor in doctors)
+                    {
+                        <option value="@doctor.Id">@doctor.UserName (@doctor.SpecializationName)</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group booking-filter-group">
+                <label class="form-label">تاريخ الحجز</label>
+                <input type="date" class="form-input" id="bookingDateInput" min="@today" max="@maxDate" value="@today" />
+            </div>
+        </div>
+        <p class="form-hint">
+            <i class="bi bi-info-circle me-1"></i>
+            يمكن الحجز حتى @maxDays يوم من اليوم. مدة كل موعد تُحدد تلقائياً من أوقات عمل الطبيب لكل فترة.
+        </p>
+    </div>
+
+    <!-- Slots area -->
+    <div class="detail-card settings-card">
+        <div class="detail-section-header">
+            <h5>المواعيد المتاحة</h5>
+            <span class="badge badge-info" id="bookingSlotsCount">اختر طبيباً لعرض المواعيد</span>
+        </div>
+
+        <div id="bookingEmptyState" class="booking-empty">
+            <i class="bi bi-calendar-x"></i>
+            <span>لا توجد مواعيد متاحة لهذا اليوم</span>
+        </div>
+
+        <div id="bookingSlotsContainer"></div>
+    </div>
+
+    <!-- Booking panel -->
+    <div class="detail-card settings-card" id="bookingPanel" hidden>
+        <div class="detail-section-header">
+            <h5>تأكيد الحجز</h5>
+        </div>
+        <div class="booking-summary" id="bookingSummary"></div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">اسم المريض</label>
+                    <input type="text" class="form-input" id="bookingPatientName" placeholder="الاسم الكامل" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">رقم الهاتف</label>
+                    <input type="tel" class="form-input" id="bookingPatientPhone" placeholder="05XXXXXXXX" />
+                </div>
+            </div>
+        </div>
+        <div class="settings-save-row">
+            <button type="button" class="btn btn-primary" id="bookingSubmitBtn">
+                <i class="bi bi-check2"></i> تأكيد الحجز
+            </button>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var bookingClinicId = '@clinicId';
+            var bookingMinDate = '@today';
+            var bookingMaxDate = '@maxDate';
+            var bookingSelectedSlot = null;
+            var bookingSelectedDoctorName = '';
+            var DAY_NAMES = {
+                sunday: 'الأحد', monday: 'الإثنين', tuesday: 'الثلاثاء',
+                wednesday: 'الأربعاء', thursday: 'الخميس', friday: 'الجمعة', saturday: 'السبت'
+            };
+            var DAY_NAMES_INT = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+            function dayNameAr(dayOfWeek) {
+                if (dayOfWeek === null || dayOfWeek === undefined) return '';
+                var asInt = parseInt(dayOfWeek, 10);
+                if (!isNaN(asInt) && asInt >= 0 && asInt <= 6) return DAY_NAMES_INT[asInt];
+                return DAY_NAMES[(dayOfWeek || '').toLowerCase()] || dayOfWeek || '';
+            }
+
+            function setButtonLoading(btn, isLoading) {
+                if (isLoading) {
+                    btn.data('original-html', btn.html());
+                    btn.prop('disabled', true);
+                    btn.html('<span class="spinner-border spinner-border-sm me-1"></span> جاري الحجز...');
+                } else {
+                    btn.prop('disabled', false);
+                    btn.html(btn.data('original-html'));
+                }
+            }
+
+            function renderSlots(data) {
+                var container = $('#bookingSlotsContainer');
+                var empty = $('#bookingEmptyState');
+                container.empty();
+
+                if (!data || !data.days || data.days.length === 0) {
+                    $('#bookingSlotsCount').text('لا توجد مواعيد');
+                    empty.show();
+                    $('#bookingPanel').prop('hidden', true);
+                    return;
+                }
+
+                empty.hide();
+                $('#bookingSlotsCount').text(data.days.length + (data.days.length === 1 ? ' فترة' : ' فترات'));
+
+                data.days.forEach(function (day, index) {
+                    var from = day.workingHours ? day.workingHours.from : '';
+                    var to = day.workingHours ? day.workingHours.to : '';
+                    var dayName = dayNameAr(day.dayOfWeek);
+                    var hoursText = (from && to) ? (from + ' - ' + to) : '';
+                    var duration = day.slotDurationMinutes || 30;
+
+                    var segment = $(
+                        '<div class="slot-segment">' +
+                            '<div class="slot-segment-header">' +
+                                '<span class="slot-segment-title">' +
+                                    '<i class="bi bi-clock"></i> ' + dayName +
+                                    (hoursText ? ' <span class="slot-segment-hours">(' + hoursText + ')</span>' : '') +
+                                '</span>' +
+                                '<span class="badge badge-info slot-duration-badge">' + duration + ' دقيقة لكل موعد</span>' +
+                            '</div>' +
+                            '<div class="slot-grid"></div>' +
+                        '</div>'
+                    );
+
+                    var grid = segment.find('.slot-grid');
+                    if (day.slots && day.slots.length > 0) {
+                        day.slots.forEach(function (slot) {
+                            var btn = $(
+                                '<button type="button" class="slot-btn' + (slot.isAvailable ? '' : ' slot-btn--disabled') + '"' +
+                                    ' data-start="' + (slot.startTime || '') + '"' +
+                                    ' data-end="' + (slot.endTime || '') + '"' +
+                                    (slot.isAvailable ? '' : ' disabled title="غير متاح"') + '>' +
+                                    (slot.startTime || '') + ' - ' + (slot.endTime || '') +
+                                '</button>'
+                            );
+                            btn.on('click', function () {
+                                grid.find('.slot-btn').removeClass('slot-btn--selected');
+                                $(this).addClass('slot-btn--selected');
+                                bookingSelectedSlot = {
+                                    startTime: $(this).data('start'),
+                                    endTime: $(this).data('end')
+                                };
+                                updateBookingSummary(data);
+                            });
+                            grid.append(btn);
+                        });
+                    } else {
+                        grid.append('<span class="form-hint">لا توجد مواعيد في هذه الفترة</span>');
+                    }
+
+                    container.append(segment);
+                });
+            }
+
+            function updateBookingSummary(data) {
+                if (!bookingSelectedSlot) return;
+                var dateEl = $('#bookingDateInput').val() || '';
+                var summary =
+                    '<span class="booking-summary-item"><i class="bi bi-person"></i> ' + bookingSelectedDoctorName + '</span>' +
+                    '<span class="booking-summary-item"><i class="bi bi-calendar"></i> ' + dateEl + '</span>' +
+                    '<span class="booking-summary-item"><i class="bi bi-clock"></i> ' + bookingSelectedSlot.startTime + ' - ' + bookingSelectedSlot.endTime + '</span>';
+                $('#bookingSummary').html(summary);
+                $('#bookingPanel').prop('hidden', false);
+            }
+
+            function loadSlots() {
+                var doctorId = $('#bookingDoctorSelect').val();
+                var date = $('#bookingDateInput').val();
+
+                bookingSelectedSlot = null;
+                $('#bookingPanel').prop('hidden', true);
+
+                if (!doctorId) {
+                    $('#bookingSlotsContainer').empty();
+                    $('#bookingEmptyState').show();
+                    $('#bookingEmptyState span').text('اختر طبيباً لعرض المواعيد');
+                    $('#bookingSlotsCount').text('اختر طبيباً لعرض المواعيد');
+                    return;
+                }
+                if (!date) {
+                    showErrorModal('يرجى اختيار تاريخ الحجز.');
+                    return;
+                }
+                if (date < bookingMinDate || date > bookingMaxDate) {
+                    $('#bookingSlotsContainer').empty();
+                    $('#bookingEmptyState').show();
+                    $('#bookingEmptyState span').text('لا يمكن الحجز لهذا التاريخ');
+                    $('#bookingSlotsCount').text('');
+                    showErrorModal('التاريخ غير صالح — يمكن الحجز حتى ' + bookingMaxDate + ' فقط.');
+                    return;
+                }
+
+                $('#bookingEmptyState').show();
+                $('#bookingEmptyState span').text('جاري تحميل المواعيد...');
+                $('#bookingSlotsContainer').empty();
+                $('#bookingSlotsCount').text('جاري التحميل...');
+
+                $.ajax({
+                    url: '@Url.Action("GetDoctorSlots")',
+                    type: 'GET',
+                    data: { doctorId: doctorId, date: date },
+                    success: function (res) {
+                        if (res.success) {
+                            bookingSelectedDoctorName = $('#bookingDoctorSelect option:selected').text();
+                            renderSlots(res.data);
+                        } else {
+                            $('#bookingEmptyState').show();
+                            $('#bookingEmptyState span').text('تعذر تحميل المواعيد');
+                            $('#bookingSlotsCount').text('');
+                            showErrorModal(res.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        $('#bookingEmptyState').show();
+                        $('#bookingEmptyState span').text('تعذر تحميل المواعيد');
+                        $('#bookingSlotsCount').text('');
+                        var msg = 'حدث خطأ أثناء جلب المواعيد المتاحة.';
+                        try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                        showErrorModal(msg);
+                    }
+                });
+            }
+
+            $('#bookingDoctorSelect').on('change', loadSlots);
+            $('#bookingDateInput').on('change', loadSlots);
+
+            $('#bookingSubmitBtn').on('click', function () {
+                var doctorId = $('#bookingDoctorSelect').val();
+                var date = $('#bookingDateInput').val();
+                var name = $('#bookingPatientName').val().trim();
+                var phone = $('#bookingPatientPhone').val().trim();
+
+                if (!bookingSelectedSlot) { showErrorModal('يرجى اختيار موعد من المواعيد المتاحة.'); return; }
+                if (!name) { showErrorModal('يرجى إدخال اسم المريض.'); return; }
+                if (!phone) { showErrorModal('يرجى إدخال رقم الهاتف.'); return; }
+
+                var btn = $(this);
+                setButtonLoading(btn, true);
+
+                $.ajax({
+                    url: '@Url.Action("BookSlot")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        clinicId: bookingClinicId,
+                        doctorId: doctorId,
+                        date: date,
+                        startTime: bookingSelectedSlot.startTime,
+                        endTime: bookingSelectedSlot.endTime,
+                        patientName: name,
+                        patientPhone: phone
+                    }),
+                    success: function (res) {
+                        setButtonLoading(btn, false);
+                        if (res.success) {
+                            showSuccessModal(res.message || 'تم تأكيد الحجز بنجاح.');
+                            $('#bookingPatientName').val('');
+                            $('#bookingPatientPhone').val('');
+                            loadSlots();
+                        } else {
+                            showErrorModal(res.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        setButtonLoading(btn, false);
+                        var msg = 'حدث خطأ أثناء تأكيد الحجز.';
+                        try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                        showErrorModal(msg);
+                    }
+                });
+            });
+
+            // تحميل أولي عند وجود أطباء
+            if ($('#bookingDoctorSelect option').length > 1) {
+                loadSlots();
+            }
+        })();
+    </script>
+}

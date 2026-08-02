@@ -21,6 +21,9 @@ namespace ClinicHub.Services.Routes.Api
             Plans = new PlanRoutes(BaseRoute);
             Subscriptions = new SubscriptionRoutes(BaseRoute);
             AdminSubscriptions = new AdminSubscriptionRoutes(BaseRoute);
+            AdminDashboard = new AdminDashboardRoutes(BaseRoute);
+            DoctorDashboard = new DoctorDashboardRoutes(BaseRoute);
+            ClinicDashboard = new ClinicDashboardRoutes(BaseRoute);
         }
 
         public static StaffDashboardRoutes StaffDashboard { get; private set; } = null!;
@@ -35,6 +38,9 @@ namespace ClinicHub.Services.Routes.Api
         public static PlanRoutes Plans { get; private set; } = null!;
         public static SubscriptionRoutes Subscriptions { get; private set; } = null!;
         public static AdminSubscriptionRoutes AdminSubscriptions { get; private set; } = null!;
+        public static AdminDashboardRoutes AdminDashboard { get; private set; } = null!;
+        public static DoctorDashboardRoutes DoctorDashboard { get; private set; } = null!;
+        public static ClinicDashboardRoutes ClinicDashboard { get; private set; } = null!;
 
         public class AuthRoutes
         {
@@ -51,6 +57,8 @@ namespace ClinicHub.Services.Routes.Api
             public string ResetPassword => $"{BaseRoute}/reset-password";
             public string RefreshToken => $"{BaseRoute}/refresh-token";
             public string Logout => $"{BaseRoute}/logout";
+            public string Profile => $"{BaseRoute}/profile";
+            public string UpdateProfile => $"{BaseRoute}/profile/update";
         }
 
         public class SpecializationRoutes
@@ -133,6 +141,16 @@ namespace ClinicHub.Services.Routes.Api
             public string Update(Guid id) => $"{_baseRoute}/doctors/{id}";
             public string Delete(Guid id) => $"{_baseRoute}/doctors/{id}";
             public string ChangePassword(Guid id) => $"{AdminClinicRoute}/doctors/{id}/change-password";
+
+            public string Availability => $"{_baseRoute}/doctors/availability";
+            public string AvailabilityWeek => $"{_baseRoute}/doctors/availability/week";
+            public string AvailabilityById(Guid id) => $"{_baseRoute}/doctors/availability/{id}";
+
+            /// <summary>Patient booking: generated slots for one date (dynamic slot duration per availability row).</summary>
+            public string Slots(Guid clinicId, Guid doctorId) => $"{_baseRoute}/clinics/{clinicId}/doctors/{doctorId}/slots";
+
+            /// <summary>Patient booking: create an appointment (validates submitted time against the row's live duration).</summary>
+            public string BookAppointment => $"{_baseRoute}/appointments";
         }
 
         public class StaffDashboardRoutes
@@ -183,6 +201,8 @@ namespace ClinicHub.Services.Routes.Api
             public string Register => $"{BaseRoute}/register";
             public string GetAll => $"{AdminBaseRoute}/paginated";
             public string GetById(Guid id) => $"{AdminBaseRoute}/{id}";
+            public string Settings => $"{AdminBaseRoute}/settings";
+            public string Details(Guid id) => $"{AdminBaseRoute}/{id}/details";
             public string Create => $"{AdminBaseRoute}";
             public string Update(Guid id) => $"{AdminBaseRoute}/{id}";
             public string Activate(Guid id) => $"{AdminBaseRoute}/{id}/activate";
@@ -229,6 +249,54 @@ namespace ClinicHub.Services.Routes.Api
             public string DeletePlan(Guid id) => $"{AdminRoute}/plans/{id}";
             public string ListSubscriptions => $"{DashboardRoute}/subscriptions";
             public string RevokeSubscription(Guid id) => $"{DashboardRoute}/subscriptions/{id}/revoke";
+        }
+
+        public class AdminDashboardRoutes
+        {
+            private readonly string _baseRoute;
+            public AdminDashboardRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/admin/dashboard";
+            }
+
+            public string Stats => $"{_baseRoute}/stats";
+            public string UrgentTickets => $"{_baseRoute}/urgent-tickets";
+            public string Subscriptions => $"{_baseRoute}/subscriptions";
+            public string Tickets => $"{_baseRoute}/tickets";
+            public string UpdateTicketStatus(Guid id) => $"{_baseRoute}/tickets/{id}/status";
+        }
+
+        public class DoctorDashboardRoutes
+        {
+            private readonly string _baseRoute;
+            public DoctorDashboardRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/doctors";
+            }
+
+            public string Stats => $"{_baseRoute}/dashboard/stats";
+            public string RecentAppointments(int limit = 5) => $"{_baseRoute}/dashboard/recent-appointments?limit={limit}";
+            public string Appointments => $"{_baseRoute}/appointments";
+            public string Status(Guid id) => $"{_baseRoute}/appointments/{id}/status";
+            public string AcceptAppointment(Guid id) => $"{_baseRoute}/appointments/{id}/accept";
+            public string RejectAppointment(Guid id) => $"{_baseRoute}/appointments/{id}/reject";
+            public string CompleteAppointment(Guid id) => $"{_baseRoute}/appointments/{id}/complete";
+            public string Patients => $"{_baseRoute}/patients";
+            public string PatientHistory(Guid patientId) => $"{_baseRoute}/patients/{patientId}/history";
+        }
+
+        public class ClinicDashboardRoutes
+        {
+            private readonly string _baseRoute;
+            public ClinicDashboardRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/admin/clinics";
+            }
+
+            public string Stats => $"{_baseRoute}/dashboard/stats";
+            public string Bookings => $"{_baseRoute}/bookings";
+            public string AcceptBooking => $"{_baseRoute}/bookings/accept";
+            public string RejectBooking => $"{_baseRoute}/bookings/reject";
         }
     }
 }

@@ -177,6 +177,31 @@ public class HomeController : BaseController
             }
         }
 
+        public async Task<IActionResult> UploadStaffImage(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "الملف مطلوب" });
+
+                var uploadRequest = new UploadAttachmentRequest(file, 1, Services.Enums.MediaType.Image);
+                var fileName = await _attachmentService.UploadAttachmentAsync(uploadRequest);
+                if (string.IsNullOrWhiteSpace(fileName))
+                    return Json(new { success = false, message = "فشل رفع الصورة" });
+
+                return Json(new { success = true, message = fileName });
+            }
+            catch (ApiException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to upload staff image");
+                return Json(new { success = false, message = "حدث خطأ أثناء رفع الصورة: " + ex.Message });
+            }
+        }
+
         public IActionResult RegistrationSubmitted()
         {
             return View();

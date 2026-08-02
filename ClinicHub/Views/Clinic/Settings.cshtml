@@ -1,155 +1,289 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "إعدادات العيادة - Doctory";
     Layout = "_ClinicLayout";
-    var clinic = ViewBag.Clinic as MockClinic ?? new();
+    var settings = ViewBag.Settings as ClinicSettingsDto;
+    var specializations = ViewBag.Specializations as List<SpecializationDto> ?? new List<SpecializationDto>();
+    var slotDuration = (ViewBag.TypicalSlotDuration as int?) ?? settings?.SlotDurationMinutes ?? 30;
+    var lat = settings?.Latitude ?? 31.0409;
+    var lng = settings?.Longitude ?? 31.3785;
+    var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
+    var googleMapsApiKey = ViewBag.GoogleMapsApiKey as string ?? "";
+    var hasMapKey = !string.IsNullOrEmpty(googleMapsApiKey);
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="page-title mb-0">إعدادات العيادة</h2>
 </div>
 
+@if (hasError)
+{
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
+    </div>
+}
+
 <form>
     <!-- Basic Information -->
-    <div class="detail-card" style="margin-bottom: 24px;">
+    <div class="detail-card settings-card">
         <div class="detail-section-header"><h5>المعلومات الأساسية</h5></div>
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     <label class="form-label">اسم العيادة</label>
-                    <input type="text" class="form-input" id="settingsName" value="@clinic.Name" />
+                    <input type="text" class="form-input" id="settingsName" value="@settings?.Name" />
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     <label class="form-label">الطبيب المسؤول</label>
-                    <input type="text" class="form-input" id="settingsDoctor" value="@clinic.ResponsibleDoctor" />
+                    <input type="text" class="form-input" id="settingsDoctor" value="@settings?.ResponsibleDoctor" disabled />
+                    <p class="form-hint">الطبيب المسؤول هو مدير العيادة ولا يمكن تعديله.</p>
                 </div>
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">الوصف</label>
-            <textarea class="form-input form-textarea" rows="3" id="settingsDesc">@clinic.Description</textarea>
+            <textarea class="form-input form-textarea" rows="3" id="settingsDesc">@settings?.Description</textarea>
         </div>
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     <label class="form-label">رقم الهاتف</label>
-                    <input type="text" class="form-input" id="settingsPhone" value="@clinic.Phone" />
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="form-label">مدير العيادة</label>
-                    <input type="text" class="form-input" id="settingsManager" value="@clinic.ManagerName" />
+                    <input type="text" class="form-input" id="settingsPhone" value="@settings?.Phone" placeholder="01XXXXXXXXX" />
                 </div>
             </div>
         </div>
+        <input type="hidden" id="settingsManager" value="@settings?.ManagerName" />
     </div>
 
     <!-- Location -->
-    <div class="detail-card" style="margin-bottom: 24px;">
+    <div class="detail-card settings-card">
         <div class="detail-section-header"><h5>الموقع</h5></div>
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     <label class="form-label">الموقع (الغرفة)</label>
-                    <input type="text" class="form-input" id="settingsLocation" value="@clinic.Location" placeholder="الطابق - الغرفة" />
+                    <input type="text" class="form-input" id="settingsLocation" value="@settings?.Location" placeholder="الطابق - الغرفة" />
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     <label class="form-label">التخصص الرئيسي</label>
                     <select class="form-select" id="settingsSpecialty">
-                        <option value="@clinic.Specialty">@clinic.Specialty</option>
-                        <option>القلب والأوعية الدموية</option>
-                        <option>الأمراض العصبية</option>
-                        <option>جراحة العظام</option>
-                        <option>الأمراض الجلدية</option>
-                        <option>طب الأطفال</option>
+                        <option value="">اختر التخصص</option>
+                        @foreach (var spec in specializations)
+                        {
+                            var specName = string.IsNullOrWhiteSpace(spec.ArName) ? spec.Name : spec.ArName;
+                            <option value="@spec.Id" selected="@(settings?.SpecializationId == spec.Id)">@specName</option>
+                        }
                     </select>
                 </div>
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">الموقع على الخريطة</label>
-            <input type="hidden" id="settingsLat" value="@clinic.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
-            <input type="hidden" id="settingsLng" value="@clinic.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
-            <div id="settingsClinicMap" style="height: 300px; border-radius: var(--radius-md); border: 1px solid var(--clr-border); margin-bottom: 8px;"></div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <button type="button" class="btn btn-sm btn-outline-primary" id="settingsMyLocationBtn" style="display: inline-flex; align-items: center; gap: 4px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-                    موقعي الحالي
-                </button>
-                <span class="text-muted" style="font-size: var(--fs-sm);" id="settingsCoordsDisplay">@clinic.Latitude.ToString("F4", System.Globalization.CultureInfo.InvariantCulture), @clinic.Longitude.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)</span>
+            <input type="hidden" id="settingsLat" value="@lat.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+            <input type="hidden" id="settingsLng" value="@lng.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+            @if (hasMapKey)
+            {
+                <div id="settingsClinicMap" class="settings-map"></div>
+                <div class="settings-map-tools">
+                    <button type="button" class="btn btn-sm btn-outline-primary settings-location-btn" id="settingsMyLocationBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+                        موقعي الحالي
+                    </button>
+                    <span class="text-muted text-sm settings-coords-display" id="settingsCoordsDisplay">@lat.ToString("F4", System.Globalization.CultureInfo.InvariantCulture), @lng.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)</span>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning mt-2" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i> خرائط Google غير متاحة حالياً. يرجى مراجعة إعدادات مفتاح API.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Booking Configuration -->
+    <div class="detail-card settings-card">
+        <div class="detail-section-header"><h5>إعدادات الحجز</h5></div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="form-label">رسوم الكشف (جنيه)</label>
+                    <input type="number" class="form-input" id="settingsFee" min="0" step="0.01" value="@(settings?.ConsultationFee ?? 0)" />
+                </div>
             </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="form-label">العملة</label>
+                    <input type="text" class="form-input" id="settingsCurrency" maxlength="3" value="@(settings?.Currency ?? "EGP")" />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="form-label">أقصى أيام للحجز المسبق</label>
+                    <input type="number" class="form-input" id="settingsMaxDays" min="1" value="@(settings?.MaxAdvanceBookingDays ?? 30)" />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="form-label">مهلة تأكيد الحجز (دقائق)</label>
+                    <input type="number" class="form-input" id="settingsTtl" min="1" value="@(settings?.ReservationTtlMinutes ?? 10)" />
+                </div>
+            </div>
+        </div>
+        <div class="settings-slot-info">
+            <i class="bi bi-clock"></i>
+            <span>مدة الحجز النموذجية (تُدار من أوقات عمل الأطباء): <strong id="settingsSlotInfo">@slotDuration دقيقة</strong></span>
         </div>
     </div>
 
     <!-- Status + Save -->
-    <div class="detail-card" style="margin-bottom: 24px;">
+    <div class="detail-card settings-card">
         <div class="detail-section-header"><h5>الحالة</h5></div>
         <div class="form-group">
             <label class="form-toggle">
-                <input type="checkbox" id="settingsActive" @(clinic.IsActive ? "checked" : "") />
+                <input type="checkbox" id="settingsActive" @(settings?.IsActive ?? true ? "checked" : "") />
                 <span class="toggle-track"></span>
                 <span class="toggle-label">العيادة نشطة</span>
             </label>
         </div>
-        <button type="button" class="btn btn-primary" id="saveSettingsBtn" style="margin-top: 16px;">
-            <i class="bi bi-check2"></i> حفظ الإعدادات
-        </button>
+        <div class="settings-save-row">
+            <button type="button" class="btn btn-primary" id="saveSettingsBtn">
+                <i class="bi bi-check2"></i> حفظ الإعدادات
+            </button>
+        </div>
     </div>
 </form>
 
 @section Scripts {
+    @if (hasMapKey)
+    {
+        <script>
+            var settingsInitialLat = @lat.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
+            var settingsInitialLng = @lng.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
+
+            function initSettingsMap() {
+                var center = { lat: settingsInitialLat, lng: settingsInitialLng };
+                var map = new google.maps.Map(document.getElementById('settingsClinicMap'), {
+                    center: center,
+                    zoom: 13,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: false
+                });
+
+                var marker = new google.maps.Marker({
+                    position: center,
+                    map: map,
+                    draggable: true
+                });
+
+                function updateCoords(latLng) {
+                    var lat = latLng.lat().toFixed(6);
+                    var lng = latLng.lng().toFixed(6);
+                    document.getElementById('settingsLat').value = lat;
+                    document.getElementById('settingsLng').value = lng;
+                    document.getElementById('settingsCoordsDisplay').textContent = parseFloat(lat).toFixed(4) + ', ' + parseFloat(lng).toFixed(4);
+                }
+
+                map.addListener('click', function(e) {
+                    marker.setPosition(e.latLng);
+                    map.panTo(e.latLng);
+                    updateCoords(e.latLng);
+                });
+
+                marker.addListener('dragend', function(e) {
+                    updateCoords(e.latLng);
+                });
+
+                document.getElementById('settingsMyLocationBtn').addEventListener('click', function() {
+                    if (!navigator.geolocation) {
+                        showErrorModal('الموقع غير مدعوم في متصفحك.');
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(function(pos) {
+                        var ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                        marker.setPosition(ll);
+                        map.setCenter(ll);
+                        map.setZoom(15);
+                        updateCoords(ll);
+                    }, function() {
+                        showErrorModal('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
+                    });
+                });
+            }
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=@googleMapsApiKey&callback=initSettingsMap&language=ar" async defer></script>
+    }
+
     <script>
         (function() {
-            // Map for Clinic Settings
-            var lat = parseFloat(document.getElementById('settingsLat').value) || 31.0409;
-            var lng = parseFloat(document.getElementById('settingsLng').value) || 31.3785;
-            var map = L.map('settingsClinicMap').setView([lat, lng], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap',
-                maxZoom: 18
-            }).addTo(map);
-
-            var marker = L.marker([lat, lng], { draggable: false }).addTo(map);
-
-            function updateCoords(lat, lng) {
-                document.getElementById('settingsLat').value = lat.toFixed(6);
-                document.getElementById('settingsLng').value = lng.toFixed(6);
-                document.getElementById('settingsCoordsDisplay').textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+            function setButtonLoading(btn, isLoading) {
+                if (isLoading) {
+                    btn.data('original-html', btn.html());
+                    btn.prop('disabled', true);
+                    btn.html('<span class="spinner-border spinner-border-sm me-1"></span> جاري الحفظ...');
+                } else {
+                    btn.prop('disabled', false);
+                    btn.html(btn.data('original-html'));
+                }
             }
 
-            map.on('click', function(e) {
-                marker.setLatLng(e.latlng);
-                updateCoords(e.latlng.lat, e.latlng.lng);
-            });
-
-            document.getElementById('settingsMyLocationBtn').addEventListener('click', function() {
-                if (!navigator.geolocation) {
-                    alert('الموقع غير مدعوم في متصفحك.');
-                    return;
-                }
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    var lat = pos.coords.latitude;
-                    var lng = pos.coords.longitude;
-                    map.setView([lat, lng], 15);
-                    marker.setLatLng([lat, lng]);
-                    updateCoords(lat, lng);
-                }, function() {
-                    alert('لم نتمكن من الوصول إلى موقعك. يرجى التحقق من صلاحيات الموقع.');
-                });
-            });
-
             document.getElementById('saveSettingsBtn').addEventListener('click', function() {
+                var btn = $(this);
                 var name = document.getElementById('settingsName').value.trim();
-                if (!name) {
-                    alert('يرجى إدخال اسم العيادة.');
-                    return;
-                }
-                alert('✓ تم حفظ إعدادات العيادة بنجاح.');
+                var specialty = document.getElementById('settingsSpecialty').value;
+                var fee = parseFloat(document.getElementById('settingsFee').value);
+                var maxDays = parseInt(document.getElementById('settingsMaxDays').value, 10);
+                var ttl = parseInt(document.getElementById('settingsTtl').value, 10);
+
+                if (!name) { showErrorModal('يرجى إدخال اسم العيادة.'); return; }
+                if (!specialty) { showErrorModal('يرجى اختيار التخصص الرئيسي.'); return; }
+                if (isNaN(fee) || fee <= 0) { showErrorModal('يرجى إدخال رسوم الكشف بقيمة أكبر من صفر.'); return; }
+                if (isNaN(maxDays) || maxDays <= 0) { showErrorModal('يرجى إدخال أقصى أيام للحجز المسبق.'); return; }
+                if (isNaN(ttl) || ttl <= 0) { showErrorModal('يرجى إدخال مهلة تأكيد الحجز بالدقائق.'); return; }
+
+                setButtonLoading(btn, true);
+
+                var payload = {
+                    name: name,
+                    description: document.getElementById('settingsDesc').value.trim(),
+                    phone: document.getElementById('settingsPhone').value.trim(),
+                    managerName: document.getElementById('settingsManager').value.trim(),
+                    location: document.getElementById('settingsLocation').value.trim(),
+                    specializationId: specialty,
+                    consultationFee: fee,
+                    currency: document.getElementById('settingsCurrency').value.trim() || 'EGP',
+                    maxAdvanceBookingDays: maxDays,
+                    reservationTtlMinutes: ttl,
+                    latitude: parseFloat(document.getElementById('settingsLat').value) || null,
+                    longitude: parseFloat(document.getElementById('settingsLng').value) || null,
+                    isActive: document.getElementById('settingsActive').checked
+                };
+
+                $.ajax({
+                    url: '@Url.Action("SaveSettings")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        setButtonLoading(btn, false);
+                        if (res.success) {
+                            showSuccessModal(res.message || 'تم حفظ إعدادات العيادة بنجاح.');
+                        } else {
+                            showErrorModal(res.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        setButtonLoading(btn, false);
+                        var msg = 'حدث خطأ أثناء حفظ الإعدادات.';
+                        try { var r = JSON.parse(xhr.responseText); if (r.message) msg = r.message; } catch (e) { }
+                        showErrorModal(msg);
+                    }
+                });
             });
         })();
     </script>

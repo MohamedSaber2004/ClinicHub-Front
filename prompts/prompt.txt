@@ -1,3 +1,3 @@
-﻿خطأ
-فشل التحقق
-User Id مطلوب
+﻿api/v1/doctors/dashboard/stats:1  Failed to load resource: the server responded with a status of 404 ()
+api/v1/doctors/dashboard/recent-appointments?limit=5:1  Failed to load resource: the server responded with a status of 404 ()
+[NEW] Explain Console errors by using Copilot in Edge: click  to explain an error. Learn more

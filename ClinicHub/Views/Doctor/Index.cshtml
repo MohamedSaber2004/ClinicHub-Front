@@ -1,9 +1,39 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "لوحة تحكم الطبيب";
     Layout = "_DoctorLayout";
-    var stats = ViewBag.Stats as List<MockStat> ?? new();
-    var appointments = ViewBag.Appointments as List<MockStaffAppointment> ?? new();
+
+    var stats = ViewBag.Stats as DoctorDashboardStatsDto;
+    var recentAppointments = ViewBag.RecentAppointments as List<DoctorAppointmentDto> ?? new List<DoctorAppointmentDto>();
+
+    string StatusLabel(int? s) => s switch
+    {
+        0 => "قيد الانتظار",
+        1 => "مؤكد",
+        2 => "ملغى",
+        3 => "مكتمل",
+        4 => "محجوز مؤقتاً",
+        5 => "لم يحضر",
+        6 => "مقبول",
+        7 => "مرفوض",
+        _ => "غير معروف"
+    };
+
+    string StatusClass(int? s) => s switch
+    {
+        0 => "badge-warning",
+        1 => "badge-info",
+        2 => "badge-danger",
+        3 => "badge-success",
+        4 => "badge-primary",
+        5 => "badge-danger",
+        6 => "badge-primary",
+        7 => "badge-danger",
+        _ => "badge-secondary"
+    };
+
+    string TimeOnly(string? t) => string.IsNullOrEmpty(t) || t.Length < 5 ? "—" : t[..5];
+    string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
 <h2 class="page-title">
@@ -18,27 +48,54 @@
     لوحة تحكم الطبيب
 </h2>
 
-<div class="stats-grid">
-    @foreach (var stat in stats)
-    {
+@if (stats != null)
+{
+    <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-info">
-                <span class="stat-value">@stat.Value</span>
-                <span class="stat-label">@stat.Label</span>
+                <span class="stat-value">@stats.TodayAppointmentsCount</span>
+                <span class="stat-label">مواعيد اليوم</span>
             </div>
-            <div class="icon-wrapper icon-wrapper--@stat.IconColor">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="@stat.SvgPath"/>
-                </svg>
+            <div class="icon-wrapper icon-wrapper--primary">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
             </div>
         </div>
-    }
-</div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-value">@stats.TotalPatientsCount</span>
+                <span class="stat-label">إجمالي المرضى</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--blue">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-value">@stats.PendingAppointmentsCount</span>
+                <span class="stat-label">في الانتظار</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--amber">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h-2v10l8.29 5.29 1-1.72L13 12.36V3zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-info">
+                <span class="stat-value">@stats.CompletedAppointmentsCount</span>
+                <span class="stat-label">مكتملة</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--green">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            </div>
+        </div>
+    </div>
+}
 
 <div class="table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">
-            <i class="bi bi-calendar3" style="margin-left: 6px;"></i>
+            <span class="subtitle-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+            </span>
             أحدث المواعيد
         </h3>
     </div>
@@ -54,37 +111,46 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var app in appointments)
+                @if (recentAppointments.Count == 0)
                 {
                     <tr>
+                        <td colspan="5" class="table-empty">لا توجد مواعيد حديثة</td>
+                    </tr>
+                }
+                @foreach (var app in recentAppointments)
+                {
+                    var patientName = !string.IsNullOrWhiteSpace(app.PatientFullName) ? app.PatientFullName : (app.BookedByUserName ?? "مريض");
+                    <tr>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div class="sidebar-profile-avatar" style="width: 28px; height: 28px;">
-                                    <span style="font-size: 11px;">@app.PatientInitial</span>
-                                </div>
-                                @app.PatientName
+                            <div class="table-user">
+                                <span class="table-avatar">@Initial(patientName)</span>
+                                <span class="table-user-name">@patientName</span>
                             </div>
                         </td>
-                        <td>@app.Date</td>
-                        <td>@app.Time</td>
-                        <td><span class="badge @app.StatusClass">@app.Status</span></td>
+                        <td>@app.AppointmentDate</td>
+                        <td>@TimeOnly(app.StartTime)</td>
+                        <td><span class="badge @StatusClass(app.Status)">@StatusLabel(app.Status)</span></td>
                         <td>
-                            @if (app.Status == "قيد الانتظار")
+                            @if (app.Status == 0)
                             {
-                                <div style="display: flex; gap: 4px;">
-                                    <button class="btn btn-sm btn-outline-success" onclick="alert('تم قبول الموعد')">
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-outline-success" onclick="updateStatus('@app.Id', 1)">
                                         <i class="bi bi-check-lg"></i> قبول
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="alert('تم رفض الموعد')">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('@app.Id', 2)">
                                         <i class="bi bi-x-lg"></i> رفض
                                     </button>
                                 </div>
                             }
-                            else if (app.Status == "مؤكد")
+                            else if (app.Status == 1 || app.Status == 6)
                             {
-                                <button class="btn btn-sm btn-outline-primary" onclick="alert('تم إكمال الموعد')">
+                                <button class="btn btn-sm btn-outline-primary" onclick="updateStatus('@app.Id', 3)">
                                     <i class="bi bi-check2-circle"></i> إكمال
                                 </button>
+                            }
+                            else
+                            {
+                                <span>—</span>
                             }
                         </td>
                     </tr>
@@ -93,3 +159,38 @@
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        window.updateStatus = async function (appointmentId, statusCode) {
+            let notes = null;
+            if (statusCode === 2) {
+                notes = prompt('يرجى إدخال سبب الرفض/الإلغاء (اختياري):');
+                if (notes === null) return;
+            }
+            try {
+                const res = await fetch('/Doctor/UpdateAppointmentStatus?appointmentId=' + appointmentId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: statusCode, notes: notes })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.success === false) {
+                    throw new Error(data.message || ('HTTP ' + res.status));
+                }
+                if (typeof showSuccessModal === 'function') {
+                    showSuccessModal('تم تحديث حالة الموعد بنجاح');
+                } else {
+                    alert('تم تحديث حالة الموعد بنجاح');
+                }
+                location.reload();
+            } catch (err) {
+                if (typeof showErrorModal === 'function') {
+                    showErrorModal(err.message);
+                } else {
+                    alert(err.message);
+                }
+            }
+        };
+    </script>
+}

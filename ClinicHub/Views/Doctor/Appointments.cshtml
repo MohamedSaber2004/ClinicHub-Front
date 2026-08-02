@@ -1,8 +1,39 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "مواعيدي";
     Layout = "_DoctorLayout";
-    var appointments = ViewBag.Appointments as List<MockStaffAppointment> ?? new();
+
+    var appointments = ViewBag.Appointments as IReadOnlyCollection<DoctorAppointmentDto> ?? new List<DoctorAppointmentDto>();
+
+    string StatusLabel(int? s) => s switch
+    {
+        0 => "قيد الانتظار",
+        1 => "مؤكد",
+        2 => "ملغى",
+        3 => "مكتمل",
+        4 => "محجوز مؤقتاً",
+        5 => "لم يحضر",
+        6 => "مقبول",
+        7 => "مرفوض",
+        _ => "غير معروف"
+    };
+
+    string StatusClass(int? s) => s switch
+    {
+        0 => "badge-warning",
+        1 => "badge-info",
+        2 => "badge-danger",
+        3 => "badge-success",
+        4 => "badge-primary",
+        5 => "badge-danger",
+        6 => "badge-primary",
+        7 => "badge-danger",
+        _ => "badge-secondary"
+    };
+
+    string TypeLabel(int t) => t == 1 ? "منزلي" : "في العيادة";
+    string TimeOnly(string? t) => string.IsNullOrEmpty(t) || t.Length < 5 ? "—" : t[..5];
+    string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
 <h2 class="page-title">
@@ -16,6 +47,22 @@
     <div class="table-card-header">
         <h3 class="table-card-title">قائمة المواعيد</h3>
     </div>
+    <form method="get" action="@Url.Action("Appointments")" class="filter-bar table-filter-bar">
+        <select name="status" class="form-select">
+            <option value="">جميع الحالات</option>
+            <option value="0" selected="@(ViewBag.StatusFilter == "0")">قيد الانتظار</option>
+            <option value="1" selected="@(ViewBag.StatusFilter == "1")">مؤكد</option>
+            <option value="6" selected="@(ViewBag.StatusFilter == "6")">مقبول</option>
+            <option value="3" selected="@(ViewBag.StatusFilter == "3")">مكتمل</option>
+            <option value="2" selected="@(ViewBag.StatusFilter == "2")">ملغى</option>
+            <option value="7" selected="@(ViewBag.StatusFilter == "7")">مرفوض</option>
+        </select>
+        <input type="date" name="startDate" class="form-input" value="@ViewBag.StartDate" title="من تاريخ" />
+        <input type="date" name="endDate" class="form-input" value="@ViewBag.EndDate" title="إلى تاريخ" />
+        <input type="text" name="searchTerm" class="form-input" placeholder="اسم المريض أو الهاتف..." value="@ViewBag.SearchTerm" />
+        <button type="submit" class="btn btn-primary btn-sm">بحث</button>
+        <a href="@Url.Action("Appointments")" class="btn btn-outline-secondary btn-sm">مسح</a>
+    </form>
     <div class="table-responsive">
         <table class="custom-table">
             <thead>
@@ -23,44 +70,59 @@
                     <th>المريض</th>
                     <th>التاريخ</th>
                     <th>الوقت</th>
-                    <th>التخصص</th>
+                    <th>النوع</th>
                     <th>الحالة</th>
                     <th>الإجراء</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var app in appointments)
+                @if (appointments.Count == 0)
                 {
                     <tr>
+                        <td colspan="6" class="table-empty">لا توجد مواعيد مطابقة للبحث</td>
+                    </tr>
+                }
+                @foreach (var app in appointments)
+                {
+                    var patientName = !string.IsNullOrWhiteSpace(app.PatientFullName) ? app.PatientFullName : (app.BookedByUserName ?? "مريض");
+                    <tr>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div class="sidebar-profile-avatar" style="width: 28px; height: 28px;">
-                                    <span style="font-size: 11px;">@app.PatientInitial</span>
-                                </div>
-                                @app.PatientName
+                            <div class="table-user">
+                                <span class="table-avatar">@Initial(patientName)</span>
+                                <span>
+                                    <span class="table-user-name">@patientName</span>
+                                    @if (!string.IsNullOrWhiteSpace(app.PatientPhoneNumber))
+                                    {
+                                        <small class="table-user-sub">@app.PatientPhoneNumber</small>
+                                    }
+                                </span>
                             </div>
                         </td>
-                        <td>@app.Date</td>
-                        <td>@app.Time</td>
-                        <td>@app.Specialty</td>
-                        <td><span class="badge @app.StatusClass">@app.Status</span></td>
+                        <td>@app.AppointmentDate</td>
+                        <td>@TimeOnly(app.StartTime)</td>
+                        <td>@TypeLabel(app.AppointmentType)</td>
+                        <td><span class="badge @StatusClass(app.Status)">@StatusLabel(app.Status)</span></td>
                         <td>
-                            @if (app.Status == "قيد الانتظار")
+                            @if (app.Status == 0)
                             {
-                                <div style="display: flex; gap: 4px;">
-                                    <button class="btn btn-sm btn-outline-success" onclick="alert('تم قبول الموعد')">
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-outline-success" onclick="updateStatus('@app.Id', 1)">
                                         <i class="bi bi-check-lg"></i> قبول
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="alert('تم رفض الموعد')">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('@app.Id', 2)">
                                         <i class="bi bi-x-lg"></i> رفض
                                     </button>
                                 </div>
                             }
-                            else if (app.Status == "مؤكد")
+                            else if (app.Status == 1 || app.Status == 6)
                             {
-                                <button class="btn btn-sm btn-outline-primary" onclick="alert('تم إكمال الموعد')">
+                                <button class="btn btn-sm btn-outline-primary" onclick="updateStatus('@app.Id', 3)">
                                     <i class="bi bi-check2-circle"></i> إكمال
                                 </button>
+                            }
+                            else
+                            {
+                                <span>—</span>
                             }
                         </td>
                     </tr>
@@ -68,4 +130,40 @@
             </tbody>
         </table>
     </div>
+    <partial name="_Pagination" />
 </div>
+
+@section Scripts {
+    <script>
+        window.updateStatus = async function (appointmentId, statusCode) {
+            let notes = null;
+            if (statusCode === 2) {
+                notes = prompt('يرجى إدخال سبب الرفض/الإلغاء (اختياري):');
+                if (notes === null) return;
+            }
+            try {
+                const res = await fetch('/Doctor/UpdateAppointmentStatus?appointmentId=' + appointmentId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: statusCode, notes: notes })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.success === false) {
+                    throw new Error(data.message || ('HTTP ' + res.status));
+                }
+                if (typeof showSuccessModal === 'function') {
+                    showSuccessModal('تم تحديث حالة الموعد بنجاح');
+                } else {
+                    alert('تم تحديث حالة الموعد بنجاح');
+                }
+                location.reload();
+            } catch (err) {
+                if (typeof showErrorModal === 'function') {
+                    showErrorModal(err.message);
+                } else {
+                    alert(err.message);
+                }
+            }
+        };
+    </script>
+}

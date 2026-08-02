@@ -45,15 +45,12 @@ namespace ClinicHub.Data
         ManageClinicLocation = 1L << 12,
         ManageAppointments = 1L << 13,
         ManageMedicalRecords = 1L << 14,
-        ManageBilling = 1L << 15,
-        ManageInventory = 1L << 16,
         ManageClinicStaff = 1L << 17,
         ManageClinicDoctors = 1L << 18,
 
         BookAppointment = 1L << 19,
         ViewOwnMedicalRecords = 1L << 20,
         RateClinic = 1L << 21,
-        ViewOwnBilling = 1L << 22,
     }
 
     [Flags]
@@ -107,7 +104,7 @@ namespace ClinicHub.Data
             if (role == UserRole.Doctor && doctorType == DoctorEmploymentType.Freelance)
             {
                 return Permission.BookAppointment | Permission.ViewOwnMedicalRecords |
-                       Permission.RateClinic | Permission.ViewOwnBilling;
+                       Permission.RateClinic;
             }
 
             return role switch
@@ -120,12 +117,12 @@ namespace ClinicHub.Data
 
                 UserRole.ClinicOwner =>
                     Permission.ViewClinicDashboard | Permission.ManageClinicSettings | Permission.ManageClinicLocation |
-                    Permission.ManageAppointments | Permission.ManageMedicalRecords | Permission.ManageBilling |
-                    Permission.ManageInventory | Permission.ManageClinicStaff | Permission.ManageClinicDoctors,
+                    Permission.ManageAppointments | Permission.ManageMedicalRecords |
+                    Permission.ManageClinicStaff | Permission.ManageClinicDoctors,
 
                 UserRole.ClinicManager =>
                     Permission.ViewClinicDashboard | Permission.ManageAppointments | Permission.ManageMedicalRecords |
-                    Permission.ManageInventory | Permission.ManageClinicStaff,
+                    Permission.ManageClinicStaff,
 
                 UserRole.Doctor =>
                     Permission.ViewClinicDashboard | Permission.ManageAppointments | Permission.ManageMedicalRecords,
@@ -135,7 +132,7 @@ namespace ClinicHub.Data
 
                 UserRole.Patient =>
                     Permission.BookAppointment | Permission.ViewOwnMedicalRecords |
-                    Permission.RateClinic | Permission.ViewOwnBilling,
+                    Permission.RateClinic,
 
                 _ => Permission.None
             };

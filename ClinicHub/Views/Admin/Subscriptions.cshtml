@@ -4,6 +4,18 @@
     ViewData["Title"] = "الباقات";
     Layout = "_AdminLayout";
     var plans = ViewBag.Plans as List<PlanDto> ?? new();
+    var featureLabels = new Dictionary<string, string>
+    {
+        ["appointments"] = "إدارة المواعيد",
+        ["patient_records"] = "السجلات الطبية",
+        ["basic_reports"] = "تقارير أساسية",
+        ["advanced_reports"] = "تقارير متقدمة",
+        ["marketing_tools"] = "أدوات تسويقية",
+        ["priority_support"] = "دعم ذو أولوية",
+        ["online_booking"] = "الحجز والدفع أونلاين",
+        ["staff_management"] = "إدارة الموظفين",
+        ["doctor_management"] = "إدارة الأطباء",
+    };
 }
 
 <div class="page-header">
@@ -15,10 +27,6 @@
         </span>
         الباقات
     </h2>
-    <a href="@AdminRoutes.Pages.PlanManagement()" class="btn btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        إدارة الباقات
-    </a>
 </div>
 
 @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
@@ -62,7 +70,7 @@
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/>
                                 </svg>
-                                <span>@feature</span>
+                                <span>@(featureLabels.ContainsKey(feature) ? featureLabels[feature] : feature)</span>
                             </li>
                         }
                     </ul>

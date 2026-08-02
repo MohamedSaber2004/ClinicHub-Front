@@ -61,7 +61,14 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: var(--space-3);">
                                 <div class="sidebar-profile-avatar" style="width: 36px; height: 36px; background-color: var(--clr-primary);">
-                                    <span style="color: #FFFFFF; font-size: var(--fs-md); font-weight: var(--fw-bold);">@u.Initials</span>
+                                    @if (!string.IsNullOrWhiteSpace(u.Image))
+                                    {
+                                        <img src="@u.Image" alt="@u.Name" class="header-avatar-img" />
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #FFFFFF; font-size: var(--fs-md); font-weight: var(--fw-bold);">@u.Initials</span>
+                                    }
                                 </div>
                                 <span class="text-md-medium">@u.Name</span>
                             </div>

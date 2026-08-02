@@ -23,8 +23,10 @@ namespace ClinicHub.Controllers
         private readonly IOptions<GoogleMapsOptions> _googleMapsOptions;
         private readonly IPlanService _planService;
         private readonly IAdminSubscriptionService _adminSubscriptionService;
+        private readonly IAdminDashboardService _adminDashboardService;
+        private readonly IAuthService _authService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
@@ -36,17 +38,69 @@ namespace ClinicHub.Controllers
             _googleMapsOptions = googleMapsOptions;
             _planService = planService;
             _adminSubscriptionService = adminSubscriptionService;
+            _adminDashboardService = adminDashboardService;
+            _authService = authService;
         }
 
-        public IActionResult Index()
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            ViewBag.Stats = MockData.GetDashboardStats();
-            ViewBag.QuickStatuses = MockData.GetQuickStatuses();
-            ViewBag.DoctorsOnDuty = MockData.GetDoctorsOnDuty();
-            ViewBag.UrgentTickets = MockData.GetUrgentTickets();
-            ViewBag.Subscribers = MockData.GetSubscribers();
-            ViewBag.ActivityLog = MockData.GetActivityLog();
-            ViewBag.NewPatients = MockData.GetNewPatients();
+            await LoadHeaderProfileAsync(_authService);
+            await base.OnActionExecutionAsync(context, next);
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            CurrentUser = new CurrentUserContext
+            {
+                Id = 1,
+                Role = UserRole.SystemAdmin,
+                Permissions = RolePermissions.For(UserRole.SystemAdmin),
+                PlanFeatures = PlanFeature.ManageAppointments | PlanFeature.ManagePatientRecords |
+                               PlanFeature.BasicReports | PlanFeature.AdvancedReports | PlanFeature.MarketingTools |
+                               PlanFeature.PrioritySupport | PlanFeature.OnlineBooking | PlanFeature.ManageStaff |
+                               PlanFeature.ManageDoctors,
+                HasActivePlan = true
+            };
+            base.OnActionExecuting(context);
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            ViewBag.Stats = new List<MockStat>();
+            ViewBag.UrgentTickets = new List<SupportTicketDto>();
+            ViewBag.Subscribers = new List<SubscriptionDto>();
+            ViewBag.HasError = false;
+
+            try
+            {
+                var stats = await _adminDashboardService.GetStatsAsync();
+                ViewBag.Stats = stats;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.HasError = true;
+                ViewBag.ErrorMessage = ex.Message;
+            }
+
+            try
+            {
+                ViewBag.UrgentTickets = await _adminDashboardService.GetUrgentTicketsAsync() ?? new List<SupportTicketDto>();
+            }
+            catch (ApiException)
+            {
+                ViewBag.UrgentTickets = new List<SupportTicketDto>();
+            }
+
+            try
+            {
+                var subs = await _adminDashboardService.GetSubscriptionsAsync(pageNumber: 1, pageSize: 5);
+                ViewBag.Subscribers = subs?.Items?.ToList() ?? new List<SubscriptionDto>();
+            }
+            catch (ApiException)
+            {
+                ViewBag.Subscribers = new List<SubscriptionDto>();
+            }
+
             return View();
         }
 
@@ -219,15 +273,38 @@ namespace ClinicHub.Controllers
         public async Task<IActionResult> ClinicDetails(Guid id)
         {
             ViewBag.GoogleMapsApiKey = _googleMapsOptions.Value.ApiKey;
+
             try
             {
-                var response = await _clinicService.GetClinicByIdAsync(new GetClinicByIdRequest { Id = id });
-                var clinic = response?.Data;
+                var details = await _clinicService.GetClinicDetailsAsync(new GetClinicByIdRequest { Id = id });
+                var clinic = details?.Data;
                 if (clinic != null)
                 {
                     clinic.Logo = _attachmentUrlResolver.Resolve(clinic.Logo);
-                    clinic.ImageUrl = clinic.Logo;
                     ViewBag.Clinic = clinic;
+                    if (clinic.Doctors != null)
+                    {
+                        foreach (var doc in clinic.Doctors)
+                            doc.Image = _attachmentUrlResolver.Resolve(doc.Image);
+                    }
+                }
+            }
+            catch (ApiException ex) when (ex.StatusCode == 404)
+            {
+                try
+                {
+                    var fallback = await _clinicService.GetClinicByIdAsync(new GetClinicByIdRequest { Id = id });
+                    var fallbackClinic = fallback?.Data;
+                    if (fallbackClinic != null)
+                    {
+                        fallbackClinic.Logo = _attachmentUrlResolver.Resolve(fallbackClinic.Logo);
+                        ViewBag.Clinic = fallbackClinic;
+                    }
+                }
+                catch (ApiException)
+                {
+                    ViewBag.ErrorMessage = "العيادة غير موجودة";
+                    ViewBag.Clinic = null;
                 }
             }
             catch (ApiException ex)
@@ -525,21 +602,6 @@ namespace ClinicHub.Controllers
             return View("PendingClinics");
         }
 
-        [Route("Admin/PlanManagement")]
-        public async Task<IActionResult> PlanManagement()
-        {
-            try
-            {
-                ViewBag.Plans = await _adminSubscriptionService.GetAllPlansAsync();
-            }
-            catch (ApiException ex)
-            {
-                ViewBag.ErrorMessage = ex.Message;
-                ViewBag.Plans = new List<PlanDto>();
-            }
-            return View("PlanManagement");
-        }
-
         [Route("Admin/SubscriptionManagement")]
         public async Task<IActionResult> SubscriptionManagement(int? status = null, Guid? planId = null, Guid? clinicId = null, int pageNumber = 1, int pageSize = 20)
         {
@@ -565,54 +627,6 @@ namespace ClinicHub.Controllers
                 ViewBag.Plans = new List<PlanDto>();
             }
             return View("SubscriptionManagement");
-        }
-
-        [HttpPost]
-        [Route("Admin/PlanManagement/Create")]
-        public async Task<IActionResult> CreatePlan([FromBody] PlanDto plan)
-        {
-            try
-            {
-                var result = await _adminSubscriptionService.CreatePlanAsync(plan);
-                return Json(new { success = true, data = result });
-            }
-            catch (ApiException ex)
-            {
-                Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        [Route("Admin/PlanManagement/Update")]
-        public async Task<IActionResult> UpdatePlan(Guid id, [FromBody] PlanDto plan)
-        {
-            try
-            {
-                var result = await _adminSubscriptionService.UpdatePlanAsync(id, plan);
-                return Json(new { success = true, data = result });
-            }
-            catch (ApiException ex)
-            {
-                Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        [Route("Admin/PlanManagement/Delete")]
-        public async Task<IActionResult> DeletePlan([FromBody] DeleteRequest request)
-        {
-            try
-            {
-                var message = await _adminSubscriptionService.DeletePlanAsync(request.Id);
-                return Json(new { success = true, message });
-            }
-            catch (ApiException ex)
-            {
-                Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
-            }
         }
 
         [HttpPost]
@@ -671,10 +685,44 @@ namespace ClinicHub.Controllers
             }
         }
 
-        public IActionResult Support()
+        public async Task<IActionResult> Support(int? status = null, int? priority = null, int pageNumber = 1, int pageSize = 20)
         {
-            ViewBag.Tickets = MockData.GetSupportTickets();
+            try
+            {
+                var paged = await _adminDashboardService.GetTicketsAsync(status, priority, pageNumber, pageSize);
+                ViewBag.Tickets = paged?.Items?.ToList() ?? new List<SupportTicketDto>();
+                ViewBag.Pagination = paged;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Tickets = new List<SupportTicketDto>();
+                ViewBag.Pagination = null;
+            }
+
+            ViewBag.StatusFilter = status?.ToString();
+            ViewBag.PriorityFilter = priority?.ToString();
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateTicketStatus(Guid id, int status)
+        {
+            try
+            {
+                await _adminDashboardService.UpdateTicketStatusAsync(id, status);
+                return Json(new { success = true, message = "تم تحديث حالة التذكرة بنجاح" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
 
         public IActionResult Payments()
@@ -711,6 +759,7 @@ namespace ClinicHub.Controllers
                     Email = u.Email,
                     Phone = u.PhoneNumber,
                     Initials = GetInitials(u.FullName),
+                    Image = _attachmentUrlResolver.Resolve(u.Image ?? u.ImageUrl),
                     RegistrationDate = u.CreatedAt.ToString("d MMMM yyyy"),
                     Status = u.IsActive ? "نشط" : "غير نشط",
                     StatusClass = u.IsActive ? "badge-success" : "badge-warning",
@@ -853,7 +902,9 @@ namespace ClinicHub.Controllers
         [Route("Admin/Users/Overview/{id}")]
         public IActionResult UsersOverview(int id)
         {
-            ViewBag.User = MockData.GetUserOverview(id);
+            var overview = MockData.GetUserOverview(id);
+            overview.Image = _attachmentUrlResolver.Resolve(overview.Image);
+            ViewBag.User = overview;
             return View("Users/Overview");
         }
 
@@ -969,8 +1020,77 @@ namespace ClinicHub.Controllers
             return View("Users/Payments");
         }
 
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
+            try
+            {
+                ViewBag.Profile = await _authService.GetProfileAsync();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = $"حدث خطأ غير متوقع: {ex.Message}";
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile()
+        {
+            try
+            {
+                string? profileImageUrl = null;
+                var file = Request.Form.Files.GetFile("imageFile");
+                if (file != null && file.Length > 0)
+                {
+                    profileImageUrl = await _attachmentService.UploadAttachmentAsync(new UploadAttachmentRequest(file, 1, MediaType.Image));
+                }
+
+                var fullName = Request.Form["fullName"].ToString();
+                var phoneNumber = Request.Form["phoneNumber"].ToString();
+                var birthDateText = Request.Form["birthDate"].ToString();
+                var genderText = Request.Form["gender"].ToString();
+
+                var request = new UpdateProfileRequest
+                {
+                    FullName = string.IsNullOrWhiteSpace(fullName) ? null : fullName,
+                    PhoneNumber = string.IsNullOrWhiteSpace(phoneNumber) ? null : phoneNumber,
+                    BirthDate = DateTime.TryParse(birthDateText, out var birthDate) ? birthDate : null,
+                    Gender = int.TryParse(genderText, out var gender) ? gender : null,
+                    ProfileImageUrl = profileImageUrl
+                };
+
+                var success = await _authService.UpdateProfileAsync(request);
+                return Json(new { success, message = success ? "تم تحديث الملف الشخصي بنجاح" : "فشل تحديث الملف الشخصي" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        public async Task<IActionResult> PlanManagement()
+        {
+            try
+            {
+                var plans = await _planService.GetAllAsync();
+                ViewBag.Plans = plans;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Plans = new List<PlanDto>();
+            }
+
             return View();
         }
 

@@ -56,7 +56,7 @@ namespace ClinicHub.Services.Services.Implementations
             if (!response.IsSuccessStatusCode)
             {
                 var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
-                var combined = string.Join(" ", errorMessages);
+                var combined = string.Join("\n", errorMessages);
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في رفع الملف" : combined);
             }
 
@@ -118,7 +118,7 @@ namespace ClinicHub.Services.Services.Implementations
             if (!response.IsSuccessStatusCode)
             {
                 var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
-                var combined = string.Join(" ", errorMessages);
+                var combined = string.Join("\n", errorMessages);
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في رفع الملفات" : combined);
             }
 
@@ -152,7 +152,7 @@ namespace ClinicHub.Services.Services.Implementations
             if (!response.IsSuccessStatusCode)
             {
                 var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
-                var combined = string.Join(" ", errorMessages);
+                var combined = string.Join("\n", errorMessages);
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تحديث الملف" : combined);
             }
 
@@ -220,7 +220,7 @@ namespace ClinicHub.Services.Services.Implementations
             if (!response.IsSuccessStatusCode)
             {
                 var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
-                var combined = string.Join(" ", errorMessages);
+                var combined = string.Join("\n", errorMessages);
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تحميل الملف" : combined);
             }
 

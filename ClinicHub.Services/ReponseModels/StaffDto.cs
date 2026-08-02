@@ -8,5 +8,6 @@ namespace ClinicHub.Services.ReponseModels
         public string PhoneNumber { get; set; } = null!;
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? Image { get; set; }
     }
 }
