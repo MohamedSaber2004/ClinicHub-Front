@@ -53,6 +53,10 @@ namespace ClinicHub.Services.Services.Implementations
             if (string.IsNullOrWhiteSpace(raw)) return raw ?? "";
             if (int.TryParse(raw, out var num) && StatusIntMap.ContainsKey(num))
                 return StatusIntMap[num];
+            if (raw.Equals("paid", StringComparison.OrdinalIgnoreCase) ||
+                raw.Equals("paid-confirmed", StringComparison.OrdinalIgnoreCase) ||
+                raw.Equals("payment-completed", StringComparison.OrdinalIgnoreCase))
+                return "confirmed";
             return raw.ToLowerInvariant();
         }
 

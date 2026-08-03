@@ -5,6 +5,8 @@ namespace ClinicHub.Services.ReponseModels
 {
     public class StaffQueueItemDto
     {
+        [JsonPropertyName("id")] [JsonProperty("id")] public string Id { get; set; } = null!;
+        [JsonPropertyName("appointmentId")] [JsonProperty("appointmentId")] public string AppointmentId { get; set; } = null!;
         [JsonPropertyName("queueNumber")] [JsonProperty("queueNumber")] public int QueueNumber { get; set; }
         [JsonPropertyName("patient")] [JsonProperty("patient")] public StaffPatientDto Patient { get; set; } = null!;
         [JsonPropertyName("doctor")] [JsonProperty("doctor")] public StaffDoctorBriefDto Doctor { get; set; } = null!;

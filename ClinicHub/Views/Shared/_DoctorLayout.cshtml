@@ -118,6 +118,10 @@
             </header>
 
             <main role="main" class="content-body">
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger" style="margin-bottom:16px;padding:12px 16px;border-radius:8px;font-size:14px;">@TempData["Error"]</div>
+                }
                 @RenderBody()
             </main>
         </div>

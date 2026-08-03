@@ -7,6 +7,7 @@
 @{
     var queueItems = ViewBag.QueueItems as List<StaffQueueItemDto> ?? new List<StaffQueueItemDto>();
     var doctors = ViewBag.Doctors as List<StaffDoctorDto> ?? new List<StaffDoctorDto>();
+    string QueueTargetId(StaffQueueItemDto item) => string.IsNullOrWhiteSpace(item.AppointmentId) ? item.Id : item.AppointmentId;
 }
 
 <h2 class="page-title">
@@ -26,6 +27,7 @@
     <form method="get" action="@Url.Action("Queue")" class="filter-bar table-filter-bar">
         <select name="status" class="form-select">
             <option value="">كل الحالات</option>
+            <option value="confirmed" selected="@(ViewBag.StatusFilter == "confirmed")">مدفوع - بانتظار القدوم</option>
             <option value="registered" selected="@(ViewBag.StatusFilter == "registered")">تم التسجيل</option>
             <option value="waiting" selected="@(ViewBag.StatusFilter == "waiting")">في الانتظار</option>
             <option value="in-progress" selected="@(ViewBag.StatusFilter == "in-progress")">قيد الكشف</option>
@@ -43,17 +45,19 @@
                     <th>الطبيب</th>
                     <th>الوقت</th>
                     <th>الحالة</th>
+                    <th>الإجراء</th>
                 </tr>
             </thead>
             <tbody id="queueBody">
                 @if (queueItems.Count == 0)
                 {
                     <tr>
-                        <td colspan="5" class="table-empty">لا يوجد مرضى في الطابور</td>
+                        <td colspan="6" class="table-empty">لا يوجد مرضى في الطابور</td>
                     </tr>
                 }
                 @foreach (var item in queueItems)
                 {
+                    var targetId = QueueTargetId(item);
                     <tr>
                         <td><span class="queue-number">@item.QueueNumber</span></td>
                         <td>
@@ -65,6 +69,24 @@
                         <td>@item.Doctor?.Name</td>
                         <td>@item.Time</td>
                         <td><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
+                        <td class="table-actions">
+                            @if (item.Status == "confirmed" || item.Status == "registered" || item.Status == "waiting")
+                            {
+                                <button class="btn btn-sm btn-outline-primary btn-q-checkin" data-id="@targetId" title="تسجيل وصول المريض">
+                                    <i class="bi bi-box-arrow-in-right"></i> تسجيل وصول
+                                </button>
+                            }
+                            else if (item.Status == "in-progress")
+                            {
+                                <button class="btn btn-sm btn-outline-success btn-q-complete" data-id="@targetId" title="إنهاء الكشف">
+                                    <i class="bi bi-check-lg"></i> إنهاء
+                                </button>
+                            }
+                            else if (item.Status == "completed")
+                            {
+                                <span class="badge badge-success">مكتمل</span>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -74,4 +96,35 @@
 </div>
 
 @section Scripts {
+    <script>
+        $(document).on('click', '.btn-q-checkin', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            showConfirmModal('هل تريد تسجيل وصول هذا المريض؟', function () {
+                StaffDashboardService.checkInPatient(id)
+                    .then(function () {
+                        showSuccessModal('تم تسجيل وصول المريض بنجاح');
+                        location.reload();
+                    })
+                    .catch(function (err) {
+                        showErrorModal((err && err.message) || 'حدث خطأ أثناء تسجيل الوصول');
+                    });
+            });
+        });
+
+        $(document).on('click', '.btn-q-complete', function () {
+            var id = $(this).data('id');
+            if (!id) return;
+            showConfirmModal('هل تريد إنهاء كشف هذا المريض؟', function () {
+                StaffDashboardService.completeAppointment(id)
+                    .then(function () {
+                        showSuccessModal('تم إنهاء الكشف بنجاح');
+                        location.reload();
+                    })
+                    .catch(function (err) {
+                        showErrorModal((err && err.message) || 'حدث خطأ أثناء إنهاء الكشف');
+                    });
+            });
+        });
+    </script>
 }

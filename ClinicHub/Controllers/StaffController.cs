@@ -107,8 +107,9 @@ namespace ClinicHub.Controllers
                 var statsTask = _staffDashboardService.GetStatsAsync();
                 var queueTask = _staffDashboardService.GetQueueAsync();
                 var pendingTask = _staffDashboardService.GetAppointmentsAsync("pending", null, null, 1, 1);
+                var confirmedTask = _staffDashboardService.GetAppointmentsAsync("confirmed", null, null, 1, 1);
 
-                await Task.WhenAll(statsTask, queueTask, pendingTask);
+                await Task.WhenAll(statsTask, queueTask, pendingTask, confirmedTask);
 
                 var stats = statsTask.Result;
                 var queue = queueTask.Result;
@@ -121,6 +122,7 @@ namespace ClinicHub.Controllers
                     string.Equals(q.Status, "registered", StringComparison.OrdinalIgnoreCase));
 
                 stats.PendingRequests = pendingTask.Result.TotalCount;
+                ViewBag.ConfirmedCount = confirmedTask.Result.TotalCount;
 
                 // Load first 5 pending appointment requests for dashboard card
                 var pendingFull = await _staffDashboardService.GetAppointmentsAsync("pending", null, null, 1, 5);

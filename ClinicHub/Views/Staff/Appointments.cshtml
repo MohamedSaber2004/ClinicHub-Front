@@ -30,9 +30,13 @@
             <option value="">كل الحالات</option>
             <option value="pending" selected="@(ViewBag.StatusFilter == "pending")">قيد الانتظار</option>
             <option value="accepted" selected="@(ViewBag.StatusFilter == "accepted")">بانتظار الدفع</option>
-            <option value="confirmed" selected="@(ViewBag.StatusFilter == "confirmed")">مؤكد</option>
+            <option value="awaiting-payment" selected="@(ViewBag.StatusFilter == "awaiting-payment")">بانتظار الدفع (مؤجل)</option>
+            <option value="confirmed" selected="@(ViewBag.StatusFilter == "confirmed")">مؤكد - مدفوع</option>
+            <option value="in-progress" selected="@(ViewBag.StatusFilter == "in-progress")">قيد الكشف</option>
             <option value="cancelled" selected="@(ViewBag.StatusFilter == "cancelled")">ملغي</option>
             <option value="completed" selected="@(ViewBag.StatusFilter == "completed")">منتهي</option>
+            <option value="rejected" selected="@(ViewBag.StatusFilter == "rejected")">مرفوض</option>
+            <option value="noshow" selected="@(ViewBag.StatusFilter == "noshow")">لم يحضر</option>
         </select>
         <input type="date" name="date" class="form-input" value="@ViewBag.DateFilter" title="تاريخ الموعد" />
         <input type="text" name="searchTerm" class="form-input" placeholder="بحث باسم المريض..." value="@ViewBag.SearchTerm" />

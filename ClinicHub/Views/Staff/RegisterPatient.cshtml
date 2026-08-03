@@ -10,32 +10,30 @@
     تسجيل مريض وافد
 </h2>
 
-<div style="max-width: 600px;">
-    <div class="table-card" style="padding: var(--space-6);">
+<div class="register-patient-card">
+    <div class="detail-card">
         <form id="registerForm">
-            <div style="display: flex; flex-direction: column; gap: var(--space-4);">
-                <div>
-                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--clr-text);">اسم المريض</label>
-                    <input type="text" id="patientName" class="form-control" placeholder="أدخل اسم المريض" required />
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--clr-text);">رقم الهاتف</label>
-                    <input type="tel" id="patientPhone" class="form-control" placeholder="010 xxxxxxxx" required />
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--clr-text);">اختيار الطبيب</label>
-                    <select id="doctorSelect" class="form-control" required>
-                        <option value="">-- جاري تحميل الأطباء --</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--clr-text);;">ملاحظات / الشكوى</label>
-                    <textarea id="complaint" class="form-control" rows="3" placeholder="الشكوى أو ملاحظات إضافية"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary" style="align-self: flex-start; padding: 10px 32px;">
-                    <i class="bi bi-save"></i> تسجيل المريض
-                </button>
+            <div class="form-group">
+                <label for="patientName" class="form-label">اسم المريض</label>
+                <input type="text" id="patientName" class="form-input" placeholder="أدخل اسم المريض" required />
             </div>
+            <div class="form-group">
+                <label for="patientPhone" class="form-label">رقم الهاتف</label>
+                <input type="tel" id="patientPhone" class="form-input" placeholder="010 xxxxxxxx" required />
+            </div>
+            <div class="form-group">
+                <label for="doctorSelect" class="form-label">اختيار الطبيب</label>
+                <select id="doctorSelect" class="form-select" required>
+                    <option value="">-- جاري تحميل الأطباء --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="complaint" class="form-label">ملاحظات / الشكوى</label>
+                <textarea id="complaint" class="form-textarea" rows="3" placeholder="الشكوى أو ملاحظات إضافية"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> تسجيل المريض
+            </button>
         </form>
     </div>
 </div>
@@ -60,7 +58,7 @@
                 clinicId: localStorage.getItem('clinicId') || ''
             };
             if (!data.fullName || !data.phoneNumber || !data.doctorId) {
-                alert('يرجى ملء جميع الحقول المطلوبة');
+                showErrorModal('يرجى ملء جميع الحقول المطلوبة');
                 return;
             }
             StaffDashboardService.registerPatient(data).then(function () {

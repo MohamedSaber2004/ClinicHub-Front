@@ -1225,6 +1225,10 @@ body {
     overflow: hidden;
 }
 
+.register-patient-card {
+    max-width: 600px;
+}
+
 .table-card-header {
     background-color: var(--clr-table-header);
     border-bottom: 1px solid var(--clr-border);
