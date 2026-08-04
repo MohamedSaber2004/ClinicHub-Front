@@ -4,7 +4,6 @@
     Layout = "_ClinicLayout";
     var settings = ViewBag.Settings as ClinicSettingsDto;
     var specializations = ViewBag.Specializations as List<SpecializationDto> ?? new List<SpecializationDto>();
-    var slotDuration = (ViewBag.TypicalSlotDuration as int?) ?? settings?.SlotDurationMinutes ?? 30;
     var lat = settings?.Latitude ?? 31.0409;
     var lng = settings?.Longitude ?? 31.3785;
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
@@ -136,7 +135,7 @@
         </div>
         <div class="settings-slot-info">
             <i class="bi bi-clock"></i>
-            <span>مدة الحجز النموذجية (تُدار من أوقات عمل الأطباء): <strong id="settingsSlotInfo">@slotDuration دقيقة</strong></span>
+            <span>مدة الموعد ثابتة: <strong>30 دقيقة</strong> — تُطبق على جميع الأطباء والأيام ولا يمكن تغييرها. كل موعد محجوز لمدة 30 دقيقة بالتحديد.</span>
         </div>
     </div>
 

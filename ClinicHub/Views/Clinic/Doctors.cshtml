@@ -286,7 +286,6 @@
                                     <input type="time" class="availability-from form-control auth-form-control" value="09:00" />
                                     <span class="availability-sep">إلى</span>
                                     <input type="time" class="availability-to form-control auth-form-control" value="17:00" />
-                                    <input type="number" class="availability-slot form-control auth-form-control" value="30" min="1" max="480" placeholder="دقيقة" />
                                     <button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>
                                 </div>
                             </div>
@@ -488,7 +487,7 @@
                 availHtml = '<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">أوقات العمل</span><span class="detail-value">';
                 doctor.availabilities.forEach(function (a) {
                     var dayName = DAY_NAMES[a.dayOfWeek] || 'اليوم ' + a.dayOfWeek;
-                    availHtml += '<div style="font-size: 13px; margin-bottom: 4px;">' + dayName + ': ' + a.startTime.slice(0, 5) + ' - ' + a.endTime.slice(0, 5) + ' (كل ' + a.slotDurationMinutes + ' دقيقة)</div>';
+                    availHtml += '<div style="font-size: 13px; margin-bottom: 4px;">' + dayName + ': ' + a.startTime.slice(0, 5) + ' - ' + a.endTime.slice(0, 5) + ' (30 دقيقة ثابتة)</div>';
                 });
                 availHtml += '</span></div>';
             }
@@ -546,7 +545,6 @@
                     '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
                     '<span class="availability-sep">إلى</span>' +
                     '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
-                    '<input type="number" class="availability-slot form-control auth-form-control" value="' + (slotMin || '30') + '" min="1" max="480" placeholder="دقيقة" />' +
                     '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>' +
                 '</div>'
             );
@@ -663,14 +661,13 @@
                 var day = parseInt(row.find('.availability-day').val());
                 var fromTime = row.find('.availability-from').val();
                 var toTime = row.find('.availability-to').val();
-                var slot = parseInt(row.find('.availability-slot').val()) || 30;
 
                 if (!isNaN(day) && day >= 0 && fromTime && toTime) {
                     availabilities.push({
                         dayOfWeek: day,
                         startTime: fromTime + ':00',
                         endTime: toTime + ':00',
-                        slotDurationMinutes: slot
+                        slotDurationMinutes: 30
                     });
                 }
             });
@@ -764,8 +761,8 @@
                         var originalAvail = [];
                         if (d.availabilities && d.availabilities.length > 0) {
                             d.availabilities.forEach(function (a) {
-                                addEditAvailabilityRow(a.dayOfWeek, (a.startTime || '').slice(0, 5), (a.endTime || '').slice(0, 5), a.slotDurationMinutes || 30);
-                                originalAvail.push({ dayOfWeek: a.dayOfWeek, startTime: (a.startTime || '').slice(0, 5), endTime: (a.endTime || '').slice(0, 5), slotDurationMinutes: a.slotDurationMinutes || 30 });
+                                addEditAvailabilityRow(a.dayOfWeek, (a.startTime || '').slice(0, 5), (a.endTime || '').slice(0, 5));
+                                originalAvail.push({ dayOfWeek: a.dayOfWeek, startTime: (a.startTime || '').slice(0, 5), endTime: (a.endTime || '').slice(0, 5), slotDurationMinutes: 30 });
                             });
                         }
 
@@ -809,7 +806,6 @@
                     '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
                     '<span class="availability-sep">إلى</span>' +
                     '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
-                    '<input type="number" class="availability-slot form-control auth-form-control" value="' + (slotMin || '30') + '" min="1" max="480" placeholder="دقيقة" />' +
                     '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>' +
                 '</div>'
             );
@@ -915,13 +911,12 @@
                 var day = parseInt(row.find('.availability-day').val());
                 var fromTime = row.find('.availability-from').val();
                 var toTime = row.find('.availability-to').val();
-                var slot = parseInt(row.find('.availability-slot').val()) || 30;
                 if (!isNaN(day) && day >= 0 && fromTime && toTime) {
                     availRows.push({
                         dayOfWeek: day,
                         startTime: fromTime + ':00',
                         endTime: toTime + ':00',
-                        slotDurationMinutes: slot
+                        slotDurationMinutes: 30
                     });
                 }
             });

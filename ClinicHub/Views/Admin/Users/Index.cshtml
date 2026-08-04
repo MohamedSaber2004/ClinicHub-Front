@@ -227,7 +227,6 @@
                                 <input type="time" class="availability-from form-control auth-form-control" value="09:00" />
                                 <span class="availability-sep">إلى</span>
                                 <input type="time" class="availability-to form-control auth-form-control" value="17:00" />
-                                <input type="number" class="availability-slot form-control auth-form-control" value="30" min="1" max="480" placeholder="دقيقة" />
                                 <button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>
                             </div>
                         </div>
@@ -425,7 +424,6 @@
                     '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
                     '<span class="availability-sep">إلى</span>' +
                     '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
-                    '<input type="number" class="availability-slot form-control auth-form-control" value="' + (slotMin || '30') + '" min="1" max="480" placeholder="دقيقة" />' +
                     '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>';
                 row.querySelector('.availability-remove-btn').addEventListener('click', function () { row.remove(); });
                 container.appendChild(row);
@@ -438,13 +436,12 @@
                     var day = parseInt(row.querySelector('.availability-day').value);
                     var fromTime = row.querySelector('.availability-from').value;
                     var toTime = row.querySelector('.availability-to').value;
-                    var slot = parseInt(row.querySelector('.availability-slot').value) || 30;
                     if (!isNaN(day) && day >= 0 && fromTime && toTime) {
                         availabilities.push({
                             dayOfWeek: day,
                             startTime: fromTime + ':00',
                             endTime: toTime + ':00',
-                            slotDurationMinutes: slot
+                            slotDurationMinutes: 30
                         });
                     }
                 });

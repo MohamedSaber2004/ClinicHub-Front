@@ -59,7 +59,9 @@ namespace ClinicHub.Services.Services.Implementations
         {
             try
             {
-                var url = $"{_getActiveSpecializations}?isFamous={isFamous.ToString().ToLower()}";
+                var url = _getActiveSpecializations;
+                if (isFamous.HasValue)
+                    url += $"?isFamous={isFamous.Value.ToString().ToLower()}";
                 var response = await _httpClient.GetAsync(url);
                 var body = await response.Content.ReadAsStringAsync();
 

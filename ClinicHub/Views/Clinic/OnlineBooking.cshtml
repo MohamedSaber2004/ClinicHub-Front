@@ -159,7 +159,7 @@ else
                     var to = day.workingHours ? day.workingHours.to : '';
                     var dayName = dayNameAr(day.dayOfWeek);
                     var hoursText = (from && to) ? (from + ' - ' + to) : '';
-                    var duration = day.slotDurationMinutes || 30;
+                    var duration = 30;
 
                     var segment = $(
                         '<div class="slot-segment">' +

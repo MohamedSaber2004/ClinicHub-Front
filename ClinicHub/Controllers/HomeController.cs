@@ -71,7 +71,7 @@ public class HomeController : BaseController
 
             try
             {
-                ViewBag.Specializations = await _specializationService.GetActiveAsync(false);
+                ViewBag.Specializations = await _specializationService.GetActiveAsync();
             }
             catch (ApiException)
             {
@@ -112,7 +112,7 @@ public class HomeController : BaseController
             ViewBag.GoogleMapsApiKey = _googleMapsOptions.Value.ApiKey;
             try
             {
-                ViewBag.Specializations = await _specializationService.GetActiveAsync(false);
+                ViewBag.Specializations = await _specializationService.GetActiveAsync();
             }
             catch
             {

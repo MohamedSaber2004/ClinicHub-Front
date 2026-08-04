@@ -1,24 +1,7 @@
-@using System.Text.Json
-@using ClinicHub.Services.Enums
 @{
     ViewData["Title"] = "مركز التحقق";
     Layout = "_AdminLayout";
     var pagedResult = ViewBag.Requests as PagginatedResult<UserVerficationDto> ?? new(new List<UserVerficationDto>(), 0);
-    var requests = pagedResult.Items;
-    var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-    var requestsJson = JsonSerializer.Serialize(requests, jsonOptions);
-}
-
-@functions {
-    string GetRoleName(UserType role) => role switch
-    {
-        UserType.Doctor => "طبيب",
-        UserType.ClinicOwner => "مالك عيادة",
-        UserType.Staff => "موظف",
-        _ => role.ToString()
-    };
-
-    string FormatDate(DateTime dt) => dt.ToString("yyyy-MM-dd");
 }
 
 <div class="page-header">
@@ -32,208 +15,12 @@
     </h2>
 </div>
 
-<!-- Filter tabs -->
-<div class="verification-tabs-wrapper">
-    <ul class="verification-tabs" role="tablist">
-        <li class="verification-tab active" data-tab="all">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-            </svg>
-            طلبات التحقق
-            @if (requests.Any())
-            {
-                <span class="badge badge-warning" style="margin-right: var(--space-2);">@pagedResult.TotalCount</span>
-            }
-        </li>
-    </ul>
-    <div class="verification-role-filter">
-        <button class="filter-role-btn active" data-role="all">الكل</button>
-        <button class="filter-role-btn" data-role="@((int)UserType.Doctor)">الأطباء</button>
-        <button class="filter-role-btn" data-role="@((int)UserType.ClinicOwner)">العيادات</button>
-    </div>
+<div id="verificationCenterRoot">
+    @await Html.PartialAsync("_VerificationList", pagedResult)
 </div>
-
-<div class="verification-tab-content active">
-    @if (!requests.Any())
-    {
-        <div class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--clr-text-light)">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-            <h3 class="empty-title">لا توجد طلبات تحقق معلقة</h3>
-            <p class="empty-desc">جميع طلبات التحقق تمت معالجتها.</p>
-        </div>
-    }
-    else
-    {
-        <div class="verification-layout">
-            <div class="verification-list-column">
-                <div class="verification-list">
-                    <div class="list-header">
-                        <h4 class="list-title">طلبات التحقق (@pagedResult.TotalCount)</h4>
-                    </div>
-                    <div class="list-body">
-                        @foreach (var req in requests)
-                        {
-                            <div class="verification-card" data-request-id="@req.Id.ToString()" data-role="@((int)req.RequestedRole)">
-                                <div class="vc-header">
-                                <div class="vc-avatar">
-                                    @if (!string.IsNullOrEmpty(req.DoctorImage))
-                                    {
-                                        <img src="@req.DoctorImage" alt="@req.UserFullName" onerror="this.style.display='none';this.nextElementSibling.style.display=''" />
-                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="display:none">
-                                            <circle cx="20" cy="20" r="20" fill="#F2F5F9"/>
-                                            <circle cx="20" cy="16" r="6" fill="#66748C"/>
-                                            <path d="M8 34c0-6.075 5.373-10 12-10s12 3.925 12 10" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
-                                        </svg>
-                                    }
-                                    else
-                                    {
-                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                                            <circle cx="20" cy="20" r="20" fill="#F2F5F9"/>
-                                            <circle cx="20" cy="16" r="6" fill="#66748C"/>
-                                            <path d="M8 34c0-6.075 5.373-10 12-10s12 3.925 12 10" stroke="#66748C" stroke-width="2.5" stroke-linecap="round"/>
-                                        </svg>
-                                    }
-                                </div>
-                                    <div class="vc-info">
-                                        <span class="vc-name">@req.UserFullName</span>
-                                        <span class="vc-spec">@GetRoleName(req.RequestedRole)</span>
-                                        <span class="vc-date">@FormatDate(req.RequestedAt)</span>
-                                    </div>
-                                    <div class="vc-status">
-                                        @if (req.Status == VerificationStatus.Pending)
-                                        {
-                                            <span class="badge badge-warning">قيد الانتظار</span>
-                                        }
-                                        else if (req.Status == VerificationStatus.Approved)
-                                        {
-                                            <span class="badge badge-success">مقبول</span>
-                                        }
-                                        else if (req.Status == VerificationStatus.Rejected)
-                                        {
-                                            <span class="badge badge-danger">مرفوض</span>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                @if (pagedResult.TotalPages > 1)
-                {
-                    <div class="verification-pagination">
-                        <nav class="pagination-nav">
-                            <ul class="pagination-list">
-                                @if (pagedResult.HasPreviousPage)
-                                {
-                                    <li class="pagination-item">
-                                        <a class="pagination-link" href="@Url.Action("VerificationCenter", new { pageNumber = pagedResult.PageNumber - 1, pageSize = pagedResult.PageSize })">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                                            </svg>
-                                            السابق
-                                        </a>
-                                    </li>
-                                }
-                                @for (var i = 1; i <= pagedResult.TotalPages; i++)
-                                {
-                                    <li class="pagination-item">
-                                        <a class="pagination-link @(i == pagedResult.PageNumber ? "pagination-link--active" : "")"
-                                           href="@Url.Action("VerificationCenter", new { pageNumber = i, pageSize = pagedResult.PageSize })">
-                                            @i
-                                        </a>
-                                    </li>
-                                }
-                                @if (pagedResult.HasNextPage)
-                                {
-                                    <li class="pagination-item">
-                                        <a class="pagination-link" href="@Url.Action("VerificationCenter", new { pageNumber = pagedResult.PageNumber + 1, pageSize = pagedResult.PageSize })">
-                                            التالي
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
-                                            </svg>
-                                        </a>
-                                    </li>
-                                }
-                            </ul>
-                        </nav>
-                    </div>
-                }
-            </div>
-
-            <div class="verification-detail" id="verificationDetail">
-                <div class="detail-empty" id="detailEmpty">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--clr-text-light)">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                    <p>اختر طلباً لعرض التفاصيل</p>
-                </div>
-                <div class="detail-content" id="detailContent" style="display:none">
-                    <div class="detail-header">
-                        <h4 class="detail-title">تفاصيل الطلب</h4>
-                        <span class="detail-id" id="detailId"></span>
-                    </div>
-                    <div class="detail-body">
-                        <div class="detail-section">
-                            <h5 class="section-title">المعلومات الشخصية</h5>
-                            <div class="detail-grid">
-                                <div class="detail-item">
-                                    <span class="detail-label">الاسم</span>
-                                    <span class="detail-value" id="detailName"></span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">الدور المطلوب</span>
-                                    <span class="detail-value" id="detailRole"></span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">الهاتف</span>
-                                    <span class="detail-value" id="detailPhone"></span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">البريد الإلكتروني</span>
-                                    <span class="detail-value" id="detailEmail"></span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">تاريخ الطلب</span>
-                                    <span class="detail-value" id="detailDate"></span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">الحالة</span>
-                                    <span class="detail-value" id="detailStatus"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="detail-section">
-                            <h5 class="section-title">المستندات المرفوعة</h5>
-                            <div class="documents-grid" id="detailDocuments"></div>
-                        </div>
-                        <div class="detail-actions">
-                            <button type="button" class="btn btn-success" id="acceptRequestBtn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-                                </svg>
-                                قبول الطلب
-                            </button>
-                            <button type="button" class="btn btn-danger" id="rejectRequestBtn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>
-                                </svg>
-                                رفض الطلب
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-</div>
-
-
 
 <!-- Doctor Verification Action Modal -->
-    <div class="modal fade" id="verificationActionModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="verificationActionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-content-custom">
             <div class="modal-header-custom">
@@ -258,8 +45,15 @@
 
 @section Scripts {
     <script>
-        var verificationRequests = @Html.Raw(requestsJson);
+        var verificationRequests = [];
         var selectedRequestId = null;
+        var activeRoleFilter = 'all';
+
+        // ---- reading helpers ----
+        function readRequestsData() {
+            var el = document.getElementById('verificationRequestsJson');
+            verificationRequests = el ? JSON.parse(el.textContent) : [];
+        }
 
         function getRoleName(role) {
             var names = { 0: 'لا يوجد', 1: 'مستخدم', 2: 'مدير عام', 3: 'موظف', 4: 'طبيب', 16: 'مالك عيادة' };
@@ -282,10 +76,14 @@
             return '';
         }
 
+        // ---- detail pane ----
         function showDetail(req) {
             selectedRequestId = req.id;
-            document.getElementById('detailEmpty').style.display = 'none';
-            document.getElementById('detailContent').style.display = '';
+            var emptyEl = document.getElementById('detailEmpty');
+            var contentEl = document.getElementById('detailContent');
+            if (!emptyEl || !contentEl) return;
+            emptyEl.style.display = 'none';
+            contentEl.style.display = '';
             document.getElementById('detailId').textContent = '#' + req.id.substring(0, 8);
             document.getElementById('detailName').textContent = req.userFullName;
             document.getElementById('detailRole').textContent = getRoleName(req.requestedRole);
@@ -325,117 +123,161 @@
 
         function clearDetail() {
             selectedRequestId = null;
-            document.getElementById('detailEmpty').style.display = '';
-            document.getElementById('detailContent').style.display = 'none';
+            var emptyEl = document.getElementById('detailEmpty');
+            var contentEl = document.getElementById('detailContent');
+            if (!emptyEl || !contentEl) return;
+            emptyEl.style.display = '';
+            contentEl.style.display = 'none';
         }
 
-        (function() {
-            var filterBtns = document.querySelectorAll('.filter-role-btn');
+        // ---- filtering ----
+        function getRoleValue(roleKey) {
+            if (roleKey === 'all') return null;
+            return parseInt(roleKey, 10);
+        }
+
+        function applyFilter() {
+            var targetRole = getRoleValue(activeRoleFilter);
             var cards = document.querySelectorAll('.verification-card');
-
-            function getRoleValue(roleKey) {
-                if (roleKey === 'all') return null;
-                return parseInt(roleKey, 10);
+            var firstVisible = null;
+            cards.forEach(function(card) {
+                var id = card.getAttribute('data-request-id');
+                var req = verificationRequests.find(function(r) { return r.id === id; });
+                var match = !targetRole || (req && req.requestedRole === targetRole);
+                card.style.display = match ? '' : 'none';
+                if (match && !firstVisible) firstVisible = card;
+            });
+            if (firstVisible) {
+                cards.forEach(function(c) { c.classList.remove('active'); });
+                firstVisible.classList.add('active');
+                var id = firstVisible.getAttribute('data-request-id');
+                var req = verificationRequests.find(function(r) { return r.id === id; });
+                if (req) showDetail(req);
+            } else {
+                clearDetail();
             }
+        }
 
-            function applyFilter(roleKey) {
-                var targetRole = getRoleValue(roleKey);
-                var firstVisible = null;
-                cards.forEach(function(card) {
-                    var id = card.getAttribute('data-request-id');
-                    var req = verificationRequests.find(function(r) { return r.id === id; });
-                    var match = !targetRole || (req && req.requestedRole === targetRole);
-                    card.style.display = match ? '' : 'none';
-                    if (match && !firstVisible) firstVisible = card;
+        // ---- SPA refresh: re-fetch list partial ----
+        function refreshVerificationList() {
+            var pageNum = 1;
+            var activePage = document.querySelector('.verification-pagination .pagination-link--active');
+            if (activePage) pageNum = parseInt(activePage.getAttribute('data-page'), 10) || 1;
+            loadListPage(pageNum);
+        }
+
+        function loadListPage(pageNum) {
+            var url = '@Url.Action("VerificationList", new { pageSize = 20 })';
+            url = url.replace('pageSize=20', 'pageNumber=' + pageNum + '&pageSize=20');
+
+            fetch(url, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.text(); })
+                .then(function(html) {
+                    var root = document.getElementById('verificationCenterRoot');
+                    if (root) root.innerHTML = html;
+                    readRequestsData();
+                    bindEvents();
+                    bindDetailButtons();
+                    applyFilter();
+                })
+                .catch(function() {
+                    showErrorModal('عذراً، حدث خطأ أثناء تحديث قائمة الطلبات.');
                 });
-                if (firstVisible) {
-                    cards.forEach(function(c) { c.classList.remove('active'); });
-                    firstVisible.classList.add('active');
-                    var id = firstVisible.getAttribute('data-request-id');
-                    var req = verificationRequests.find(function(r) { return r.id === id; });
-                    if (req) showDetail(req);
-                } else {
-                    clearDetail();
-                }
-            }
+        }
+
+        // ---- event wiring ----
+        function bindEvents() {
+            var filterBtns = document.querySelectorAll('.filter-role-btn');
 
             filterBtns.forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     filterBtns.forEach(function(b) { b.classList.remove('active'); });
                     this.classList.add('active');
-                    applyFilter(this.getAttribute('data-role'));
+                    activeRoleFilter = this.getAttribute('data-role');
+                    applyFilter();
                 });
             });
 
-            cards.forEach(function(card) {
+            document.querySelectorAll('.verification-card').forEach(function(card) {
                 card.addEventListener('click', function() {
                     var id = this.getAttribute('data-request-id');
                     var req = verificationRequests.find(function(r) { return r.id === id; });
                     if (req) {
-                        cards.forEach(function(c) { c.classList.remove('active'); });
+                        document.querySelectorAll('.verification-card').forEach(function(c) { c.classList.remove('active'); });
                         this.classList.add('active');
                         showDetail(req);
                     }
                 });
             });
 
-            applyFilter('all');
+            document.querySelectorAll('.verification-pagination .pagination-link').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    loadListPage(parseInt(this.getAttribute('data-page'), 10) || 1);
+                });
+            });
+        }
 
-            // Modal actions
-            var actionModal = new bootstrap.Modal(document.getElementById('verificationActionModal'));
+        function openActionModal(type) {
+            if (!selectedRequestId) return;
+            document.getElementById('doctorActionType').value = type;
+            if (type === 'accept') {
+                document.getElementById('doctorActionModalTitle').textContent = 'قبول طلب التحقق';
+                document.getElementById('doctorActionConfirmMsg').innerHTML = '<div class="alert alert-success">سيتم قبول الطلب وتفعيل حساب الطبيب.</div>';
+            } else {
+                document.getElementById('doctorActionModalTitle').textContent = 'رفض طلب التحقق';
+                document.getElementById('doctorActionConfirmMsg').innerHTML = '<div class="alert alert-danger">سيتم رفض الطلب مع إرسال سبب الرفض للطبيب.</div>';
+            }
+            actionModal.show();
+        }
+
+        function bindDetailButtons() {
             var acceptBtn = document.getElementById('acceptRequestBtn');
             var rejectBtn = document.getElementById('rejectRequestBtn');
+            if (acceptBtn) acceptBtn.addEventListener('click', function() { openActionModal('accept'); });
+            if (rejectBtn) rejectBtn.addEventListener('click', function() { openActionModal('reject'); });
+        }
 
-            function openModal(type) {
-                if (!selectedRequestId) return;
-                document.getElementById('doctorActionType').value = type;
-                if (type === 'accept') {
-                    document.getElementById('doctorActionModalTitle').textContent = 'قبول طلب التحقق';
-                    document.getElementById('doctorActionConfirmMsg').innerHTML = '<div class="alert alert-success">سيتم قبول الطلب وتفعيل حساب الطبيب.</div>';
-                } else {
-                    document.getElementById('doctorActionModalTitle').textContent = 'رفض طلب التحقق';
-                    document.getElementById('doctorActionConfirmMsg').innerHTML = '<div class="alert alert-danger">سيتم رفض الطلب مع إرسال سبب الرفض للطبيب.</div>';
-                }
-                actionModal.show();
-            }
-
-            if (acceptBtn) acceptBtn.addEventListener('click', function() { openModal('accept'); });
-            if (rejectBtn) rejectBtn.addEventListener('click', function() { openModal('reject'); });
-
+        function bindConfirmButton() {
             var confirmBtn = document.getElementById('doctorConfirmActionBtn');
-            if (confirmBtn) {
-                confirmBtn.addEventListener('click', function() {
-                    var type = document.getElementById('doctorActionType').value;
-                    var reason = document.getElementById('doctorActionReason').value;
-                    var req = verificationRequests.find(function(r) { return r.id === selectedRequestId; });
-                    if (!req) return;
+            if (!confirmBtn) return;
+            confirmBtn.addEventListener('click', function() {
+                var type = document.getElementById('doctorActionType').value;
+                var reason = document.getElementById('doctorActionReason').value;
+                var req = verificationRequests.find(function(r) { return r.id === selectedRequestId; });
+                if (!req) return;
 
-                    var url = type === 'accept'
-                        ? '/Admin/AcceptVerification?userId=' + encodeURIComponent(req.userId)
-                        : '/Admin/RejectVerification?userId=' + encodeURIComponent(req.userId) + '&notes=' + encodeURIComponent(reason || '');
+                var url = type === 'accept'
+                    ? '/Admin/AcceptVerification?userId=' + encodeURIComponent(req.userId)
+                    : '/Admin/RejectVerification?userId=' + encodeURIComponent(req.userId) + '&notes=' + encodeURIComponent(reason || '');
 
-                    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                        .then(function(r) { return r.json(); })
-                        .then(function(data) {
-                            if (data.success) {
-                                req.status = type === 'accept' ? 1 : 2;
-                                document.getElementById('detailStatus').innerHTML = getStatusHtml(req.status);
-                                var card = document.querySelector('.verification-card[data-request-id="' + req.id + '"]');
-                                if (card) {
-                                    var statusEl = card.querySelector('.vc-status');
-                                    if (statusEl) statusEl.innerHTML = getStatusHtml(req.status);
-                                }
-                                showSuccessModal(data.message || (type === 'accept' ? 'تم قبول طلب التحقق بنجاح' : 'تم رفض طلب التحقق بنجاح'));
-                            } else {
-                                showErrorModal(data.message || (type === 'accept' ? 'فشل قبول طلب التحقق' : 'فشل رفض طلب التحقق'));
-                            }
-                        })
-                        .catch(function() {
-                            showErrorModal('عذراً، حدث خطأ غير متوقع أثناء معالجة الطلب.');
-                        });
-                });
-            }
-        })();
+                fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            req.status = type === 'accept' ? 1 : 2;
+                            showSuccessModal(data.message || (type === 'accept' ? 'تم قبول طلب التحقق بنجاح' : 'تم رفض طلب التحقق بنجاح'));
+                            refreshVerificationList();
+                        } else {
+                            showErrorModal(data.message || (type === 'accept' ? 'فشل قبول طلب التحقق' : 'فشل رفض طلب التحقق'));
+                        }
+                    })
+                    .catch(function() {
+                        showErrorModal('عذراً، حدث خطأ غير متوقع أثناء معالجة الطلب.');
+                    });
+            });
+        }
+
+        var actionModal = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            actionModal = new bootstrap.Modal(document.getElementById('verificationActionModal'));
+            readRequestsData();
+            bindDetailButtons();
+            bindConfirmButton();
+            bindEvents();
+            applyFilter();
+        });
 
         var successMsg = '@(TempData["SuccessMessage"] ?? "")';
         if (successMsg) { showSuccessModal(successMsg); }

@@ -1029,14 +1029,8 @@ namespace ClinicHub.Data
                     ? (end - start).TotalHours
                     : 0);
 
-            // مدة الحجز النموذجية: الأكثر تكراراً عبر صفوف أوقات العمل (لا تُعرض 30 كقيمة ثابتة)
-            var durations = config.WorkingDays
-                .Where(w => w.IsAvailable && w.SlotDurationMinutes > 0)
-                .Select(w => w.SlotDurationMinutes)
-                .ToList();
-            var typicalDuration = durations.Count > 0
-                ? durations.GroupBy(d => d).OrderByDescending(g => g.Count()).First().Key
-                : 30;
+            // مدة الموعد ثابتة على 30 دقيقة لجميع الأطباء والأيام
+            var typicalDuration = 30;
 
             return new()
             {

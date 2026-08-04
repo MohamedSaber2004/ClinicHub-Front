@@ -84,6 +84,50 @@
     </div>
 }
 
+<!-- Patient App Preview -->
+<div class="table-card ad-preview-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">
+            <span class="subtitle-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/>
+                </svg>
+            </span>
+            معاينة الإعلان في تطبيق المرضى
+        </h3>
+        <p class="ad-preview-hint">هكذا يظهر إعلانك للمرضى في تطبيق الجوال (كصورة أو شارة). الإعلانات النشطة فقط تظهر للجميع.</p>
+    </div>
+
+    @{
+        var activeAds = ads.Where(a => a.Status == 1).ToList();
+    }
+    @if (activeAds.Count == 0)
+    {
+        <div class="ad-preview-empty">
+            <p>لا توجد إعلانات نشطة حالياً. بمجرد شراء إعلان وتأكيد الدفع سيظهر هنا وفي تطبيق المرضى.</p>
+        </div>
+    }
+    else
+    {
+        <div class="ad-preview-grid">
+            @foreach (var ad in activeAds)
+            {
+                <div class="ad-preview-item">
+                    <div class="ad-preview-visual">
+                        <span class="ad-preview-initial">@(string.IsNullOrWhiteSpace(ad.ClinicName) ? "ع" : ad.ClinicName.Substring(0, 1))</span>
+                    </div>
+                    <div class="ad-preview-body">
+                        <span class="ad-preview-name">@ad.ClinicName</span>
+                        <span class="ad-preview-meta">@ad.PackageNameAr</span>
+                        <span class="ad-preview-period">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-") → @(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")</span>
+                    </div>
+                    <span class="badge badge-success">نشط</span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
 <!-- My Ads -->
 <div class="table-card">
     <div class="table-card-header">

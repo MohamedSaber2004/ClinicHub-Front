@@ -29,7 +29,7 @@
     {
         <div class="stat-card">
             <div class="stat-info">
-                <span class="stat-value" @(stat.Label == "مدة الحجز النموذجية" ? "id=\"statDurationValue\"" : "")>@stat.Value</span>
+                <span class="stat-value" @(stat.Label == "مدة الحجز (ثابتة)" ? "id=\"statDurationValue\"" : "")>@stat.Value</span>
                 <span class="stat-label">@stat.Label</span>
             </div>
             <div class="icon-wrapper icon-wrapper--@stat.IconColor">
@@ -44,9 +44,9 @@
 <div class="detail-card">
     <div class="detail-section-header">
         <h5>جدول العمل الأسبوعي</h5>
-        <span class="badge badge-info" id="typicalDurationBadge">مدة الحجز النموذجية: @typicalDuration دقيقة</span>
+        <span class="badge badge-info" id="typicalDurationBadge">مدة الحجز: 30 دقيقة (ثابتة)</span>
     </div>
-    <p class="form-hint mb-3">حدد أيام ومواعيد تواجدك في العيادة. اترك الوقت فارغاً ليكون اليوم عطلة. مدة الحجز تُحدد لكل يوم على حدة — يمكنك اختيار مدة مختلفة لكل يوم (مثلاً 30 دقيقة في يوم و45 دقيقة في يوم آخر).</p>
+    <p class="form-hint mb-3">حدد أيام ومواعيد تواجدك في العيادة. اترك الوقت فارغاً ليكون اليوم عطلة. مدة الموعد مثبتة على 30 دقيقة لجميع الأيام ولا يمكن تغييرها.</p>
     <div id="availabilityContainer"></div>
     <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn mt-2">
         <i class="bi bi-plus-circle"></i> إضافة يوم
@@ -75,26 +75,6 @@
                 }
             }
 
-            function updateTypicalDuration() {
-                var freq = {};
-                var hasValue = false;
-                $('.availability-slot').each(function () {
-                    var val = parseInt($(this).val(), 10);
-                    if (val > 0) {
-                        freq[val] = (freq[val] || 0) + 1;
-                        hasValue = true;
-                    }
-                });
-                if (!hasValue) return;
-
-                var typical = Object.keys(freq).map(Number)
-                    .sort(function (a, b) { return freq[b] - freq[a]; })[0];
-
-                $('#typicalDurationBadge').text('مدة الحجز النموذجية: ' + typical + ' دقيقة');
-                var statEl = document.getElementById('statDurationValue');
-                if (statEl) statEl.textContent = typical + ' دقيقة';
-            }
-
             function addAvailabilityRow(id, day, fromTime, toTime, slotMin) {
                 var container = $('#availabilityContainer');
                 var row = $(
@@ -108,20 +88,18 @@
                         '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
                         '<span class="availability-sep">إلى</span>' +
                         '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
-                        '<input type="number" class="availability-slot form-control auth-form-control" value="' + (slotMin || '30') + '" min="1" max="480" placeholder="دقيقة" />' +
                         '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>' +
                     '</div>'
                 );
                 if (id && id !== '00000000-0000-0000-0000-000000000000') row.attr('data-id', id);
                 container.append(row);
-                updateTypicalDuration();
             }
 
             if (Array.isArray(initialAvailability) && initialAvailability.length > 0) {
                 initialAvailability.forEach(function (item) {
                     var start = item.startTime ? item.startTime.substring(0, 5) : '09:00';
                     var end = item.endTime ? item.endTime.substring(0, 5) : '17:00';
-                    addAvailabilityRow(item.id, item.dayOfWeek, start, end, item.slotDurationMinutes || 30);
+                    addAvailabilityRow(item.id, item.dayOfWeek, start, end);
                 });
             } else {
                 addAvailabilityRow();
@@ -131,11 +109,8 @@
                 addAvailabilityRow();
             });
 
-            $('#availabilityContainer').on('input change', '.availability-slot', updateTypicalDuration);
-
             $(document).on('click', '.availability-remove-btn', function () {
                 $(this).closest('.availability-row').remove();
-                updateTypicalDuration();
             });
 
             function buildDaysPayload() {
@@ -152,15 +127,12 @@
 
                     if (to <= from) { valid = false; return false; }
 
-                    var slotMin = parseInt($(this).find('.availability-slot').val(), 10);
-                    if (!slotMin || slotMin < 1 || slotMin > 480) { valid = false; return false; }
-
                     filled++;
                     var item = {
                         dayOfWeek: parseInt(day, 10),
                         startTime: from + ':00',
                         endTime: to + ':00',
-                        slotDurationMinutes: slotMin || 30
+                        slotDurationMinutes: 30
                     };
                     var id = $(this).attr('data-id');
                     if (id) item.id = id;
@@ -173,7 +145,7 @@
                 var payload = buildDaysPayload();
 
                 if (!payload.valid) {
-                    showErrorModal('يرجى التأكد من البيانات: اختيار اليوم، وقت نهاية بعد وقت البداية، ومدة حجز بين 1 و 480 دقيقة لكل صف.');
+                    showErrorModal('يرجى التأكد من البيانات: اختيار اليوم، وقت نهاية بعد وقت البداية لكل صف.');
                     return;
                 }
                 if (payload.filled === 0) {
@@ -197,7 +169,7 @@
                                 res.data.forEach(function (item) {
                                     var start = item.startTime ? item.startTime.substring(0, 5) : '09:00';
                                     var end = item.endTime ? item.endTime.substring(0, 5) : '17:00';
-                                    addAvailabilityRow(item.id, item.dayOfWeek, start, end, item.slotDurationMinutes || 30);
+                                    addAvailabilityRow(item.id, item.dayOfWeek, start, end);
                                 });
                             } else {
                                 addAvailabilityRow();

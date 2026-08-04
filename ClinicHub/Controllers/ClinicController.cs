@@ -307,7 +307,7 @@ namespace ClinicHub.Controllers
                             DayOfWeek = item.GetProperty("dayOfWeek").GetInt32(),
                             StartTime = item.GetProperty("startTime").GetString()!,
                             EndTime = item.GetProperty("endTime").GetString()!,
-                            SlotDurationMinutes = item.TryGetProperty("slotDurationMinutes", out var slotEl) ? slotEl.GetInt32() : 30
+                            SlotDurationMinutes = 30
                         });
                     }
                 }
@@ -372,6 +372,11 @@ namespace ClinicHub.Controllers
         {
             try
             {
+                if (request.Availabilities != null)
+                {
+                    foreach (var a in request.Availabilities)
+                        a.SlotDurationMinutes = 30;
+                }
                 var doctor = await _clinicDoctorService.UpdateDoctorAsync(id, request);
                 return Json(new { success = true, message = "تم تحديث الطبيب بنجاح", data = doctor });
             }
@@ -908,39 +913,8 @@ namespace ClinicHub.Controllers
                 ViewBag.Specializations = new List<SpecializationDto>();
             }
 
-            // مدة الحجز النموذجية: الأكثر تكراراً من slotDurationMinutes عبر أوقات عمل أطباء العيادة
-            ViewBag.TypicalSlotDuration = null;
-            var clinicId = CurrentUser?.ClinicId;
-            if (clinicId != null && clinicId != Guid.Empty)
-            {
-                try
-                {
-                    var paged = await _clinicDoctorService.GetDoctorsAsync(clinicId.Value, pageNumber: 1, pageSize: 100);
-                    var items = paged?.Items ?? new List<DoctorDto>();
-                    var durations = items
-                        .Where(d => d.Availabilities != null && d.Availabilities.Count > 0)
-                        .SelectMany(d => d.Availabilities!)
-                        .Select(a => a.SlotDurationMinutes)
-                        .ToList();
-
-                    if (durations.Count > 0)
-                    {
-                        ViewBag.TypicalSlotDuration = durations
-                            .GroupBy(d => d)
-                            .OrderByDescending(g => g.Count())
-                            .First()
-                            .Key;
-                    }
-                }
-                catch (ApiException)
-                {
-                    // الرجوع للقيمة الثابتة من إعدادات العيادة — لا نكسر الصفحة
-                }
-                catch (Exception)
-                {
-                    // الرجوع للقيمة الثابتة من إعدادات العيادة — لا نكسر الصفحة
-                }
-            }
+            // مدة الموعد ثابتة على 30 دقيقة لجميع الأطباء والأيام — لا تُدار من أوقات العمل
+            ViewBag.TypicalSlotDuration = 30;
 
             return View();
         }

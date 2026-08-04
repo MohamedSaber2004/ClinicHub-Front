@@ -504,18 +504,27 @@ namespace ClinicHub.Controllers
         [Route("Admin/Verification")]
         public async Task<IActionResult> VerificationCenter(int pageNumber = 1, int pageSize = 20)
         {
+            ViewBag.Requests = await _getPendingVerifications(pageNumber, pageSize);
+            return View("VerificationCenter");
+        }
+
+        [Route("Admin/Verification/List")]
+        public async Task<IActionResult> VerificationList(int pageNumber = 1, int pageSize = 20)
+        {
+            return PartialView("_VerificationList", await _getPendingVerifications(pageNumber, pageSize));
+        }
+
+        private async Task<PagginatedResult<UserVerficationDto>> _getPendingVerifications(int pageNumber, int pageSize)
+        {
             try
             {
-                var paged = await _userVerificationService.GetPendingVerificationsAsync(new GetPendingVerficationsRequest { PageNumber = pageNumber, PageSize = pageSize });
-                ViewBag.Requests = paged;
+                return await _userVerificationService.GetPendingVerificationsAsync(new GetPendingVerficationsRequest { PageNumber = pageNumber, PageSize = pageSize });
             }
             catch (ApiException ex)
             {
                 ViewBag.ErrorMessage = ex.Message;
-                ViewBag.Requests = new PagginatedResult<UserVerficationDto>(new List<UserVerficationDto>(), 0);
+                return new PagginatedResult<UserVerficationDto>(new List<UserVerficationDto>(), 0);
             }
-
-            return View("VerificationCenter");
         }
 
         [HttpPost]

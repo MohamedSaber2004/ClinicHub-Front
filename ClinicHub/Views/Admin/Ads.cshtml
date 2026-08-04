@@ -69,6 +69,8 @@
             <a href="@AdminRoutes.Pages.Ads()" class="btn btn-secondary">مسح</a>
         </form>
 
+        <p class="ad-preview-hint">المرضى يشاهدون الإعلانات النشطة كصور أو شارات في تطبيق الجوال. يمكنك معاينة شكل كل إعلان عبر زر العين.</p>
+
         <div class="table-card">
             <div class="table-responsive">
                 <table class="custom-table">
@@ -106,6 +108,12 @@
                                     <td class="text-md">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-") → @(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")</td>
                                     <td><span class="badge @GetStatusClass(ad.Status)">@GetStatusText(ad.Status)</span></td>
                                     <td class="table-actions">
+                                        @if (ad.Status == 1)
+                                        {
+                                            <button type="button" class="btn-icon" title="معاينة كما يظهر في تطبيق المرضى" onclick="previewAd('@ad.Id', '@(ad.ClinicName.Replace("'", "\\'"))', '@(ad.PackageNameAr.Replace("'", "\\'"))', '@ad.DurationDays', '@ad.Amount.ToString("F2")', '@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-")', '@(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")')">
+                                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                                            </button>
+                                        }
                                         @if (ad.Status == 0)
                                         {
                                             <button type="button" class="btn btn-sm btn-success" onclick="recordCashPayment('@ad.Id', '@ad.ClinicId', '@ad.Amount.ToString("F2")')">تسجيل دفعة نقدية</button>
@@ -195,6 +203,35 @@
                         }
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Ad Modal -->
+<div class="modal fade" id="previewAdModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">معاينة الإعلان في تطبيق المرضى</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="ad-preview-hint">هذا هو الشكل الذي يشاهده المرضى في تطبيق الجوال (كصورة أو شارة).</p>
+                <div class="ad-preview-item ad-preview-item--large" id="previewAdItem">
+                    <div class="ad-preview-visual ad-preview-visual--lg">
+                        <span class="ad-preview-initial" id="previewAdInitial">ع</span>
+                    </div>
+                    <div class="ad-preview-body">
+                        <span class="ad-preview-name" id="previewAdName"></span>
+                        <span class="ad-preview-meta" id="previewAdPackage"></span>
+                        <span class="ad-preview-period" id="previewAdPeriod"></span>
+                    </div>
+                    <span class="badge badge-success">نشط</span>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
             </div>
         </div>
     </div>
@@ -295,6 +332,15 @@
 @section Scripts {
     <script>
         var pendingDeactivateId = null;
+
+        function previewAd(id, clinicName, packageName, duration, amount, startDate, endDate) {
+            document.getElementById('previewAdName').textContent = clinicName;
+            document.getElementById('previewAdPackage').textContent = packageName + ' • ' + duration + ' يوم';
+            document.getElementById('previewAdPeriod').textContent = startDate + ' → ' + endDate;
+            document.getElementById('previewAdInitial').textContent = clinicName ? clinicName.charAt(0) : 'ع';
+            var modal = new bootstrap.Modal(document.getElementById('previewAdModal'));
+            modal.show();
+        }
 
         function deactivateAd(id) {
             pendingDeactivateId = id;

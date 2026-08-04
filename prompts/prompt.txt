@@ -1,46 +1,8 @@
-﻿
-  Based on a deep-dive inspection of the codebase backend implementations, here are the exact root causes explaining why appointments created by mobile patients
-  are not appearing on the dashboard for approval or rejection:
-  ──────
-  ### 1. CreateAppointmentCommandHandler sets Status = Reserved (Value 4), NOT Pending (Value 0)
-
-  When a mobile patient calls POST /api/v1/appointments, CreateAppointmentCommandHandler.cs executes:
-
-    appointment.Reserve(config.ReservationTtlMinutes);
-
-  This changes the appointment status from Pending (0) to Reserved (4) with an expiration timestamp (ExpiresAt).
-
-  • If payment / confirmation is required: The appointment remains in Reserved (4) until payment is completed or verified (VerifyBookingPaymentCommandHandler),
-  or until it expires.
-  • If the dashboard tab filters by Status = Pending (0): It will ignore all Reserved (4) appointments.
-  • In addition: If the dashboard maps Reserved (4) as "confirmed" (as shown in StaffDashboardStatusHelper.cs), the appointment shows up as already confirmed
-  instead of awaiting approval/rejection.
-  ──────
-  ### 2. Hardcoded Date Filter in GetStaffAppointmentsQueryHandler (DateTime.Today)
-
-  In GetStaffAppointmentsQueryHandler.cs:
-
-    var targetDate = request.Date?.Date ?? DateTime.Today;
-    query = query.Where(a => a.AppointmentDate == targetDate);
-
-  • Impact: When the dashboard requests staff appointments without passing an explicit Date parameter in the query string, the backend defaults strictly to
-  DateTime.Today.
-  • Result: If a patient creates an appointment for tomorrow or any future date, it will NOT be returned in the default staff dashboard view.
-  ──────
-  ### 3. Tenant Isolation (CurrentClinicId Mismatch)
-
-  In GetStaffAppointmentsQueryHandler.cs:
-
-    var clinicId = _currentUserService.CurrentClinicId;
-    if (clinicId == null)
-        return new PagginatedResult<StaffAppointmentDto>(Array.Empty<StaffAppointmentDto>(), 0);
-
-  • Impact: The staff query filters strictly by a.ClinicId == clinicId.
-  • Result: If the mobile application sends a different ClinicId than the ClinicId associated with the staff user's JWT token, the query returns 0 records.
-  ──────
-  ### Recommended Fixes
-
-  1. Dashboard Query Request: Ensure the dashboard sends Date explicitly or adjust the query handler to include future pending/reserved appointments if no date
-  is specified.
-  2. Status Alignment: If manual staff approval is required before payment/confirmation, ensure POST /api/v1/appointments sets the status to Pending (0), or
-  ensure the dashboard tab includes AppointmentStatus.Reserved (4) / AppointmentStatus.Pending (0) in its request query filter (?status=0).
+﻿إعدادات الحجز
+رسوم الكشف (جنيه)
+0
+العملة
+EGP
+أقصى أيام للحجز المسبق
+10
+مهلة تأكيد الحجز (دقائق)

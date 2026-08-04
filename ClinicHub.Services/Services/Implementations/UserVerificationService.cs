@@ -5,8 +5,10 @@ using ClinicHub.Services.Options;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.RequestModels;
 using ClinicHub.Services.Routes.Api;
+using ClinicHub.Services.Utilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace ClinicHub.Services.Services.Implementations
@@ -73,7 +75,16 @@ namespace ClinicHub.Services.Services.Implementations
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(_approveUserVerifications(request.UserId), content);
                 var body = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<ApiResponse<bool>>(body, _jsonSettings) ?? new ApiResponse<bool> { Success = false, Message = "فشل في تحليل الاستجابة" };
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errors = ApiErrorExtractor.ExtractErrors(body);
+                    var combined = string.Join(" ", errors);
+                    throw new ApiException((int)response.StatusCode,
+                        string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في قبول طلب التحقق" : combined);
+                }
+
+                return ParseBoolResponse(body, (int)response.StatusCode, "تم قبول طلب التحقق بنجاح");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -91,12 +102,47 @@ namespace ClinicHub.Services.Services.Implementations
                 var content = new StringContent(payload, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(_rejectUserVerifications(request.UserId), content);
                 var body = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<ApiResponse<bool>>(body, _jsonSettings) ?? new ApiResponse<bool    > { Success = false, Message = "فشل في تحليل الاستجابة" };
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errors = ApiErrorExtractor.ExtractErrors(body);
+                    var combined = string.Join(" ", errors);
+                    throw new ApiException((int)response.StatusCode,
+                        string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في رفض طلب التحقق" : combined);
+                }
+
+                return ParseBoolResponse(body, (int)response.StatusCode, "تم رفض طلب التحقق بنجاح");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        private static ApiResponse<bool> ParseBoolResponse(string body, int statusCode, string successMessage)
+        {
+            var fallback = new ApiResponse<bool> { Success = false, Message = "فشل في تحليل الاستجابة", StatusCode = statusCode };
+
+            try
+            {
+                var obj = JsonConvert.DeserializeObject<JObject>(body);
+                if (obj == null) return fallback;
+
+                var success = obj["success"]?.Type == JTokenType.Boolean && obj["success"]!.Value<bool>();
+                var message = obj["message"]?.ToString() ?? obj["Message"]?.ToString();
+
+                return new ApiResponse<bool>
+                {
+                    Success = success,
+                    Message = string.IsNullOrWhiteSpace(message) ? (success ? successMessage : null) : message,
+                    StatusCode = statusCode,
+                    Data = success
+                };
+            }
+            catch
+            {
+                return fallback;
             }
         }
     }
