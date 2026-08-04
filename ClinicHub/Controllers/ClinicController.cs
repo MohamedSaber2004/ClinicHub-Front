@@ -26,6 +26,8 @@ namespace ClinicHub.Controllers
         private readonly IOptions<GoogleMapsOptions> _googleMapsOptions;
         private readonly IAdService _adService;
         private readonly IClinicDashboardService _clinicDashboardService;
+        private readonly IDoctorService _doctorService;
+        private readonly IDoctorDashboardService _doctorDashboardService;
 
         public ClinicController(
             ISubscriptionService subscriptionService,
@@ -39,7 +41,9 @@ namespace ClinicHub.Controllers
             IAuthService authService,
             IOptions<GoogleMapsOptions> googleMapsOptions,
             IAdService adService,
-            IClinicDashboardService clinicDashboardService)
+            IClinicDashboardService clinicDashboardService,
+            IDoctorService doctorService,
+            IDoctorDashboardService doctorDashboardService)
         {
             _subscriptionService = subscriptionService;
             _planService = planService;
@@ -53,6 +57,8 @@ namespace ClinicHub.Controllers
             _googleMapsOptions = googleMapsOptions;
             _adService = adService;
             _clinicDashboardService = clinicDashboardService;
+            _doctorService = doctorService;
+            _doctorDashboardService = doctorDashboardService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -122,38 +128,149 @@ namespace ClinicHub.Controllers
         {
             try
             {
-                var statsTask = _clinicDashboardService.GetStatsAsync();
-                var pendingTask = _clinicDashboardService.GetBookingsAsync("pending", 1, 5);
-
-                await Task.WhenAll(statsTask, pendingTask);
-
-                ViewBag.DashboardStats = statsTask.Result;
-                ViewBag.PendingBookings = pendingTask.Result.Items;
-                ViewBag.PendingCount = pendingTask.Result.TotalCount;
+                ViewBag.DashboardStats = await _clinicDashboardService.GetStatsAsync();
             }
             catch (ApiException ex)
             {
                 TempData["Error"] = ex.Message;
                 ViewBag.DashboardStats = null;
-                ViewBag.PendingBookings = new List<ClinicBookingDto>();
-                ViewBag.PendingCount = 0;
             }
             catch (Exception)
             {
                 ViewBag.DashboardStats = null;
-                ViewBag.PendingBookings = new List<ClinicBookingDto>();
-                ViewBag.PendingCount = 0;
             }
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AcceptBooking(Guid id)
+        public async Task<IActionResult> DoctorAppointments(string? status, string? startDate, string? endDate, string? searchTerm, int pageNumber = 1, int pageSize = 10)
         {
             try
             {
-                var result = await _clinicDashboardService.AcceptBookingAsync(id);
-                return Json(new { success = true, data = result, message = "تم قبول الحجز وتم إرسال رابط الدفع للمريض" });
+                var data = await _doctorDashboardService.GetAppointmentsAsync(
+                    ParseStatus(status), searchTerm, startDate, endDate, pageNumber, pageSize);
+                ViewBag.Appointments = data.Items;
+                ViewBag.Pagination = data;
+                ViewBag.StatusFilter = status;
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.StartDate = startDate;
+                ViewBag.EndDate = endDate;
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = ex.Message;
+                ViewBag.Appointments = new List<DoctorAppointmentDto>();
+                ViewBag.Pagination = null;
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"حدث خطأ غير متوقع: {ex.Message}";
+                ViewBag.Appointments = new List<DoctorAppointmentDto>();
+                ViewBag.Pagination = null;
+            }
+            return View();
+        }
+
+        public async Task<IActionResult> DoctorPatients(string? searchTerm, int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var data = await _doctorDashboardService.GetPatientsAsync(searchTerm, pageNumber, pageSize);
+                ViewBag.Patients = data.Items;
+                ViewBag.Pagination = data;
+                ViewBag.SearchTerm = searchTerm;
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = ex.Message;
+                ViewBag.Patients = new List<DoctorPatientDto>();
+                ViewBag.Pagination = null;
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"حدث خطأ غير متوقع: {ex.Message}";
+                ViewBag.Patients = new List<DoctorPatientDto>();
+                ViewBag.Pagination = null;
+            }
+            return View();
+        }
+
+        public async Task<IActionResult> DoctorPatientHistory(Guid patientId, string? name, int pageNumber = 1, int pageSize = 10)
+        {
+            ViewBag.PatientId = patientId;
+            ViewBag.PatientName = string.IsNullOrWhiteSpace(name) ? "مريض" : name;
+
+            try
+            {
+                var data = await _doctorDashboardService.GetPatientHistoryAsync(patientId, pageNumber, pageSize);
+                ViewBag.History = data.Items;
+                ViewBag.Pagination = data;
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = ex.Message;
+                ViewBag.History = new List<PatientHistoryDto>();
+                ViewBag.Pagination = null;
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"حدث خطأ غير متوقع: {ex.Message}";
+                ViewBag.History = new List<PatientHistoryDto>();
+                ViewBag.Pagination = null;
+            }
+            return View();
+        }
+
+        public async Task<IActionResult> DoctorAvailability()
+        {
+            ViewBag.AvailabilityJson = "[]";
+            ViewBag.Stats = new List<MockStat>();
+            ViewBag.TypicalDuration = 30;
+
+            try
+            {
+                var items = await _doctorService.GetMyAvailabilityAsync();
+                if (items == null || items.Count == 0)
+                    items = BuildDefaultAvailability();
+
+                ViewBag.AvailabilityJson = JsonSerializer.Serialize(items);
+                ViewBag.Stats = BuildAvailabilityStats(items);
+                ViewBag.TypicalDuration = 30;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+            catch (Exception)
+            {
+                ViewBag.ErrorMessage = "عذراً، حدث خطأ. يرجى المحاولة لاحقاً.";
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveDoctorAvailability([FromBody] JsonElement body)
+        {
+            try
+            {
+                var days = new List<DoctorAvailabilityWeekItem>();
+                if (body.TryGetProperty("days", out var daysEl) && daysEl.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in daysEl.EnumerateArray())
+                    {
+                        days.Add(new DoctorAvailabilityWeekItem
+                        {
+                            Id = item.TryGetProperty("id", out var idEl) && idEl.ValueKind == JsonValueKind.String && Guid.TryParse(idEl.GetString(), out var id) ? id : null,
+                            DayOfWeek = item.GetProperty("dayOfWeek").GetInt32(),
+                            StartTime = item.GetProperty("startTime").GetString()!,
+                            EndTime = item.GetProperty("endTime").GetString()!,
+                            SlotDurationMinutes = 30
+                        });
+                    }
+                }
+
+                var week = await _doctorService.ReplaceWeeklyAvailabilityAsync(new ReplaceWeeklyAvailabilityRequest { Days = days });
+                return Json(new { success = true, message = "تم حفظ أوقات العمل المتاحة بنجاح", data = week });
             }
             catch (ApiException ex)
             {
@@ -167,13 +284,28 @@ namespace ClinicHub.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> RejectBooking(Guid id, [FromBody] ClinicRejectRequest? body)
+        [HttpPut]
+        public async Task<IActionResult> UpdateDoctorAppointmentStatus(Guid appointmentId, [FromBody] JsonElement body)
         {
             try
             {
-                var result = await _clinicDashboardService.RejectBookingAsync(id, body?.Reason);
-                return Json(new { success = true, data = result, message = "تم رفض الحجز بنجاح" });
+                var status = body.TryGetProperty("status", out var statusEl) && statusEl.ValueKind == JsonValueKind.Number
+                    ? statusEl.GetInt32()
+                    : 0;
+                var notes = body.TryGetProperty("notes", out var notesEl) && notesEl.ValueKind == JsonValueKind.String
+                    ? notesEl.GetString()
+                    : null;
+
+                var result = await _doctorDashboardService.UpdateStatusAsync(appointmentId, status, notes);
+                var message = status switch
+                {
+                    6 => "تم قبول الحجز وتم إرسال رابط الدفع للمريض",
+                    2 => "تم رفض الحجز",
+                    3 => "تم إكمال الموعد",
+                    5 => "تم تسجيل الحالة",
+                    _ => "تم تحديث حالة الموعد بنجاح"
+                };
+                return Json(new { success = true, data = result, message });
             }
             catch (ApiException ex)
             {
@@ -187,9 +319,45 @@ namespace ClinicHub.Controllers
             }
         }
 
-        public IActionResult Appointments()
+        private static int? ParseStatus(string? status) =>
+            int.TryParse(status, out var value) ? value : null;
+
+        private static List<DoctorAvailabilityDto> BuildDefaultAvailability()
         {
-            return View();
+            var defaults = new List<DoctorAvailabilityDto>();
+            for (var day = 0; day <= 4; day++)
+            {
+                defaults.Add(new DoctorAvailabilityDto
+                {
+                    Id = Guid.Empty,
+                    DayOfWeek = day,
+                    StartTime = "09:00:00",
+                    EndTime = "17:00:00",
+                    SlotDurationMinutes = 30
+                });
+            }
+            return defaults;
+        }
+
+        private static List<MockStat> BuildAvailabilityStats(List<DoctorAvailabilityDto> items)
+        {
+            var activeDays = items.Select(i => i.DayOfWeek).Distinct().Count();
+
+            var totalHours = 0.0;
+            foreach (var item in items)
+            {
+                if (TimeSpan.TryParse(item.StartTime, out var start) && TimeSpan.TryParse(item.EndTime, out var end))
+                    totalHours += (end - start).TotalHours;
+            }
+
+            var typicalDuration = 30;
+
+            return new()
+            {
+                new() { Value = activeDays.ToString(), Label = "أيام العمل الأسبوعية", IconColor = "green", SvgPath = "M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z" },
+                new() { Value = totalHours.ToString("0.#"), Label = "ساعات العمل أسبوعياً", IconColor = "primary", SvgPath = "M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" },
+                new() { Value = $"{typicalDuration} دقيقة", Label = "مدة الحجز (ثابتة)", IconColor = "amber", SvgPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" },
+            };
         }
 
         public IActionResult AppointmentRevenue()
@@ -583,110 +751,6 @@ namespace ClinicHub.Controllers
             return View();
         }
 
-        public async Task<IActionResult> OnlineBooking()
-        {
-            var clinicId = CurrentUser?.ClinicId ?? Guid.Empty;
-            ViewBag.ClinicId = clinicId;
-            ViewBag.Doctors = new List<Services.ReponseModels.DoctorDto>();
-            ViewBag.MaxAdvanceBookingDays = 30;
-
-            // أقصى أيام الحجز المسبق من إعدادات العيادة — يُستخدم لتقييد منتقي التاريخ (رجوع صامت لـ 30)
-            try
-            {
-                var settings = await _clinicService.GetClinicSettingsAsync();
-                ViewBag.MaxAdvanceBookingDays = settings.Data?.MaxAdvanceBookingDays ?? 30;
-            }
-            catch (ApiException)
-            {
-                // تجاهل صامت — الصفحة تعمل بقيمة افتراضية
-            }
-            catch (Exception)
-            {
-                // تجاهل صامت — الصفحة تعمل بقيمة افتراضية
-            }
-
-            try
-            {
-                var paged = await _clinicDoctorService.GetDoctorsAsync(clinicId, pageNumber: 1, pageSize: 100);
-                ViewBag.Doctors = paged?.Items ?? new List<Services.ReponseModels.DoctorDto>();
-            }
-            catch (ApiException ex)
-            {
-                ViewBag.ErrorMessage = ex.Message;
-            }
-            catch (Exception)
-            {
-                ViewBag.ErrorMessage = "عذراً، حدث خطأ. يرجى المحاولة لاحقاً.";
-            }
-
-            return View();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetDoctorSlots(Guid doctorId, string date)
-        {
-            try
-            {
-                var clinicId = CurrentUser?.ClinicId ?? Guid.Empty;
-                if (clinicId == Guid.Empty)
-                {
-                    Response.StatusCode = 400;
-                    return Json(new { success = false, message = "لم يتم العثور على العيادة المرتبطة بحسابك." });
-                }
-
-                var slots = await _clinicDoctorService.GetAvailableSlotsAsync(clinicId, doctorId, date);
-                return Json(new { success = true, data = slots });
-            }
-            catch (ApiException ex)
-            {
-                Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                Response.StatusCode = 500;
-                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> BookSlot([FromBody] JsonElement body)
-        {
-            try
-            {
-                var clinicId = CurrentUser?.ClinicId ?? Guid.Empty;
-                if (clinicId == Guid.Empty)
-                {
-                    Response.StatusCode = 400;
-                    return Json(new { success = false, message = "لم يتم العثور على العيادة المرتبطة بحسابك." });
-                }
-
-                var request = new Services.RequestModels.BookAppointmentRequest
-                {
-                    ClinicId = clinicId,
-                    DoctorId = Guid.Parse(body.GetProperty("doctorId").GetString()!),
-                    Date = body.GetProperty("date").GetString()!,
-                    StartTime = body.GetProperty("startTime").GetString()!,
-                    EndTime = body.GetProperty("endTime").GetString()!,
-                    PatientName = body.TryGetProperty("patientName", out var nameEl) && nameEl.ValueKind == JsonValueKind.String ? nameEl.GetString() : null,
-                    PatientPhone = body.TryGetProperty("patientPhone", out var phoneEl) && phoneEl.ValueKind == JsonValueKind.String ? phoneEl.GetString() : null
-                };
-
-                var message = await _clinicDoctorService.BookAppointmentAsync(request);
-                return Json(new { success = true, message });
-            }
-            catch (ApiException ex)
-            {
-                Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                Response.StatusCode = 500;
-                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
-            }
-        }
-
         public async Task<IActionResult> Marketing()
         {
             var clinicId = CurrentUser?.ClinicId ?? Guid.Empty;
@@ -936,6 +1000,7 @@ namespace ClinicHub.Controllers
                     Currency = body.TryGetProperty("currency", out var curEl) ? curEl.GetString() : null,
                     MaxAdvanceBookingDays = body.TryGetProperty("maxAdvanceBookingDays", out var maxDaysEl) ? maxDaysEl.GetInt32() : 0,
                     ReservationTtlMinutes = body.TryGetProperty("reservationTtlMinutes", out var ttlEl) ? ttlEl.GetInt32() : 0,
+                    CancellationWindowMinutes = body.TryGetProperty("cancellationWindowMinutes", out var cancelEl) ? cancelEl.GetInt32() : 0,
                     Latitude = body.TryGetProperty("latitude", out var latEl) && latEl.ValueKind != JsonValueKind.Null ? latEl.GetDouble() : (double?)null,
                     Longitude = body.TryGetProperty("longitude", out var lngEl) && lngEl.ValueKind != JsonValueKind.Null ? lngEl.GetDouble() : (double?)null,
                     IsActive = !body.TryGetProperty("isActive", out var activeEl) || activeEl.GetBoolean()
@@ -1014,9 +1079,4 @@ namespace ClinicHub.Controllers
             }
         }
     }
-}
-
-public class ClinicRejectRequest
-{
-    public string? Reason { get; set; }
 }

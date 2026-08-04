@@ -45,17 +45,11 @@
         document.getElementById('confirmModalCancelBtn').addEventListener('click', function() {
             var modalEl = document.getElementById('globalConfirmModal');
             var modal = bootstrap.Modal.getInstance(modalEl);
+            _confirmCallback = null;
             if (modal) modal.hide();
-            if (typeof _confirmCallback === 'function') {
-                _confirmCallback(false);
-                _confirmCallback = null;
-            }
         });
         document.getElementById('globalConfirmModal').addEventListener('hidden.bs.modal', function() {
-            if (typeof _confirmCallback === 'function') {
-                _confirmCallback(false);
-                _confirmCallback = null;
-            }
+            _confirmCallback = null;
         });
     });
 </script>

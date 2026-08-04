@@ -13,6 +13,7 @@ From the settings page (matches `prompts/prompt.txt`):
 | العملة | العملة | `ClinicSettingsDto.Currency` | EGP |
 | أقصى أيام للحجز المسبق | أقصى أيام للحجز المسبق | `ClinicSettingsDto.MaxAdvanceBookingDays` | 30 |
 | مهلة تأكيد الحجز | مهلة تأكيد الحجز (دقائق) | `ClinicSettingsDto.ReservationTtlMinutes` | 10 |
+| مهلة الإلغاء | مهلة الإلغاء (دقائق) | `ClinicSettingsDto.CancellationWindowMinutes` | 120 (ساعتان) |
 
 Data flows: `GET /api/v1/admin/clinics/settings` → `ClinicController.Settings` → `ViewBag.Settings` →
 saved via `ClinicController.SaveSettings` → `UpdateClinicSettingsRequest`.
@@ -66,6 +67,17 @@ saved via `ClinicController.SaveSettings` → `UpdateClinicSettingsRequest`.
 
 ---
 
+## 5. مهلة الإلغاء (Cancellation Window — minutes)
+
+**What it does:** How many minutes after the reservation is created a patient may still cancel it (and receive a refund). Once the window passes, the patient can no longer cancel the booking — the backend blocks the cancel action entirely (no cancel, no refund).
+
+**Enforced in:** `CancelAppointmentCommandHandler` — it loads the clinic's `BookingConfiguration`, compares `DateTime.UtcNow` against `appointment.CreatedAt + CancellationWindowMinutes`, and rejects cancellation with HTTP 400 `Booking.CancellationWindowExpired` after the window has closed.
+
+**Benefit:**
+- **Protects clinic revenue & schedule** — a patient who paid can't walk away the day of the visit, so slots stay filled and no-shows/refund-churn drop.
+- **Clear, patient-friendly policy** — the patient knows upfront they have (by default) 2 hours to change their mind for a full refund.
+- **Configurable per clinic** — like the other reservation settings, each clinic owner chooses their own window from the Settings page.
+
 ## How these settings work together with the fixed 30-minute duration
 
 | Setting | Role in the booking lifecycle |
@@ -75,6 +87,7 @@ saved via `ClinicController.SaveSettings` → `UpdateClinicSettingsRequest`.
 | Currency | Defines the **unit of money** |
 | Max advance booking days | Limits **how far** patients can claim those units |
 | Reservation TTL | Limits **how long** an unconfirmed claim holds a unit |
+| Cancellation window | Limits **how long after booking** the patient can still cancel + get a refund |
 
 Together they form the complete "booking policy" of the clinic: *who can book, how far ahead, what it costs, in what currency, and how long a pending hold lasts* — all readable at a glance on the Settings page.
 
@@ -88,4 +101,6 @@ Together they form the complete "booking policy" of the clinic: *who can book, h
 
 ## Backend note
 
-`ReservationTtlMinutes`, `MaxAdvanceBookingDays`, `ConsultationFee`, `Currency` and the fixed `30`-minute duration are enforced by the backend; the settings page only reads/saves the first four. When evaluating a clinic's booking page this contract (fields + defaults + HTTP 400 messages) is what the backend must implement.
+`ReservationTtlMinutes`, `MaxAdvanceBookingDays`, `ConsultationFee`, `Currency`, `CancellationWindowMinutes` and the fixed `30`-minute duration are enforced by the backend; the settings page only reads/saves the first five. When evaluating a clinic's booking page this contract (fields + defaults + HTTP 400 messages) is what the backend must implement.
+
+> **TTL caveat:** `ReservationTtlMinutes` is stored and returned but the appointment TTL hold/auto-expiry (`Appointment.Reserve`/`ExpireReservation`) is **not** wired up yet in the backend — no code currently puts an appointment into the `Reserved` hold with an `ExpiresAt` deadline. The cancellation window (`CancellationWindowMinutes`) is fully enforced.

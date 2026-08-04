@@ -5,9 +5,6 @@
     Layout = "_ClinicLayout";
     var _user = ViewBag.CurrentUser as CurrentUserContext;
     var dashStats = ViewBag.DashboardStats as ClinicDashboardStatsDto;
-    var pendingBookings = ViewBag.PendingBookings as IReadOnlyCollection<ClinicBookingDto> ?? new List<ClinicBookingDto>();
-    int pendingCount = ViewBag.PendingCount ?? 0;
-    string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -102,79 +99,6 @@
             </svg>
         </div>
     </div>
-
-    @if (pendingCount > 0)
-    {
-        <div class="stat-card stat-card--highlight">
-            <div class="stat-info">
-                <span class="stat-value">@pendingCount</span>
-                <span class="stat-label">طلبات تنتظر القبول</span>
-            </div>
-            <div class="stat-icon-wrapper icon-wrapper icon-wrapper--amber">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-            </div>
-        </div>
-    }
-</div>
-
-<!-- Pending Booking Requests -->
-<div class="table-card" id="pendingBookingsCard">
-    <div class="table-card-header">
-        <h3 class="table-card-title">
-            <span class="subtitle-icon"><i class="bi bi-bell-fill"></i></span>
-            طلبات الحجز المعلقة
-            @if (pendingCount > 0)
-            {
-                <span class="badge badge-warning ms-2">@pendingCount</span>
-            }
-        </h3>
-        <a href="@ClinicRoutes.Pages.Appointments()" class="btn btn-sm btn-secondary">عرض الكل</a>
-    </div>
-    <div class="table-responsive">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>المريض</th>
-                    <th>الطبيب</th>
-                    <th>التاريخ</th>
-                    <th>الوقت</th>
-                    <th>نوع الحجز</th>
-                    <th>الإجراء</th>
-                </tr>
-            </thead>
-            <tbody id="pendingBookingsBody">
-                @if (pendingBookings.Count == 0)
-                {
-                    <tr>
-                        <td colspan="6" class="table-empty">لا توجد طلبات حجز تنتظر الموافقة</td>
-                    </tr>
-                }
-                @foreach (var b in pendingBookings)
-                {
-                    <tr id="booking-@b.Id">
-                        <td>
-                            <div class="table-user">
-                                <span class="table-avatar">@Initial(b.PatientName)</span>
-                                <span class="table-user-name">@b.PatientName</span>
-                            </div>
-                        </td>
-                        <td>@b.DoctorName</td>
-                        <td>@b.RequestedDate</td>
-                        <td>@b.RequestedTime</td>
-                        <td>@(b.AppointmentType == "home" ? "منزلي" : "في العيادة")</td>
-                        <td class="table-actions">
-                            <button class="btn btn-sm btn-outline-success btn-accept-booking" data-id="@b.Id" title="قبول — سيتم إرسال رابط الدفع للمريض">
-                                <i class="bi bi-check-lg"></i> قبول
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger btn-reject-booking" data-id="@b.Id" title="رفض">
-                                <i class="bi bi-x-lg"></i> رفض
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
 </div>
 
 <!-- Dashboard grid: Today's overview -->
@@ -225,9 +149,6 @@
             <h3 class="table-card-title mb-0">روابط سريعة</h3>
         </div>
         <div class="p-3">
-            <a href="@ClinicRoutes.Pages.Appointments()" class="btn btn-secondary btn-sm mb-2" style="width:100%; display:block;">
-                <i class="bi bi-calendar3 me-1"></i> إدارة المواعيد
-            </a>
             <a href="@ClinicRoutes.Pages.Doctors()" class="btn btn-secondary btn-sm mb-2" style="width:100%; display:block;">
                 <i class="bi bi-person-badge me-1"></i> إدارة الأطباء
             </a>
@@ -241,53 +162,3 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        $(document).on('click', '.btn-accept-booking', function () {
-            var id = $(this).data('id');
-            if (!id) return;
-            showConfirmModal('بعد القبول سيتم إرسال رابط الدفع للمريض لإتمام الدفع. هل تريد المتابعة؟', function () {
-                $.ajax({
-                    url: '/Clinic/AcceptBooking',
-                    method: 'POST',
-                    data: { id: id },
-                    success: function (res) {
-                        if (res && res.success) {
-                            showSuccessModal('تم قبول الحجز وتم إرسال رابط الدفع للمريض');
-                            $('#booking-' + id).fadeOut(400, function () { $(this).remove(); });
-                        } else {
-                            showErrorModal((res && res.message) || 'حدث خطأ أثناء القبول');
-                        }
-                    },
-                    error: function (xhr) {
-                        showErrorModal((xhr.responseJSON && xhr.responseJSON.message) || 'حدث خطأ أثناء القبول');
-                    }
-                });
-            });
-        });
-
-        $(document).on('click', '.btn-reject-booking', function () {
-            var id = $(this).data('id');
-            if (!id) return;
-            var reason = prompt('يرجى إدخال سبب الرفض (اختياري):');
-            if (reason === null) return;
-            $.ajax({
-                url: '/Clinic/RejectBooking?id=' + id,
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ reason: reason || '' }),
-                success: function (res) {
-                    if (res && res.success) {
-                        showSuccessModal('تم رفض الحجز');
-                        $('#booking-' + id).fadeOut(400, function () { $(this).remove(); });
-                    } else {
-                        showErrorModal((res && res.message) || 'حدث خطأ أثناء الرفض');
-                    }
-                },
-                error: function (xhr) {
-                    showErrorModal((xhr.responseJSON && xhr.responseJSON.message) || 'حدث خطأ أثناء الرفض');
-                }
-            });
-        });
-    </script>
-}

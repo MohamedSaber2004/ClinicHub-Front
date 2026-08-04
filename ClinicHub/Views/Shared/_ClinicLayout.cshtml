@@ -35,6 +35,22 @@
                             currentController == ctrl && (action == null || currentAction == action);
                         var _user = ViewBag.CurrentUser as CurrentUserContext;
                         var _profile = ViewBag.HeaderProfile as UserProfileDto;
+                        if (_user != null && _user.Role != UserRole.ClinicOwner && _user.Role != UserRole.ClinicManager && (_profile?.Role == "ClinicOwner" || _profile?.Role == "ClinicManager"))
+                        {
+                            var _clinicRole = _profile.Role == "ClinicManager" ? UserRole.ClinicManager : UserRole.ClinicOwner;
+                            _user = new CurrentUserContext
+                            {
+                                Id = _user.Id,
+                                ClinicId = _user.ClinicId,
+                                Role = _clinicRole,
+                                Permissions = RolePermissions.For(_clinicRole),
+                                PlanFeatures = PlanFeature.ManageAppointments | PlanFeature.ManagePatientRecords | PlanFeature.ManageStaff | PlanFeature.ManageDoctors | PlanFeature.BasicReports | PlanFeature.AdvancedReports | PlanFeature.MarketingTools | PlanFeature.PrioritySupport,
+                                PlanName = _user.PlanName ?? "الباقة الاحترافية",
+                                MaxDoctors = _user.MaxDoctors,
+                                MaxStaff = _user.MaxStaff,
+                                HasActivePlan = true
+                            };
+                        }
                         var _profileName = !string.IsNullOrWhiteSpace(_profile?.FullName) ? _profile.FullName : (_user?.Role == UserRole.ClinicOwner ? "عيادة الرحمة" : "عيادة");
                         var _profileRoleLabel = _profile?.Role switch
                         {
@@ -63,8 +79,6 @@
                     </a>
                     
                     @{
-                        bool canShowAppointments = _user?.Has(Permission.ManageAppointments) == true && _user?.HasFeature(PlanFeature.ManageAppointments) == true;
-                        bool canShowOnlineBooking = _user?.Has(Permission.ManageAppointments) == true && _user?.HasFeature(PlanFeature.OnlineBooking) == true;
                         bool canShowMedicalRecords = _user?.Has(Permission.ManageMedicalRecords) == true && _user?.HasFeature(PlanFeature.ManagePatientRecords) == true;
                         bool canShowStaff = _user?.Has(Permission.ManageClinicStaff) == true && _user?.HasFeature(PlanFeature.ManageStaff) == true;
                         bool canShowDoctors = _user?.Has(Permission.ManageClinicDoctors) == true && _user?.HasFeature(PlanFeature.ManageDoctors) == true;
@@ -72,25 +86,11 @@
                         bool canShowMarketing = _user?.HasFeature(PlanFeature.MarketingTools) == true && _user?.HasActivePlan == true;
                         bool canShowPrioritySupport = _user?.HasFeature(PlanFeature.PrioritySupport) == true && _user?.HasActivePlan == true;
                     }
-                    @if (canShowAppointments || canShowOnlineBooking || canShowMedicalRecords || canShowStaff || canShowDoctors || canShowReports || canShowMarketing || canShowPrioritySupport)
+                    @if (canShowMedicalRecords || canShowStaff || canShowDoctors || canShowReports || canShowMarketing || canShowPrioritySupport)
                     {
                         <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الخدمات التشغيلية</div>
                     }
 
-                    @if (canShowAppointments)
-                    {
-                        <a class="sidebar-item @(IsActive("Clinic", "Appointments") ? "active" : "")" href="@ClinicRoutes.Pages.Appointments()" style="padding-right: 20px;">
-                            <i class="bi bi-calendar3" style="color: var(--primary-color);"></i>
-                            <span>نظام الحجز الذكي</span>
-                        </a>
-                    }
-                    @if (canShowOnlineBooking)
-                    {
-                        <a class="sidebar-item @(IsActive("Clinic", "OnlineBooking") ? "active" : "")" href="@ClinicRoutes.Pages.OnlineBooking()" style="padding-right: 20px;">
-                            <i class="bi bi-globe" style="color: var(--primary-color);"></i>
-                            <span>حجز أونلاين</span>
-                        </a>
-                    }
                     @if (canShowMedicalRecords)
                     {
                         <a class="sidebar-item @(IsActive("Clinic", "MedicalRecords") ? "active" : "")" href="@ClinicRoutes.Pages.MedicalRecords()" style="padding-right: 20px;">
@@ -133,6 +133,19 @@
                             <span>دعم ذو أولوية</span>
                         </a>
                     }
+                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">لوحة الطبيب</div>
+                    <a class="sidebar-item @(IsActive("Clinic", "DoctorAppointments") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorAppointments()" style="padding-right: 20px;">
+                        <i class="bi bi-calendar3" style="color: var(--primary-color);"></i>
+                        <span>مواعيد الأطباء</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Clinic", "DoctorPatients") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorPatients()" style="padding-right: 20px;">
+                        <i class="bi bi-people" style="color: var(--primary-color);"></i>
+                        <span>مرضى العيادة</span>
+                    </a>
+                    <a class="sidebar-item @(IsActive("Clinic", "DoctorAvailability") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorAvailability()" style="padding-right: 20px;">
+                        <i class="bi bi-clock-history" style="color: var(--primary-color);"></i>
+                        <span>أوقات عمل الأطباء</span>
+                    </a>
                     @if (_user?.Has(Permission.ManageClinicSettings) == true)
                     {
                         <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">المالية</div>

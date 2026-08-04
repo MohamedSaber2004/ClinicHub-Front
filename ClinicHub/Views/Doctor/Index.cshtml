@@ -1,7 +1,6 @@
 @using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "لوحة تحكم الطبيب";
-    Layout = "_DoctorLayout";
 
     var stats = ViewBag.Stats as DoctorDashboardStatsDto;
     var recentAppointments = ViewBag.RecentAppointments as List<DoctorAppointmentDto> ?? new List<DoctorAppointmentDto>();

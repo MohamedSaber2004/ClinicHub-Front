@@ -1,0 +1,4 @@
+@{
+    var _profile = ViewBag.HeaderProfile as UserProfileDto;
+    Layout = (_profile?.Role is "ClinicOwner" or "ClinicManager") ? "_ClinicLayout" : "_DoctorLayout";
+}

@@ -1,5 +1,6 @@
 @using ClinicHub.Services.ReponseModels
 @{
+    Layout = "_ClinicLayout";
     ViewData["Title"] = "تاريخ المريض";
 
     var patientName = ViewBag.PatientName as string ?? "مريض";
@@ -87,7 +88,7 @@
 </div>
 
 <div class="mt-4">
-    <a class="btn btn-outline-secondary" href="@Url.Action("Patients")">
+    <a class="btn btn-outline-secondary" href="@Url.Action("DoctorPatients")">
         <i class="bi bi-arrow-right"></i> العودة لقائمة المرضى
     </a>
 </div>

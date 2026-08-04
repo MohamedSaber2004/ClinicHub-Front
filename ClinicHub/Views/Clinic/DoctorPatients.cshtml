@@ -1,6 +1,7 @@
 @using ClinicHub.Services.ReponseModels
 @{
-    ViewData["Title"] = "مرضاي";
+    Layout = "_ClinicLayout";
+    ViewData["Title"] = "مرضى العيادة";
 
     var patients = ViewBag.Patients as IReadOnlyCollection<DoctorPatientDto> ?? new List<DoctorPatientDto>();
 
@@ -14,17 +15,17 @@
     <span class="page-title-icon">
         <i class="bi bi-people"></i>
     </span>
-    مرضاي
+    مرضى العيادة
 </h2>
 
 <div class="table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">قائمة المرضى</h3>
     </div>
-    <form method="get" action="@Url.Action("Patients")" class="filter-bar table-filter-bar">
+    <form method="get" action="@Url.Action("DoctorPatients")" class="filter-bar table-filter-bar">
         <input type="text" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
         <button type="submit" class="btn btn-primary btn-sm">بحث</button>
-        <a href="@Url.Action("Patients")" class="btn btn-outline-secondary btn-sm">مسح</a>
+        <a href="@Url.Action("DoctorPatients")" class="btn btn-outline-secondary btn-sm">مسح</a>
     </form>
     <div class="table-responsive">
         <table class="custom-table">
@@ -57,7 +58,7 @@
                         <td><span class="badge badge-info">@p.TotalVisits</span></td>
                         <td>@LastVisitLabel(p.LastVisitDate)</td>
                         <td>
-                            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("PatientHistory", new { patientId = p.UserId, name = p.FullName })">
+                            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("DoctorPatientHistory", new { patientId = p.UserId, name = p.FullName })">
                                 <i class="bi bi-clock-history"></i> عرض التاريخ
                             </a>
                         </td>

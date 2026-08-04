@@ -1,6 +1,7 @@
 @using ClinicHub.Data
 @{
-    ViewData["Title"] = "أوقات العمل المتاحة";
+    Layout = "_ClinicLayout";
+    ViewData["Title"] = "أوقات عمل الأطباء";
     var stats = ViewBag.Stats as List<MockStat> ?? new();
     var typicalDuration = (int)(ViewBag.TypicalDuration ?? 30);
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
@@ -13,7 +14,7 @@
             <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
     </span>
-    أوقات العمل المتاحة
+    أوقات عمل الأطباء
 </h2>
 
 @if (hasError)
@@ -45,7 +46,7 @@
         <h5>جدول العمل الأسبوعي</h5>
         <span class="badge badge-info" id="typicalDurationBadge">مدة الحجز: 30 دقيقة (ثابتة)</span>
     </div>
-    <p class="form-hint mb-3">حدد أيام ومواعيد تواجدك في العيادة. اترك الوقت فارغاً ليكون اليوم عطلة. مدة الموعد مثبتة على 30 دقيقة لجميع الأيام ولا يمكن تغييرها.</p>
+    <p class="form-hint mb-3">حدد أيام ومواعيد تواجد الأطباء في العيادة. اترك الوقت فارغاً ليكون اليوم عطلة. مدة الموعد مثبتة على 30 دقيقة لجميع الأيام ولا يمكن تغييرها.</p>
     <div id="availabilityContainer"></div>
     <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn mt-2">
         <i class="bi bi-plus-circle"></i> إضافة يوم
@@ -156,7 +157,7 @@
                 setButtonLoading(btn, true);
 
                 $.ajax({
-                    url: '@Url.Action("SaveAvailability")',
+                    url: '@Url.Action("SaveDoctorAvailability")',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({ days: payload.days }),

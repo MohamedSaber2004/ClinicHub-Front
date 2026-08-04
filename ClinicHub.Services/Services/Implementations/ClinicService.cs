@@ -386,6 +386,7 @@ namespace ClinicHub.Services.Services.Implementations
                     ["consultationFee"] = request.ConsultationFee,
                     ["maxAdvanceBookingDays"] = request.MaxAdvanceBookingDays,
                     ["reservationTtlMinutes"] = request.ReservationTtlMinutes,
+                    ["cancellationWindowMinutes"] = request.CancellationWindowMinutes,
                     ["isActive"] = request.IsActive
                 };
                 AddIfNotNull(payload, "description", request.Description);

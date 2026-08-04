@@ -108,28 +108,35 @@
     <div class="detail-card settings-card">
         <div class="detail-section-header"><h5>إعدادات الحجز</h5></div>
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label class="form-label">رسوم الكشف (جنيه)</label>
                     <input type="number" class="form-input" id="settingsFee" min="0" step="0.01" value="@(settings?.ConsultationFee ?? 0)" />
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label class="form-label">العملة</label>
                     <input type="text" class="form-input" id="settingsCurrency" maxlength="3" value="@(settings?.Currency ?? "EGP")" />
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label class="form-label">أقصى أيام للحجز المسبق</label>
                     <input type="number" class="form-input" id="settingsMaxDays" min="1" value="@(settings?.MaxAdvanceBookingDays ?? 30)" />
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label class="form-label">مهلة تأكيد الحجز (دقائق)</label>
                     <input type="number" class="form-input" id="settingsTtl" min="1" value="@(settings?.ReservationTtlMinutes ?? 10)" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="form-label">مهلة الإلغاء (دقائق)</label>
+                    <input type="number" class="form-input" id="settingsCancelWindow" min="1" value="@(settings?.CancellationWindowMinutes ?? 120)" />
+                    <p class="form-hint">الفترة المتاحة للمريض لإلغاء الحجز واسترداد رسومه بعد تأكيده (افتراضياً 120 دقيقة = ساعتان).</p>
                 </div>
             </div>
         </div>
@@ -238,12 +245,14 @@
                 var fee = parseFloat(document.getElementById('settingsFee').value);
                 var maxDays = parseInt(document.getElementById('settingsMaxDays').value, 10);
                 var ttl = parseInt(document.getElementById('settingsTtl').value, 10);
+                var cancelWindow = parseInt(document.getElementById('settingsCancelWindow').value, 10);
 
                 if (!name) { showErrorModal('يرجى إدخال اسم العيادة.'); return; }
                 if (!specialty) { showErrorModal('يرجى اختيار التخصص الرئيسي.'); return; }
                 if (isNaN(fee) || fee <= 0) { showErrorModal('يرجى إدخال رسوم الكشف بقيمة أكبر من صفر.'); return; }
                 if (isNaN(maxDays) || maxDays <= 0) { showErrorModal('يرجى إدخال أقصى أيام للحجز المسبق.'); return; }
                 if (isNaN(ttl) || ttl <= 0) { showErrorModal('يرجى إدخال مهلة تأكيد الحجز بالدقائق.'); return; }
+                if (isNaN(cancelWindow) || cancelWindow <= 0) { showErrorModal('يرجى إدخال مهلة الإلغاء بالدقائق.'); return; }
 
                 setButtonLoading(btn, true);
 
@@ -258,6 +267,7 @@
                     currency: document.getElementById('settingsCurrency').value.trim() || 'EGP',
                     maxAdvanceBookingDays: maxDays,
                     reservationTtlMinutes: ttl,
+                    cancellationWindowMinutes: cancelWindow,
                     latitude: parseFloat(document.getElementById('settingsLat').value) || null,
                     longitude: parseFloat(document.getElementById('settingsLng').value) || null,
                     isActive: document.getElementById('settingsActive').checked

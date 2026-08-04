@@ -13,6 +13,7 @@ namespace ClinicHub.Services.RequestModels
         public string? Currency { get; set; }
         public int MaxAdvanceBookingDays { get; set; }
         public int ReservationTtlMinutes { get; set; }
+        public int CancellationWindowMinutes { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public bool IsActive { get; set; } = true;
