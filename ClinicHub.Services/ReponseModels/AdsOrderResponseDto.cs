@@ -11,6 +11,7 @@ namespace ClinicHub.Services.ReponseModels
         public int Status { get; set; }
         public string? PaymobRedirectUrl { get; set; }
         public string? PaymobPaymentKey { get; set; }
+        public string? ImageUrl { get; set; }
 
         [JsonIgnore]
         public string TargetRedirectUrl =>

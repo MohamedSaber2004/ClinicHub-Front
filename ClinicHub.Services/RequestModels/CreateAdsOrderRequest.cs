@@ -6,5 +6,6 @@ namespace ClinicHub.Services.RequestModels
         public Guid AdPackageId { get; set; }
         public int DurationDays { get; set; }
         public string? ReturnUrl { get; set; }
+        public string? LogoImageUrl { get; set; }
     }
 }

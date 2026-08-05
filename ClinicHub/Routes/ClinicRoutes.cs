@@ -24,6 +24,7 @@ namespace ClinicHub.Routes
             public static string DoctorPatients() => $"{Base}/DoctorPatients";
             public static string DoctorPatientHistory(Guid patientId) => $"{Base}/DoctorPatientHistory/{patientId}";
             public static string DoctorAvailability() => $"{Base}/DoctorAvailability";
+            public static string Notifications() => $"{Base}/Notifications";
         }
     }
 }

@@ -1,7 +1,10 @@
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Options
+@inject Microsoft.Extensions.Options.IOptions<Doctory> _doctoryOptions
 @{
     ViewData["Title"] = "إدارة الإعلانات";
     Layout = "_AdminLayout";
+    var attachmentBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
     var ads = ViewBag.Ads as IReadOnlyCollection<AdDto> ?? new List<AdDto>();
     var packages = ViewBag.Packages as IReadOnlyCollection<AdPackageDto> ?? new List<AdPackageDto>();
     var statusFilter = ViewBag.StatusFilter as string;
@@ -11,7 +14,7 @@
         0 => "معلق الدفع",
         1 => "نشط",
         2 => "منتهي",
-        3 => "ملغي",
+        3 => "معطل",
         _ => "غير معروف"
     };
 
@@ -63,7 +66,7 @@
                 <option value="0" selected="@(statusFilter == "0")">معلق الدفع</option>
                 <option value="1" selected="@(statusFilter == "1")">نشط</option>
                 <option value="2" selected="@(statusFilter == "2")">منتهي</option>
-                <option value="3" selected="@(statusFilter == "3")">ملغي</option>
+                <option value="3" selected="@(statusFilter == "3")">معطل</option>
             </select>
             <button type="submit" class="btn btn-primary">بحث</button>
             <a href="@AdminRoutes.Pages.Ads()" class="btn btn-secondary">مسح</a>
@@ -110,7 +113,7 @@
                                     <td class="table-actions">
                                         @if (ad.Status == 1)
                                         {
-                                            <button type="button" class="btn-icon" title="معاينة كما يظهر في تطبيق المرضى" onclick="previewAd('@ad.Id', '@(ad.ClinicName.Replace("'", "\\'"))', '@(ad.PackageNameAr.Replace("'", "\\'"))', '@ad.DurationDays', '@ad.Amount.ToString("F2")', '@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-")', '@(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")')">
+                                            <button type="button" class="btn-icon" title="معاينة كما يظهر في تطبيق المرضى" onclick="previewAd('@ad.Id', '@(ad.ClinicName.Replace("'", "\\'"))', '@(ad.PackageNameAr.Replace("'", "\\'"))', '@ad.DurationDays', '@ad.Amount.ToString("F2")', '@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-")', '@(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")', '@(ad.ImageUrl?.Replace("'", "\\'") ?? "")')">
                                                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
                                             </button>
                                         }
@@ -220,6 +223,7 @@
                 <p class="ad-preview-hint">هذا هو الشكل الذي يشاهده المرضى في تطبيق الجوال (كصورة أو شارة).</p>
                 <div class="ad-preview-item ad-preview-item--large" id="previewAdItem">
                     <div class="ad-preview-visual ad-preview-visual--lg">
+                        <img id="previewAdImage" class="ad-preview-img d-none" alt="شعار الإعلان" />
                         <span class="ad-preview-initial" id="previewAdInitial">ع</span>
                     </div>
                     <div class="ad-preview-body">
@@ -332,12 +336,23 @@
 @section Scripts {
     <script>
         var pendingDeactivateId = null;
+        var attachmentBaseUrl = '@attachmentBaseUrl';
 
-        function previewAd(id, clinicName, packageName, duration, amount, startDate, endDate) {
+        function previewAd(id, clinicName, packageName, duration, amount, startDate, endDate, imageUrl) {
             document.getElementById('previewAdName').textContent = clinicName;
             document.getElementById('previewAdPackage').textContent = packageName + ' • ' + duration + ' يوم';
             document.getElementById('previewAdPeriod').textContent = startDate + ' → ' + endDate;
-            document.getElementById('previewAdInitial').textContent = clinicName ? clinicName.charAt(0) : 'ع';
+            var img = document.getElementById('previewAdImage');
+            var initial = document.getElementById('previewAdInitial');
+            if (imageUrl) {
+                img.src = attachmentBaseUrl + '/files/' + imageUrl;
+                img.classList.remove('d-none');
+                initial.classList.add('d-none');
+            } else {
+                img.classList.add('d-none');
+                initial.classList.remove('d-none');
+                initial.textContent = clinicName ? clinicName.charAt(0) : 'ع';
+            }
             var modal = new bootstrap.Modal(document.getElementById('previewAdModal'));
             modal.show();
         }

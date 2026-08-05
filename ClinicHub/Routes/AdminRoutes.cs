@@ -27,6 +27,7 @@ namespace ClinicHub.Routes
             public static string PlanManagement() => $"{Base}/PlanManagement";
             public static string SubscriptionManagement() => $"{Base}/SubscriptionManagement";
             public static string Ads() => $"{Base}/Ads";
+            public static string Notifications() => $"{Base}/Notifications";
         }
     }
 }

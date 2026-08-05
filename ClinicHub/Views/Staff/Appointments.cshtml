@@ -29,10 +29,9 @@
         <select name="status" class="form-select">
             <option value="">كل الحالات</option>
             <option value="pending" selected="@(ViewBag.StatusFilter == "pending")">قيد الانتظار</option>
-            <option value="accepted" selected="@(ViewBag.StatusFilter == "accepted")">بانتظار الدفع</option>
-            <option value="awaiting-payment" selected="@(ViewBag.StatusFilter == "awaiting-payment")">بانتظار الدفع (مؤجل)</option>
+            <option value="accepted" selected="@(ViewBag.StatusFilter == "accepted")">مقبول - بانتظار الدفع</option>
+            <option value="reserved" selected="@(ViewBag.StatusFilter == "reserved")">محجوز - بانتظار الدفع</option>
             <option value="confirmed" selected="@(ViewBag.StatusFilter == "confirmed")">مؤكد - مدفوع</option>
-            <option value="in-progress" selected="@(ViewBag.StatusFilter == "in-progress")">قيد الكشف</option>
             <option value="cancelled" selected="@(ViewBag.StatusFilter == "cancelled")">ملغي</option>
             <option value="completed" selected="@(ViewBag.StatusFilter == "completed")">منتهي</option>
             <option value="rejected" selected="@(ViewBag.StatusFilter == "rejected")">مرفوض</option>
@@ -85,11 +84,11 @@
                                     <button class="btn btn-sm btn-outline-danger btn-reject" data-id="@app.Id" title="رفض"><i class="bi bi-x-lg"></i></button>
                                 </div>
                             }
-                            else if (app.Status == "confirmed")
+                            else if (app.Status == "confirmed" || app.Status == "accepted")
                             {
                                 <button class="btn btn-sm btn-outline-primary btn-checkin" data-id="@app.Id"><i class="bi bi-box-arrow-in-right"></i> تسجيل وصول</button>
                             }
-                            else if (app.Status == "accepted" || app.Status == "awaiting-payment")
+                            else if (app.Status == "reserved" || app.Status == "awaiting-payment")
                             {
                                 <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>
                             }
@@ -111,6 +110,8 @@
                 StaffDashboardService.approveAppointment(id).then(function () {
                     showSuccessModal('تم قبول الحجز وتم إرسال رابط الدفع للمريض');
                     location.reload();
+                }).catch(function (err) {
+                    showErrorModal((err && err.message) || 'حدث خطأ أثناء القبول');
                 });
             });
         });
@@ -123,6 +124,8 @@
             StaffDashboardService.rejectAppointment(id, reason || '').then(function () {
                 showSuccessModal('تم رفض الحجز');
                 location.reload();
+            }).catch(function (err) {
+                showErrorModal((err && err.message) || 'حدث خطأ أثناء الرفض');
             });
         });
 
@@ -131,6 +134,8 @@
             if (!id) return;
             StaffDashboardService.checkInPatient(id).then(function () {
                 location.reload();
+            }).catch(function (err) {
+                showErrorModal((err && err.message) || 'حدث خطأ أثناء تسجيل الوصول');
             });
         });
     </script>

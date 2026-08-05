@@ -1,0 +1,22 @@
+@using ClinicHub.Services.Options
+@inject Microsoft.Extensions.Options.IOptions<Doctory> _doctoryOptions
+@inject Microsoft.Extensions.Options.IOptions<FirebaseWebOptions> _firebaseWebOptions
+@{
+    var apiBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
+    var fb = _firebaseWebOptions.Value;
+}
+<script>
+    window.ClinicHubConfig = {
+        apiBaseUrl: '@apiBaseUrl',
+        vapidKey: '@fb.VapidKey',
+        firebaseConfig: {
+            apiKey: '@fb.ApiKey',
+            authDomain: '@fb.AuthDomain',
+            projectId: '@fb.ProjectId',
+            storageBucket: '@fb.StorageBucket',
+            messagingSenderId: '@fb.MessagingSenderId',
+            appId: '@fb.AppId',
+            measurementId: '@fb.MeasurementId'
+        }
+    };
+</script>

@@ -31,6 +31,7 @@ namespace ClinicHub.Services.Services.Implementations
             ["waiting"] = ("في الانتظار", "badge-warning"),
             ["registered"] = ("تم التسجيل", "badge-info"),
             ["accepted"] = ("بانتظار الدفع", "badge-warning"),
+            ["reserved"] = ("بانتظار الدفع", "badge-warning"),
             ["awaiting-payment"] = ("بانتظار الدفع", "badge-warning"),
             ["rejected"] = ("مرفوض", "badge-danger"),
             ["noshow"] = ("لم يحضر", "badge-danger")
@@ -57,6 +58,8 @@ namespace ClinicHub.Services.Services.Implementations
                 raw.Equals("paid-confirmed", StringComparison.OrdinalIgnoreCase) ||
                 raw.Equals("payment-completed", StringComparison.OrdinalIgnoreCase))
                 return "confirmed";
+            if (raw.Equals("inprogress", StringComparison.OrdinalIgnoreCase))
+                return "in-progress";
             return raw.ToLowerInvariant();
         }
 

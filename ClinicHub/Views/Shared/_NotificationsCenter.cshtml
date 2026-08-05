@@ -1,0 +1,24 @@
+<div class="notif-page" id="notificationsCenter">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        </span>
+        الإشعارات
+    </h2>
+
+    <div class="notif-card">
+        <div class="notif-list" id="notifList"></div>
+        <div class="notif-empty" id="notifEmpty" hidden>لا توجد إشعارات</div>
+        <div class="notif-loading" id="notifLoading">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            جارٍ تحميل الإشعارات...
+        </div>
+        <nav class="pagination-nav notif-pagination" id="notifPagination" hidden>
+            <ul class="pagination-list">
+                <li><button class="pagination-link" type="button" id="notifPrev">السابق</button></li>
+                <li><span class="pagination-link pagination-link--active" id="notifPageInfo">1</span></li>
+                <li><button class="pagination-link" type="button" id="notifNext">التالي</button></li>
+            </ul>
+        </nav>
+    </div>
+</div>

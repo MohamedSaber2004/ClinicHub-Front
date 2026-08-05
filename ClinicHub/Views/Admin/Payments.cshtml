@@ -1,7 +1,10 @@
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Options
+@inject Microsoft.Extensions.Options.IOptions<Doctory> _doctoryOptions
 @{
     ViewData["Title"] = "المدفوعات";
     Layout = "_AdminLayout";
+    var attachmentBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
     var stats = ViewBag.Stats as PaymentStatsDto;
     var payments = ViewBag.Payments as IReadOnlyCollection<AdminPaymentDto> ?? new List<AdminPaymentDto>();
     var pagination = ViewBag.Pagination as PagginatedResult<AdminPaymentDto>;
@@ -315,6 +318,22 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">شعار الإعلان <span class="text-muted">(اختياري)</span></label>
+                    <div class="ad-logo-upload">
+                        <label class="btn btn-secondary btn-sm" for="adsLogoInput">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                            </svg>
+                            اختيار شعار
+                        </label>
+                        <input type="file" id="adsLogoInput" class="d-none" accept="image/*" onchange="onAdsLogoChange()" />
+                        <img id="adsLogoPreview" class="ad-logo-preview d-none" alt="شعار الإعلان" />
+                        <button type="button" class="btn btn-sm btn-danger d-none" id="adsLogoRemoveBtn" onclick="onAdsLogoRemove()">إزالة</button>
+                        <span id="adsLogoStatus" class="form-hint"></span>
+                    </div>
+                    <p class="form-hint">الشعار سيظهر داخل إعلان العيادة في تطبيق المرضى. إذا لم ترفع شعاراً سيظهر اسم العيادة بدلاً منه.</p>
+                </div>
+                <div class="form-group">
                     <p class="form-hint">سيتم تحويلك إلى بوابة الدفع Paymob لإتمام عملية الدفع، وبعد التأكيد تظهر الدفعة في الجدول.</p>
                 </div>
             </div>
@@ -329,6 +348,41 @@
 @section Scripts {
     <script>
         var MAX_DURATION_MULTIPLES = 12;
+        var attachmentBaseUrl = '@attachmentBaseUrl';
+        var adsLogoUrl = '';
+
+        function onAdsLogoChange() {
+            var input = document.getElementById('adsLogoInput');
+            var file = input.files && input.files[0];
+            if (!file) return;
+            var status = document.getElementById('adsLogoStatus');
+            var formData = new FormData();
+            formData.append('file', file);
+            status.textContent = 'جاري رفع الشعار...';
+            fetch('/Home/UploadAttachment?place=5', { method: 'POST', body: formData })
+            .then(function (r) { return r.json(); })
+            .then(function (result) {
+                if (result.success && result.url) {
+                    adsLogoUrl = result.url;
+                    var preview = document.getElementById('adsLogoPreview');
+                    preview.src = attachmentBaseUrl + '/files/' + result.url;
+                    preview.classList.remove('d-none');
+                    document.getElementById('adsLogoRemoveBtn').classList.remove('d-none');
+                    status.textContent = 'تم رفع الشعار بنجاح.';
+                } else {
+                    status.textContent = result.error || 'فشل رفع الشعار';
+                }
+            })
+            .catch(function () { status.textContent = 'حدث خطأ أثناء رفع الشعار'; });
+        }
+
+        function onAdsLogoRemove() {
+            adsLogoUrl = '';
+            document.getElementById('adsLogoInput').value = '';
+            document.getElementById('adsLogoPreview').classList.add('d-none');
+            document.getElementById('adsLogoRemoveBtn').classList.add('d-none');
+            document.getElementById('adsLogoStatus').textContent = '';
+        }
 
         function fillAdsDurationOptions(opt) {
             var durationSelect = document.getElementById('adsDuration');
@@ -444,7 +498,8 @@
                         body: JSON.stringify({
                             clinicId: clinicId,
                             adPackageId: packageId,
-                            durationDays: duration
+                            durationDays: duration,
+                            logoImageUrl: adsLogoUrl || null
                         })
                     })
                     .then(function (r) { return r.json(); })

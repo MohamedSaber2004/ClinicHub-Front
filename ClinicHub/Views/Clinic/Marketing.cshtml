@@ -1,8 +1,11 @@
 @using ClinicHub.Data
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Options
+@inject Microsoft.Extensions.Options.IOptions<Doctory> _doctoryOptions
 @{
     ViewData["Title"] = "الخدمات الإعلانية - Doctory";
     Layout = "_ClinicLayout";
+    var attachmentBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
     var ads = ViewBag.Ads as IReadOnlyCollection<AdDto> ?? new List<AdDto>();
     var packages = ViewBag.Packages as IReadOnlyCollection<AdPackageDto> ?? new List<AdPackageDto>();
     var currentUser = ViewBag.CurrentUser as CurrentUserContext;
@@ -13,7 +16,7 @@
         0 => "معلق الدفع",
         1 => "نشط",
         2 => "منتهي",
-        3 => "ملغي",
+        3 => "معطل",
         _ => "غير معروف"
     };
 
@@ -101,6 +104,7 @@
     @{
         var activeAds = ads.Where(a => a.Status == 1).ToList();
     }
+    <div id="adsPreviewContainer">
     @if (activeAds.Count == 0)
     {
         <div class="ad-preview-empty">
@@ -114,7 +118,14 @@
             {
                 <div class="ad-preview-item">
                     <div class="ad-preview-visual">
-                        <span class="ad-preview-initial">@(string.IsNullOrWhiteSpace(ad.ClinicName) ? "ع" : ad.ClinicName.Substring(0, 1))</span>
+                        @if (!string.IsNullOrWhiteSpace(ad.ImageUrl))
+                        {
+                            <img class="ad-preview-img" src="@(attachmentBaseUrl)/files/@ad.ImageUrl" alt="@ad.ClinicName" />
+                        }
+                        else
+                        {
+                            <span class="ad-preview-initial">@(string.IsNullOrWhiteSpace(ad.ClinicName) ? "ع" : ad.ClinicName.Substring(0, 1))</span>
+                        }
                     </div>
                     <div class="ad-preview-body">
                         <span class="ad-preview-name">@ad.ClinicName</span>
@@ -126,6 +137,7 @@
             }
         </div>
     }
+    </div>
 </div>
 
 <!-- My Ads -->
@@ -139,6 +151,14 @@
             </span>
             إعلاناتي
         </h3>
+        <div class="table-card-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="refreshAdsBtn" onclick="refreshAds()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+                تحديث الحالة
+            </button>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="custom-table">
@@ -152,7 +172,7 @@
                     <th>الحالة</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="adsTableBody">
                 @if (ads.Count == 0)
                 {
                     <tr>
@@ -226,6 +246,22 @@
                             <label class="form-label">السعر المقدر</label>
                             <input type="text" id="buyPrice" class="form-input" readonly placeholder="0.00 ج.م" />
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">شعار الإعلان <span class="text-muted">(اختياري)</span></label>
+                            <div class="ad-logo-upload">
+                                <label class="btn btn-secondary btn-sm" for="adLogoInput">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                                    </svg>
+                                    اختيار شعار
+                                </label>
+                                <input type="file" id="adLogoInput" class="d-none" accept="image/*" onchange="onAdLogoChange()" />
+                                <img id="adLogoPreview" class="ad-logo-preview d-none" alt="شعار الإعلان" />
+                                <button type="button" class="btn btn-sm btn-danger d-none" id="adLogoRemoveBtn" onclick="onAdLogoRemove()">إزالة</button>
+                                <span id="adLogoStatus" class="form-hint"></span>
+                            </div>
+                            <p class="form-hint">الشعار سيظهر داخل إعلانك في تطبيق المرضى. إذا لم ترفع شعاراً سيظهر اسم العيادة بدلاً منه.</p>
+                        </div>
                         <p class="form-hint">يتم الدفع عبر بوابة Paymob، ويظهر إعلانك فور اكتمال الدفع.</p>
                     }
                 </div>
@@ -241,7 +277,6 @@
 @section Scripts {
     <script>
         var MAX_DURATION_MULTIPLES = 12;
-        var hasPendingAds = @(ads.Any(a => a.Status == 0) ? "true" : "false");
 
         function fillDurationOptions(opt) {
             var durationSelect = document.getElementById('buyDuration');
@@ -283,29 +318,126 @@
             }
         }
 
-        function pollAdActivation() {
-            if (!hasPendingAds) return;
-            var attempts = 0;
-            var maxAttempts = 5;
-            var timer = setInterval(function () {
-                attempts++;
-                fetch('/Clinic/GetMyAdsJson', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (result) {
-                    if (!result.success || !result.data) return;
-                    var pending = result.data.filter(function (a) { return a.status === 0; }).length;
-                    if (pending === 0) {
-                        clearInterval(timer);
-                        showSuccessModal('تم تأكيد الدفع وتفعيل إعلانك بنجاح. سيظهر في التطبيق الآن.');
-                        setTimeout(function () { location.reload(); }, 2000);
-                    }
-                })
-                .catch(function () { /* silent — retry on next tick */ });
-                if (attempts >= maxAttempts) clearInterval(timer);
-            }, 2000);
+        var STATUS_TEXT = ['معلق الدفع', 'نشط', 'منتهي', 'معطل'];
+        var STATUS_CLASS = ['badge-warning', 'badge-success', 'badge-info', 'badge-danger'];
+        var attachmentBaseUrl = '@attachmentBaseUrl';
+        var adLogoUrl = '';
+
+        function getStatusText(s) { return STATUS_TEXT[s] || 'غير معروف'; }
+        function getStatusClass(s) { return STATUS_CLASS[s] || 'badge-info'; }
+
+        function formatDate(v) { return v ? v.substring(0, 10) : '-'; }
+
+        function renderAdVisual(ad) {
+            if (ad.imageUrl) {
+                return '<div class="ad-preview-visual"><img class="ad-preview-img" src="' + attachmentBaseUrl + '/files/' + ad.imageUrl + '" alt="' + (ad.clinicName || '') + '" /></div>';
+            }
+            var initial = (ad.clinicName || 'ع').substring(0, 1);
+            return '<div class="ad-preview-visual"><span class="ad-preview-initial">' + initial + '</span></div>';
+        }
+
+        function renderAds(ads) {
+            ads = ads || [];
+            var activeAds = ads.filter(function (a) { return a.status === 1; });
+
+            var preview = document.getElementById('adsPreviewContainer');
+            if (preview) {
+                if (activeAds.length === 0) {
+                    preview.innerHTML = '<div class="ad-preview-empty"><p>لا توجد إعلانات نشطة حالياً. بمجرد شراء إعلان وتأكيد الدفع سيظهر هنا وفي تطبيق المرضى.</p></div>';
+                } else {
+                    var html = '<div class="ad-preview-grid">';
+                    activeAds.forEach(function (ad) {
+                        html += '<div class="ad-preview-item">'
+                            + renderAdVisual(ad)
+                            + '<div class="ad-preview-body">'
+                            + '<span class="ad-preview-name">' + (ad.clinicName || '') + '</span>'
+                            + '<span class="ad-preview-meta">' + (ad.packageNameAr || '') + '</span>'
+                            + '<span class="ad-preview-period">' + formatDate(ad.startDate) + ' → ' + formatDate(ad.endDate) + '</span>'
+                            + '</div>'
+                            + '<span class="badge badge-success">نشط</span>'
+                            + '</div>';
+                    });
+                    html += '</div>';
+                    preview.innerHTML = html;
+                }
+            }
+
+            var tbody = document.getElementById('adsTableBody');
+            if (tbody) {
+                if (ads.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>لا توجد إعلانات بعد. ابدأ بشراء إعلانك الأول لظهور عيادتك في التطبيق.</p></div></td></tr>';
+                } else {
+                    var rows = '';
+                    ads.forEach(function (ad) {
+                        rows += '<tr>'
+                            + '<td class="text-md-medium">' + (ad.packageNameAr || '') + '</td>'
+                            + '<td class="text-md">' + ad.durationDays + ' يوم</td>'
+                            + '<td class="text-md">' + Number(ad.amount || 0).toFixed(2) + ' ج.م</td>'
+                            + '<td class="text-md">' + formatDate(ad.startDate) + '</td>'
+                            + '<td class="text-md">' + formatDate(ad.endDate) + '</td>'
+                            + '<td><span class="badge ' + getStatusClass(ad.status) + '">' + getStatusText(ad.status) + '</span></td>'
+                            + '</tr>';
+                    });
+                    tbody.innerHTML = rows;
+                }
+            }
+        }
+
+        function onAdLogoChange() {
+            var input = document.getElementById('adLogoInput');
+            var file = input.files && input.files[0];
+            if (!file) return;
+            var status = document.getElementById('adLogoStatus');
+            var formData = new FormData();
+            formData.append('file', file);
+            status.textContent = 'جاري رفع الشعار...';
+            fetch('/Home/UploadAttachment?place=5', { method: 'POST', body: formData })
+            .then(function (r) { return r.json(); })
+            .then(function (result) {
+                if (result.success && result.url) {
+                    adLogoUrl = result.url;
+                    var preview = document.getElementById('adLogoPreview');
+                    preview.src = attachmentBaseUrl + '/files/' + result.url;
+                    preview.classList.remove('d-none');
+                    document.getElementById('adLogoRemoveBtn').classList.remove('d-none');
+                    status.textContent = 'تم رفع الشعار بنجاح.';
+                } else {
+                    status.textContent = result.error || 'فشل رفع الشعار';
+                }
+            })
+            .catch(function () { status.textContent = 'حدث خطأ أثناء رفع الشعار'; });
+        }
+
+        function onAdLogoRemove() {
+            adLogoUrl = '';
+            document.getElementById('adLogoInput').value = '';
+            document.getElementById('adLogoPreview').classList.add('d-none');
+            document.getElementById('adLogoRemoveBtn').classList.add('d-none');
+            document.getElementById('adLogoStatus').textContent = '';
+        }
+
+        function refreshAds() {
+            var btn = document.getElementById('refreshAdsBtn');
+            if (btn) btn.disabled = true;
+            fetch('/Clinic/GetMyAdsJson', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (result) {
+                if (!result.success || !result.data) {
+                    showErrorModal(result.message || 'حدث خطأ أثناء تحديث الحالة');
+                    return;
+                }
+                renderAds(result.data);
+                showSuccessModal('تم تحديث حالة إعلاناتك.');
+            })
+            .catch(function () {
+                showErrorModal('عذراً، حدث خطأ أثناء تحديث الحالة');
+            })
+            .finally(function () {
+                if (btn) btn.disabled = false;
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -338,15 +470,15 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             adPackageId: packageId,
-                            durationDays: duration
+                            durationDays: duration,
+                            logoImageUrl: adLogoUrl || null
                         })
                     })
                     .then(function (r) { return r.json(); })
                     .then(function (result) {
                         if (result.success && result.data && result.data.paymobRedirectUrl) {
-                            showSuccessModal('تم إنشاء الطلب بنجاح، جارِ فتح بوابة الدفع...');
+                            showSuccessModal('تم إنشاء الطلب بنجاح، أكمل الدفع في نافذة Paymob ثم اضغط "تحديث الحالة" لتأكيد التفعيل.');
                             window.open(result.data.paymobRedirectUrl, '_blank');
-                            setTimeout(function () { location.reload(); }, 2000);
                         } else if (result.success) {
                             showSuccessModal(result.message || 'تم إنشاء الطلب بنجاح');
                         } else {
@@ -362,8 +494,6 @@
                     });
                 });
             }
-
-            pollAdActivation();
         });
     </script>
 }

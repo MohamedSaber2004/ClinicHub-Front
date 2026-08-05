@@ -23,11 +23,13 @@
             </div>
         }
 
-        <form asp-controller="Account" asp-action="Login" method="post" data-ajax="true">
+        <form asp-controller="Account" asp-action="Login" method="post" data-ajax="true" id="loginForm">
             @if (ViewBag.ReturnUrl != null)
             {
                 <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
             }
+            <input type="hidden" name="fcmToken" id="fcmToken" />
+            <input type="hidden" name="devicePlatform" id="devicePlatform" value="0" />
             <div class="text-danger auth-alert" asp-validation-summary="ModelOnly"></div>
 
             <!-- Gmail -->
@@ -51,3 +53,8 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_FcmConfig" />
+    <script src="~/js/fcm.js" asp-append-version="true"></script>
+}

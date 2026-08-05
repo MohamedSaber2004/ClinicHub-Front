@@ -1351,6 +1351,11 @@ namespace ClinicHub.Controllers
             return View("Users/Payments");
         }
 
+        public IActionResult Notifications()
+        {
+            return View();
+        }
+
         public async Task<IActionResult> Profile()
         {
             try

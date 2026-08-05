@@ -42,6 +42,11 @@ namespace ClinicHub.Controllers
             base.OnActionExecuting(context);
         }
 
+        public IActionResult Notifications()
+        {
+            return View();
+        }
+
         public async Task<IActionResult> Profile()
         {
             try

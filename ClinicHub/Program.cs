@@ -47,6 +47,7 @@ namespace ClinicHub
 
             builder.Services.Configure<Doctory>(builder.Configuration.GetSection("Doctory"));
             builder.Services.Configure<GoogleMapsOptions>(builder.Configuration.GetSection("GoogleMaps"));
+            builder.Services.Configure<FirebaseWebOptions>(builder.Configuration.GetSection("FirebaseWeb"));
             builder.Services.AddServices();
 
             var app = builder.Build();

@@ -791,7 +791,7 @@ namespace ClinicHub.Controllers
 
                 if (string.IsNullOrWhiteSpace(request.ReturnUrl))
                 {
-                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult?type=ads";
+                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Clinic/AdPaymentResult";
                 }
 
                 var result = await _adService.CreateOrderAsync(clinicId, request);
@@ -831,6 +831,13 @@ namespace ClinicHub.Controllers
                 Response.StatusCode = 500;
                 return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
             }
+        }
+
+        public IActionResult AdPaymentResult(bool success = false)
+        {
+            ViewBag.PaymentSuccess = success;
+            ViewBag.PaymentType = "ads";
+            return View();
         }
 
         public IActionResult Support()
@@ -1019,6 +1026,11 @@ namespace ClinicHub.Controllers
                 Response.StatusCode = 500;
                 return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
             }
+        }
+
+        public IActionResult Notifications()
+        {
+            return View();
         }
 
         public async Task<IActionResult> Profile()

@@ -70,7 +70,7 @@
                         <td>@item.Time</td>
                         <td><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
                         <td class="table-actions">
-                            @if (item.Status == "confirmed" || item.Status == "registered" || item.Status == "waiting")
+                            @if (item.Status == "confirmed")
                             {
                                 <button class="btn btn-sm btn-outline-primary btn-q-checkin" data-id="@targetId" title="تسجيل وصول المريض">
                                     <i class="bi bi-box-arrow-in-right"></i> تسجيل وصول
@@ -85,6 +85,10 @@
                             else if (item.Status == "completed")
                             {
                                 <span class="badge badge-success">مكتمل</span>
+                            }
+                            else if (item.Status == "registered" || item.Status == "waiting")
+                            {
+                                <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار التأكيد</span>
                             }
                         </td>
                     </tr>

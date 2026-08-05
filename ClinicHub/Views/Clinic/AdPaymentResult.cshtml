@@ -1,0 +1,74 @@
+@{
+    ViewData["Title"] = "نتيجة دفع الإعلان - Doctory";
+    Layout = "_ClinicLayout";
+    var success = ViewBag.PaymentSuccess as bool? ?? false;
+}
+
+<div class="payment-result-card">
+    @if (success)
+    {
+        <div class="result-icon-circle result-success">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
+            </svg>
+        </div>
+        <h2 class="text-h2">تم دفع الإعلان بنجاح</h2>
+        <p class="result-desc">
+            شكراً لك! تم تأكيد عملية دفع الإعلان، وسيظهر إعلانك في التطبيق خلال لحظات قليلة.
+        </p>
+        <div class="result-redirect-notice">
+            <span>سيتم تحويلك إلى صفحة الخدمات الإعلانية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...</span>
+        </div>
+        <div class="result-actions">
+            <a href="@ClinicRoutes.Pages.Marketing()" class="btn btn-primary">الخدمات الإعلانية</a>
+            <a href="@ClinicRoutes.Pages.Index()" class="btn btn-secondary">لوحة التحكم</a>
+        </div>
+    }
+    else
+    {
+        <div class="result-icon-circle result-fail">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="white"/>
+            </svg>
+        </div>
+        <h2 class="text-h2">فشلت عملية دفع الإعلان</h2>
+        <p class="result-desc">
+            حدث خطأ أثناء معالجة عملية دفع الإعلان. يمكنك المحاولة مرة أخرى من صفحة الخدمات الإعلانية.
+        </p>
+        <div class="result-redirect-notice">
+            <span>سيتم تحويلك إلى صفحة الخدمات الإعلانية تلقائياً خلال <span id="countdownTimer" class="countdown-badge">5</span> ثوانٍ...</span>
+        </div>
+        <div class="result-actions">
+            <a href="@ClinicRoutes.Pages.Marketing()" class="btn btn-primary">العودة للخدمات الإعلانية</a>
+            <a href="@ClinicRoutes.Pages.Index()" class="btn btn-secondary">لوحة التحكم</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var seconds = 5;
+            var timerEl = document.getElementById('countdownTimer');
+
+            function redirectTo() {
+                window.location.href = '@ClinicRoutes.Pages.Marketing()';
+            }
+
+            if (timerEl) {
+                var interval = setInterval(function() {
+                    seconds--;
+                    if (seconds >= 0) {
+                        timerEl.textContent = seconds;
+                    }
+                    if (seconds <= 0) {
+                        clearInterval(interval);
+                        redirectTo();
+                    }
+                }, 1000);
+            } else {
+                setTimeout(redirectTo, 5000);
+            }
+        })();
+    </script>
+}

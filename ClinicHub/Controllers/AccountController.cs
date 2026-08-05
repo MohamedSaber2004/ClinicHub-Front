@@ -63,11 +63,11 @@ namespace ClinicHub.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(string email, string password, string? returnUrl = null)
+        public async Task<IActionResult> Login(string email, string password, string? fcmToken = null, DevicePlatform? devicePlatform = null, string? returnUrl = null)
         {
             try
             {
-                var result = await _authService.LoginAsync(new LoginRequest(email, password));
+                var result = await _authService.LoginAsync(new LoginRequest(email, password, fcmToken, devicePlatform));
 
                 SetAuthCookies(result);
 
