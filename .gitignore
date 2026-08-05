@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/ClinicHub/appsettings.json
+/ClinicHub/appsettings.Development.json
+/ClinicHub/appsettings.Live.json
+/ClinicHub/appsettings.Production.json
