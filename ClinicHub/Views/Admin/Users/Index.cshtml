@@ -40,7 +40,7 @@
 <!-- Users Table -->
 <div class="table-card">
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table users-table">
             <thead>
                 <tr>
                     <th>المستخدم</th>
@@ -61,7 +61,7 @@
                                 <div class="table-avatar table-avatar--md">
                                     @if (!string.IsNullOrWhiteSpace(u.Image))
                                     {
-                                        <img src="@u.Image" alt="@u.Name" />
+                                        <img src="@u.Image" alt="@u.Name" loading="lazy" decoding="async" />
                                     }
                                     else
                                     {

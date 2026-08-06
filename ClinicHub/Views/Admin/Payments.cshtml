@@ -55,6 +55,7 @@
 <div class="stats-header">
     <h3 class="stats-title">إحصائيات الشهر</h3>
     <form class="stats-month-form" method="get" action="@AdminRoutes.Pages.Payments()">
+        <label for="statsMonthInput" class="stats-month-label">الشهر</label>
         <input type="month" name="month" id="statsMonthInput" class="form-input" value="@month" title="اختر الشهر" />
     </form>
 </div>
@@ -136,7 +137,7 @@
 <!-- Payments Table -->
 <div class="table-card">
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table payments-table">
             <thead>
                 <tr>
                     <th>#</th>
@@ -154,8 +155,13 @@
                 @if (payments.Count == 0)
                 {
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-5">
-                            <p class="text-lg mb-0">لا توجد مدفوعات مطابقة</p>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <i class="bi bi-wallet2 empty-state-icon"></i>
+                                <p class="empty-title">لا توجد مدفوعات مطابقة</p>
+                                <p class="empty-desc">جرّب تعديل الفلاتر أو تغيير الشهر لعرض المدفوعات.</p>
+                                <a href="@AdminRoutes.Pages.Payments()" class="btn btn-secondary btn-sm">مسح الفلاتر</a>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -171,19 +177,19 @@
                         <tr>
                             <td class="text-md">@p.Code</td>
                             <td class="text-md-medium">
-                                <span class="row-icon">
-                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
-                                    </svg>
-                                </span>
-                                @p.Payer
+                                <div class="table-user">
+                                    <div class="table-avatar table-avatar--md">
+                                        <span>@(string.IsNullOrWhiteSpace(p.Payer) ? "؟" : p.Payer.Substring(0, 1))</span>
+                                    </div>
+                                    <span class="table-user-name">@p.Payer</span>
+                                </div>
                             </td>
                             <td><span class="badge @typeClass">@typeText</span></td>
-                            <td class="text-md-medium">@p.Amount.ToString("N2") ج.م</td>
+                            <td class="text-md-medium amount-cell">@p.Amount.ToString("N2") ج.م</td>
                             <td class="text-md">@methodText</td>
                             <td><span class="badge @statusClass">@statusText</span></td>
                             <td class="text-md">@p.Date.ToString("yyyy-MM-dd HH:mm")</td>
-                            <td class="text-md">@p.RefNumber</td>
+                            <td class="ref-number">@p.RefNumber</td>
                             <td>
                                 <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(p.Id)" title="التفاصيل">
                                     <svg viewBox="0 0 24 24" fill="currentColor">

@@ -495,36 +495,6 @@ a {
   }
 }
 
-/* Queue board — the waiting-room screen (public hero) */
-.queue-board {
-  position: relative;
-  background: linear-gradient(155deg, var(--clr-primary-deep) 0%, var(--clr-primary) 100%);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
-  color: #FFFFFF;
-}
-
-.queue-board::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.07) 0 2px, transparent 2.5px);
-  background-size: 22px 22px;
-  pointer-events: none;
-}
-
-.queue-board::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--clr-brass);
-  opacity: 0.85;
-}
-
 /* ============================================================
    Auth Page Styles
    ============================================================ */
@@ -760,6 +730,8 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
   margin-bottom: var(--space-6);
 }
 
@@ -1145,7 +1117,7 @@ a {
   color: var(--clr-text);
   font-size: var(--fs-sm);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s;
 }
 
 .pagination-link:hover {

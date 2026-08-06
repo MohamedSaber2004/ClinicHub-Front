@@ -102,11 +102,11 @@
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">ID المعاملة</span>
-                    <span class="detail-info-value">@(string.IsNullOrWhiteSpace(d.TransactionId) ? "—" : d.TransactionId)</span>
+                    <span class="detail-info-value detail-id-value">@(string.IsNullOrWhiteSpace(d.TransactionId) ? "—" : d.TransactionId)</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">رقم المرجع</span>
-                    <span class="detail-info-value">@d.RefNumber</span>
+                    <span class="detail-info-value detail-id-value">@d.RefNumber</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">تاريخ الإنشاء</span>
@@ -142,8 +142,8 @@
                     <tr>
                         <td class="text-md-medium">@d.ItemName</td>
                         <td class="text-md">1</td>
-                        <td class="text-md">@d.Amount.ToString("N2") ج.م</td>
-                        <td class="text-md-medium">@d.Amount.ToString("N2") ج.م</td>
+                        <td class="text-md amount-cell">@d.Amount.ToString("N2") ج.م</td>
+                        <td class="text-md-medium amount-cell">@d.Amount.ToString("N2") ج.م</td>
                     </tr>
                 </tbody>
             </table>

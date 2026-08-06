@@ -1,5 +1,6 @@
 using ClinicHub.Services;
 using ClinicHub.Services.Options;
+using Microsoft.AspNetCore.ResponseCompression;
 using Serilog;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -41,6 +42,15 @@ namespace ClinicHub
                         new JsonStringEnumConverter());
                 });
 
+            builder.Services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
+                options.Providers.Add<GzipCompressionProvider>();
+            });
+            builder.Services.Configure<BrotliCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
+            builder.Services.Configure<GzipCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
+
             builder.Services.AddOptions();
 
             builder.Services.AddHttpClient();
@@ -52,6 +62,10 @@ namespace ClinicHub
 
             var app = builder.Build();
 
+            // Compress responses (Brotli/Gzip) — must run before static files
+            // and endpoints so CSS, JS, and JSON all ship compressed.
+            app.UseResponseCompression();
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -60,7 +74,19 @@ namespace ClinicHub
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+
+            // Static assets with a version fingerprint (?v=...) never change —
+            // cache them forever. Everything else gets a week.
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers["Cache-Control"] =
+                        ctx.Context.Request.Query.ContainsKey("v")
+                            ? "public, max-age=31536000, immutable"
+                            : "public, max-age=604800";
+                }
+            });
 
             app.UseRouting();
 

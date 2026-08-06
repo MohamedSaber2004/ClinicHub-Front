@@ -120,7 +120,7 @@
                     <div class="ad-preview-visual">
                         @if (!string.IsNullOrWhiteSpace(ad.ImageUrl))
                         {
-                            <img class="ad-preview-img" src="@(attachmentBaseUrl)/files/@ad.ImageUrl" alt="@ad.ClinicName" />
+                            <img class="ad-preview-img" src="@(attachmentBaseUrl)/files/@ad.ImageUrl" alt="@ad.ClinicName" loading="lazy" decoding="async" />
                         }
                         else
                         {

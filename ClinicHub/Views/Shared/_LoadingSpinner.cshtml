@@ -1,8 +1,15 @@
 <div id="globalLoadingOverlay" class="loading-overlay">
     <div class="loading-spinner-container">
-        <div class="spinner-border loading-spinner" role="status">
-            <span class="visually-hidden">جاري التحميل...</span>
+        <div class="loading-orbit">
+            <svg class="loading-ring" viewBox="0 0 80 80" aria-hidden="true">
+                <circle class="loading-ring-track" cx="40" cy="40" r="28" />
+                <g class="loading-ring-rotor">
+                    <circle class="loading-ring-arc" cx="40" cy="40" r="28" />
+                    <circle class="loading-orbit-dot" cx="12" cy="40" r="4" />
+                </g>
+            </svg>
+            <span class="loading-orbit-word">Doctory</span>
         </div>
-        <p class="loading-text">جاري التحميل...</p>
+        <p class="loading-text">جارٍ التحميل...</p>
     </div>
 </div>

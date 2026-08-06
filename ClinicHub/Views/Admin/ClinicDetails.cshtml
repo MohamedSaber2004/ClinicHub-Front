@@ -341,7 +341,7 @@
                             <div class="staff-card-avatar">
                                 @if (!string.IsNullOrEmpty(doc.Image))
                                 {
-                                    <img src="@doc.Image" alt="@doc.Name" />
+                                    <img src="@doc.Image" alt="@doc.Name" loading="lazy" decoding="async" />
                                 }
                                 else
                                 {

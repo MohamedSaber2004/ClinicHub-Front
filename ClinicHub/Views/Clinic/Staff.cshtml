@@ -102,7 +102,7 @@
                                 <div class="table-avatar table-avatar--md">
                                     @if (!string.IsNullOrEmpty(staff.Image))
                                     {
-                                        <img src="@_attachmentUrlResolver.Resolve(staff.Image)" alt="@staff.FullName" />
+                                        <img src="@_attachmentUrlResolver.Resolve(staff.Image)" alt="@staff.FullName" loading="lazy" decoding="async" />
                                     }
                                     else
                                     {

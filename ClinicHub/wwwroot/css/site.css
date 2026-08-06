@@ -3,9 +3,11 @@
    Design language: "Reception & Queue Ticket"
    Layout, sidebar, topbar, tables, cards, detail pages, plans,
    verification center, notifications, responsive + motion.
-   ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap');
+   Fonts load via <link> in the layouts (parallel fetch), not
+   @import — @import chains the request behind this stylesheet
+   and blocks rendering until the font CSS arrives.
+   ============================================================ */
 
 :root {
     /* Legacy aliases → new palette (views reference these) */
@@ -20,6 +22,13 @@
     --card-bg: #FFFFFF;
     --header-bg: #F2F5F3;
     --transition-speed: 0.25s;
+}
+
+html {
+    /* Clip stray horizontal overflow instead of painting a
+       horizontal scrollbar — keeps wide content from forcing
+       full-width repaints */
+    overflow-x: clip;
 }
 
 * {
@@ -185,7 +194,7 @@ body {
     width: 18px;
     height: 18px;
     color: currentColor;
-    transition: all var(--transition-base);
+    transition: color var(--transition-base), background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base), opacity var(--transition-base);
     flex-shrink: 0;
 }
 
@@ -588,7 +597,7 @@ body {
     font-size: 14px;
     font-weight: var(--fw-medium);
     border-radius: var(--radius-sm);
-    transition: all var(--transition-base);
+    transition: color var(--transition-base), background-color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base), opacity var(--transition-base);
 }
 
 .sub-sidebar-item:hover {
@@ -1125,7 +1134,7 @@ body {
     margin-bottom: var(--space-7);
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1500px) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1159,16 +1168,19 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
 }
 
 .stat-value {
-    font-size: clamp(22px, 2.5vw, 30px);
+    font-size: clamp(16px, 1.8vw, 28px);
     font-weight: 700;
     color: var(--clr-text);
     line-height: 1.15;
     font-family: var(--ff-data);
     font-variant-numeric: tabular-nums;
     direction: ltr;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .stat-label {
@@ -1181,6 +1193,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     gap: var(--space-4);
     margin-bottom: var(--space-4);
 }
@@ -1517,6 +1530,127 @@ body {
     text-decoration: underline;
 }
 
+/* ============================================================
+   Payments — numeric data readability (LTR in RTL UI)
+   ============================================================ */
+
+.stats-month-form {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.stats-month-label {
+    font-size: 13px;
+    font-weight: var(--fw-medium);
+    color: var(--clr-text-secondary);
+    white-space: nowrap;
+}
+
+.ref-number {
+    direction: ltr;
+    white-space: nowrap;
+    font-family: var(--ff-data);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.amount-cell {
+    direction: ltr;
+    white-space: nowrap;
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+}
+
+.detail-id-value {
+    direction: ltr;
+    font-family: var(--ff-data);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+/* Dense financial rows — disciplined compaction, prune least-critical
+   columns only when the table would overflow */
+.custom-table.payments-table th {
+    padding: var(--space-2) var(--space-3);
+    font-size: 11.5px;
+}
+
+.custom-table.payments-table td {
+    padding: var(--space-2) var(--space-3);
+    font-size: 13px;
+    height: 42px;
+}
+
+.payments-table .table-user-name {
+    max-width: 160px;
+}
+
+@media (max-width: 1500px) {
+    .payments-table th:nth-child(5),
+    .payments-table td:nth-child(5) {
+        display: none;
+    }
+}
+
+@media (max-width: 1300px) {
+    .payments-table th:nth-child(8),
+    .payments-table td:nth-child(8) {
+        display: none;
+    }
+}
+
+@media (max-width: 1100px) {
+    .payments-table th:nth-child(7),
+    .payments-table td:nth-child(7) {
+        display: none;
+    }
+}
+
+/* ============================================================
+   Table fit — bounded text columns + laptop compaction.
+   Unbreakable strings (emails, phones, dates) previously forced
+   every table to its widest cell; now long values ellipsize at
+   a cap instead of stretching the table.
+   ============================================================ */
+
+.custom-table td.text-md {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1500px) {
+    .custom-table th,
+    .custom-table td {
+        padding: var(--space-2) var(--space-3);
+        font-size: 13px;
+    }
+
+    .users-table .table-user-name {
+        max-width: 120px;
+    }
+}
+
+/* Users table — prune the least-critical columns before the
+   scroll rail kicks in on laptops */
+@media (max-width: 1300px) {
+    .users-table th:nth-child(3),
+    .users-table td:nth-child(3) {
+        display: none;
+    }
+}
+
+@media (max-width: 1200px) {
+    .users-table th:nth-child(5),
+    .users-table td:nth-child(5) {
+        display: none;
+    }
+}
+
 /* 4-column stats row */
 .stats-row-4 {
     display: grid;
@@ -1573,6 +1707,11 @@ body {
 .table-user-name {
   font-weight: var(--fw-md-bold);
   color: var(--clr-text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 }
 
 .table-user-sub {
@@ -3792,7 +3931,22 @@ body {
 
 /* Page-level entrance only — daily-use tool, keep it quiet */
 .content-body {
-  animation: fadeInUp 0.35s ease-out;
+  animation: fadeInUp 0.22s ease-out;
+}
+
+/* Quiet stagger for dashboard blocks the scroll-reveal JS doesn't cover */
+.page-header,
+.filter-bar,
+.stats-header,
+.detail-header,
+.detail-grid,
+.timeline,
+.empty-state,
+.activity-feed,
+.user-profile-header,
+.user-stats-row,
+.pagination-nav {
+  animation: fadeInUp 0.35s ease-out both;
 }
 
 .public-body {
@@ -3800,6 +3954,7 @@ body {
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
+  overflow-y: auto;
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -3941,7 +4096,7 @@ body {
   border: 1px solid var(--clr-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
 }
 
 .filter-role-btn:hover {
@@ -4091,10 +4246,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(4px);
+  /* Light veil only — the content stays readable behind it, so a
+     request never feels like the page died. No backdrop-filter:
+     a full-viewport blur re-composites every frame of every
+     request and makes the app feel slower, not faster. */
+  background-color: rgba(255, 255, 255, 0.62);
   opacity: 0;
   pointer-events: none;
+  /* Initial page-load moment — brief, so it never feels like a wait.
+     No fill-mode: after the run, opacity falls back to 0 and the
+     JS-toggled .loading-active class takes over untouched. */
+  animation: page-load-moment 1s ease;
+}
+
+@keyframes page-load-moment {
+  0% { opacity: 0; }
+  8% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .loading-overlay.loading-active {
@@ -4109,11 +4278,85 @@ body {
   gap: var(--space-4, 16px);
 }
 
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  color: var(--clr-primary);
-  border-width: 5px;
+/* The brass rail — one drawn line, one orbiting rider */
+.loading-orbit {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: orbit-settle 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes orbit-settle {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+.loading-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.loading-ring-track {
+  fill: none;
+  stroke: rgba(10, 46, 38, 0.1);
+  stroke-width: 3;
+}
+
+.loading-ring-rotor {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: arc-spin 1s linear 0.55s infinite;
+  will-change: transform;
+}
+
+@keyframes arc-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* The arc draws itself from the top, then the rotor carries it */
+.loading-ring-arc {
+  fill: none;
+  stroke: var(--clr-brass);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 132 44;
+  stroke-dashoffset: 176;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(-90deg);
+  animation: draw-arc 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes draw-arc {
+  to { stroke-dashoffset: 44; }
+}
+
+.loading-orbit-dot {
+  fill: var(--clr-primary);
+}
+
+.loading-orbit-word {
+  position: relative;
+  font-family: var(--ff-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--clr-text);
+  opacity: 0;
+  animation: word-in 0.6s ease 0.35s forwards, word-breathe 2.2s ease-in-out 1s infinite;
+}
+
+@keyframes word-in {
+  to { opacity: 1; }
+}
+
+@keyframes word-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
 }
 
 .loading-text {
@@ -4822,28 +5065,6 @@ body {
     height: 14px;
   }
 
-  #specializationModal .modal-dialog {
-    margin: var(--space-2);
-  }
-
-  #specializationModal .modal-body-custom {
-    padding: var(--space-4);
-  }
-
-  #specializationModal .modal-header-custom {
-    padding: var(--space-3) var(--space-4);
-  }
-
-  #specializationModal .modal-footer-custom {
-    padding: var(--space-3) var(--space-4);
-    flex-direction: column;
-  }
-
-  #specializationModal .modal-footer-custom .btn {
-    width: 100%;
-    min-width: unset;
-  }
-
   .delete-confirm-modal .modal-body {
     padding: var(--space-4);
   }
@@ -5168,7 +5389,7 @@ body {
   font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
   text-decoration: none;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s;
 }
 
 .subscription-banner-btn:hover {
@@ -6726,14 +6947,16 @@ img {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: 1fr;
   gap: 48px;
   align-items: center;
+  text-align: center;
 }
 
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   color: var(--clr-brass-deep);
   font-size: 13px;
@@ -6744,6 +6967,13 @@ img {
 }
 
 .hero-eyebrow::before {
+  content: '';
+  width: 24px;
+  height: 2px;
+  background: var(--clr-brass);
+}
+
+.hero-eyebrow::after {
   content: '';
   width: 24px;
   height: 2px;
@@ -6764,80 +6994,14 @@ img {
   color: var(--clr-text-secondary);
   line-height: 1.9;
   max-width: 560px;
-  margin: 0 0 28px;
+  margin: 0 auto 28px;
 }
 
 .hero-cta {
   display: flex;
   gap: var(--space-3);
   flex-wrap: wrap;
-}
-
-.hero-board {
-  padding: var(--space-4) var(--space-4) var(--space-5);
-  max-width: 400px;
-  margin-inline-start: auto;
-}
-
-.queue-board-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-3) var(--space-4) 0;
-  position: relative;
-}
-
-.queue-board-title {
-  font-family: var(--ff-display);
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.queue-board-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #BFE3D8;
-}
-
-.queue-board-live::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--clr-brass);
-  animation: live-pulse 2s ease-in-out infinite;
-}
-
-@keyframes live-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(190, 148, 68, 0.3); }
-  50% { box-shadow: 0 0 0 7px rgba(190, 148, 68, 0); }
-}
-
-.hero-ticket {
-  width: 230px;
-  margin: 22px auto;
-  display: flex;
-  box-shadow: 0 18px 40px rgba(6, 32, 26, 0.35);
-}
-
-.hero-ticket .ticket-number {
-  font-size: 64px;
-}
-
-.queue-board-next {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.queue-board-next .queue-number {
-  color: #FFFFFF;
 }
 
 /* Stats as punched tickets */
@@ -6868,7 +7032,8 @@ img {
   margin: 0 auto 48px;
 }
 
-.section-head .hero-eyebrow::before {
+.section-head .hero-eyebrow::before,
+.section-head .hero-eyebrow::after {
   display: none;
 }
 
@@ -7014,7 +7179,8 @@ img {
   background: radial-gradient(circle at 50% 20%, rgba(13, 95, 78, 0.07) 0%, rgba(255, 255, 255, 1) 95%);
 }
 
-.page-hero .hero-eyebrow::before {
+.page-hero .hero-eyebrow::before,
+.page-hero .hero-eyebrow::after {
   display: none;
 }
 
@@ -7283,16 +7449,6 @@ img {
     grid-template-columns: 1fr;
     gap: 36px;
   }
-
-  .hero-visual {
-    max-width: 420px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  .hero-board {
-    margin-inline-start: 0;
-  }
 }
 
 @media (max-width: 768px) {
@@ -7377,6 +7533,112 @@ img {
 }
 
 /* ============================================================
+   Responsive Polish Layer II — scroll rails & bottom sheets
+   ============================================================ */
+
+/* Tables become scroll rails on tablets → phones.
+   Columns keep their natural width; data is never crushed. */
+@media (max-width: 768px) {
+  .table-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .custom-table {
+    min-width: max-content;
+  }
+}
+
+@media (max-width: 576px) {
+  .custom-table th,
+  .custom-table td {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  /* Card headers wrap when title + actions overflow */
+  .table-card-header {
+    height: auto;
+    min-height: 44px;
+    flex-wrap: wrap;
+    padding: var(--space-2) var(--space-4);
+    row-gap: var(--space-2);
+  }
+
+  .table-card-header::before {
+    align-self: center;
+  }
+}
+
+/* Modals become bottom sheets on phones */
+@media (max-width: 576px) {
+  .modal-dialog {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .modal.fade .modal-dialog {
+    transform: translateY(100%);
+  }
+
+  .modal.show .modal-dialog {
+    transform: translateY(0);
+  }
+
+  .modal-content,
+  .modal-content-custom {
+    border: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .modal-body,
+  .modal-body-custom {
+    padding: var(--space-4);
+    overflow-y: auto;
+    max-height: calc(100dvh - 200px);
+  }
+
+  .modal-header-custom {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .modal-footer-custom {
+    padding: var(--space-3) var(--space-4);
+    flex-direction: column;
+  }
+
+  .modal-footer-custom .btn {
+    width: 100%;
+  }
+}
+
+/* Dense phones: tighter stats */
+@media (max-width: 576px) {
+  .stat-card {
+    padding: var(--space-4);
+  }
+}
+
+/* Tiny phones — keep actions reachable, text intact */
+@media (max-width: 420px) {
+  .table-actions .btn-icon {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* Bell dropdown never exceeds the viewport */
+@media (max-width: 576px) {
+  .ch-bell-dropdown {
+    width: min(320px, calc(100vw - 24px));
+  }
+}
+
+/* ============================================================
    Reduced motion — respect user preference
    ============================================================ */
 
@@ -7389,4 +7651,40 @@ img {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  /* The loading indicator's motion is functional — it reports that work
+     is in progress — so it must keep spinning even when decorative
+     motion is disabled. Everything else stays quiet. */
+  .loading-ring-rotor {
+    animation-duration: 1s !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+/* ============================================================
+   Render budget — below-fold blocks paint only when they get
+   near the viewport. Nothing above the fold pays for them,
+   so pages with long tables/feeds render measurably sooner.
+   contain-intrinsic-size reserves space to avoid scroll jumps.
+   ============================================================ */
+
+.table-card,
+.timeline,
+.activity-feed,
+.detail-grid,
+.benefits-grid,
+.subscription-section,
+.subscription-benefits,
+.subscription-cta-section,
+.about-page-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
+}
+
+/* Stat cards repaint in isolation; the hover lift stays cheap.
+   (layout+style only — paint is not contained, so the hover
+   shadow can still escape the card) */
+.stat-card {
+  contain: layout style;
 }
