@@ -1,3 +1,4 @@
+@using Microsoft.AspNetCore.Routing
 @{
     var pagination = ViewBag.Pagination;
     int totalCount = pagination?.TotalCount ?? 0;
@@ -25,37 +26,92 @@
     var isActive = ViewBag.CurrentActiveFilter as bool?;
     var planId = ViewBag.PlanIdFilter as Guid?;
     if (pagination == null || totalCount == 0) return;
+
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var routeValues = new RouteValueDictionary
+    {
+        ["pageSize"] = pageSize,
+        ["isFamous"] = currentFilter,
+        ["searchTerm"] = searchTerm,
+        ["status"] = status,
+        ["date"] = date,
+        ["startDate"] = startDate,
+        ["endDate"] = endDate,
+        ["patientId"] = patientId,
+        ["patientName"] = patientName,
+        ["name"] = patientName,
+        ["isUnassigned"] = isUnassigned,
+        ["type"] = paymentType,
+        ["method"] = paymentMethod,
+        ["fromDate"] = paymentFromDate,
+        ["toDate"] = paymentToDate,
+        ["month"] = paymentMonth,
+        ["userTypes"] = userTypes,
+        ["clinicId"] = clinicId,
+        ["isActive"] = isActive,
+        ["planId"] = planId
+    };
+
+    // Page window: keep pagination compact on small screens
+    int windowFrom = Math.Max(1, pageNumber - 2);
+    int windowTo = Math.Min(totalPages, pageNumber + 2);
 }
 
 <nav class="pagination-nav">
     <ul class="pagination-list">
         @if (hasPrev)
         {
+            routeValues["pageNumber"] = pageNumber - 1;
             <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber - 1, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, name = patientName, isUnassigned, type = paymentType, method = paymentMethod, fromDate = paymentFromDate, toDate = paymentToDate, month = paymentMonth, userTypes, clinicId, isActive, planId })">
+                <a class="pagination-link" href="@Url.Action(action, routeValues)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                     </svg>
-                    السابق
+                    <span class="pagination-text">السابق</span>
                 </a>
             </li>
         }
 
-        @for (var i = 1; i <= totalPages; i++)
+        @if (windowFrom > 1)
         {
+            routeValues["pageNumber"] = 1;
             <li class="pagination-item">
-                <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")"
-                   href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = i, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, name = patientName, isUnassigned, type = paymentType, method = paymentMethod, fromDate = paymentFromDate, toDate = paymentToDate, month = paymentMonth, userTypes, clinicId, isActive, planId })">
-                    @i
-                </a>
+                <a class="pagination-link @(1 == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)">1</a>
+            </li>
+        }
+
+        @if (windowFrom > 2)
+        {
+            <li class="pagination-item pagination-item--gap" aria-hidden="true">…</li>
+        }
+
+        @for (var i = windowFrom; i <= windowTo; i++)
+        {
+            routeValues["pageNumber"] = i;
+            <li class="pagination-item">
+                <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)">@i</a>
+            </li>
+        }
+
+        @if (windowTo < totalPages - 1)
+        {
+            <li class="pagination-item pagination-item--gap" aria-hidden="true">…</li>
+        }
+
+        @if (windowTo < totalPages)
+        {
+            routeValues["pageNumber"] = totalPages;
+            <li class="pagination-item">
+                <a class="pagination-link @(totalPages == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)">@totalPages</a>
             </li>
         }
 
         @if (hasNext)
         {
+            routeValues["pageNumber"] = pageNumber + 1;
             <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(ViewContext.RouteData.Values["action"]?.ToString(), new { pageNumber = pageNumber + 1, pageSize, isFamous = currentFilter, searchTerm, status, date, startDate, endDate, patientId, patientName, name = patientName, isUnassigned, type = paymentType, method = paymentMethod, fromDate = paymentFromDate, toDate = paymentToDate, month = paymentMonth, userTypes, clinicId, isActive, planId })">
-                    التالي
+                <a class="pagination-link" href="@Url.Action(action, routeValues)">
+                    <span class="pagination-text">التالي</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
                     </svg>

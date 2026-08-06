@@ -908,3 +908,14 @@
   border-color: var(--clr-primary);
   font-weight: 700;
 }
+
+.pagination-item--gap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 36px;
+  color: var(--clr-text-secondary);
+  font-size: var(--fs-base);
+  user-select: none;
+}

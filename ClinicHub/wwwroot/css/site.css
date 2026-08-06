@@ -6357,6 +6357,18 @@ img {
   justify-content: center;
 }
 
+/* Very small screens: keep prev/next arrows, hide their labels */
+@media (max-width: 480px) {
+  .pagination-text {
+    display: none;
+  }
+
+  .pagination-item--gap {
+    min-width: 20px;
+    height: 32px;
+  }
+}
+
 .detail-info-row {
   flex-wrap: wrap;
   gap: var(--space-2);
