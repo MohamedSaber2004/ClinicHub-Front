@@ -77,7 +77,7 @@
                         <td>@app.Time</td>
                         <td><span class="badge @app.StatusClass">@app.StatusLabel</span></td>
                         <td class="appointment-actions" data-id="@app.Id">
-                            @if (app.Status == "pending")
+                            @if (app.Status == "pending" || app.Status == "reserved")
                             {
                                 <div class="table-actions">
                                     <button class="btn btn-sm btn-outline-success btn-approve" data-id="@app.Id" title="قبول — سيتم إرسال رابط الدفع للمريض"><i class="bi bi-check-lg"></i></button>
@@ -86,9 +86,15 @@
                             }
                             else if (app.Status == "confirmed" || app.Status == "accepted")
                             {
-                                <button class="btn btn-sm btn-outline-primary btn-checkin" data-id="@app.Id"><i class="bi bi-box-arrow-in-right"></i> تسجيل وصول</button>
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-outline-primary btn-checkin" data-id="@app.Id"><i class="bi bi-box-arrow-in-right"></i> تسجيل وصول</button>
+                                    @if (app.Status == "accepted")
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger btn-reject" data-id="@app.Id" title="رفض"><i class="bi bi-x-lg"></i></button>
+                                    }
+                                </div>
                             }
-                            else if (app.Status == "reserved" || app.Status == "awaiting-payment")
+                            else if (app.Status == "awaiting-payment")
                             {
                                 <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>
                             }
@@ -132,10 +138,15 @@
         $(document).on('click', '.btn-checkin', function () {
             var id = $(this).data('id');
             if (!id) return;
-            StaffDashboardService.checkInPatient(id).then(function () {
-                location.reload();
-            }).catch(function (err) {
-                showErrorModal((err && err.message) || 'حدث خطأ أثناء تسجيل الوصول');
+            showConfirmModal('هل تريد تسجيل وصول هذا المريض؟', function () {
+                StaffDashboardService.checkInPatient(id)
+                    .then(function () {
+                        showSuccessModal('تم تسجيل وصول المريض بنجاح');
+                        location.reload();
+                    })
+                    .catch(function (err) {
+                        showErrorModal((err && err.message) || 'حدث خطأ أثناء تسجيل الوصول');
+                    });
             });
         });
     </script>

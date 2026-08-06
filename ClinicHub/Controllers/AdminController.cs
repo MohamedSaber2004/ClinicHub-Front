@@ -633,6 +633,9 @@ namespace ClinicHub.Controllers
                 var result = await _adminSubscriptionService.GetSubscriptionsAsync(request);
                 ViewBag.Subscriptions = result.Items;
                 ViewBag.Pagination = result;
+                ViewBag.StatusFilter = status?.ToString();
+                ViewBag.PlanIdFilter = planId;
+                ViewBag.ClinicIdFilter = clinicId;
                 ViewBag.Plans = await _adminSubscriptionService.GetAllPlansAsync();
 
                 var clinicsResponse = await _clinicService.GetAllClinicsForViewingOnlyAsync(new GetAllCLinicsForViewingOnly());
@@ -1076,14 +1079,14 @@ namespace ClinicHub.Controllers
             {
                 var request = new GetAllUsersRequest
                 {
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
+                    PageNumber = 1,
+                    PageSize = 100,
                     SearchTerm = searchTerm,
                     UserTypes = ParseUserTypes(userTypes) ?? new()
                 };
-                var paged = await _userService.GetAllUsersPagginatedAsync(request);
+                var allUsers = await _userService.GetAllUsersPagginatedAsync(request);
 
-                var users = paged.Items.Select(u => new MockUser
+                var users = allUsers.Items.Select(u => new MockUser
                 {
                     Id = u.Id,
                     Name = u.FullName,
@@ -1106,8 +1109,11 @@ namespace ClinicHub.Controllers
                     users = users.Where(u => u.Status == status).ToList();
                 }
 
-                ViewBag.Users = users;
-                ViewBag.Pagination = paged;
+                var filteredTotal = users.Count;
+                var pageUsers = users.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+                ViewBag.Users = pageUsers;
+                ViewBag.Pagination = PagginatedResult<MockUser>.Create(pageUsers, filteredTotal, pageNumber, pageSize);
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.StatusFilter = status;
                 ViewBag.UserTypesFilter = userTypes;

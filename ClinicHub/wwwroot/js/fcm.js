@@ -127,8 +127,9 @@
         }, { once: true, capture: true });
 
         // The form is data-ajax: error-service.js submits it via fetch. We only
-        // intercept briefly when a token is imminent (permission granted) so the
-        // token rides along — the login is NEVER blocked beyond ~2.5s.
+        // intercept briefly when a token is genuinely imminent (permission already
+        // granted and the token fetch is in flight). We never wait for the
+        // permission prompt — the login goes through immediately.
         document.addEventListener("submit", function (e) {
             if (e.target !== form) return;
 
@@ -138,10 +139,14 @@
                 return;
             }
 
-            var canWait = ("Notification" in window) && ("serviceWorker" in navigator);
             var tokenReady = !!fcmInput && !!fcmInput.value;
+            var canWait = ("Notification" in window) && ("serviceWorker" in navigator)
+                && Notification.permission === "granted"
+                && !!fillPromise
+                && !tokenReady
+                && !waitAttempted;
 
-            if (canWait && !tokenReady && !waitAttempted) {
+            if (canWait) {
                 waitAttempted = true;
                 e.preventDefault();
                 e.stopPropagation();
@@ -156,22 +161,8 @@
                     try { form.requestSubmit(); } catch (err) { form.submit(); }
                 }
 
-                setTimeout(finish, 2500);
-
-                new Promise(function (resolve) {
-                    function step() {
-                        if (Notification.permission === "granted") {
-                            startFill().then(function () { resolve(); });
-                        } else if (Notification.permission === "default") {
-                            var req = Notification.requestPermission();
-                            if (req && typeof req.then === "function") req.then(function () { step(); });
-                            else resolve();
-                        } else {
-                            resolve();
-                        }
-                    }
-                    step();
-                }).then(finish);
+                setTimeout(finish, 1500);
+                fillPromise.then(finish);
                 return;
             }
 

@@ -4,12 +4,15 @@
    ============================================================ */
 
 :root {
-  /* === Colors (Abher mobile palette) === */
+  /* === Colors (ClinicHub medical palette — unchanged) === */
   --clr-bg: #F8F9FA;
   --clr-surface: #FFFFFF;
+  --clr-surface-subtle: #FAFBFC;
   --clr-primary: #076453;
   --clr-primary-hover: #055443;
-  --clr-primary-light: rgba(7, 100, 83, 0.1);
+  --clr-primary-strong: #044B3D;
+  --clr-primary-light: rgba(7, 100, 83, 0.08);
+  --clr-primary-soft: #E4F1ED;
   --clr-border: #D9E0E5;
   --clr-text: #191C1D;
   --clr-text-secondary: #3F4945;
@@ -24,7 +27,11 @@
   --clr-warning-bg: #FFF3E0;
   --clr-warning-text: #8F5000;
   --clr-info: #2196F3;
+  --clr-info-bg: #E3F2FD;
+  --clr-info-text: #1565C0;
   --clr-danger: #BA1A1A;
+  --clr-danger-bg: #FDECEA;
+  --clr-danger-text: #9C1414;
 
   /* Icon Wrapper Variants */
   --clr-icon-blue: #2196F3;
@@ -39,15 +46,23 @@
   --fs-h2: 26px;
   --lh-h2: 33px;
   --fw-h2: 700;
+  --fs-h3: 20px;
+  --lh-h3: 27px;
+  --fw-h3: 700;
   --fs-lg: 16px;
-  --lh-lg: 20px;
+  --lh-lg: 24px;
   --fw-lg: 400;
   --fw-lg-medium: 500;
   --fs-md: 14px;
-  --lh-md: 18px;
+  --lh-md: 21px;
   --fw-md: 400;
   --fw-md-medium: 500;
   --fw-md-bold: 700;
+  --fs-sm: 13px;
+  --fs-base: 14px;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
 
   /* === Spacing Scale === */
   --space-1: 5px;
@@ -58,21 +73,27 @@
   --space-6: 24px;
   --space-7: 30px;
   --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 56px;
 
   /* === Layout === */
   --sidebar-width: 274px;
   --header-height: 70px;
 
-  /* === Borders === */
-  --radius-sm: 5px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  /* === Borders (modern radius scale) === */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 50%;
+  --radius-pill: 999px;
 
-  /* === Shadows === */
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.01);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.03);
+  /* === Shadows (soft, layered) === */
+  --shadow-xs: 0 1px 2px rgba(12, 50, 43, 0.04);
+  --shadow-sm: 0 1px 3px rgba(12, 50, 43, 0.05), 0 1px 2px rgba(12, 50, 43, 0.04);
+  --shadow-md: 0 6px 16px rgba(12, 50, 43, 0.08), 0 2px 6px rgba(12, 50, 43, 0.04);
+  --shadow-lg: 0 16px 40px rgba(12, 50, 43, 0.12), 0 4px 12px rgba(12, 50, 43, 0.06);
+  --shadow-primary: 0 2px 8px rgba(7, 100, 83, 0.22);
 
   /* === Transitions === */
   --transition-fast: 0.15s;
@@ -143,12 +164,12 @@
 
 .badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
   font-family: var(--ff-primary);
   font-size: 12px;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.5;
   white-space: nowrap;
 }
 
@@ -177,6 +198,11 @@
   color: #00382D;
 }
 
+.badge-secondary {
+  background-color: var(--clr-table-header);
+  color: var(--clr-text-secondary);
+}
+
 /* ============================================================
    Icon Wrapper (used inside stat cards)
    ============================================================ */
@@ -187,9 +213,9 @@
   align-items: center;
   width: 46px;
   height: 46px;
-  background: var(--clr-primary);
-  border-radius: var(--radius-sm);
-  color: #FFFFFF;
+  background: var(--clr-primary-light);
+  color: var(--clr-primary);
+  border-radius: var(--radius-md);
   flex-shrink: 0;
 }
 
@@ -200,19 +226,23 @@
 }
 
 .icon-wrapper--primary {
-  background: var(--clr-primary);
+  background: var(--clr-primary-light);
+  color: var(--clr-primary);
 }
 
 .icon-wrapper--blue {
-  background: var(--clr-icon-blue);
+  background: rgba(33, 150, 243, 0.12);
+  color: var(--clr-icon-blue);
 }
 
 .icon-wrapper--amber {
-  background: var(--clr-icon-amber);
+  background: rgba(255, 152, 0, 0.14);
+  color: var(--clr-icon-amber);
 }
 
 .icon-wrapper--green {
-  background: var(--clr-icon-green);
+  background: rgba(76, 175, 80, 0.14);
+  color: var(--clr-icon-green);
 }
 
 /* ============================================================
@@ -309,7 +339,9 @@
    ============================================================ */
 
 .auth-wrapper {
-  min-height: calc(100vh - 170px);
+  flex-grow: 1;
+  min-height: calc(100vh - 245px);
+  min-height: calc(100dvh - 245px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,7 +352,7 @@
 .auth-card {
   background-color: var(--clr-surface);
   border: 1px solid var(--clr-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--space-8);
   width: 100%;
   max-width: 420px;
@@ -377,7 +409,7 @@
 
 .auth-form-control:focus {
   border-color: var(--clr-primary);
-  box-shadow: 0 0 0 3px rgba(7, 100, 83, 0.12);
+  box-shadow: 0 0 0 4px rgba(7, 100, 83, 0.12);
 }
 
 .auth-btn-primary {
@@ -534,11 +566,14 @@
 .btn-primary {
   background-color: var(--clr-primary);
   color: #FFFFFF;
+  box-shadow: var(--shadow-primary);
 }
 
 .btn-primary:hover {
   background-color: var(--clr-primary-hover);
   color: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(7, 100, 83, 0.3);
 }
 
 .btn-secondary {
@@ -627,7 +662,7 @@
 .form-select:focus,
 .form-textarea:focus {
   border-color: var(--clr-primary);
-  box-shadow: 0 0 0 3px rgba(7, 100, 83, 0.12);
+  box-shadow: 0 0 0 4px rgba(7, 100, 83, 0.1);
 }
 
 .form-input::placeholder,
@@ -714,7 +749,7 @@
 
 .modal-content-custom {
   border: 1px solid var(--clr-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
 }
 

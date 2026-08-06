@@ -55,6 +55,8 @@
     }
 
     window.showBackendErrors = function (body) {
+        if (typeof isModalVisible === 'function' && isModalVisible('globalErrorModal')) return;
+        if (typeof hideModal === 'function') hideModal('globalSuccessModal');
         var errors = extractErrors(body);
         var modal = $('#globalErrorModal');
         var msgEl = $('#globalErrorMsg');
@@ -154,7 +156,7 @@
 
             if (response.status >= 400 && !isRefreshing) {
                 response.clone().text().then(function (text) {
-                    setTimeout(function () { window.showBackendErrors(text); }, 100);
+                    setTimeout(function () { window.showBackendErrors(text); }, 150);
                 });
             }
             return response;
@@ -162,12 +164,22 @@
     };
 
     $(document).ajaxError(function (event, jqxhr) {
-        window.showBackendErrors(jqxhr.responseText);
+        setTimeout(function () { window.showBackendErrors(jqxhr.responseText); }, 150);
     });
 
     $(document).on('submit', 'form[data-ajax="true"]', function (e) {
         e.preventDefault();
         var $form = $(this);
+        if ($form.data('submitting')) return;
+        $form.data('submitting', true);
+
+        var $submitBtn = $form.find('button[type="submit"]');
+        var originalText = $submitBtn.length ? $submitBtn.text() : '';
+        if ($submitBtn.length) {
+            $submitBtn.prop('disabled', true);
+            $submitBtn.text('جاري الإرسال...');
+        }
+
         var formData = new FormData($form[0]);
 
         fetch($form.attr('action'), {
@@ -179,26 +191,27 @@
                 'Accept-Language': 'ar'
             }
         }).then(function (response) {
+            // Errors are surfaced by the global fetch wrapper (responses >= 400
+            // show the backend error modal) — here we only handle success.
             var contentType = response.headers.get('Content-Type') || '';
             if (contentType.indexOf('application/json') >= 0) {
                 return response.json().then(function (data) {
                     if (response.ok && data.redirectUrl) {
                         window.location.href = data.redirectUrl;
-                    } else if (!response.ok && data.errors) {
-                        window.showBackendErrors(JSON.stringify(data));
-                    } else if (!response.ok) {
-                        window.showBackendErrors(response.statusText);
                     }
                 });
-            } else {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else if (!response.ok) {
-                    response.text().then(function (text) { window.showBackendErrors(text); });
-                }
+            }
+            if (response.redirected) {
+                window.location.href = response.url;
             }
         }).catch(function () {
             window.showBackendErrors(null);
+        }).then(function () {
+            $form.data('submitting', false);
+            if ($submitBtn.length) {
+                $submitBtn.prop('disabled', false);
+                $submitBtn.text(originalText);
+            }
         });
     });
 

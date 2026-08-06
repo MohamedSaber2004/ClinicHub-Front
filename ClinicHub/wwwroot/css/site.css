@@ -120,8 +120,9 @@ body {
     text-decoration: none;
     font-size: 15px;
     font-weight: 500;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     transition: all var(--transition-base);
+    margin-bottom: 2px;
 }
 
 .sidebar-item:hover {
@@ -131,8 +132,10 @@ body {
 }
 
 .sidebar-item.active {
-    background-color: var(--clr-primary);
-    color: #FFFFFF;
+    background-color: var(--clr-primary-light);
+    color: var(--clr-primary);
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px rgba(7, 100, 83, 0.14);
 }
 
 .sidebar-item svg {
@@ -950,11 +953,13 @@ body {
     height: var(--header-height);
     background-color: var(--clr-surface);
     border-bottom: 1px solid var(--clr-border);
+    box-shadow: 0 1px 2px rgba(12, 50, 43, 0.04);
     display: flex;
     align-items: center;
     justify-content: flex-end;
     padding: 0 var(--space-7);
     flex-shrink: 0;
+    z-index: 10;
 }
 
 .header-search {
@@ -1054,18 +1059,19 @@ body {
 .stat-card {
     background-color: var(--clr-surface);
     border: 1px solid var(--clr-border);
-    border-radius: var(--radius-sm);
-    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md);
+    padding: var(--space-5) var(--space-6);
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow-sm);
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-md);
+    border-color: rgba(7, 100, 83, 0.18);
 }
 
 .stat-info {
@@ -1333,8 +1339,9 @@ body {
 .table-card {
     background-color: var(--clr-surface);
     border: 1px solid var(--clr-border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-lg);
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 .register-patient-card {
@@ -1378,7 +1385,7 @@ body {
     background-color: transparent;
     color: var(--clr-text-secondary);
     font-size: var(--fs-md);
-    font-weight: var(--fw-md);
+    font-weight: var(--fw-md-medium);
     padding: var(--space-2) var(--space-5);
     border-bottom: 1px solid var(--clr-border);
 }
@@ -1388,7 +1395,7 @@ body {
     border-bottom: 1px solid #F1F3F5;
     font-size: var(--fs-md);
     color: var(--clr-text);
-    height: 38px;
+    height: 44px;
 }
 
 .custom-table tr:last-child td {
@@ -1396,7 +1403,7 @@ body {
 }
 
 .custom-table tbody tr:hover {
-    background-color: var(--clr-table-header);
+    background-color: rgba(7, 100, 83, 0.04);
 }
 
 /* Ad detail link in table */
@@ -1483,6 +1490,13 @@ body {
   font-size: 12px;
   color: var(--clr-text-secondary);
   white-space: nowrap;
+}
+
+.appointment-scope-hint {
+  margin-bottom: var(--space-3);
+  font-size: var(--fs-md);
+  color: var(--clr-info);
+  white-space: normal;
 }
 
 .queue-number {
@@ -3573,10 +3587,17 @@ body {
 }
 
 .public-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
   animation: fadeIn 0.35s ease-out;
 }
 
 .public-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
   animation: fadeInUp 0.4s ease-out;
 }
 
@@ -5157,7 +5178,8 @@ body {
    ============================================================ */
 .payment-result-section {
   padding: var(--space-10) 0;
-  min-height: 70vh;
+  min-height: calc(100vh - 245px);
+  min-height: calc(100dvh - 245px);
   display: flex;
   align-items: center;
 }
@@ -5507,9 +5529,21 @@ body {
   flex-shrink: 0;
 }
 
-.availability-row .availability-from,
-.availability-row .availability-to {
-  width: 100px;
+.availability-row .availability-from-hour,
+.availability-row .availability-to-hour {
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.availability-row .availability-from-minute,
+.availability-row .availability-to-minute {
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.availability-row .availability-from-period,
+.availability-row .availability-to-period {
+  width: 95px;
   flex-shrink: 0;
 }
 
@@ -5579,9 +5613,21 @@ body {
   flex-shrink: 0;
 }
 
-#adminAvailabilityContainer .availability-from,
-#adminAvailabilityContainer .availability-to {
-  width: 100px;
+#adminAvailabilityContainer .availability-from-hour,
+#adminAvailabilityContainer .availability-to-hour {
+  width: 70px;
+  flex-shrink: 0;
+}
+
+#adminAvailabilityContainer .availability-from-minute,
+#adminAvailabilityContainer .availability-to-minute {
+  width: 70px;
+  flex-shrink: 0;
+}
+
+#adminAvailabilityContainer .availability-from-period,
+#adminAvailabilityContainer .availability-to-period {
+  width: 95px;
   flex-shrink: 0;
 }
 
@@ -5925,7 +5971,7 @@ body {
 }
 
 .notif-item.unread {
-  background: rgba(47, 156, 202, 0.04);
+  background: rgba(7, 100, 83, 0.04);
 }
 
 .notif-item-icon {
@@ -5933,7 +5979,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: var(--radius-sm);
-  background: rgba(47, 156, 202, 0.1);
+  background: rgba(7, 100, 83, 0.1);
   color: var(--clr-primary);
   display: flex;
   align-items: center;
@@ -6036,6 +6082,490 @@ body {
 }
 
 .ch-bell-footer:hover {
-  background: rgba(47, 156, 202, 0.08);
+  background: rgba(7, 100, 83, 0.08);
   color: var(--clr-primary);
+}
+
+/* ============================================================
+   Design Refresh Layer — modern & professional (same palette)
+   Recovers Bootstrap primitives + neutralizes legacy inline styles
+   ============================================================ */
+
+/* === Native selection & controls === */
+::selection {
+  background: rgba(7, 100, 83, 0.18);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--clr-primary);
+}
+
+/* === Bootstrap buttons → palette === */
+.btn-primary {
+  --bs-btn-bg: var(--clr-primary);
+  --bs-btn-border-color: var(--clr-primary);
+  --bs-btn-hover-bg: var(--clr-primary-hover);
+  --bs-btn-hover-border-color: var(--clr-primary-hover);
+  --bs-btn-active-bg: var(--clr-primary-strong);
+  --bs-btn-active-border-color: var(--clr-primary-strong);
+  --bs-btn-disabled-bg: var(--clr-primary);
+  --bs-btn-disabled-border-color: var(--clr-primary);
+  box-shadow: var(--shadow-primary);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--clr-primary);
+  --bs-btn-border-color: var(--clr-primary);
+  --bs-btn-hover-bg: var(--clr-primary);
+  --bs-btn-hover-border-color: var(--clr-primary);
+  --bs-btn-active-bg: var(--clr-primary);
+  --bs-btn-active-border-color: var(--clr-primary);
+}
+
+.btn-outline-danger {
+  --bs-btn-hover-bg: var(--clr-danger);
+  --bs-btn-active-bg: var(--clr-danger);
+}
+
+.btn-success {
+  --bs-btn-bg: var(--clr-success);
+  --bs-btn-border-color: var(--clr-success);
+  --bs-btn-hover-bg: #43A047;
+  --bs-btn-hover-border-color: #43A047;
+}
+
+.btn-link {
+  color: var(--clr-primary);
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  color: var(--clr-primary-hover);
+}
+
+/* === Bootstrap focus rings → teal === */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--clr-primary) !important;
+  box-shadow: 0 0 0 4px rgba(7, 100, 83, 0.1) !important;
+}
+
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+  box-shadow: 0 0 0 4px rgba(7, 100, 83, 0.14) !important;
+  border-color: var(--clr-primary) !important;
+}
+
+/* === Bootstrap colors → palette === */
+.text-primary {
+  color: var(--clr-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--clr-primary) !important;
+}
+
+.text-success {
+  color: var(--clr-success-text) !important;
+}
+
+.text-danger {
+  color: var(--clr-danger) !important;
+}
+
+.text-warning {
+  color: var(--clr-warning-text) !important;
+}
+
+.text-info {
+  color: var(--clr-info-text) !important;
+}
+
+/* === Bootstrap alerts → palette tints === */
+.alert-success {
+  background-color: var(--clr-success-bg);
+  border-color: rgba(76, 175, 80, 0.3);
+  color: var(--clr-success-text);
+}
+
+.alert-danger {
+  background-color: var(--clr-danger-bg);
+  border-color: rgba(186, 26, 26, 0.25);
+  color: var(--clr-danger-text);
+}
+
+.alert-warning {
+  background-color: var(--clr-warning-bg);
+  border-color: rgba(255, 152, 0, 0.3);
+  color: var(--clr-warning-text);
+}
+
+.alert-info {
+  background-color: var(--clr-info-bg);
+  border-color: rgba(33, 150, 243, 0.3);
+  color: var(--clr-info-text);
+}
+
+/* === Bootstrap modal → rounded modern === */
+.modal-content {
+  border: none !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.modal-header {
+  padding: var(--space-5) var(--space-6);
+}
+
+.modal-footer {
+  padding: var(--space-4) var(--space-6);
+}
+
+/* === Bootstrap cards & pagination === */
+.card {
+  border-radius: var(--radius-lg);
+}
+
+.pagination .page-link {
+  color: var(--clr-primary);
+  border-color: var(--clr-border);
+  border-radius: var(--radius-sm);
+  margin: 0 2px;
+}
+
+.pagination .page-link:hover {
+  color: var(--clr-primary-hover);
+  background-color: var(--clr-primary-light);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--clr-primary);
+  border-color: var(--clr-primary);
+}
+
+/* === Bootstrap nav & dropdown subtle teal === */
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  color: var(--clr-primary);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--clr-primary-light);
+  color: var(--clr-primary);
+}
+
+.dropdown-menu {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border-color: var(--clr-border);
+}
+
+/* ============================================================
+   Legacy inline-style neutralizers (hand-rolled styles in views)
+   ============================================================ */
+
+/* Hand-rolled primary buttons → unified modern primary look */
+.btn[style*="background-color: var(--primary-color)"],
+button[style*="background-color: var(--primary-color)"] {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-primary) !important;
+}
+
+.btn[style*="background-color: var(--primary-color)"]:hover,
+button[style*="background-color: var(--primary-color)"]:hover {
+  background-color: var(--clr-primary-hover) !important;
+  color: #FFFFFF !important;
+}
+
+/* Dark gray hand-rolled buttons → palette primary */
+.btn[style*="#384152"],
+button[style*="#384152"] {
+  background-color: var(--clr-primary) !important;
+  color: #FFFFFF !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-primary) !important;
+}
+
+.btn[style*="#384152"]:hover,
+button[style*="#384152"]:hover {
+  background-color: var(--clr-primary-hover) !important;
+}
+
+/* Legacy green/gray status pills → modern pill shape */
+span[style*="#e6f4ea"],
+span[style*="#f1f3f4"] {
+  border-radius: var(--radius-pill) !important;
+  font-weight: 600 !important;
+}
+
+/* Inline-padded table cards keep the new radius */
+.table-card[style*="padding"] {
+  border-radius: var(--radius-lg) !important;
+}
+
+/* Avatar images → consistent circular crop */
+img[style*="border-radius:50%"] {
+  border-radius: var(--radius-full) !important;
+  object-fit: cover;
+}
+
+/* Circle initials with inline styles → softer tile */
+span[style*="border-radius:50%"][style*="background:var(--clr-primary)"] {
+  background: linear-gradient(135deg, #0A7A64, var(--clr-primary)) !important;
+}
+
+/* ============================================================
+   Micro-polish — inputs, select rows, section headers
+   ============================================================ */
+
+.input-group-text {
+  color: var(--clr-text-secondary);
+  background-color: var(--clr-table-header);
+  border-color: var(--clr-border);
+}
+
+.form-label {
+  margin-bottom: 6px;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+  outline: none;
+}
+
+.btn:focus {
+  box-shadow: 0 0 0 4px rgba(7, 100, 83, 0.14) !important;
+}
+
+/* ============================================================
+   Responsive Polish Layer — tablets → mobiles
+   ============================================================ */
+
+/* Global image safety */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Pagination never clips: wrap long page lists */
+.pagination-list {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.detail-info-row {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Availability rows: reflow instead of clipping inside table-cards */
+@media (max-width: 768px) {
+  .availability-row {
+    flex-wrap: wrap;
+    padding: var(--space-2);
+  }
+
+  .availability-row .availability-day {
+    width: 100%;
+  }
+
+  .availability-row .availability-from-hour,
+  .availability-row .availability-from-minute,
+  .availability-row .availability-to-hour,
+  .availability-row .availability-to-minute,
+  .availability-row .availability-from-period,
+  .availability-row .availability-to-period,
+  .availability-row .availability-slot {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .availability-sep {
+    display: none;
+  }
+
+  #adminAvailabilityContainer .availability-row {
+    flex-wrap: wrap;
+  }
+}
+
+/* Auth pages on phones */
+@media (max-width: 576px) {
+  .auth-wrapper {
+    padding: var(--space-4);
+  }
+
+  .auth-card {
+    padding: var(--space-6);
+  }
+}
+
+/* Stepper tightens on small screens */
+@media (max-width: 576px) {
+  .stepper-line {
+    width: 28px;
+    margin: 0 var(--space-1);
+    margin-bottom: 22px;
+  }
+
+  .stepper-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .stepper-label {
+    font-size: 11px;
+  }
+}
+
+/* Cards that stack on phones */
+@media (max-width: 576px) {
+  .upsell-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .plan-info-link {
+    margin-right: 0;
+  }
+
+  .public-header .container {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .stat-card {
+    padding: var(--space-4);
+  }
+
+  .table-card {
+    border-radius: var(--radius-md);
+  }
+
+  .page-header-actions {
+    gap: var(--space-2);
+  }
+
+  .top-header .dept-dropdown {
+    max-width: 140px;
+  }
+}
+
+/* ============================================================
+   Landing / Public pages — responsive refinements
+   ============================================================ */
+
+/* Fluid display headings on public pages */
+.text-h1 {
+  font-size: clamp(28px, 5vw, 40px);
+  line-height: 1.35;
+}
+
+/* Auth / status sections stretch to fill remaining space (sticky footer) */
+.auth-wrapper,
+.payment-result-section,
+.subscription-required-section,
+.submitted-section {
+  flex-grow: 1;
+}
+
+/* Short viewports: tighten chrome so auth/status pages fit without dead-space scroll */
+@media (max-height: 800px) {
+  .public-footer {
+    margin-top: var(--space-6);
+  }
+
+  .auth-card {
+    padding: var(--space-6);
+  }
+
+  .auth-logo-section {
+    margin-bottom: var(--space-4);
+  }
+}
+
+/* Home hero h1 (inline 46px) scales down on small screens */
+.hero-section h1 {
+  font-size: clamp(26px, 6.5vw, 46px) !important;
+  line-height: 1.4 !important;
+}
+
+@media (max-width: 768px) {
+  .hero-section,
+  .subscription-hero,
+  .register-hero {
+    padding: 48px 0 36px !important;
+  }
+
+  .subscription-section,
+  .subscription-benefits,
+  .subscription-cta-section,
+  .register-section {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  section#services,
+  section#about {
+    padding: 48px 0 36px !important;
+  }
+
+  .register-form-card {
+    padding: var(--space-5);
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-section h1 {
+    font-size: clamp(24px, 7vw, 30px) !important;
+  }
+
+  .text-h2 {
+    font-size: clamp(22px, 5.5vw, 26px);
+    line-height: 1.4;
+  }
+
+  .subscription-hero-desc,
+  .register-hero-desc,
+  .hero-section .lead {
+    font-size: var(--fs-base);
+  }
+
+  /* About visual card (inline 40px padding) */
+  section#about [style*="padding: 40px"] {
+    padding: var(--space-5) !important;
+  }
+
+  /* Bootstrap g-5 gutters: row negative margins exceed container padding -> X-overflow */
+  .g-5 {
+    --bs-gutter-x: 1.5rem;
+  }
+
+  .submitted-card {
+    padding: var(--space-6);
+  }
+
+  .subscription-required-card,
+  .payment-result-card {
+    padding: var(--space-6) !important;
+  }
+
+  .payment-result-card {
+    padding: var(--space-6);
+  }
 }

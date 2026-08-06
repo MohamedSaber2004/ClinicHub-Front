@@ -1,4 +1,19 @@
+function isModalVisible(id) {
+    var el = document.getElementById(id);
+    if (!el) return false;
+    return el.classList.contains('show');
+}
+
+function hideModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var modal = bootstrap.Modal.getInstance(el);
+    if (modal) modal.hide();
+}
+
 function showSuccessModal(message) {
+    if (isModalVisible('globalErrorModal')) return;
+    if (isModalVisible('globalSuccessModal')) return;
     var msgEl = document.getElementById('globalSuccessMsg');
     if (!msgEl) return;
     msgEl.innerHTML = message.replace(/\n/g, '<br>');
@@ -9,6 +24,8 @@ function showSuccessModal(message) {
 }
 
 function showErrorModal(message) {
+    if (isModalVisible('globalErrorModal')) return;
+    hideModal('globalSuccessModal');
     var msgEl = document.getElementById('globalErrorMsg');
     if (!msgEl) return;
     msgEl.innerHTML = message.replace(/\n/g, '<br>');
@@ -44,18 +61,24 @@ function showErrorModal(message) {
         return origFetch.apply(this, args).then(function (response) {
             if (response.status >= 400) {
                 response.clone().text().then(function (text) {
-                    setTimeout(function () { showErrorModal(getMsg(text, response.status)); }, 100);
+                    setTimeout(function () { showErrorModal(getMsg(text, response.status)); }, 150);
                 });
             } else if (method !== 'GET' && method !== 'HEAD') {
                 response.clone().text().then(function (text) {
                     var msg = '';
+                    var failed = false;
                     try {
                         var resp = JSON.parse(text);
+                        if (resp.success === false) failed = true;
                         if (resp.message) msg = resp.message;
                     } catch (e) {}
-                    if (msg) {
-                        setTimeout(function () { showSuccessModal(msg); }, 100);
-                    }
+                    setTimeout(function () {
+                        if (failed) {
+                            showErrorModal(msg || 'عذراً، حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.');
+                        } else if (msg) {
+                            showSuccessModal(msg);
+                        }
+                    }, 150);
                 });
             }
             return response;
@@ -72,6 +95,6 @@ function showErrorModal(message) {
             if (resp.message) msg = resp.message;
             else if (resp.title) msg = resp.title;
         } catch (e) {}
-        showErrorModal(msg);
+        setTimeout(function () { showErrorModal(msg); }, 150);
     });
 })();

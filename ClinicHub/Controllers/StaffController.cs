@@ -131,7 +131,11 @@ namespace ClinicHub.Controllers
 
                 // Load first 5 pending appointment requests for dashboard card
                 var pendingFull = await _staffDashboardService.GetAppointmentsAsync("pending", null, null, 1, 5);
-                ViewBag.PendingRequests = pendingFull.Items;
+                var reservedFull = await _staffDashboardService.GetAppointmentsAsync("reserved", null, null, 1, 5);
+                var pendingItems = pendingFull.Items.ToList();
+                pendingItems.AddRange(reservedFull.Items.Where(r =>
+                    pendingItems.All(p => p.Id != r.Id)));
+                ViewBag.PendingRequests = pendingItems.Take(5).ToList();
             }
             catch (ApiException ex)
             {

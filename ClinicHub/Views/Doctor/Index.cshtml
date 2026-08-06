@@ -33,6 +33,13 @@
 
     string TimeOnly(string? t) => string.IsNullOrEmpty(t) || t.Length < 5 ? "—" : t[..5];
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
+
+    bool SlotStarted(DoctorAppointmentDto app)
+    {
+        if (!DateTime.TryParse(app.AppointmentDate, out var date)) return false;
+        if (!TimeSpan.TryParse(app.StartTime, out var startTime)) return false;
+        return date.Date.Add(startTime) <= DateTime.Now;
+    }
 }
 
 <h2 class="page-title">
@@ -145,11 +152,15 @@
                             {
                                 <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>
                             }
-                            else if (app.Status == 1)
+                            else if (app.Status == 1 && SlotStarted(app))
                             {
                                 <button class="btn btn-sm btn-outline-primary" onclick="updateStatus('@app.Id', 3)">
                                     <i class="bi bi-check2-circle"></i> إكمال
                                 </button>
+                            }
+                            else if (app.Status == 1)
+                            {
+                                <span class="table-hint"><i class="bi bi-calendar-clock"></i> لم يحن موعد الزيارة بعد</span>
                             }
                             else
                             {

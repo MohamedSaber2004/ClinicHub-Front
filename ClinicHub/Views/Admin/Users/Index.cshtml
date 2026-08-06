@@ -224,9 +224,43 @@
                                     <option value="5">الجمعة</option>
                                     <option value="6">السبت</option>
                                 </select>
-                                <input type="time" class="availability-from form-control auth-form-control" value="09:00" />
+                                <select class="availability-from-hour form-select auth-form-control">
+                                    <option value="">—</option>
+                                    @for (var i = 1; i <= 12; i++)
+                                    {
+                                        <option value="@i" selected="@(i == 9)">@i</option>
+                                    }
+                                </select>
+                                <select class="availability-from-minute form-select auth-form-control">
+                                    @for (var i = 0; i <= 59; i++)
+                                    {
+                                        var mm = i.ToString("00");
+                                        <option value="@mm" selected="@(i == 0)">@mm</option>
+                                    }
+                                </select>
+                                <select class="availability-from-period form-select auth-form-control">
+                                    <option value="AM" selected>صباحاً</option>
+                                    <option value="PM">مساءً</option>
+                                </select>
                                 <span class="availability-sep">إلى</span>
-                                <input type="time" class="availability-to form-control auth-form-control" value="17:00" />
+                                <select class="availability-to-hour form-select auth-form-control">
+                                    <option value="">—</option>
+                                    @for (var i = 1; i <= 12; i++)
+                                    {
+                                        <option value="@i" selected="@(i == 5)">@i</option>
+                                    }
+                                </select>
+                                <select class="availability-to-minute form-select auth-form-control">
+                                    @for (var i = 0; i <= 59; i++)
+                                    {
+                                        var mm = i.ToString("00");
+                                        <option value="@mm" selected="@(i == 0)">@mm</option>
+                                    }
+                                </select>
+                                <select class="availability-to-period form-select auth-form-control">
+                                    <option value="AM">صباحاً</option>
+                                    <option value="PM" selected>مساءً</option>
+                                </select>
                                 <button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>
                             </div>
                         </div>
@@ -410,6 +444,48 @@
 
             var ADMIN_DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
+            function parse12(timeStr) {
+                if (!timeStr) return null;
+                var parts = String(timeStr).split(':');
+                var h = parseInt(parts[0], 10);
+                var m = parts[1] ? ('00' + parts[1]).slice(-2) : '00';
+                if (isNaN(h) || h < 0 || h > 23) return null;
+                var period = h >= 12 ? 'PM' : 'AM';
+                var hour12 = h % 12;
+                if (hour12 === 0) hour12 = 12;
+                return { hour: hour12, minute: m, period: period };
+            }
+
+            function timeSelectsHtml(prefix, timeStr) {
+                var t = parse12(timeStr);
+                var hourOptions = '<option value="">—</option>';
+                for (var i = 1; i <= 12; i++) {
+                    hourOptions += '<option value="' + i + '"' + (t && t.hour === i ? ' selected' : '') + '>' + i + '</option>';
+                }
+                var minuteOptions = '';
+                for (var i = 0; i <= 59; i++) {
+                    var mm = (i < 10 ? '0' : '') + i;
+                    minuteOptions += '<option value="' + mm + '"' + (t && t.minute === mm ? ' selected' : '') + '>' + mm + '</option>';
+                }
+                return '<select class="availability-' + prefix + '-hour form-select auth-form-control">' + hourOptions + '</select>' +
+                    '<select class="availability-' + prefix + '-minute form-select auth-form-control">' + minuteOptions + '</select>' +
+                    '<select class="availability-' + prefix + '-period form-select auth-form-control">' +
+                        '<option value="AM"' + (t && t.period === 'AM' ? ' selected' : '') + '>صباحاً</option>' +
+                        '<option value="PM"' + (t && t.period === 'PM' ? ' selected' : '') + '>مساءً</option>' +
+                    '</select>';
+            }
+
+            function readTime(row, prefix) {
+                var h = parseInt(row.querySelector('.availability-' + prefix + '-hour').value, 10);
+                var m = row.querySelector('.availability-' + prefix + '-minute').value;
+                var p = row.querySelector('.availability-' + prefix + '-period').value;
+                if (isNaN(h)) return null;
+                var h24 = h % 12;
+                if (p === 'PM') h24 += 12;
+                if (p === 'AM' && h === 12) h24 = 0;
+                return (h24 < 10 ? '0' + h24 : h24) + ':' + m;
+            }
+
             function addAdminAvailabilityRow(day, fromTime, toTime, slotMin) {
                 var container = document.getElementById('adminAvailabilityContainer');
                 var index = container.children.length;
@@ -421,9 +497,9 @@
                 row.setAttribute('data-index', index);
                 row.innerHTML =
                     '<select class="availability-day form-select auth-form-control">' + dayOpts + '</select>' +
-                    '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
+                    timeSelectsHtml('from', fromTime || '09:00') +
                     '<span class="availability-sep">إلى</span>' +
-                    '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
+                    timeSelectsHtml('to', toTime || '17:00') +
                     '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>';
                 row.querySelector('.availability-remove-btn').addEventListener('click', function () { row.remove(); });
                 container.appendChild(row);
@@ -434,8 +510,8 @@
                 var availabilities = [];
                 rows.forEach(function (row) {
                     var day = parseInt(row.querySelector('.availability-day').value);
-                    var fromTime = row.querySelector('.availability-from').value;
-                    var toTime = row.querySelector('.availability-to').value;
+                    var fromTime = readTime(row, 'from');
+                    var toTime = readTime(row, 'to');
                     if (!isNaN(day) && day >= 0 && fromTime && toTime) {
                         availabilities.push({
                             dayOfWeek: day,

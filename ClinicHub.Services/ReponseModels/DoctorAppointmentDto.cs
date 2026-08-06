@@ -3,6 +3,8 @@ namespace ClinicHub.Services.ReponseModels
     public class DoctorAppointmentDto
     {
         public Guid Id { get; set; }
+        public Guid? DoctorId { get; set; }
+        public string? DoctorName { get; set; }
         public Guid BookedByUserId { get; set; }
         public string? BookedByUserName { get; set; }
         public string? BookedByUserPhone { get; set; }

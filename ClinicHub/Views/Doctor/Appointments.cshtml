@@ -33,6 +33,17 @@
     string TypeLabel(int t) => t == 1 ? "منزلي" : "في العيادة";
     string TimeOnly(string? t) => string.IsNullOrEmpty(t) || t.Length < 5 ? "—" : t[..5];
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
+
+    var headerProfile = ViewBag.HeaderProfile as UserProfileDto;
+    var currentDoctorName = headerProfile?.FullName;
+    var hasDoctorInfo = appointments.Any(a => !string.IsNullOrWhiteSpace(a.DoctorName));
+
+    bool SlotStarted(DoctorAppointmentDto app)
+    {
+        if (!DateTime.TryParse(app.AppointmentDate, out var date)) return false;
+        if (!TimeSpan.TryParse(app.StartTime, out var startTime)) return false;
+        return date.Date.Add(startTime) <= DateTime.Now;
+    }
 }
 
 <h2 class="page-title">
@@ -41,6 +52,14 @@
     </span>
     جميع المواعيد
 </h2>
+
+@if (!string.IsNullOrWhiteSpace(currentDoctorName))
+{
+    <div class="table-hint appointment-scope-hint">
+        <i class="bi bi-person-check"></i>
+        تُعرض مواعيد حسابك فقط: د. @currentDoctorName
+    </div>
+}
 
 <div class="table-card">
     <div class="table-card-header">
@@ -67,6 +86,10 @@
             <thead>
                 <tr>
                     <th>المريض</th>
+                    @if (hasDoctorInfo)
+                    {
+                        <th>الطبيب</th>
+                    }
                     <th>التاريخ</th>
                     <th>الوقت</th>
                     <th>النوع</th>
@@ -78,7 +101,7 @@
                 @if (appointments.Count == 0)
                 {
                     <tr>
-                        <td colspan="6" class="table-empty">لا توجد مواعيد مطابقة للبحث</td>
+                        <td colspan="@(hasDoctorInfo ? 7 : 6)" class="table-empty">لا توجد مواعيد مطابقة للبحث</td>
                     </tr>
                 }
                 @foreach (var app in appointments)
@@ -91,6 +114,10 @@
                                 <span class="table-user-name">@patientName</span>
                             </div>
                         </td>
+                        @if (hasDoctorInfo)
+                        {
+                            <td>@app.DoctorName</td>
+                        }
                         <td>@app.AppointmentDate</td>
                         <td>@TimeOnly(app.StartTime)</td>
                         <td>@TypeLabel(app.AppointmentType)</td>
@@ -111,11 +138,15 @@
                             {
                                 <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>
                             }
-                            else if (app.Status == 1)
+                            else if (app.Status == 1 && SlotStarted(app))
                             {
                                 <button class="btn btn-sm btn-outline-primary" onclick="updateStatus('@app.Id', 3)">
                                     <i class="bi bi-check2-circle"></i> إكمال
                                 </button>
+                            }
+                            else if (app.Status == 1)
+                            {
+                                <span class="table-hint"><i class="bi bi-calendar-clock"></i> لم يحن موعد الزيارة بعد</span>
                             }
                             else
                             {

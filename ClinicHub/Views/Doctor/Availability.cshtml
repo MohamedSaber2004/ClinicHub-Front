@@ -74,6 +74,48 @@
                 }
             }
 
+            function parse12(timeStr) {
+                if (!timeStr) return null;
+                var parts = String(timeStr).split(':');
+                var h = parseInt(parts[0], 10);
+                var m = parts[1] ? ('00' + parts[1]).slice(-2) : '00';
+                if (isNaN(h) || h < 0 || h > 23) return null;
+                var period = h >= 12 ? 'PM' : 'AM';
+                var hour12 = h % 12;
+                if (hour12 === 0) hour12 = 12;
+                return { hour: hour12, minute: m, period: period };
+            }
+
+            function timeSelectsHtml(prefix, timeStr) {
+                var t = parse12(timeStr);
+                var hourOptions = '<option value="">—</option>';
+                for (var i = 1; i <= 12; i++) {
+                    hourOptions += '<option value="' + i + '"' + (t && t.hour === i ? ' selected' : '') + '>' + i + '</option>';
+                }
+                var minuteOptions = '';
+                for (var i = 0; i <= 59; i++) {
+                    var mm = (i < 10 ? '0' : '') + i;
+                    minuteOptions += '<option value="' + mm + '"' + (t && t.minute === mm ? ' selected' : '') + '>' + mm + '</option>';
+                }
+                return '<select class="availability-' + prefix + '-hour form-select auth-form-control">' + hourOptions + '</select>' +
+                    '<select class="availability-' + prefix + '-minute form-select auth-form-control">' + minuteOptions + '</select>' +
+                    '<select class="availability-' + prefix + '-period form-select auth-form-control">' +
+                        '<option value="AM"' + (t && t.period === 'AM' ? ' selected' : '') + '>صباحاً</option>' +
+                        '<option value="PM"' + (t && t.period === 'PM' ? ' selected' : '') + '>مساءً</option>' +
+                    '</select>';
+            }
+
+            function readTime(row, prefix) {
+                var h = parseInt($(row).find('.availability-' + prefix + '-hour').val(), 10);
+                var m = $(row).find('.availability-' + prefix + '-minute').val();
+                var p = $(row).find('.availability-' + prefix + '-period').val();
+                if (isNaN(h)) return null;
+                var h24 = h % 12;
+                if (p === 'PM') h24 += 12;
+                if (p === 'AM' && h === 12) h24 = 0;
+                return (h24 < 10 ? '0' + h24 : h24) + ':' + m;
+            }
+
             function addAvailabilityRow(id, day, fromTime, toTime, slotMin) {
                 var container = $('#availabilityContainer');
                 var row = $(
@@ -84,9 +126,9 @@
                                 return '<option value="' + i + '"' + (day === i ? ' selected' : '') + '>' + name + '</option>';
                             }).join('') +
                         '</select>' +
-                        '<input type="time" class="availability-from form-control auth-form-control" value="' + (fromTime || '09:00') + '" />' +
+                        timeSelectsHtml('from', fromTime || '09:00') +
                         '<span class="availability-sep">إلى</span>' +
-                        '<input type="time" class="availability-to form-control auth-form-control" value="' + (toTime || '17:00') + '" />' +
+                        timeSelectsHtml('to', toTime || '17:00') +
                         '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>' +
                     '</div>'
                 );
@@ -118,8 +160,8 @@
                 var filled = 0;
                 $('.availability-row').each(function () {
                     var day = $(this).find('.availability-day').val();
-                    var from = $(this).find('.availability-from').val();
-                    var to = $(this).find('.availability-to').val();
+                    var from = readTime($(this), 'from');
+                    var to = readTime($(this), 'to');
                     if (!day) { valid = false; return false; }
                     if ((from && !to) || (!from && to)) { valid = false; return false; }
                     if (!from || !to) return true;
