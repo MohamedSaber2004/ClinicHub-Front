@@ -114,10 +114,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
             تعديل
         </button>
-        <button id="cancelEditBtn" class="btn btn-outline-secondary" style="display:none">
+        <button id="cancelEditBtn" class="btn btn-outline-secondary form-group-hidden">
             إلغاء
         </button>
-        <button id="saveClinicBtn" class="btn btn-success" style="display:none">
+        <button id="saveClinicBtn" class="btn btn-success form-group-hidden">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
             حفظ التغييرات
         </button>
@@ -175,12 +175,12 @@
             }
             <div class="detail-card">
                 <div class="detail-section-header"><h5>الموقع</h5></div>
-                <p class="text-muted" style="margin-bottom: var(--space-3);">
+                <p class="text-muted mb-3">
                     @(clinic.AddressAr ?? clinic.Address)
                 </p>
                 <input type="hidden" id="clinicDetailLat" value="@(clinic.Lat?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.0409")" />
                 <input type="hidden" id="clinicDetailLng" value="@(clinic.Lng?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.3785")" />
-                <div id="clinicDetailMap" style="height: 300px; border-radius: var(--radius-md); border: 1px solid var(--clr-border);"></div>
+                <div id="clinicDetailMap" class="register-map-container"></div>
             </div>
             @if (clinic.WorkingDays != null && clinic.WorkingDays.Any())
             {
@@ -212,7 +212,7 @@
             <form id="updateClinicForm">
             <div class="detail-card">
                 <div class="detail-section-header"><h5>معلومات العيادة</h5></div>
-                <div id="updateClinicErrors" class="validation-summary" style="display:none"></div>
+                <div id="updateClinicErrors" class="validation-summary form-group-hidden"></div>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
@@ -392,7 +392,7 @@
                     @foreach (var s in staffList)
                     {
                         <div class="staff-card">
-                            <div class="staff-card-avatar" style="background:var(--clr-info-light, #e8f0fe);color:var(--clr-info);">
+                            <div class="staff-card-avatar">
                                 <span class="staff-card-initial">@(s.FullName?.Length > 0 ? s.FullName[0].ToString() : "م")</span>
                             </div>
                             <div class="staff-card-body">

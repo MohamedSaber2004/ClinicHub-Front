@@ -195,20 +195,20 @@
 
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-            <div class="modal-body" style="padding: var(--space-6); text-align: center;">
-                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body text-center">
+                <div class="icon-wrapper icon-wrapper--danger modal-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                     </svg>
                 </div>
-                <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-2);">تأكيد الحذف</h3>
-                <p style="font-family: var(--ff-primary); font-size: var(--fs-md); color: var(--clr-text-secondary); margin: 0 0 var(--space-5);">
-                    هل أنت متأكد من حذف التخصص: <strong id="deleteSpecName" style="color: var(--clr-text);"></strong>؟
+                <h3 class="modal-heading">تأكيد الحذف</h3>
+                <p class="modal-copy">
+                    هل أنت متأكد من حذف التخصص: <strong id="deleteSpecName" class="text-body"></strong>؟
                 </p>
-                <div style="display: flex; gap: var(--space-2); justify-content: center;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
-                    <button type="button" id="confirmDeleteBtn" class="btn" style="min-width: 90px; padding: 10px 24px; background-color: var(--clr-danger); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600; cursor: pointer;">حذف</button>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">حذف</button>
                 </div>
             </div>
         </div>

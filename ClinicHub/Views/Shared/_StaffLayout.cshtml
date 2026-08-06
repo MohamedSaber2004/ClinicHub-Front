@@ -21,7 +21,7 @@
                         <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
                     </svg>
                     <span class="logo-text">
-                        <span class="logo-brand-ar" style="color: var(--primary-color); font-weight: 800;">Doctory</span>
+                        <span class="logo-brand-ar">Doctory</span>
                     </span>
                 </div>
             </div>
@@ -50,23 +50,22 @@
                         <i class="bi bi-speedometer2"></i>
                         <span>نظرة عامة</span>
                     </a>
-                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">إدارة العيادة</div>
-                    <a class="sidebar-item @(IsActive("Staff", "Queue") ? "active" : "")" href="@StaffRoutes.Pages.Queue()" style="padding-right: 20px;">
+                    <div class="sidebar-section">إدارة العيادة</div>
+                    <a class="sidebar-item sidebar-item--sub @(IsActive("Staff", "Queue") ? "active" : "")" href="@StaffRoutes.Pages.Queue()">
                         <i class="bi bi-people"></i>
                         <span>طابور المرضى</span>
                     </a>
-                    <a class="sidebar-item @(IsActive("Staff", "Appointments") ? "active" : "")" href="@StaffRoutes.Pages.Appointments()" style="padding-right: 20px;">
+                    <a class="sidebar-item sidebar-item--sub @(IsActive("Staff", "Appointments") ? "active" : "")" href="@StaffRoutes.Pages.Appointments()">
                         <i class="bi bi-calendar3"></i>
                         <span>المواعيد</span>
                     </a>
-                    <a class="sidebar-item @(IsActive("Staff", "RegisterPatient") ? "active" : "")" href="@StaffRoutes.Pages.RegisterPatient()" style="padding-right: 20px;">
+                    <a class="sidebar-item sidebar-item--sub @(IsActive("Staff", "RegisterPatient") ? "active" : "")" href="@StaffRoutes.Pages.RegisterPatient()">
                         <i class="bi bi-person-plus"></i>
                         <span>تسجيل مريض وافد</span>
                     </a>
                 </div>
             </nav>
             <div class="sidebar-bottom">
-                <hr style="width: 100%; border: none; border-top: 1px solid var(--clr-border); margin: 0; padding: 0;" />
                 <a class="sidebar-profile" href="@StaffRoutes.Pages.Profile()">
                     <div class="sidebar-profile-avatar">
                         @if (!string.IsNullOrWhiteSpace(_profilePic))
@@ -84,7 +83,7 @@
                     </div>
                 </a>
                 <a href="#" class="sidebar-item" id="logoutBtn">
-                    <i class="bi bi-box-arrow-left" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                    <i class="bi bi-box-arrow-left"></i>
                     <span>تسجيل الخروج</span>
                 </a>
             </div>
@@ -98,7 +97,7 @@
                 <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة">
                     <i class="bi bi-chevron-double-right"></i>
                 </button>
-                <div style="flex:1"></div>
+                <div class="flex-fill"></div>
                 <a class="header-user" href="@StaffRoutes.Pages.Profile()">
                     <div class="user-info">
                         <span class="user-name">@_profileName</span>
@@ -120,7 +119,7 @@
             <main role="main" class="content-body">
                 @if (TempData["Error"] != null)
                 {
-                    <div class="alert alert-danger" style="margin-bottom:16px;padding:12px 16px;border-radius:8px;font-size:14px;">@TempData["Error"]</div>
+                    <div class="alert alert-danger">@TempData["Error"]</div>
                 }
                 @RenderBody()
             </main>

@@ -5,6 +5,7 @@
 <section class="submitted-section">
     <div class="container">
         <div class="submitted-card">
+            <div class="ticket-perf ticket-perf--card-top"></div>
             <div class="submitted-icon-circle">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
@@ -63,95 +64,7 @@
             <div class="submitted-actions">
                 <a href="@HomeRoutes.Pages.Index()" class="btn btn-primary btn-lg">العودة إلى الصفحة الرئيسية</a>
             </div>
+            <div class="ticket-perf ticket-perf--card-bottom"></div>
         </div>
     </div>
 </section>
-
-<style>
-    .submitted-section {
-        padding: var(--space-10) 0;
-        min-height: 60vh;
-        display: flex;
-        align-items: center;
-    }
-    .submitted-card {
-        max-width: 700px;
-        margin: 0 auto;
-        background: var(--clr-surface);
-        border: 1px solid var(--clr-border);
-        border-radius: var(--radius-lg);
-        padding: var(--space-8);
-        text-align: center;
-    }
-    .submitted-icon-circle {
-        width: 80px;
-        height: 80px;
-        border-radius: var(--radius-full);
-        background: var(--clr-success);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto var(--space-5);
-    }
-    .submitted-desc {
-        font-size: var(--fs-base);
-        color: var(--clr-text-secondary);
-        max-width: 500px;
-        margin: var(--space-3) auto var(--space-7);
-        line-height: 1.8;
-    }
-    .submitted-steps {
-        text-align: right;
-        max-width: 480px;
-        margin: 0 auto var(--space-7);
-    }
-    .submitted-step {
-        display: flex;
-        align-items: flex-start;
-        gap: var(--space-3);
-        padding: var(--space-3) 0;
-        position: relative;
-    }
-    .submitted-step + .submitted-step::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 19px;
-        width: 2px;
-        height: 100%;
-        background: var(--clr-border);
-    }
-    .submitted-step-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: var(--radius-full);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        position: relative;
-        z-index: 1;
-    }
-    .submitted-step-active {
-        background: var(--clr-success);
-    }
-    .submitted-step-pending {
-        background: var(--clr-text-secondary);
-    }
-    .submitted-step-content {
-        text-align: right;
-    }
-    .submitted-step-content h4 {
-        font-size: var(--fs-base);
-        font-weight: var(--fw-semibold);
-        margin: 0 0 var(--space-1);
-    }
-    .submitted-step-content p {
-        font-size: var(--fs-sm);
-        color: var(--clr-text-secondary);
-        margin: 0;
-    }
-    .submitted-actions {
-        margin-top: var(--space-6);
-    }
-</style>

@@ -24,27 +24,25 @@
 </div>
 
 <!-- Filter Bar -->
-<div class="filter-bar">
-    <form method="get" action="/Admin/Doctors" class="filter-bar" style="display: contents;">
-        <input type="text" name="searchTerm" class="form-input" placeholder="بحث عن طبيب..." value="@searchTerm" />
-        <select name="clinicId" class="form-select" onchange="this.form.submit()">
-            <option value="">جميع العيادات</option>
-            @foreach (var c in clinics)
-            {
-                <option value="@c.Id" selected="@(selectedClinicId == c.Id ? true : null)">@c.Name</option>
-            }
-        </select>
-        <select name="userTypes" class="form-select" onchange="this.form.submit()">
-            <option value="">جميع الأدوار</option>
-            <option value="4" selected="@(selectedUserTypes == "4" ? true : null)">طبيب</option>
-            <option value="16" selected="@(selectedUserTypes == "16" ? true : null)">مالك عيادة</option>
-        </select>
-        <label class="filter-checkbox">
-            <input type="checkbox" name="isUnassigned" value="true" onchange="this.form.submit()" @(isUnassigned == true ? "checked" : "") />
-            <span class="filter-checkbox-label">غير منتسبين لعيادة</span>
-        </label>
-    </form>
-</div>
+<form method="get" action="/Admin/Doctors" class="filter-bar">
+    <input type="text" name="searchTerm" class="form-input" placeholder="بحث عن طبيب..." value="@searchTerm" />
+    <select name="clinicId" class="form-select" onchange="this.form.submit()">
+        <option value="">جميع العيادات</option>
+        @foreach (var c in clinics)
+        {
+            <option value="@c.Id" selected="@(selectedClinicId == c.Id ? true : null)">@c.Name</option>
+        }
+    </select>
+    <select name="userTypes" class="form-select" onchange="this.form.submit()">
+        <option value="">جميع الأدوار</option>
+        <option value="4" selected="@(selectedUserTypes == "4" ? true : null)">طبيب</option>
+        <option value="16" selected="@(selectedUserTypes == "16" ? true : null)">مالك عيادة</option>
+    </select>
+    <label class="filter-checkbox">
+        <input type="checkbox" name="isUnassigned" value="true" onchange="this.form.submit()" @(isUnassigned == true ? "checked" : "") />
+        <span class="filter-checkbox-label">غير منتسبين لعيادة</span>
+    </label>
+</form>
 
 <!-- Doctors Table -->
 <div class="table-card">
@@ -66,11 +64,11 @@
                 {
                     <tr>
                         <td>
-                            <div style="display: flex; align-items: center; gap: var(--space-3);">
-                                <div class="sidebar-profile-avatar" style="width: 36px; height: 36px; background-color: var(--clr-primary);">
-                                    <span style="color: #FFFFFF; font-size: var(--fs-md); font-weight: var(--fw-bold);">@GetInitials(d.FullName)</span>
+                            <div class="table-user">
+                                <div class="table-avatar table-avatar--md">
+                                    <span>@GetInitials(d.FullName)</span>
                                 </div>
-                                <span class="text-md-medium">@d.FullName</span>
+                                <span class="table-user-name">@d.FullName</span>
                             </div>
                         </td>
                         <td class="text-md">@d.Email</td>
@@ -136,26 +134,26 @@
     <input type="hidden" id="deleteDoctorId" name="id" value="" />
 </form>
 
-<form id="createDoctorForm" method="post" action="/Admin/Users/Create" style="display:none;">
+<form id="createDoctorForm" method="post" action="/Admin/Users/Create" class="d-none">
     <input type="hidden" name="Role" value="4" />
 </form>
 
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-            <div class="modal-body" style="padding: var(--space-6); text-align: center;">
-                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body text-center">
+                <div class="icon-wrapper icon-wrapper--danger modal-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                     </svg>
                 </div>
-                <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-2);">تأكيد الحذف</h3>
-                <p style="font-family: var(--ff-primary); font-size: var(--fs-md); color: var(--clr-text-secondary); margin: 0 0 var(--space-5);">
-                    هل أنت متأكد من حذف الطبيب: <strong id="deleteDoctorName" style="color: var(--clr-text);"></strong>؟
+                <h3 class="modal-heading">تأكيد الحذف</h3>
+                <p class="modal-copy">
+                    هل أنت متأكد من حذف الطبيب: <strong id="deleteDoctorName" class="text-body"></strong>؟
                 </p>
-                <div style="display: flex; gap: var(--space-2); justify-content: center;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
-                    <button type="button" id="confirmDeleteBtn" class="btn" style="min-width: 90px; padding: 10px 24px; background-color: var(--clr-danger); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600; cursor: pointer;">حذف</button>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">حذف</button>
                 </div>
             </div>
         </div>
@@ -164,30 +162,30 @@
 
 <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+        <div class="modal-content modal-content-custom">
             <form id="changePasswordForm" method="post" action="/Admin/Doctors/ChangePassword">
-                <div class="modal-body" style="padding: var(--space-6);">
-                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" fill="#2563eb"/>
+                <div class="modal-body text-center">
+                    <div class="icon-wrapper icon-wrapper--blue modal-icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-1); text-align: center;">تغيير كلمة المرور</h3>
-                    <p style="font-family: var(--ff-primary); font-size: var(--fs-sm); color: var(--clr-text-secondary); margin: 0 0 var(--space-5); text-align: center;">
-                        تغيير كلمة مرور الطبيب: <strong id="changePasswordDoctorName" style="color: var(--clr-text);"></strong>
+                    <h3 class="modal-heading text-center">تغيير كلمة المرور</h3>
+                    <p class="modal-copy text-center">
+                        تغيير كلمة مرور الطبيب: <strong id="changePasswordDoctorName" class="text-body"></strong>
                     </p>
                     <input type="hidden" id="changePasswordDoctorId" name="id" value="" />
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="newPassword">كلمة المرور الجديدة</label>
                         <input type="password" id="newPassword" name="newPassword" class="form-input" placeholder="********" required minlength="6" />
                     </div>
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="confirmPassword">تأكيد كلمة المرور</label>
                         <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="********" required minlength="6" />
                     </div>
-                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
-                        <button type="submit" class="btn btn-primary" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">حفظ</button>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
                     </div>
                 </div>
             </form>
@@ -197,34 +195,34 @@
 
 <div class="modal fade" id="editDoctorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+        <div class="modal-content modal-content-custom">
             <form id="editDoctorForm" method="post" action="/Admin/Doctors/Edit">
-                <div class="modal-body" style="padding: var(--space-6);">
-                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#2563eb"/>
+                <div class="modal-body text-center">
+                    <div class="icon-wrapper icon-wrapper--blue modal-icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-1); text-align: center;">تعديل بيانات الطبيب</h3>
+                    <h3 class="modal-heading text-center">تعديل بيانات الطبيب</h3>
                     <input type="hidden" id="editDoctorId" name="id" value="" />
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="editDoctorName">الاسم الكامل</label>
                         <input type="text" id="editDoctorName" name="fullName" class="form-input" required />
                     </div>
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="editDoctorPhone">رقم الهاتف</label>
                         <input type="text" id="editDoctorPhone" name="phoneNumber" class="form-input" />
                     </div>
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="editDoctorStatus">الحالة</label>
                         <select id="editDoctorStatus" name="isActive" class="form-select">
                             <option value="true">نشط</option>
                             <option value="false">غير نشط</option>
                         </select>
                     </div>
-                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
-                        <button type="submit" class="btn btn-primary" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">حفظ التعديلات</button>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
                     </div>
                 </div>
             </form>

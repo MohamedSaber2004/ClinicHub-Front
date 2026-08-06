@@ -40,7 +40,7 @@
                 <span>بحث متقدم</span>
             </button>
         </div>
-        <div class="filter-advanced" id="advancedFilters" style="display:none">
+        <div class="filter-advanced form-group-hidden" id="advancedFilters">
             <div class="filter-divider"></div>
             <div class="filter-row">
                 <div class="filter-group">
@@ -120,7 +120,7 @@
                     <button type="button" class="btn-toggle-status" data-clinic-id="@c.Id" data-is-active="@c.IsActive.ToString().ToLower()" title="@(c.IsActive ? "إلغاء التفعيل" : "تفعيل")">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                             @if (c.IsActive) { <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/> }
-                            else { <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" style="opacity:0.4"/> }
+                            else { <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" class="opacity-50"/> }
                         </svg>
                     </button>
                 </div>
@@ -163,13 +163,13 @@
 </div>
 
 <!-- Load More Indicator -->
-<div id="loadMoreIndicator" class="load-more-indicator" style="display:none">
+<div id="loadMoreIndicator" class="load-more-indicator form-group-hidden">
     <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">جاري التحميل...</span>
     </div>
     <span>جارٍ تحميل المزيد...</span>
 </div>
-<div id="loadMoreEnd" class="load-more-end" style="display:none">
+<div id="loadMoreEnd" class="load-more-end form-group-hidden">
     <span>تم تحميل جميع العيادات</span>
 </div>
 
@@ -206,7 +206,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="createClinicErrors" class="validation-summary" style="display:none"></div>
+                    <div id="createClinicErrors" class="validation-summary form-group-hidden"></div>
                     <div class="form-group">
                         <label class="form-label">وصف العيادة</label>
                         <textarea name="arDescription" class="form-input form-textarea" rows="2" placeholder="وصف مختصر عن العيادة"></textarea>
@@ -240,28 +240,28 @@
                         </div>
                     </div>
                     <!-- Map -->
-                    <div class="detail-card" style="background:var(--clr-card-bg);margin-bottom:var(--space-4)">
-                        <h6 style="margin-bottom:var(--space-3);font-weight:600;">تحديد الموقع على الخريطة</h6>
+                    <div class="detail-card">
+                        <h6 class="mb-3 fw-bold">تحديد الموقع على الخريطة</h6>
                         <input type="hidden" name="lat" id="createClinicLat" value="" />
                         <input type="hidden" name="lng" id="createClinicLng" value="" />
-                        <div id="createClinicMap" style="height:300px;border-radius:var(--radius-md);border:1px solid var(--clr-border);margin-bottom:var(--space-2);"></div>
+                        <div id="createClinicMap" class="register-map-container"></div>
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="form-group" style="margin-bottom:0">
+                                <div class="form-group mb-0">
                                     <label class="form-label">خط العرض</label>
                                     <input type="text" id="createClinicLatDisplay" class="form-input" placeholder="اختر نقطة على الخريطة" readonly />
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-group" style="margin-bottom:0">
+                                <div class="form-group mb-0">
                                     <label class="form-label">خط الطول</label>
                                     <input type="text" id="createClinicLngDisplay" class="form-input" placeholder="اختر نقطة على الخريطة" readonly />
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="detail-card" style="background:var(--clr-card-bg);margin-bottom:var(--space-4)">
-                        <h6 style="margin-bottom:var(--space-3);font-weight:600;">بيانات المدير</h6>
+                    <div class="detail-card">
+                        <h6 class="mb-3 fw-bold">بيانات المدير</h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -283,8 +283,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="detail-card" style="background:var(--clr-card-bg);margin-bottom:var(--space-4)">
-                        <h6 style="margin-bottom:var(--space-3);font-weight:600;">بيانات الطبيب</h6>
+                    <div class="detail-card">
+                        <h6 class="mb-3 fw-bold">بيانات الطبيب</h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -315,8 +315,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="detail-card" style="background:var(--clr-card-bg);margin-bottom:var(--space-4)">
-                        <h6 style="margin-bottom:var(--space-3);font-weight:600;">مواعيد العمل</h6>
+                    <div class="detail-card">
+                        <h6 class="mb-3 fw-bold">مواعيد العمل</h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -331,7 +331,7 @@
                                 </div>
                             </div>
                         </div>
-                        <label class="form-label" style="margin-bottom:var(--space-2);">أيام العمل</label>
+                        <label class="form-label">أيام العمل</label>
                         <div class="working-days-grid">
                             @{
                                 var days = new[] {
@@ -356,9 +356,9 @@
                     <div class="form-group">
                         <label class="form-label">صورة العيادة</label>
                         <input type="file" id="clinicLogoInput" class="form-input" accept="image/*" />
-                        <div id="clinicLogoPreview" class="upload-preview" style="display:none;margin-top:var(--space-2)">
-                            <img id="clinicLogoImg" src="" alt="صورة العيادة" style="max-width:200px;max-height:120px;border-radius:var(--radius-md);border:1px solid var(--clr-border);" />
-                            <span id="clinicLogoStatus" style="font-size:var(--fs-sm);color:var(--clr-text-secondary);display:block;margin-top:var(--space-1);"></span>
+                        <div id="clinicLogoPreview" class="upload-preview form-group-hidden mt-2">
+                            <img id="clinicLogoImg" src="" alt="صورة العيادة" class="img-fluid rounded border" />
+                            <span id="clinicLogoStatus" class="small text-muted d-block mt-1"></span>
                         </div>
                     </div>
                 </div>

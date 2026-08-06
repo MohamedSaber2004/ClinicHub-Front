@@ -37,8 +37,8 @@
 <div class="subscription-plans">
     @if (plans.Count == 0)
     {
-        <div class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
-            <p style="margin-bottom: 0;">لا توجد باقات متاحة</p>
+        <div class="text-center text-muted py-5">
+            <p class="mb-0">لا توجد باقات متاحة</p>
         </div>
     }
     else
@@ -59,7 +59,7 @@
                     <h3 class="plan-name">@plan.NameAr</h3>
                     <p class="plan-price">
                         @plan.PriceMonthly.ToString("N0") <span class="plan-currency">ج.م</span>
-                        <span style="font-size: var(--fs-sm); color: var(--clr-text-secondary);">/ شهرياً</span>
+                        <span class="small text-muted">/ شهرياً</span>
                     </p>
                 </div>
                 <div class="plan-body">

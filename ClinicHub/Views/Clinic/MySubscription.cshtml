@@ -50,7 +50,7 @@ else
             <div class="col-md-6">
                 <div class="subs-detail-card">
                     <div class="subs-detail-header">
-                        <span class="badge @statusClass" style="font-size: 14px; padding: 6px 16px;">@statusText</span>
+                        <span class="badge @statusClass badge-lg">@statusText</span>
                     </div>
                     <div class="subs-detail-body">
                         <div class="subs-detail-row">
@@ -98,7 +98,7 @@ else
                             var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
                             var isTop = plan.SortOrder >= maxSort;
                             var planClass = isTop ? "plan-premium" : "plan-free";
-                            <div class="plan-card @planClass" style="margin-bottom: 0;">
+                            <div class="plan-card @planClass">
                                 <div class="plan-header">
                                     <h3 class="plan-name">@plan.NameAr</h3>
                                     <p class="plan-price">@plan.PriceMonthly.ToString("N0") <span class="plan-currency">ج.م</span></p>

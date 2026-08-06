@@ -3,37 +3,79 @@
 }
 
 <!-- Hero Section -->
-<section class="hero-section" style="background: radial-gradient(circle at 10% 20%, rgba(7, 100, 83, 0.1) 0%, rgba(255, 255, 255, 1) 90%); padding: 80px 0 60px;">
-    <div class="container text-center">
-        <h1 style="font-size: 46px; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; line-height: 1.3;">
-            نظام إدارة وتشغيل العيادات الطبي الموحد
-        </h1>
-        <p style="font-size: 18px; color: var(--text-muted); max-width: 700px; margin: 0 auto 40px; line-height: 1.8;">
-            أهلاً بكم في منصة Doctory - المنصة التشغيلية والوسيطة المتكاملة لربط مدراء النظام بملاك العيادات. نعمل كحلقة وصل إدارية متقدمة لتنظيم العمل الطبي بكافة تفاصيله.
-        </p>
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-grid">
+            <div class="hero-copy">
+                <span class="hero-eyebrow">منصة تشغيل العيادات</span>
+                <h1 class="hero-title">نظام إدارة وتشغيل العيادات الطبي الموحد</h1>
+                <p class="hero-lead">
+                    أهلاً بكم في منصة Doctory - المنصة التشغيلية والوسيطة المتكاملة لربط مدراء النظام بملاك العيادات. نعمل كحلقة وصل إدارية متقدمة لتنظيم العمل الطبي بكافة تفاصيله.
+                </p>
+                <div class="hero-cta">
+                    <a href="@HomeRoutes.Account.Login()" class="btn btn-primary btn-lg">تسجيل الدخول</a>
+                    <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-secondary btn-lg">اشترك في الخدمة</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="queue-board hero-board">
+                    <div class="queue-board-head">
+                        <span class="queue-board-title">لوحة الأدوار</span>
+                        <span class="queue-board-live">يعمل الآن</span>
+                    </div>
+                    <div class="ticket ticket-print hero-ticket">
+                        <div class="ticket-perf"></div>
+                        <div class="ticket-body">
+                            <span class="ticket-label">الدور الحالي</span>
+                            <span class="ticket-number">24</span>
+                            <span class="ticket-imprint">Doctory · عيادة الرحمة</span>
+                        </div>
+                        <div class="ticket-perf"></div>
+                    </div>
+                    <div class="queue-board-next">
+                        <span>التالي</span>
+                        <span class="queue-number">25</span>
+                        <span class="queue-number">26</span>
+                        <span class="queue-number">27</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
 <!-- Quick Stats / Badges -->
-<section style="padding: 20px 0;">
+<section class="hero-stats">
     <div class="container">
         <div class="row g-4 justify-content-center">
-            <div class="col-md-3 col-6">
-                <div class="stat-card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.03); justify-content: center; gap: 15px; border-radius: 8px;">
-                    <div style="font-size: 32px; font-weight: 800; color: var(--primary-color);">+150</div>
-                    <div style="font-size: 14px; color: var(--text-dark); font-weight: 600;">أطباء مسجلين بالنظام</div>
+            <div class="col-md-4 col-6">
+                <div class="ticket stat-ticket">
+                    <div class="ticket-perf"></div>
+                    <div class="ticket-body">
+                        <span class="ticket-number">+150</span>
+                        <span class="ticket-label">أطباء مسجلين بالنظام</span>
+                    </div>
+                    <div class="ticket-perf"></div>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.03); justify-content: center; gap: 15px; border-radius: 8px;">
-                    <div style="font-size: 32px; font-weight: 800; color: var(--primary-color);">24/7</div>
-                    <div style="font-size: 14px; color: var(--text-dark); font-weight: 600;">مراقبة تشغيلية مستمرة</div>
+            <div class="col-md-4 col-6">
+                <div class="ticket stat-ticket">
+                    <div class="ticket-perf"></div>
+                    <div class="ticket-body">
+                        <span class="ticket-number">24/7</span>
+                        <span class="ticket-label">مراقبة تشغيلية مستمرة</span>
+                    </div>
+                    <div class="ticket-perf"></div>
                 </div>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.03); justify-content: center; gap: 15px; border-radius: 8px;">
-                    <div style="font-size: 32px; font-weight: 800; color: var(--primary-color);">+30</div>
-                    <div style="font-size: 14px; color: var(--text-dark); font-weight: 600;">عيادات مشتركة بالخدمة</div>
+            <div class="col-md-4 col-6">
+                <div class="ticket stat-ticket">
+                    <div class="ticket-perf"></div>
+                    <div class="ticket-body">
+                        <span class="ticket-number">+30</span>
+                        <span class="ticket-label">عيادات مشتركة بالخدمة</span>
+                    </div>
+                    <div class="ticket-perf"></div>
                 </div>
             </div>
         </div>
@@ -41,63 +83,64 @@
 </section>
 
 <!-- Services Section -->
-<section id="services" style="padding: 80px 0 60px;">
+<section id="services" class="services-section">
     <div class="container">
-        <div class="text-center" style="margin-bottom: 50px;">
-            <h2 style="font-size: 32px; font-weight: 700; color: var(--text-dark); margin-bottom: 15px;">الخدمات والحلول الإدارية المتكاملة</h2>
-            <p style="font-size: 15px; color: var(--text-muted); max-width: 600px; margin: 0 auto;">نظام وسيط ذكي لتسهيل إدارة العيادات وتشغيلها بكفاءة لربط ملاك العيادات بالمدير العام.</p>
+        <div class="section-head">
+            <span class="hero-eyebrow">خدماتنا</span>
+            <h2 class="section-head-title">الخدمات والحلول الإدارية المتكاملة</h2>
+            <p class="section-head-lead">نظام وسيط ذكي لتسهيل إدارة العيادات وتشغيلها بكفاءة لربط ملاك العيادات بالمدير العام.</p>
         </div>
 
         <div class="row g-4">
             <!-- Staff Management -->
             <div class="col-lg-3 col-md-6">
-                <div class="card border-0" style="background: #FFFFFF; border: 1px solid var(--border-color) !important; border-radius: 8px; transition: all 0.3s; padding: 24px;">
-                    <div style="width: 50px; height: 50px; background-color: rgba(74, 144, 226, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary-color); margin-bottom: 20px;">
+                <div class="service-card">
+                    <div class="icon-wrapper icon-wrapper--primary">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h4 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px;">إدارة الأطباء والكادر</h4>
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 0;">تسجيل ملفات الأطباء، تحديد التخصصات، وإسناد الجداول اليومية للعمل داخل العيادات.</p>
+                    <h4 class="service-card-title">إدارة الأطباء والكادر</h4>
+                    <p class="service-card-desc">تسجيل ملفات الأطباء، تحديد التخصصات، وإسناد الجداول اليومية للعمل داخل العيادات.</p>
                 </div>
             </div>
 
             <!-- Rooms Management -->
             <div class="col-lg-3 col-md-6">
-                <div class="card border-0" style="background: #FFFFFF; border: 1px solid var(--border-color) !important; border-radius: 8px; transition: all 0.3s; padding: 24px;">
-                    <div style="width: 50px; height: 50px; background-color: rgba(74, 144, 226, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary-color); margin-bottom: 20px;">
+                <div class="service-card">
+                    <div class="icon-wrapper icon-wrapper--amber">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h4 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px;">توزيع الغرف والعيادات</h4>
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 0;">توزيع مرن للأطباء على غرف الكشف المتاحة وتتبع تشغيلها لمنع التداخل والازدحام.</p>
+                    <h4 class="service-card-title">توزيع الغرف والعيادات</h4>
+                    <p class="service-card-desc">توزيع مرن للأطباء على غرف الكشف المتاحة وتتبع تشغيلها لمنع التداخل والازدحام.</p>
                 </div>
             </div>
 
             <!-- Queue & Patients -->
             <div class="col-lg-3 col-md-6">
-                <div class="card border-0" style="background: #FFFFFF; border: 1px solid var(--border-color) !important; border-radius: 8px; transition: all 0.3s; padding: 24px;">
-                    <div style="width: 50px; height: 50px; background-color: rgba(74, 144, 226, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary-color); margin-bottom: 20px;">
+                <div class="service-card">
+                    <div class="icon-wrapper icon-wrapper--green">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h4 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px;">إدارة قوائم الانتظار</h4>
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 0;">تنظيم حضور المرضى لحظة بلحظة، وترتيب أدوارهم في صالات الانتظار بشكل رقمي بالكامل.</p>
+                    <h4 class="service-card-title">إدارة قوائم الانتظار</h4>
+                    <p class="service-card-desc">تنظيم حضور المرضى لحظة بلحظة، وترتيب أدوارهم في صالات الانتظار بشكل رقمي بالكامل.</p>
                 </div>
             </div>
 
             <!-- Monitoring & Analytics -->
             <div class="col-lg-3 col-md-6">
-                <div class="card border-0" style="background: #FFFFFF; border: 1px solid var(--border-color) !important; border-radius: 8px; transition: all 0.3s; padding: 24px;">
-                    <div style="width: 50px; height: 50px; background-color: rgba(74, 144, 226, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary-color); margin-bottom: 20px;">
+                <div class="service-card">
+                    <div class="icon-wrapper icon-wrapper--brass">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM9 17H7V10H9V17ZM13 17H11V7H13V17ZM17 17H15V12H17V17Z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h4 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px;">مراقبة الأداء والتحليل</h4>
-                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 0;">مراقبة الكفاءة التشغيلية، وحساب متوسط فترات الانتظار، واستخراج تقارير إدارية متقدمة.</p>
+                    <h4 class="service-card-title">مراقبة الأداء والتحليل</h4>
+                    <p class="service-card-desc">مراقبة الكفاءة التشغيلية، وحساب متوسط فترات الانتظار، واستخراج تقارير إدارية متقدمة.</p>
                 </div>
             </div>
         </div>
@@ -105,36 +148,49 @@
 </section>
 
 <!-- About Section -->
-<section id="about" style="background-color: #FFFFFF; padding: 80px 0; border-top: 1px solid var(--border-color);">
+<section id="about" class="about-section">
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
-                <h2 style="font-size: 32px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px;">لماذا تختار منصة Doctory؟</h2>
-                <p style="font-size: 15px; color: var(--text-muted); line-height: 1.8; margin-bottom: 30px;">
+                <span class="hero-eyebrow">لماذا Doctory؟</span>
+                <h2 class="about-title">لماذا تختار منصة Doctory؟</h2>
+                <p class="about-lead">
                     نحن لسنا بوابة للمرضى؛ بل نمثل النظام الإداري الوسيط والذكي الأنسب للمنشآت والعيادات الطبية المتعددة. نمكن المشرفين الإداريين وملاك العيادات من التعاون معاً في مساحة رقمية واحدة لتنظيم وتشغيل العيادات بكفاءة غير مسبوقة.
                 </p>
-                <div class="d-flex flex-column gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="color: var(--primary-color);">✓</div>
-                        <div style="font-weight: 600; font-size: 15px; color: var(--text-dark);">إدارة شاملة لملفات وتفاصيل الأطباء والممرضين والموظفين.</div>
-                    </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="color: var(--primary-color);">✓</div>
-                        <div style="font-weight: 600; font-size: 15px; color: var(--text-dark);">توزيع ذكي وتتبع فوري لغرف الكشف والعيادات الفعالة.</div>
-                    </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <div style="color: var(--primary-color);">✓</div>
-                        <div style="font-weight: 600; font-size: 15px; color: var(--text-dark);">بوابة وسيطة تربط المشرفين بملاك العيادات وإداراتهم الطبية.</div>
-                    </div>
-                </div>
+                <ul class="check-list">
+                    <li class="check-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                        </svg>
+                        <div>
+                            <p class="check-item-title">إدارة شاملة لملفات وتفاصيل الأطباء والممرضين والموظفين.</p>
+                        </div>
+                    </li>
+                    <li class="check-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                        </svg>
+                        <div>
+                            <p class="check-item-title">توزيع ذكي وتتبع فوري لغرف الكشف والعيادات الفعالة.</p>
+                        </div>
+                    </li>
+                    <li class="check-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                        </svg>
+                        <div>
+                            <p class="check-item-title">بوابة وسيطة تربط المشرفين بملاك العيادات وإداراتهم الطبية.</p>
+                        </div>
+                    </li>
+                </ul>
             </div>
             <!-- Interactive Visual Card -->
             <div class="col-lg-6">
-                <div style="background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
-                    <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">بوابة الإدارة الرقمية</h3>
-                    <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;">يمكنك الدخول إلى حسابك للبدء في إدارة تشغيل العيادات والموظفين فوراً.</p>
+                <div class="portal-card">
+                    <h3 class="portal-card-title">بوابة الإدارة الرقمية</h3>
+                    <p class="portal-card-desc">يمكنك الدخول إلى حسابك للبدء في إدارة تشغيل العيادات والموظفين فوراً.</p>
                     <div class="d-grid">
-                        <a href="@HomeRoutes.Account.Login()" class="btn" style="background-color: var(--primary-color); color: white; padding: 10px; font-weight: 600; font-size: 14px; border-radius: 5px;">تسجيل الدخول</a>
+                        <a href="@HomeRoutes.Account.Login()" class="btn btn-primary">تسجيل الدخول</a>
                     </div>
                 </div>
             </div>

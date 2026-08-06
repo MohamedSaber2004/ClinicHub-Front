@@ -14,34 +14,34 @@
     var attachmentBaseUrl = _attachmentUrlResolver.Resolve("x").Replace("/files/x", "");
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <h2 class="page-title mb-0">إدارة الأطباء</h2>
-    <button class="btn" id="addDoctorBtn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 10px 20px; border-radius: 5px;">
+    <button class="btn btn-primary" id="addDoctorBtn">
         <i class="bi bi-person-plus me-1"></i> إضافة طبيب
     </button>
 </div>
 
 @if (_user?.MaxDoctors.HasValue == true)
 {
-    <div class="plan-info-bar" style="margin-bottom: 20px;">
+    <div class="plan-info-bar">
         <div class="plan-info-item">
             <span class="plan-info-label">الحد الأقصى للأطباء في باقتك</span>
             <span class="plan-info-value">@_user.MaxDoctors طبيب</span>
         </div>
-        <span style="font-size: 12px; color: var(--clr-text-secondary);">لزيادة الحد الأقصى، قم بترقية باقتك.</span>
+        <span class="small text-muted">لزيادة الحد الأقصى، قم بترقية باقتك.</span>
         <a href="/Clinic/MySubscription" class="plan-info-link">ترقية الباقة <i class="bi bi-arrow-left"></i></a>
     </div>
 }
 
-<div class="table-card" style="padding: 20px; margin-bottom: 24px;">
+<div class="table-card p-4 mb-4">
     <form method="get" action="@Url.Action("Doctors")" class="row g-3 align-items-end">
         <div class="col-md-5">
-            <label class="form-label" style="font-weight: 600; font-size: 13px;">بحث</label>
-            <input type="text" name="searchTerm" class="form-control auth-form-control" style="padding: 8px 12px; font-size: 13px;" placeholder="ابحث باسم الطبيب أو البريد الإلكتروني..." value="@searchTerm" />
+            <label class="form-label">بحث</label>
+            <input type="text" name="searchTerm" class="form-input form-input-sm w-100" placeholder="ابحث باسم الطبيب أو البريد الإلكتروني..." value="@searchTerm" />
         </div>
         <div class="col-md-4">
-            <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص</label>
-            <select name="specializationId" class="form-select auth-form-control" style="padding: 8px 12px; font-size: 13px;">
+            <label class="form-label">التخصص</label>
+            <select name="specializationId" class="form-select form-input-sm w-100">
                 <option value="">جميع التخصصات</option>
                 @foreach (var spec in specializations)
                 {
@@ -50,7 +50,7 @@
             </select>
         </div>
         <div class="col-md-3">
-            <button type="submit" class="btn" style="background-color: var(--primary-color); color: white; font-weight: 600; padding: 8px 20px; border-radius: 5px; font-size: 13px; width: 100%;">
+            <button type="submit" class="btn btn-primary w-100">
                 <i class="bi bi-search me-1"></i> بحث
             </button>
         </div>
@@ -66,20 +66,20 @@
     <div class="alert alert-success">@TempData["SuccessMessage"]</div>
 }
 
-<div class="table-card" style="padding: 24px;">
+<div class="table-card p-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 style="font-weight: 700; margin: 0;">قائمة الأطباء</h4>
+        <h4 class="fw-bold mb-0">قائمة الأطباء</h4>
         @if (pagination != null)
         {
-            <span style="font-size: 13px; color: var(--clr-text-secondary);">إجمالي: @pagination.TotalCount طبيب</span>
+            <span class="text-md">إجمالي: @pagination.TotalCount طبيب</span>
         }
     </div>
 
     @if (doctors.Count == 0)
     {
-        <div style="text-align: center; padding: 40px 20px; color: var(--clr-text-secondary);">
-            <i class="bi bi-people" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
-            <p style="font-size: 16px;">لا يوجد أطباء مسجلون في العيادة</p>
+        <div class="empty-state">
+            <i class="bi bi-people empty-state-icon"></i>
+            <p class="empty-desc">لا يوجد أطباء مسجلون في العيادة</p>
         </div>
     }
     else
@@ -108,17 +108,17 @@
                             <td>
                                 @if (imgUrl != null)
                                 {
-                                    <img src="@imgUrl" alt="صورة" class="rounded" style="width: 40px; height: 40px; object-fit: cover;" />
+                                    <img src="@imgUrl" alt="صورة" class="table-avatar table-avatar--md" />
                                 }
                                 else
                                 {
-                                    <div class="rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: var(--clr-surface-secondary); color: var(--clr-text-secondary); font-size: 14px;">
+                                    <div class="table-avatar table-avatar--md">
                                         <i class="bi bi-person"></i>
                                     </div>
                                 }
                             </td>
                             <td><strong>@doctor.UserName</strong></td>
-                            <td style="font-size: 13px; color: var(--clr-text-secondary);">@doctor.UserEmail</td>
+                            <td class="text-md">@doctor.UserEmail</td>
                             <td><span class="badge badge-info">@doctor.SpecializationName</span></td>
                             <td>@doctor.YearsOfExperience سنة</td>
                             <td>
@@ -131,7 +131,7 @@
                                     <span class="badge badge-danger">غير نشط</span>
                                 }
                             </td>
-                            <td style="font-size: 13px; color: var(--clr-text-secondary);">@doctor.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            <td class="text-md">@doctor.CreatedAt.ToString("yyyy-MM-dd")</td>
                             <td>
                                 <div class="table-actions">
                                     <button class="btn btn-sm btn-secondary view-doctor-btn"
@@ -139,24 +139,21 @@
                                             title="عرض التفاصيل">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <button class="btn btn-sm edit-doctor-btn"
+                                    <button class="btn btn-sm btn-outline-primary edit-doctor-btn"
                                             data-id="@doctor.Id"
-                                            title="تعديل"
-                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-primary);">
+                                            title="تعديل">
                                         <i class="bi bi-pencil me-1"></i> تعديل
                                     </button>
-                                    <button class="btn btn-sm change-password-doctor-btn"
+                                    <button class="btn btn-sm btn-outline-secondary change-password-doctor-btn"
                                             data-id="@doctor.Id"
                                             data-userid="@doctor.UserId"
                                             data-name="@doctor.UserName"
-                                            title="تغيير كلمة المرور"
-                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-primary);">
+                                            title="تغيير كلمة المرور">
                                         <i class="bi bi-key me-1"></i>
                                     </button>
-                                    <button class="btn btn-sm delete-doctor-btn"
+                                    <button class="btn btn-sm btn-outline-danger delete-doctor-btn"
                                             data-id="@doctor.Id"
-                                            data-name="@doctor.UserName"
-                                            style="font-size: 11px; border: 1px solid var(--clr-border); background: transparent; padding: 4px 10px; border-radius: 4px; color: var(--clr-danger);">
+                                            data-name="@doctor.UserName">
                                         <i class="bi bi-trash me-1"></i> حذف
                                     </button>
                                 </div>
@@ -169,7 +166,7 @@
 
         if (pagination != null && pagination.TotalPages > 1)
         {
-            <nav class="pagination-nav" style="margin-top: 20px;">
+            <nav class="pagination-nav mt-4">
                 <ul class="pagination-list">
                     @if (pagination.HasPreviousPage)
                     {
@@ -202,44 +199,44 @@
 
 <div class="modal fade" id="createDoctorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-            <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
-                <h5 class="modal-title" style="font-weight: 700;">إضافة طبيب جديد</h5>
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">إضافة طبيب جديد</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="padding: var(--space-6);">
+            <div class="modal-body modal-body-custom">
                 <form id="createDoctorForm">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control auth-form-control" id="createDoctorFullName" required style="padding: 8px 12px; font-size: 13px;" placeholder="مثال: أحمد علي" />
+                            <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                            <input type="text" class="form-input form-input-sm w-100" id="createDoctorFullName" required placeholder="مثال: أحمد علي" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control auth-form-control" id="createDoctorEmail" required style="padding: 8px 12px; font-size: 13px;" placeholder="example@domain.com" />
+                            <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                            <input type="email" class="form-input form-input-sm w-100" id="createDoctorEmail" required placeholder="example@domain.com" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control auth-form-control" id="createDoctorPhone" required style="padding: 8px 12px; font-size: 13px;" placeholder="+201234567890" />
+                            <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
+                            <input type="text" class="form-input form-input-sm w-100" id="createDoctorPhone" required placeholder="+201234567890" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">كلمة المرور <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control auth-form-control" id="createDoctorPassword" required minlength="6" style="padding: 8px 12px; font-size: 13px;" placeholder="********" />
+                            <label class="form-label">كلمة المرور <span class="text-danger">*</span></label>
+                            <input type="password" class="form-input form-input-sm w-100" id="createDoctorPassword" required minlength="6" placeholder="********" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الجنس <span class="text-danger">*</span></label>
-                            <select class="form-select auth-form-control" id="createDoctorGender" required style="padding: 8px 12px; font-size: 13px;">
+                            <label class="form-label">الجنس <span class="text-danger">*</span></label>
+                            <select class="form-select form-input-sm w-100" id="createDoctorGender" required>
                                 <option value="1">ذكر</option>
                                 <option value="2">أنثى</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">تاريخ الميلاد</label>
-                            <input type="date" class="form-control auth-form-control" id="createDoctorBirthDate" style="padding: 8px 12px; font-size: 13px;" />
+                            <label class="form-label">تاريخ الميلاد</label>
+                            <input type="date" class="form-input form-input-sm w-100" id="createDoctorBirthDate" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص <span class="text-danger">*</span></label>
-                            <select class="form-select auth-form-control" id="createDoctorSpecializationId" required style="padding: 8px 12px; font-size: 13px;">
+                            <label class="form-label">التخصص <span class="text-danger">*</span></label>
+                            <select class="form-select form-input-sm w-100" id="createDoctorSpecializationId" required>
                                 <option value="">اختر التخصص</option>
                                 @foreach (var spec in specializations)
                                 {
@@ -248,29 +245,29 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">سنوات الخبرة</label>
-                            <input type="number" class="form-control auth-form-control" id="createDoctorExperience" value="0" min="0" style="padding: 8px 12px; font-size: 13px;" />
+                            <label class="form-label">سنوات الخبرة</label>
+                            <input type="number" class="form-input form-input-sm w-100" id="createDoctorExperience" value="0" min="0" />
                         </div>
                         <div class="col-12">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">صورة الطبيب (اختياري)</label>
+                            <label class="form-label">صورة الطبيب (اختياري)</label>
                             <div class="file-upload-wrapper">
-                                <input type="file" id="createDoctorImageInput" accept="image/*" class="form-control auth-form-control" style="padding: 8px 12px; font-size: 13px;" />
+                                <input type="file" id="createDoctorImageInput" accept="image/*" class="form-input form-input-sm w-100" />
                                 <input type="hidden" id="createDoctorImage" />
                                 <div id="createDoctorImageStatus" class="upload-status-badge d-none align-items-center gap-2 mt-2">
-                                    <img id="createDoctorImagePreview" src="" alt="صورة الطبيب" class="rounded" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid var(--clr-border);" />
+                                    <img id="createDoctorImagePreview" src="" alt="صورة الطبيب" class="avatar-preview" />
                                     <span class="badge badge-success"><i class="bi bi-check-circle"></i> <span id="createDoctorImageFileName"></span></span>
-                                    <button type="button" class="btn btn-sm p-0 border-0 bg-transparent" id="removeDoctorImageBtn" style="color: var(--clr-danger); font-size: 12px; line-height: 1;" title="إزالة الصورة">
+                                    <button type="button" class="btn btn-sm p-0 border-0 bg-transparent text-danger" id="removeDoctorImageBtn" title="إزالة الصورة">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية (اختياري)</label>
-                            <textarea class="form-control auth-form-control" id="createDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;" placeholder="نبذة عن الطبيب..."></textarea>
+                            <label class="form-label">السيرة الذاتية (اختياري)</label>
+                            <textarea class="form-input form-input-sm w-100" id="createDoctorBio" rows="3" placeholder="نبذة عن الطبيب..."></textarea>
                         </div>
                         <div class="col-12">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">أوقات العمل (اختياري)</label>
+                            <label class="form-label">أوقات العمل (اختياري)</label>
                             <div id="availabilityContainer">
                                 <div class="availability-row" data-index="0">
                                     <select class="availability-day form-select auth-form-control">
@@ -330,9 +327,9 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer" style="border-top: 1px solid var(--clr-border); padding: var(--space-4) var(--space-6);">
-                <button type="button" class="btn" data-bs-dismiss="modal" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-weight: 600;">إلغاء</button>
-                <button type="button" class="btn" id="createDoctorSubmitBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-weight: 600;">إضافة</button>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="createDoctorSubmitBtn">إضافة</button>
             </div>
         </div>
     </div>
@@ -340,42 +337,42 @@
 
 <div class="modal fade" id="editDoctorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-            <div class="modal-header" style="border-bottom: 1px solid var(--clr-border); padding: var(--space-5) var(--space-6);">
-                <h5 class="modal-title" style="font-weight: 700;">تعديل بيانات الطبيب</h5>
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header modal-header-custom">
+                <h5 class="modal-title">تعديل بيانات الطبيب</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="padding: var(--space-6);">
+            <div class="modal-body modal-body-custom">
                 <form id="editDoctorForm">
                     <input type="hidden" id="editDoctorId" />
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الاسم الكامل</label>
-                            <input type="text" class="form-control auth-form-control" id="editDoctorFullName" style="padding: 8px 12px; font-size: 13px;" />
+                            <label class="form-label">الاسم الكامل</label>
+                            <input type="text" class="form-input form-input-sm w-100" id="editDoctorFullName" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">البريد الإلكتروني</label>
-                            <input type="email" class="form-control auth-form-control" id="editDoctorEmail" style="padding: 8px 12px; font-size: 13px;" />
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" class="form-input form-input-sm w-100" id="editDoctorEmail" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">رقم الهاتف</label>
-                            <input type="text" class="form-control auth-form-control" id="editDoctorPhone" style="padding: 8px 12px; font-size: 13px;" />
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="text" class="form-input form-input-sm w-100" id="editDoctorPhone" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">تاريخ الميلاد</label>
-                            <input type="date" class="form-control auth-form-control" id="editDoctorBirthDate" style="padding: 8px 12px; font-size: 13px;" />
+                            <label class="form-label">تاريخ الميلاد</label>
+                            <input type="date" class="form-input form-input-sm w-100" id="editDoctorBirthDate" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الجنس</label>
-                            <select class="form-select auth-form-control" id="editDoctorGender" style="padding: 8px 12px; font-size: 13px;">
+                            <label class="form-label">الجنس</label>
+                            <select class="form-select form-input-sm w-100" id="editDoctorGender">
                                 <option value="">اختر</option>
                                 <option value="1">ذكر</option>
                                 <option value="2">أنثى</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">التخصص</label>
-                            <select class="form-select auth-form-control" id="editDoctorSpecializationId" style="padding: 8px 12px; font-size: 13px;">
+                            <label class="form-label">التخصص</label>
+                            <select class="form-select form-input-sm w-100" id="editDoctorSpecializationId">
                                 <option value="">اختر التخصص</option>
                                 @foreach (var spec in specializations)
                                 {
@@ -384,35 +381,36 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">سنوات الخبرة</label>
-                            <input type="number" class="form-control auth-form-control" id="editDoctorExperience" min="0" style="padding: 8px 12px; font-size: 13px;" />
+                            <label class="form-label">سنوات الخبرة</label>
+                            <input type="number" class="form-input form-input-sm w-100" id="editDoctorExperience" min="0" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">الحالة</label>
-                            <div class="form-check form-switch" style="padding-top: 8px;">
-                                <input class="form-check-input" type="checkbox" id="editDoctorActive" style="transform: scale(1.2);">
-                                <label class="form-check-label" for="editDoctorActive" style="font-size: 13px; margin-right: 8px;">نشط</label>
-                            </div>
+                            <label class="form-label">الحالة</label>
+                            <label class="form-toggle">
+                                <input type="checkbox" id="editDoctorActive" />
+                                <span class="toggle-track"></span>
+                                <span class="toggle-label">نشط</span>
+                            </label>
                         </div>
                         <div class="col-12">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">صورة الطبيب</label>
+                            <label class="form-label">صورة الطبيب</label>
                             <div class="file-upload-wrapper">
-                                <input type="file" id="editDoctorImageInput" accept="image/*" class="form-control auth-form-control" style="padding: 8px 12px; font-size: 13px;" />
+                                <input type="file" id="editDoctorImageInput" accept="image/*" class="form-input form-input-sm w-100" />
                                 <input type="hidden" id="editDoctorImage" />
                                 <div id="editDoctorImageStatus" class="upload-status-badge d-none align-items-center gap-2 mt-2">
-                                    <img id="editDoctorImagePreview" src="" alt="صورة الطبيب" class="rounded" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid var(--clr-border);" />
-                                    <button type="button" class="btn btn-sm p-0 border-0 bg-transparent" id="editRemoveDoctorImageBtn" style="color: var(--clr-danger); font-size: 12px; line-height: 1;" title="إزالة الصورة">
+                                    <img id="editDoctorImagePreview" src="" alt="صورة الطبيب" class="avatar-preview" />
+                                    <button type="button" class="btn btn-sm p-0 border-0 bg-transparent text-danger" id="editRemoveDoctorImageBtn" title="إزالة الصورة">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">السيرة الذاتية</label>
-                            <textarea class="form-control auth-form-control" id="editDoctorBio" rows="3" style="padding: 8px 12px; font-size: 13px;" placeholder="نبذة عن الطبيب..."></textarea>
+                            <label class="form-label">السيرة الذاتية</label>
+                            <textarea class="form-input form-input-sm w-100" id="editDoctorBio" rows="3" placeholder="نبذة عن الطبيب..."></textarea>
                         </div>
                         <div class="col-12">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px;">أوقات العمل (اختياري)</label>
+                            <label class="form-label">أوقات العمل (اختياري)</label>
                             <div id="editAvailabilityContainer">
                             </div>
                             <button type="button" id="addEditAvailabilityBtn" class="btn btn-sm add-availability-btn">
@@ -422,9 +420,9 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer" style="border-top: 1px solid var(--clr-border); padding: var(--space-4) var(--space-6);">
-                <button type="button" class="btn" data-bs-dismiss="modal" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-surface-secondary); color: var(--clr-text); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); font-weight: 600;">إلغاء</button>
-                <button type="button" class="btn" id="editDoctorSubmitBtn" style="min-width: 100px; padding: 10px 24px; background-color: var(--clr-primary); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-weight: 600;">حفظ التغييرات</button>
+            <div class="modal-footer modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="editDoctorSubmitBtn">حفظ التغييرات</button>
             </div>
         </div>
     </div>
@@ -463,7 +461,7 @@
                     <input type="hidden" id="changePasswordDoctorId" />
                     <div class="form-group mb-3">
                         <label class="form-label">الطبيب</label>
-                        <p class="fw-bold" id="changePasswordDoctorName" style="margin: 0;"></p>
+                        <p class="fw-bold mb-0" id="changePasswordDoctorName"></p>
                     </div>
                     <div class="form-group">
                         <label class="form-label">كلمة المرور الجديدة</label>

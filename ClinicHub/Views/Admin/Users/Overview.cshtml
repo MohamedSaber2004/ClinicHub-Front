@@ -76,17 +76,17 @@
         <!-- Change Password -->
         <div class="detail-card">
             <h3 class="detail-card-title">تغيير كلمة المرور</h3>
-            <form method="post" action="/Admin/Users/ChangePassword" style="max-width: 400px;">
+            <form method="post" action="/Admin/Users/ChangePassword">
                 <input type="hidden" name="id" value="@u.Id" />
-                <div class="form-group" style="margin-bottom: var(--space-4);">
+                <div class="form-group">
                     <label class="form-label" for="overviewNewPassword">كلمة المرور الجديدة</label>
                     <input type="password" id="overviewNewPassword" name="newPassword" class="form-input" placeholder="********" required minlength="6" />
                 </div>
-                <div class="form-group" style="margin-bottom: var(--space-4);">
+                <div class="form-group">
                     <label class="form-label" for="overviewConfirmPassword">تأكيد كلمة المرور</label>
                     <input type="password" id="overviewConfirmPassword" name="confirmPassword" class="form-input" placeholder="********" required minlength="6" />
                 </div>
-                <button type="submit" class="btn btn-primary" style="padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">تحديث كلمة المرور</button>
+                <button type="submit" class="btn btn-primary">تحديث كلمة المرور</button>
             </form>
         </div>
 

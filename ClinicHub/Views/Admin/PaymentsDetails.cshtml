@@ -44,7 +44,7 @@
         </div>
         <div class="detail-header-amount">
             <span class="detail-amount">@d.Amount.ToString("N2") ج.م</span>
-            <span class="badge @statusClass" style="font-size: 14px; padding: 4px 16px;">@statusText</span>
+            <span class="badge @statusClass">@statusText</span>
         </div>
     </div>
 
@@ -102,11 +102,11 @@
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">ID المعاملة</span>
-                    <span class="detail-info-value" style="direction: ltr; text-align: right;">@(string.IsNullOrWhiteSpace(d.TransactionId) ? "—" : d.TransactionId)</span>
+                    <span class="detail-info-value">@(string.IsNullOrWhiteSpace(d.TransactionId) ? "—" : d.TransactionId)</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">رقم المرجع</span>
-                    <span class="detail-info-value" style="direction: ltr; text-align: right;">@d.RefNumber</span>
+                    <span class="detail-info-value">@d.RefNumber</span>
                 </div>
                 <div class="detail-info-row">
                     <span class="detail-info-label">تاريخ الإنشاء</span>
@@ -117,7 +117,7 @@
     </div>
 
     <!-- Payment Items -->
-    <div class="table-card" style="margin-bottom: var(--space-5);">
+    <div class="table-card mb-4">
         <div class="table-card-header">
             <h3 class="table-card-title">
                 <span class="subtitle-icon">
@@ -142,8 +142,8 @@
                     <tr>
                         <td class="text-md-medium">@d.ItemName</td>
                         <td class="text-md">1</td>
-                        <td class="text-md" style="direction: ltr; text-align: right;">@d.Amount.ToString("N2") ج.م</td>
-                        <td class="text-md-medium" style="direction: ltr; text-align: right;">@d.Amount.ToString("N2") ج.م</td>
+                        <td class="text-md">@d.Amount.ToString("N2") ج.م</td>
+                        <td class="text-md-medium">@d.Amount.ToString("N2") ج.م</td>
                     </tr>
                 </tbody>
             </table>
@@ -163,7 +163,7 @@
         <div class="timeline">
             @if (d.Timeline.Count == 0)
             {
-                <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">لا يوجد سجل للمعاملة</p>
+                <p class="text-md text-muted mb-0">لا يوجد سجل للمعاملة</p>
             }
             else
             {
@@ -192,18 +192,18 @@
             ملاحظات
         </h3>
         <div class="detail-notes">
-            <p class="text-md" style="color: var(--clr-text-secondary); margin: 0;">@(string.IsNullOrWhiteSpace(d.Notes) ? "لا توجد ملاحظات" : d.Notes)</p>
+            <p class="text-md text-muted mb-0">@(string.IsNullOrWhiteSpace(d.Notes) ? "لا توجد ملاحظات" : d.Notes)</p>
         </div>
     </div>
 
     <!-- Refund Action -->
     @if (d.Status == 1)
     {
-        <div class="detail-card" style="margin-top: var(--space-4);">
+        <div class="detail-card mt-4">
             <div class="detail-section-header">
                 <h3 class="detail-card-title">استرداد المبلغ</h3>
             </div>
-            <p class="text-md" style="color: var(--clr-text-secondary); margin-bottom: var(--space-4);">يمكنك استرداد المبلغ للدافع. سيتم إعادة المبلغ عبر قناة الدفع الأصلية.</p>
+            <p class="text-md text-muted mb-4">يمكنك استرداد المبلغ للدافع. سيتم إعادة المبلغ عبر قناة الدفع الأصلية.</p>
             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#refundModal">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
@@ -227,7 +227,7 @@
                     <label class="form-label">سبب الاسترداد</label>
                     <textarea id="refundReason" class="form-textarea" maxlength="500" placeholder="أدخل سبب الاسترداد..." rows="3"></textarea>
                 </div>
-                <p class="text-md" style="color: var(--clr-danger); margin: var(--space-3) 0 0;">سيتم استرداد مبلغ @d.Amount.ToString("N2") ج.م. هذا الإجراء لا يمكن التراجع عنه.</p>
+                <p class="text-md text-danger mt-3">سيتم استرداد مبلغ @d.Amount.ToString("N2") ج.م. هذا الإجراء لا يمكن التراجع عنه.</p>
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>

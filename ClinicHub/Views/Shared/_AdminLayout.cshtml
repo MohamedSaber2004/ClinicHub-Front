@@ -25,7 +25,7 @@
                         <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
                     </svg>
                     <span class="logo-text">
-                        <span class="logo-brand-ar" style="color: var(--primary-color); font-weight: 800;">Doctory</span>
+                        <span class="logo-brand-ar">Doctory</span>
                     </span>
                 </div>
             </div>
@@ -52,19 +52,19 @@
                         var _profilePic = _attachmentUrlResolver.Resolve(_profile?.ProfilePictureUrl);
                     }
                     <a class="sidebar-item @(IsActive("Admin", "Index") ? "active" : "")" href="@AdminRoutes.Pages.Index()">
-                        <i class="bi bi-speedometer2" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                        <i class="bi bi-speedometer2"></i>
                         <span>لوحة التحكم</span>
                     </a>
                     <a class="sidebar-item @(IsActive("Admin", "Specializations") ? "active" : "")" href="@AdminRoutes.Pages.Specializations()">
-                        <i class="bi bi-tags" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                        <i class="bi bi-tags"></i>
                         <span>التخصصات</span>
                     </a>
                     <a class="sidebar-item @(IsActive("Admin", "Clinics") ? "active" : "")" href="@AdminRoutes.Pages.Clinics()">
-                        <i class="bi bi-hospital" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                        <i class="bi bi-hospital"></i>
                         <span>العيادات</span>
                     </a>
                     <a class="sidebar-item @(IsActive("Admin", "Support") ? "active" : "")" href="@AdminRoutes.Pages.Support()">
-                        <i class="bi bi-headset" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                        <i class="bi bi-headset"></i>
                         <span>الدعم الفني</span>
                     </a>
                     <a class="sidebar-item @(IsActive("Admin", "Users") ? "active" : "")" href="@AdminRoutes.Pages.Users()">
@@ -81,7 +81,7 @@
                         </svg>
                         <span>مركز التحقق</span>
                     </a>
-                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">إدارة الاشتراكات</div>
+                    <div class="sidebar-section">إدارة الاشتراكات</div>
                     <a class="sidebar-item @(IsActive("Admin", "PendingClinics") ? "active" : "")" href="@AdminRoutes.Pages.PendingClinics()">
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/></svg>
                         <span>العيادات قيد الانتظار</span>
@@ -94,9 +94,9 @@
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/></svg>
                         <span>جميع الاشتراكات</span>
                     </a>
-                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">المالية</div>
+                    <div class="sidebar-section">المالية</div>
                     <a class="sidebar-item @(IsActive("Admin", "Payments") ? "active" : "")" href="@AdminRoutes.Pages.Payments()">
-                        <i class="bi bi-credit-card" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                        <i class="bi bi-credit-card"></i>
                         <span>المدفوعات</span>
                     </a>
                     <a class="sidebar-item @(IsActive("Admin", "Ads") ? "active" : "")" href="@AdminRoutes.Pages.Ads()">
@@ -123,7 +123,7 @@
                     </div>
                 </a>
                 <a href="#" class="sidebar-item" id="logoutBtn">
-                    <i class="bi bi-box-arrow-left" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                    <i class="bi bi-box-arrow-left"></i>
                     <span>تسجيل الخروج</span>
                 </a>
             </div>
@@ -139,7 +139,7 @@
                 <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة">
                     <i class="bi bi-chevron-double-right"></i>
                 </button>
-                <div style="flex:1"></div>
+                <div class="flex-fill"></div>
                 <a class="header-user" href="@AdminRoutes.Pages.Profile()">
                     <div class="user-info">
                         <span class="user-name">@_profileName</span>

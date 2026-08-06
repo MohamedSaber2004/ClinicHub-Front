@@ -22,7 +22,7 @@
                         <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
                     </svg>
                     <span class="logo-text">
-                        <span class="logo-brand-ar" style="color: var(--primary-color); font-weight: 800;">Doctory</span>
+                        <span class="logo-brand-ar">Doctory</span>
                     </span>
                 </div>
             </div>
@@ -72,12 +72,12 @@
                         </a>
                     }
 
-                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الاشتراك</div>
-<a class="sidebar-item @(IsActive("Clinic", "MySubscription") ? "active" : "")" href="/Clinic/MySubscription" style="padding-right: 20px;">
-                            <i class="bi bi-credit-card" style="color: var(--primary-color);"></i>
+                    <div class="sidebar-section">الاشتراك</div>
+                    <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "MySubscription") ? "active" : "")" href="/Clinic/MySubscription">
+                        <i class="bi bi-credit-card"></i>
                         <span>اشتراكي</span>
                     </a>
-                    
+
                     @{
                         bool canShowMedicalRecords = _user?.Has(Permission.ManageMedicalRecords) == true && _user?.HasFeature(PlanFeature.ManagePatientRecords) == true;
                         bool canShowStaff = _user?.Has(Permission.ManageClinicStaff) == true && _user?.HasFeature(PlanFeature.ManageStaff) == true;
@@ -88,81 +88,80 @@
                     }
                     @if (canShowMedicalRecords || canShowStaff || canShowDoctors || canShowReports || canShowMarketing || canShowPrioritySupport)
                     {
-                        <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الخدمات التشغيلية</div>
+                        <div class="sidebar-section">الخدمات التشغيلية</div>
                     }
 
                     @if (canShowMedicalRecords)
                     {
-                        <a class="sidebar-item @(IsActive("Clinic", "MedicalRecords") ? "active" : "")" href="@ClinicRoutes.Pages.MedicalRecords()" style="padding-right: 20px;">
-                            <i class="bi bi-folder2-open" style="color: var(--primary-color);"></i>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "MedicalRecords") ? "active" : "")" href="@ClinicRoutes.Pages.MedicalRecords()">
+                            <i class="bi bi-folder2-open"></i>
                             <span>السجل الطبي الإلكتروني</span>
                         </a>
                     }
                     @if (canShowStaff)
                     {
-                        <a class="sidebar-item @(IsActive("Clinic", "Staff") ? "active" : "")" href="@ClinicRoutes.Pages.Staff()" style="padding-right: 20px;">
-                            <i class="bi bi-person-badge" style="color: var(--primary-color);"></i>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Staff") ? "active" : "")" href="@ClinicRoutes.Pages.Staff()">
+                            <i class="bi bi-person-badge"></i>
                             <span>إدارة الموظفين</span>
                         </a>
                     }
                     @if (canShowDoctors)
                     {
-                        <a class="sidebar-item @(IsActive("Clinic", "Doctors") ? "active" : "")" href="@ClinicRoutes.Pages.Doctors()" style="padding-right: 20px;">
-                            <i class="bi bi-person-workspace" style="color: var(--primary-color);"></i>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Doctors") ? "active" : "")" href="@ClinicRoutes.Pages.Doctors()">
+                            <i class="bi bi-person-workspace"></i>
                             <span>إدارة الأطباء</span>
                         </a>
                     }
                     @if (canShowReports)
                     {
-                        <a class="sidebar-item @(IsActive("Clinic", "Reports") ? "active" : "")" href="@ClinicRoutes.Pages.Reports()" style="padding-right: 20px;">
-                            <i class="bi bi-file-bar-graph" style="color: var(--primary-color);"></i>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Reports") ? "active" : "")" href="@ClinicRoutes.Pages.Reports()">
+                            <i class="bi bi-file-bar-graph"></i>
                             <span>التقارير</span>
                         </a>
                     }
                     @if (canShowMarketing)
                     {
-                        <a class="sidebar-item @(IsActive("Clinic", "Marketing") ? "active" : "")" href="@ClinicRoutes.Pages.Marketing()" style="padding-right: 20px;">
-                            <i class="bi bi-megaphone" style="color: var(--primary-color);"></i>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Marketing") ? "active" : "")" href="@ClinicRoutes.Pages.Marketing()">
+                            <i class="bi bi-megaphone"></i>
                             <span>الخدمات الإعلانية</span>
                         </a>
                     }
                     @if (canShowPrioritySupport)
                     {
-                        <a class="sidebar-item @(IsActive("Clinic", "Support") ? "active" : "")" href="@ClinicRoutes.Pages.Support()" style="padding-right: 20px;">
-                            <i class="bi bi-headset" style="color: var(--primary-color);"></i>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Support") ? "active" : "")" href="@ClinicRoutes.Pages.Support()">
+                            <i class="bi bi-headset"></i>
                             <span>دعم ذو أولوية</span>
                         </a>
                     }
-                    <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">لوحة الطبيب</div>
-                    <a class="sidebar-item @(IsActive("Clinic", "DoctorAppointments") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorAppointments()" style="padding-right: 20px;">
-                        <i class="bi bi-calendar3" style="color: var(--primary-color);"></i>
+                    <div class="sidebar-section">لوحة الطبيب</div>
+                    <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "DoctorAppointments") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorAppointments()">
+                        <i class="bi bi-calendar3"></i>
                         <span>مواعيد الأطباء</span>
                     </a>
-                    <a class="sidebar-item @(IsActive("Clinic", "DoctorPatients") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorPatients()" style="padding-right: 20px;">
-                        <i class="bi bi-people" style="color: var(--primary-color);"></i>
+                    <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "DoctorPatients") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorPatients()">
+                        <i class="bi bi-people"></i>
                         <span>مرضى العيادة</span>
                     </a>
-                    <a class="sidebar-item @(IsActive("Clinic", "DoctorAvailability") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorAvailability()" style="padding-right: 20px;">
-                        <i class="bi bi-clock-history" style="color: var(--primary-color);"></i>
+                    <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "DoctorAvailability") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorAvailability()">
+                        <i class="bi bi-clock-history"></i>
                         <span>أوقات عمل الأطباء</span>
                     </a>
                     @if (_user?.Has(Permission.ManageClinicSettings) == true)
                     {
-                        <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">المالية</div>
-                        <a class="sidebar-item @(IsActive("Clinic", "AppointmentRevenue") ? "active" : "")" href="@ClinicRoutes.Pages.AppointmentRevenue()" style="padding-right: 20px;">
-                            <i class="bi bi-wallet2" style="color: var(--primary-color);"></i>
+                        <div class="sidebar-section">المالية</div>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "AppointmentRevenue") ? "active" : "")" href="@ClinicRoutes.Pages.AppointmentRevenue()">
+                            <i class="bi bi-wallet2"></i>
                             <span>إيرادات المواعيد</span>
                         </a>
-                        <div style="margin: 15px 16px 8px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; letter-spacing: 0.5px;">الإعدادات</div>
-                        <a class="sidebar-item @(IsActive("Clinic", "Settings") ? "active" : "")" href="@ClinicRoutes.Pages.Settings()" style="padding-right: 20px;">
-                            <i class="bi bi-gear" style="color: var(--primary-color);"></i>
+                        <div class="sidebar-section">الإعدادات</div>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Settings") ? "active" : "")" href="@ClinicRoutes.Pages.Settings()">
+                            <i class="bi bi-gear"></i>
                             <span>إعدادات العيادة</span>
                         </a>
                     }
                 </div>
             </nav>
             <div class="sidebar-bottom">
-                <hr style="width: 100%; border: none; border-top: 1px solid var(--clr-border); margin: 0; padding: 0;" />
                 <a class="sidebar-profile" href="@ClinicRoutes.Pages.Profile()">
                     <div class="sidebar-profile-avatar">
                         @if (!string.IsNullOrWhiteSpace(_profilePic))
@@ -180,11 +179,11 @@
                     </div>
                     @if (!string.IsNullOrEmpty(_user?.PlanName))
                     {
-                        <span class="sidebar-plan-badge" style="font-size: 10px; font-weight: 700; color: var(--clr-primary); background: rgba(7, 100, 83, 0.1); padding: 2px 8px; border-radius: 4px; white-space: nowrap; margin-right: auto;">@_user.PlanName</span>
+                        <span class="sidebar-plan-badge">@_user.PlanName</span>
                     }
                 </a>
                 <a href="#" class="sidebar-item" id="logoutBtn">
-                    <i class="bi bi-box-arrow-left" style="font-size: 1.1rem; margin-left: 10px;"></i>
+                    <i class="bi bi-box-arrow-left"></i>
                     <span>تسجيل الخروج</span>
                 </a>
             </div>
@@ -200,7 +199,7 @@
                 <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة">
                     <i class="bi bi-chevron-double-right"></i>
                 </button>
-                <div style="flex:1"></div>
+                <div class="flex-fill"></div>
                 <a class="header-user" href="@ClinicRoutes.Pages.Profile()">
                     <div class="user-info">
                         <span class="user-name">@_profileName</span>

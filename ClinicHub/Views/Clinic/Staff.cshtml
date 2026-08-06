@@ -99,18 +99,15 @@
                     {
                         <tr>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="staff-card-avatar" style="width:40px;height:40px;flex-shrink:0;">
-                                        @if (!string.IsNullOrEmpty(staff.Image))
-                                        {
-                                            <img src="@_attachmentUrlResolver.Resolve(staff.Image)" alt="@staff.FullName" style="width:40px;height:40px;object-fit:cover;border-radius:50%;" />
-                                        }
-                                        else
-                                        {
-                                            <span class="staff-card-initial" style="width:40px;height:40px;font-size:16px;border-radius:50%;">@staff.FullName.Substring(0, 1)</span>
-                                        }
-                                    </div>
-                                    @* <span class="text-xs text-muted" style="white-space:nowrap;" title="@staff.Image">@(!string.IsNullOrEmpty(staff.Image) ? staff.Image : "-")</span> *@
+                                <div class="table-avatar table-avatar--md">
+                                    @if (!string.IsNullOrEmpty(staff.Image))
+                                    {
+                                        <img src="@_attachmentUrlResolver.Resolve(staff.Image)" alt="@staff.FullName" />
+                                    }
+                                    else
+                                    {
+                                        <span>@staff.FullName.Substring(0, 1)</span>
+                                    }
                                 </div>
                             </td>
                             <td><strong>@staff.FullName</strong></td>
@@ -225,9 +222,9 @@
                             <div class="file-upload-wrapper">
                                 <input type="file" id="createStaffImageInput" accept="image/*" class="form-input form-input-sm w-100" />
                                 <input type="hidden" id="createStaffImage" />
-                                <div id="createStaffImageStatus" class="d-none align-items-center gap-2 mt-2" style="display:none;">
-                                    <img id="createStaffImagePreview" src="" alt="صورة الموظف" style="width:60px;height:60px;object-fit:cover;border-radius:50%;border:1px solid var(--clr-border);" />
-                                    <button type="button" id="removeCreateStaffImageBtn" class="btn btn-sm p-0 border-0 bg-transparent" style="color:var(--clr-danger);font-size:12px;" title="إزالة الصورة">
+                                <div id="createStaffImageStatus" class="d-none align-items-center gap-2 mt-2">
+                                    <img id="createStaffImagePreview" src="" alt="صورة الموظف" class="avatar-preview rounded-circle" />
+                                    <button type="button" id="removeCreateStaffImageBtn" class="btn btn-sm p-0 border-0 bg-transparent text-danger" title="إزالة الصورة">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
                                 </div>
@@ -268,9 +265,9 @@
                         <div class="file-upload-wrapper">
                             <input type="file" id="editStaffImageInput" accept="image/*" class="form-input form-input-sm w-100" />
                             <input type="hidden" id="editStaffImage" />
-                            <div id="editStaffImageStatus" class="d-none align-items-center gap-2 mt-2" style="display:none;">
-                                <img id="editStaffImagePreview" src="" alt="صورة الموظف" style="width:60px;height:60px;object-fit:cover;border-radius:50%;border:1px solid var(--clr-border);" />
-                                <button type="button" id="removeEditStaffImageBtn" class="btn btn-sm p-0 border-0 bg-transparent" style="color:var(--clr-danger);font-size:12px;" title="إزالة الصورة">
+                            <div id="editStaffImageStatus" class="d-none align-items-center gap-2 mt-2">
+                                <img id="editStaffImagePreview" src="" alt="صورة الموظف" class="avatar-preview rounded-circle" />
+                                <button type="button" id="removeEditStaffImageBtn" class="btn btn-sm p-0 border-0 bg-transparent text-danger" title="إزالة الصورة">
                                     <i class="bi bi-x-circle"></i>
                                 </button>
                             </div>

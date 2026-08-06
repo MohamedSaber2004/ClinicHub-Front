@@ -84,7 +84,7 @@
                     <tr>
                         <td class="text-md">#@t.Id.ToString().Split('-')[0].ToUpper()</td>
                         <td class="text-md-medium">
-                            <span class="row-icon" style="color: @(tPriority.Label == "عالية" ? "var(--clr-danger)" : "var(--clr-text-secondary)");">
+                            <span class="row-icon @(tPriority.Label == "عالية" ? "text-danger" : "text-muted")">
                                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                                 </svg>
@@ -166,7 +166,7 @@
                 </div>
                 <div class="form-group" id="ticketAttachmentsGroup" style="display:none;">
                     <p class="form-label">المرفقات:</p>
-                    <div id="ticketAttachments" style="display: flex; gap: 8px; align-items: center;"></div>
+                    <div id="ticketAttachments" class="d-flex gap-2 align-items-center"></div>
                 </div>
                 <div class="form-group">
                     <p class="form-label">تاريخ الإبلاغ:</p>

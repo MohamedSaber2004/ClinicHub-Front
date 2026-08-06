@@ -20,24 +20,22 @@
 </div>
 
 <!-- Filter Bar -->
-<div class="filter-bar">
-    <form method="get" action="/Admin/Users" class="filter-bar" style="display: contents;">
-        <input type="text" id="filterSearch" name="searchTerm" class="form-input" placeholder="بحث عن مستخدم..." value="@ViewBag.SearchTerm" />
-        <select id="filterUserTypes" name="userTypes" class="form-select" onchange="this.form.submit()">
-            <option value="">جميع الأدوار</option>
-            <option value="2" selected="@(userTypesFilter == "2")">مدير النظام</option>
-            <option value="16" selected="@(userTypesFilter == "16")">مالك عيادة</option>
-            <option value="4" selected="@(userTypesFilter == "4")">طبيب</option>
-            <option value="8" selected="@(userTypesFilter == "8")">موظف</option>
-            <option value="1" selected="@(userTypesFilter == "1")">مريض</option>
-        </select>
-        <select id="filterStatus" name="status" class="form-select" onchange="this.form.submit()">
-            <option value="">جميع الحالات</option>
-            <option value="نشط" selected="@isActiveSelected">نشط</option>
-            <option value="غير نشط" selected="@isInactiveSelected">غير نشط</option>
-        </select>
-    </form>
-</div>
+<form method="get" action="/Admin/Users" class="filter-bar">
+    <input type="text" id="filterSearch" name="searchTerm" class="form-input" placeholder="بحث عن مستخدم..." value="@ViewBag.SearchTerm" />
+    <select id="filterUserTypes" name="userTypes" class="form-select" onchange="this.form.submit()">
+        <option value="">جميع الأدوار</option>
+        <option value="2" selected="@(userTypesFilter == "2")">مدير النظام</option>
+        <option value="16" selected="@(userTypesFilter == "16")">مالك عيادة</option>
+        <option value="4" selected="@(userTypesFilter == "4")">طبيب</option>
+        <option value="8" selected="@(userTypesFilter == "8")">موظف</option>
+        <option value="1" selected="@(userTypesFilter == "1")">مريض</option>
+    </select>
+    <select id="filterStatus" name="status" class="form-select" onchange="this.form.submit()">
+        <option value="">جميع الحالات</option>
+        <option value="نشط" selected="@isActiveSelected">نشط</option>
+        <option value="غير نشط" selected="@isInactiveSelected">غير نشط</option>
+    </select>
+</form>
 
 <!-- Users Table -->
 <div class="table-card">
@@ -59,18 +57,18 @@
                 {
                     <tr>
                         <td>
-                            <div style="display: flex; align-items: center; gap: var(--space-3);">
-                                <div class="sidebar-profile-avatar" style="width: 36px; height: 36px; background-color: var(--clr-primary);">
+                            <div class="table-user">
+                                <div class="table-avatar table-avatar--md">
                                     @if (!string.IsNullOrWhiteSpace(u.Image))
                                     {
-                                        <img src="@u.Image" alt="@u.Name" class="header-avatar-img" />
+                                        <img src="@u.Image" alt="@u.Name" />
                                     }
                                     else
                                     {
-                                        <span style="color: #FFFFFF; font-size: var(--fs-md); font-weight: var(--fw-bold);">@u.Initials</span>
+                                        <span>@u.Initials</span>
                                     }
                                 </div>
-                                <span class="text-md-medium">@u.Name</span>
+                                <span class="table-user-name">@u.Name</span>
                             </div>
                         </td>
                         <td class="text-md">@u.Email</td>
@@ -176,7 +174,7 @@
                                 <option value="1">مستخدم</option>
                             </select>
                     </div>
-                    <div class="form-group" id="clinicGroup" style="display:none;">
+                    <div class="form-group form-group-hidden" id="clinicGroup">
                         <label class="form-label" for="createClinic">العيادة</label>
                         <select id="createClinic" name="ClinicId" class="form-select">
                             <option value="">اختر عيادة</option>
@@ -189,7 +187,7 @@
                             }
                         </select>
                     </div>
-                    <div class="form-group" id="doctorFields" style="display:none;">
+                    <div class="form-group form-group-hidden" id="doctorFields">
                         <label class="form-label" for="createSpecialization">التخصص</label>
                         <select id="createSpecialization" name="SpecializationId" class="form-select">
                             <option value="">اختر تخصص</option>
@@ -202,15 +200,15 @@
                             }
                         </select>
                     </div>
-                    <div class="form-group" id="bioGroup" style="display:none;">
+                    <div class="form-group form-group-hidden" id="bioGroup">
                         <label class="form-label" for="createBio">نبذة تعريفية</label>
                         <textarea id="createBio" name="Bio" class="form-input" rows="3" placeholder="نبذة عن الطبيب"></textarea>
                     </div>
-                    <div class="form-group" id="experienceGroup" style="display:none;">
+                    <div class="form-group form-group-hidden" id="experienceGroup">
                         <label class="form-label" for="createExperience">سنوات الخبرة</label>
                         <input type="number" id="createExperience" name="YearsOfExperience" class="form-input" placeholder="مثال: 5" min="0" />
                     </div>
-                    <div class="form-group" id="availabilitiesGroup" style="display:none;">
+                    <div class="form-group form-group-hidden" id="availabilitiesGroup">
                         <label class="form-label">أوقات العمل (اختياري)</label>
                         <div id="adminAvailabilityContainer">
                             <div class="availability-row" data-index="0">
@@ -285,20 +283,20 @@
 
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-            <div class="modal-body" style="padding: var(--space-6); text-align: center;">
-                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+        <div class="modal-content modal-content-custom">
+            <div class="modal-body text-center">
+                <div class="icon-wrapper icon-wrapper--danger modal-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                     </svg>
                 </div>
-                <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-2);">تأكيد الحذف</h3>
-                <p style="font-family: var(--ff-primary); font-size: var(--fs-md); color: var(--clr-text-secondary); margin: 0 0 var(--space-5);">
-                    هل أنت متأكد من حذف المستخدم: <strong id="deleteUserName" style="color: var(--clr-text);"></strong>؟
+                <h3 class="modal-heading">تأكيد الحذف</h3>
+                <p class="modal-copy">
+                    هل أنت متأكد من حذف المستخدم: <strong id="deleteUserName" class="text-body"></strong>؟
                 </p>
-                <div style="display: flex; gap: var(--space-2); justify-content: center;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
-                    <button type="button" id="confirmDeleteBtn" class="btn" style="min-width: 90px; padding: 10px 24px; background-color: var(--clr-danger); color: #FFFFFF; border: none; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600; cursor: pointer;">حذف</button>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">حذف</button>
                 </div>
             </div>
         </div>
@@ -307,30 +305,30 @@
 
 <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+        <div class="modal-content modal-content-custom">
             <form id="changePasswordForm" method="post" action="/Admin/Users/ChangePassword">
-                <div class="modal-body" style="padding: var(--space-6);">
-                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" fill="#2563eb"/>
+                <div class="modal-body text-center">
+                    <div class="icon-wrapper icon-wrapper--blue modal-icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-1); text-align: center;">تغيير كلمة المرور</h3>
-                    <p style="font-family: var(--ff-primary); font-size: var(--fs-sm); color: var(--clr-text-secondary); margin: 0 0 var(--space-5); text-align: center;">
-                        تغيير كلمة مرور المستخدم: <strong id="changePasswordUserName" style="color: var(--clr-text);"></strong>
+                    <h3 class="modal-heading text-center">تغيير كلمة المرور</h3>
+                    <p class="modal-copy text-center">
+                        تغيير كلمة مرور المستخدم: <strong id="changePasswordUserName" class="text-body"></strong>
                     </p>
                     <input type="hidden" id="changePasswordUserId" name="id" value="" />
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="newPassword">كلمة المرور الجديدة</label>
                         <input type="password" id="newPassword" name="newPassword" class="form-input" placeholder="********" required minlength="6" />
                     </div>
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="confirmPassword">تأكيد كلمة المرور</label>
                         <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="********" required minlength="6" />
                     </div>
-                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
-                        <button type="submit" class="btn btn-primary" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">حفظ</button>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
                     </div>
                 </div>
             </form>
@@ -340,34 +338,34 @@
 
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+        <div class="modal-content modal-content-custom">
             <form id="editUserForm" method="post" action="/Admin/Users/Edit">
-                <div class="modal-body" style="padding: var(--space-6);">
-                    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: rgba(37, 99, 235, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#2563eb"/>
+                <div class="modal-body text-center">
+                    <div class="icon-wrapper icon-wrapper--blue modal-icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-1); text-align: center;">تعديل بيانات المستخدم</h3>
+                    <h3 class="modal-heading text-center">تعديل بيانات المستخدم</h3>
                     <input type="hidden" id="editUserId" name="id" value="" />
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="editUserName">الاسم الكامل</label>
                         <input type="text" id="editUserName" name="fullName" class="form-input" required />
                     </div>
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="editUserPhone">رقم الهاتف</label>
                         <input type="text" id="editUserPhone" name="phoneNumber" class="form-input" />
                     </div>
-                    <div class="form-group" style="margin-bottom: var(--space-4);">
+                    <div class="form-group text-start">
                         <label class="form-label" for="editUserStatus">الحالة</label>
                         <select id="editUserStatus" name="isActive" class="form-select">
                             <option value="true">نشط</option>
                             <option value="false">غير نشط</option>
                         </select>
                     </div>
-                    <div style="display: flex; gap: var(--space-2); justify-content: center;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إلغاء</button>
-                        <button type="submit" class="btn btn-primary" style="min-width: 90px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">حفظ التعديلات</button>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
                     </div>
                 </div>
             </form>

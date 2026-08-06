@@ -40,8 +40,8 @@
         <div class="subscription-plans" id="planCards">
             @if (plans.Count == 0)
             {
-                <div class="text-center" style="padding: var(--space-8); color: var(--clr-text-secondary);">
-                    <p style="font-size: var(--fs-lg);">لا توجد باقات متاحة حالياً</p>
+                <div class="plans-empty">
+                    <p>لا توجد باقات متاحة حالياً</p>
                 </div>
             }
             else
@@ -161,20 +161,20 @@
 <!-- Register-Required Modal (unauthenticated subscribe attempt) -->
 <div class="modal fade" id="registerRequiredModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: none; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-            <div class="modal-body" style="padding: var(--space-6); text-align: center;">
-                <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--clr-primary-light); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+        <div class="modal-content-custom">
+            <div class="modal-body-custom text-center">
+                <div class="icon-wrapper icon-wrapper--primary modal-icon-circle">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--clr-primary)"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                     </svg>
                 </div>
-                <h3 style="font-family: var(--ff-primary); font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0 0 var(--space-2);">يجب عليك التسجيل أولاً</h3>
-                <p style="font-family: var(--ff-primary); font-size: var(--fs-md); color: var(--clr-text-secondary); margin: 0 0 var(--space-5);">
+                <h3 class="modal-heading">يجب عليك التسجيل أولاً</h3>
+                <p class="modal-copy">
                     لإتمام الاشتراك في الباقة، يرجى إنشاء حساب عيادتك أولاً ثم تسجيل الدخول.
                 </p>
-                <div style="display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap;">
-                    <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary" style="min-width: 140px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">إنشاء حساب جديد</a>
-                    <a href="@HomeRoutes.Account.Login()" class="btn btn-secondary" style="min-width: 140px; padding: 10px 24px; border-radius: var(--radius-sm); font-size: var(--fs-md); font-weight: 600;">تسجيل الدخول</a>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary">إنشاء حساب جديد</a>
+                    <a href="@HomeRoutes.Account.Login()" class="btn btn-secondary">تسجيل الدخول</a>
                 </div>
             </div>
         </div>

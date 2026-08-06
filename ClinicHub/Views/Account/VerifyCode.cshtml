@@ -13,28 +13,27 @@
                 <path d="M9 16C9 12.134 12.134 9 16 9C19.866 9 23 12.134 23 16C23 19.866 19.866 23 16 23V16H9Z" fill="white"/>
                 <circle cx="12.5" cy="12.5" r="2.5" fill="#F2F5F9"/>
             </svg>
-            <span style="font-size: 16px; font-weight: 700; color: var(--text-dark);">Doctory</span>
+            <span class="auth-logo-text">Doctory</span>
         </div>
 
         <h3 class="auth-title">رمز التحقق</h3>
-        
-        <p style="font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 20px; line-height: 1.6;">
+
+        <p class="auth-description">
             تم إرسال رمز التحقق إلى: <br />
-            <strong style="color: var(--text-dark);">@email</strong>
+            <strong class="auth-email">@email</strong>
         </p>
 
         <form action="@HomeRoutes.Account.VerifyCode()" method="post" data-ajax="true">
-            <div class="text-danger" asp-validation-summary="ModelOnly" style="font-size: 14px; margin-bottom: 15px; text-align: center;"></div>
-            
+            <div class="text-danger auth-alert" asp-validation-summary="ModelOnly"></div>
+
             <!-- Hidden input to preserve email -->
             <input type="hidden" name="email" value="@email" />
 
             <!-- Code Input -->
             <div class="auth-input-group">
-                <label class="auth-form-label" for="verificationCode" style="text-align: center; display: block;">أدخل رمز التحقق المكون من 6 أرقام</label>
-                <input class="auth-form-control" type="text" id="verificationCode" name="verificationCode" placeholder="••••••" 
-                       required maxlength="6" pattern="\d{6}" autocomplete="off" 
-                       style="text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: 700; padding: 8px;" />
+                <label class="auth-form-label auth-code-label" for="verificationCode">أدخل رمز التحقق المكون من 6 أرقام</label>
+                <input class="auth-form-control auth-code-input" type="text" id="verificationCode" name="verificationCode" placeholder="••••••"
+                       required maxlength="6" pattern="\d{6}" autocomplete="off" />
             </div>
 
             <button type="submit" class="auth-btn-primary">تحقق من الرمز</button>
