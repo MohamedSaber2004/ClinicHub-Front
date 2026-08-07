@@ -38,10 +38,24 @@
                 <a href="@HomeRoutes.Pages.Subscriptions()" class="nav-link">الباقات</a>
             </nav>
 
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center">
                 <a href="@HomeRoutes.Account.Login()" class="btn-primary-custom">
                     تسجيل الدخول
                 </a>
+                <button class="public-nav-toggle d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav" aria-expanded="false" aria-controls="publicNav" aria-label="فتح القائمة">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M3 6h18M3 12h18M3 18h18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="collapse d-md-none public-nav-collapse" id="publicNav">
+            <div class="container public-nav-links">
+                <a href="@HomeRoutes.Pages.Index()" class="nav-link">الرئيسية</a>
+                <a href="@HomeRoutes.Pages.About()" class="nav-link">من نحن</a>
+                <a href="@HomeRoutes.Pages.Privacy()" class="nav-link">سياسة الخصوصية</a>
+                <a href="@HomeRoutes.Pages.Subscriptions()" class="nav-link">الباقات</a>
             </div>
         </div>
     </header>

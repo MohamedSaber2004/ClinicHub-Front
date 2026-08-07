@@ -13,7 +13,7 @@
     .working-days-checkboxes { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .working-days-checkboxes .checkbox-inline { display: flex; align-items: center; gap: 4px; font-size: var(--fs-sm); cursor: pointer; }
     .working-days-checkboxes .checkbox-inline input { width: auto; }
-    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-4); }
+    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--space-4); }
     .staff-card { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; align-items: flex-start; gap: var(--space-4); transition: box-shadow var(--transition-base); }
     .staff-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
     .staff-card-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--clr-primary-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; color: var(--clr-primary); }
@@ -187,25 +187,27 @@
                 <div class="detail-card">
                     <div class="detail-section-header"><h5>أيام ومواعيد العمل</h5></div>
                     <div class="wh-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>اليوم</th>
-                                    <th>بداية</th>
-                                    <th>نهاية</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var wd in clinic.WorkingDays)
-                                {
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td>@wd.DayOfWeek</td>
-                                        <td>@wd.StartTime.ToString("h:mm tt", new System.Globalization.CultureInfo("ar-SA"))</td>
-                                        <td>@wd.EndTime.ToString("h:mm tt", new System.Globalization.CultureInfo("ar-SA"))</td>
+                                        <th>اليوم</th>
+                                        <th>بداية</th>
+                                        <th>نهاية</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach (var wd in clinic.WorkingDays)
+                                    {
+                                        <tr>
+                                            <td>@wd.DayOfWeek</td>
+                                            <td>@wd.StartTime.ToString("h:mm tt", new System.Globalization.CultureInfo("ar-SA"))</td>
+                                            <td>@wd.EndTime.ToString("h:mm tt", new System.Globalization.CultureInfo("ar-SA"))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             }

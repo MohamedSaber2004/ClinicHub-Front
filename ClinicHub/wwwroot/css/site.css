@@ -631,6 +631,43 @@ body {
     overflow-y: auto;
 }
 
+@media (max-width: 991px) {
+    .user-detail-layout {
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .user-detail-content {
+        min-height: 0;
+    }
+
+    .sub-sidebar {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-1);
+        overflow-x: auto;
+        border-left: none;
+        border-bottom: 1px solid var(--clr-border);
+        padding: var(--space-2) var(--space-3);
+        flex-shrink: 0;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sub-sidebar-header {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding: var(--space-1) var(--space-2);
+        flex-shrink: 0;
+    }
+
+    .sub-sidebar-item {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: var(--space-2) var(--space-3);
+    }
+}
+
 /* User Profile Header */
 .user-profile-header {
     display: flex;
@@ -2600,6 +2637,7 @@ body {
 
 .register-map-tools {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   align-items: center;
 }
@@ -2883,8 +2921,32 @@ body {
 
 .dd-header-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .doctor-detail-header {
+    flex-wrap: wrap;
+    padding: var(--space-4);
+  }
+}
+
+@media (max-width: 576px) {
+  .doctor-detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dd-header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dd-header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .detail-tabs .nav-tabs {
@@ -2917,8 +2979,10 @@ body {
 
 .detail-section-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: var(--space-2);
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--clr-border);
@@ -3497,6 +3561,7 @@ body {
 
 .cdh-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   flex-shrink: 0;
 }
@@ -3508,6 +3573,18 @@ body {
   .cdh-image {
     width: 100%;
     height: 160px;
+  }
+}
+
+@media (max-width: 576px) {
+  .cdh-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cdh-actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -3524,6 +3601,10 @@ body {
 
 @media (max-width: 768px) {
   .clinic-stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .clinic-stats-row { grid-template-columns: 1fr; }
 }
 
 .clinic-stat-card {
@@ -3966,6 +4047,53 @@ body {
 
 .public-header {
   animation: fadeInUp 0.3s ease-out;
+}
+
+/* Public header mobile nav */
+.public-nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--clr-surface);
+  color: var(--clr-text);
+  cursor: pointer;
+  transition: color var(--transition-base), border-color var(--transition-base), background-color var(--transition-base);
+}
+
+.public-nav-toggle:hover {
+  color: var(--clr-primary);
+  border-color: var(--clr-primary);
+  background-color: var(--clr-surface-subtle);
+}
+
+.public-nav-toggle:focus-visible {
+  outline: 2px solid var(--clr-primary);
+  outline-offset: 2px;
+}
+
+.public-nav-collapse {
+  border-top: 1px solid var(--clr-border);
+}
+
+.public-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) 0 var(--space-4);
+}
+
+.public-nav-links .nav-link {
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.public-nav-links .nav-link:hover {
+  background-color: var(--clr-surface-subtle);
 }
 
 .public-footer {
@@ -5709,6 +5837,8 @@ body {
   font-family: var(--ff-data);
   direction: ltr;
   display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .auth-code-label {
@@ -6904,6 +7034,9 @@ img {
   .public-header .container {
     flex-wrap: wrap;
     row-gap: var(--space-2);
+    height: auto;
+    min-height: 72px;
+    padding: var(--space-2) 0;
   }
 }
 
@@ -7235,6 +7368,7 @@ img {
 .eco-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
   background: var(--clr-surface-subtle);
   border: 1px solid var(--clr-border);

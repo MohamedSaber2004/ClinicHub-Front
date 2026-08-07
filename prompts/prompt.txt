@@ -1,4 +1,1 @@
-﻿CheckIn/04c8deb0-026a-4c8d-b938-1ffcce2b82ff:1  Failed to load resource: the server responded with a status of 400 ()
-staff-dashboard-service.js?v=0recMu82f-fsSLB8esNqfQ6zcQBX_WndJ6kJMdndmik:7 Uncaught (in promise) Error: لا يمكن الرد على هذا الموعد في حالته الحالية
-    at staff-dashboard-service.js?v=0recMu82f-fsSLB8esNqfQ6zcQBX_WndJ6kJMdndmik:7:23
-[NEW] Explain Console errors by using Copilot in Edge: click  to explain an error. Learn more
+﻿provider.ts:122 Uncaught FirebaseError: Installations: Missing App configuration value: "projectId" (installations/missing-app-config-values).
