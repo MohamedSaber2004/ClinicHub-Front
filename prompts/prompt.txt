@@ -1,1 +1,14 @@
-﻿provider.ts:122 Uncaught FirebaseError: Installations: Missing App configuration value: "projectId" (installations/missing-app-config-values).
+﻿[NEW] Explain Console errors by using Copilot in Edge: click  to explain an error. Learn moreDon't show again
+firebase-messaging-compat.js:1 Uncaught TypeError: Cannot read properties of undefined (reading 'INTERNAL')
+(anonymous) @ firebase-messaging-compat.js:1
+(anonymous) @ firebase-messaging-compat.js:1
+PendingScript
+(anonymous) @ fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:409
+loadSdk @ fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:397
+(anonymous) @ fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:413
+(anonymous) @ fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:414
+fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:12 Uncaught TypeError: firebase.messaging is not a function
+    at getMessaging (fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:12:25)
+    at handleForeground (fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:197:25)
+    at init (fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:388:14)
+    at HTMLScriptElement.<anonymous> (fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:403:73)

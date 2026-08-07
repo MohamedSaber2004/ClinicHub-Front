@@ -383,31 +383,48 @@
     }
 
     function init() {
+        if (typeof firebase === "undefined" || typeof firebase.messaging !== "function") {
+            console.warn("[FCM] disabled - Firebase messaging compat SDK unavailable");
+            return;
+        }
         var app = firebase.initializeApp(FIREBASE_CONFIG);
         if (isLoginPage()) handleLoginPage(app);
         else handleForeground(app);
     }
 
     function loadSdk(callback) {
+        // Load compat SDK scripts sequentially: firebase-messaging-compat
+        // depends on firebase-app-compat having executed first. Loading them
+        // in parallel (async=true) races — messaging-compat can run before
+        // app-compat and crash with "Cannot read properties of undefined
+        // (reading 'INTERNAL')", leaving firebase.messaging undefined.
         var scripts = [
             "https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js",
             "https://www.gstatic.com/firebasejs/12.17.1/firebase-messaging-compat.js"
         ];
-        var remaining = scripts.length;
-        scripts.forEach(function (src) {
+        var i = 0;
+
+        function loadNext() {
+            if (i >= scripts.length) {
+                if (typeof firebase !== "undefined") callback();
+                return;
+            }
             var s = document.createElement("script");
-            s.src = src;
-            s.async = true;
+            s.src = scripts[i];
+            s.async = false;
             s.onload = function () {
-                remaining -= 1;
-                if (remaining === 0 && typeof firebase !== "undefined") callback();
+                i += 1;
+                loadNext();
             };
             s.onerror = function () {
-                remaining -= 1;
-                console.warn("[FCM] SDK script failed to load:", src);
+                console.warn("[FCM] SDK script failed to load:", s.src);
+                i += 1;
+                loadNext();
             };
             document.head.appendChild(s);
-        });
+        }
+
+        loadNext();
     }
 
     loadSdk(init);

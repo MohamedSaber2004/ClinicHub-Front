@@ -69,7 +69,7 @@ body {
     display: flex;
     height: 100vh;
     height: 100dvh;
-    width: 100vw;
+    width: 100%;
     overflow: hidden;
 }
 
@@ -1148,9 +1148,10 @@ body {
 /* Content Body */
 .content-body {
     flex-grow: 1;
+    min-width: 0;
     padding: var(--space-7);
     overflow-y: auto;
-    width: auto;
+    width: 100%;
     max-width: 1560px;
     margin-inline: auto;
 }
@@ -5676,12 +5677,19 @@ body {
 }
 
 /* Perforation strips punched into the card edges (queue-ticket) */
+.ticket-perf--card-top,
+.ticket-perf--card-bottom {
+  max-width: calc(100vw - 4px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .ticket-perf--card-top {
-  margin: calc(-1 * var(--space-8)) calc(-1 * var(--space-8)) var(--space-8);
+  margin: calc(-1 * var(--space-8)) auto var(--space-8);
 }
 
 .ticket-perf--card-bottom {
-  margin: var(--space-8) calc(-1 * var(--space-8)) calc(-1 * var(--space-8));
+  margin: var(--space-8) auto calc(-1 * var(--space-8));
 }
 
 .required-icon-circle {

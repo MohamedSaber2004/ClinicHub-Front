@@ -146,6 +146,22 @@ catch (Exception ex)
 | Working hours table | `.wh-table` with table/th/td |
 | Profile page | `.profile-page`, `.profile-card` (+`-header`/`-body`), `.profile-avatar-large`, `.profile-avatar-img`, `.profile-name-row`, `.profile-full-name`, `.profile-role-label`, `.profile-freelance-badge`, `.profile-edit-btn`, `.profile-field` (+`-icon`/`-label`/`-value`), `.profile-image-status`, `.header-avatar`, `.header-avatar-img` |
 | Online booking slots | `.slot-segment` (+`-header`/`-title`/`-hours`), `.slot-duration-badge`, `.slot-grid`, `.slot-btn` (+`--selected`/`--disabled`), `.booking-filters`, `.booking-filter-group`, `.booking-empty`, `.booking-summary` (+`-item`) |
+| Doctor detail header | `.doctor-detail-header`, `.dd-header-avatar`, `.dd-header-info`, `.dd-header-name`, `.dd-header-meta`, `.dd-header-spec`, `.dd-header-actions` |
+| User detail layout (Admin Users pages) | `.user-detail-layout`, `.user-detail-content`, `.sub-sidebar`, `.sub-sidebar-header`, `.sub-sidebar-back`, `.sub-sidebar-item` |
+| Public header mobile nav | `.public-nav-toggle` (hamburger), `.public-nav-collapse`, `.public-nav-links` |
+
+### Responsive Conventions (established patterns — reuse, don't reinvent)
+
+- **Breakpoints**: 1500 / 1300 / 1200 / 1100 / 992 / 991 / 768 / 576 / 480 / 420 px in `site.css`. All responsiveness lives in `site.css`; `design-system.css` has zero media queries (tokens + components only).
+- **App sidebars** (Clinic/Admin/Doctor/Staff): `.sidebar` is a 264px fixed column ≥992px, becomes an off-canvas drawer (`right: -274px` → `right: 0` with `.mobile-open`) ≤991px, toggled by `.sidebar-toggle-mobile` (hamburger in `.top-header`).
+- **Sub-sidebars** (`.sub-sidebar`, e.g. Admin Users pages): ≤991px the flex row stacks to column; the 200px sub-sidebar becomes a full-width horizontal scroll-tab bar (`.sub-sidebar-item { white-space: nowrap; flex-shrink: 0 }` inside `overflow-x: auto`).
+- **Tables**: always wrap `<table class="custom-table">` in `<div class="table-responsive">` inside `.table-card`. ≤768px the `.table-card` scrolls horizontally (`min-width: max-content`), never the page (`html { overflow-x: clip }`). Optional progressive column hiding via `th:nth-child(n)`/`td:nth-child(n)` `display: none`.
+- **Grids**: stat grids go 4→2→1 cols (1500/768), 3-col grids →1 at 992/768, `repeat(auto-fill, minmax(...))` grids must use `minmax(min(320px, 100%), 1fr)` so they never clip at 320px viewports.
+- **Header action rows** (`.cdh-actions`, `.dd-header-actions`, `.page-header-actions`): `flex-wrap: wrap` at base; ≤576px column + full-width `justify-content: center` buttons.
+- **Modals**: ≤576px become full-width bottom sheets (`.modal-content-custom` fixed to viewport edges).
+- **Public site**: Bootstrap grid (`row g-4`, `col-md-*`) + clamp typography; mobile nav = Bootstrap collapse hamburger (`.public-nav-toggle`, `d-md-none`), data-attributes only — no custom JS. `.public-header .container` drops fixed 72px height ≤576px (`height: auto; min-height: 72px`).
+- **Text safety**: `.auth-email` and other LTR data strings use `overflow-wrap: anywhere` + `max-width: 100%`. Section headers with a badge child (`.detail-section-header`) wrap (`flex-wrap: wrap; gap: var(--space-2)`).
+- **Service worker**: `firebase-messaging-sw.js` embeds the full Firebase web config (worker context cannot read `window.ClinicHubConfig`); page config comes from `_FcmConfig.cshtml` ← `FirebaseWebOptions` ← `appsettings.*.json` `FirebaseWeb` section.
 
 ## Instructions
 
@@ -275,6 +291,26 @@ public async Task<IActionResult> SomeAction(Guid id)
     ViewData["Title"] = "عنوان الصفحة";
     Layout = "_AdminLayout"; // _ClinicLayout, _DoctorLayout, _StaffLayout, or none for public
 }
+```
+
+#### Public header mobile nav pattern (no custom JS — Bootstrap collapse only)
+```html
+<div class="d-flex gap-2 align-items-center">
+    <a href="@HomeRoutes.Account.Login()" class="btn-primary-custom">تسجيل الدخول</a>
+    <button class="public-nav-toggle d-md-none" type="button" data-bs-toggle="collapse"
+            data-bs-target="#publicNav" aria-expanded="false" aria-controls="publicNav" aria-label="فتح القائمة">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+    </button>
+</div>
+<!-- Collapse panel: sibling of .container inside .public-header -->
+<div class="collapse d-md-none public-nav-collapse" id="publicNav">
+    <div class="container public-nav-links">
+        <a href="@HomeRoutes.Pages.Index()" class="nav-link">الرئيسية</a>
+        <!-- ... links ... -->
+    </div>
+</div>
 ```
 
 #### Page header pattern
