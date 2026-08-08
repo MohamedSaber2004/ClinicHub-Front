@@ -349,13 +349,8 @@
         registerServiceWorker();
 
         onMessage(messaging, function (payload) {
-            var title = payload.notification && payload.notification.title ? payload.notification.title : "Doctory";
-            var body = (payload.notification && payload.notification.body) || (payload.data && payload.data.body) || "";
             var type = (payload.data && payload.data.type) || "";
 
-            if (typeof showSuccessModal === "function") {
-                showSuccessModal(title + (body ? "\n" + body : ""));
-            }
             navigateByType(type);
             refreshBell();
         });
