@@ -292,8 +292,10 @@
         console.log("[FCM] dashboard mode, notification permission:", ("Notification" in window) ? Notification.permission : "unavailable");
         if (!("Notification" in window)) {
             console.warn("[FCM] push unavailable - Notification API missing (page must be served over HTTPS)");
-        } else if (Notification.permission !== "granted") {
-            console.warn("[FCM] push disabled on this browser - permission is '" + Notification.permission + "'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.");
+        } else if (Notification.permission === "default") {
+            console.warn("[FCM] push disabled - permission is 'default'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.");
+        } else if (Notification.permission === "denied") {
+            console.warn("[FCM] push disabled - permission is 'denied'. A denied browser can never be re-prompted: the user must enable it from the browser site settings (lock icon → Site settings → Notifications → Allow).");
         }
 
         onMessage(messaging, function (payload) {
@@ -365,37 +367,75 @@
         // cached and registered with the backend immediately via the
         // POST /api/v1/auth/fcm-token endpoint.
         function showEnableBanner() {
-            if (!("Notification" in window) || Notification.permission !== "default") return;
+            if (!("Notification" in window) || Notification.permission === "granted") return;
             var main = document.querySelector(".content-body") || document.querySelector("main") || document.body;
             if (!main || document.getElementById("chNotifBanner")) return;
 
             var banner = document.createElement("div");
             banner.id = "chNotifBanner";
             banner.className = "ch-notif-banner";
-            banner.innerHTML =
-                '<div class="ch-notif-banner-text"><i class="bi bi-bell"></i> فعّل إشعارات المتصفح ليصلك تنبيه المواعيد والحجوزات</div>' +
-                '<button type="button" class="ch-notif-banner-btn" id="chNotifEnableBtn">تفعيل الإشعارات</button>' +
-                '<button type="button" class="ch-notif-banner-close" id="chNotifCloseBtn" aria-label="إغلاق" title="إغلاق">&times;</button>';
 
-            main.insertBefore(banner, main.firstChild);
+            if (Notification.permission === "default") {
+                banner.innerHTML =
+                    '<div class="ch-notif-banner-text"><i class="bi bi-bell"></i> فعّل إشعارات المتصفح ليصلك تنبيه المواعيد والحجوزات</div>' +
+                    '<button type="button" class="ch-notif-banner-btn" id="chNotifEnableBtn">تفعيل الإشعارات</button>' +
+                    '<button type="button" class="ch-notif-banner-close" id="chNotifCloseBtn" aria-label="إغلاق" title="إغلاق">&times;</button>';
 
-            document.getElementById("chNotifEnableBtn").addEventListener("click", function () {
-                var req = Notification.requestPermission();
-                if (req && typeof req.then === "function") {
-                    req.then(function (p) {
-                        console.log("[FCM] notification permission result (banner):", p);
-                        if (p === "granted") {
-                            banner.remove();
-                            syncCachedToken();
-                        }
-                    });
-                }
-            });
+                main.insertBefore(banner, main.firstChild);
+
+                document.getElementById("chNotifEnableBtn").addEventListener("click", function () {
+                    var req = Notification.requestPermission();
+                    if (req && typeof req.then === "function") {
+                        req.then(function (p) {
+                            console.log("[FCM] notification permission result (banner):", p);
+                            if (p === "granted") {
+                                banner.remove();
+                                syncCachedToken();
+                            }
+                        });
+                    }
+                });
+            } else {
+                // Permission is "denied": the browser will NEVER show the prompt
+                // again, so the only fix is the user enabling notifications from
+                // the site settings. Show instructions + a re-check button that
+                // re-reads the permission when the user comes back.
+                banner.innerHTML =
+                    '<div class="ch-notif-banner-text"><i class="bi bi-bell-slash"></i> الإشعارات معطّلة من المتصفح. فعّلها يدوياً: اضغط على أيقونة القفل بجانب شريط العنوان ← «الإشعارات» ← «السماح»، ثم عُد إلى الصفحة.</div>' +
+                    '<button type="button" class="ch-notif-banner-btn" id="chNotifRetryBtn">أعد التحقق</button>' +
+                    '<button type="button" class="ch-notif-banner-close" id="chNotifCloseBtn" aria-label="إغلاق" title="إغلاق">&times;</button>';
+
+                main.insertBefore(banner, main.firstChild);
+
+                document.getElementById("chNotifRetryBtn").addEventListener("click", recheckPermission);
+            }
 
             document.getElementById("chNotifCloseBtn").addEventListener("click", function () {
                 banner.remove();
             });
         }
+
+        // Re-checks the permission after the user returns from the browser
+        // site settings (or clicks "أعد التحقق"): if granted now, produce the
+        // token and register it on the backend immediately.
+        function recheckPermission() {
+            var banner = document.getElementById("chNotifBanner");
+            if (!banner) return;
+            if (!("Notification" in window) || Notification.permission !== "granted") {
+                console.warn("[FCM] permission still '" + (("Notification" in window) ? Notification.permission : "unavailable") + "' after re-check");
+                return;
+            }
+            banner.remove();
+            syncCachedToken();
+        }
+
+        // When the user switches to the browser settings and comes back, the
+        // page regains focus/visibility — re-check then instead of making them
+        // reload manually.
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "visible") recheckPermission();
+        });
+        window.addEventListener("focus", recheckPermission);
 
         // First user interaction on the dashboard is a strong gesture: request
         // the permission automatically (same pattern as the login page) so

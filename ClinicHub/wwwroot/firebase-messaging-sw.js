@@ -44,15 +44,20 @@ async function cachedValue(key) {
 
 async function resolveTargetUrl(notification) {
     const type = notification.data?.type || "";
-    if (APPOINTMENT_TYPES.includes(type)) {
+    const link = notification.data?.link || "";
+    // The backend deep links are mobile-style (e.g. "AppointmentDetails/123",
+    // "Appointments", "Notifications") — map their first segment to the cached
+    // web pages when the notification type itself is unknown.
+    const first = link.split("/")[0];
+
+    if (APPOINTMENT_TYPES.includes(type) || first === "AppointmentDetails" || first === "Appointments") {
         const path = await cachedValue(NAV_KEY_APPOINTMENTS);
         if (path) return path;
     }
-    if (NOTIFICATION_TYPES.includes(type)) {
+    if (NOTIFICATION_TYPES.includes(type) || first === "Notifications") {
         const path = await cachedValue(NAV_KEY_NOTIFICATIONS);
         if (path) return path;
     }
-    const link = notification.data?.link || "";
     if (link.startsWith("/")) return link;
     return "/";
 }

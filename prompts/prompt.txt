@@ -1,19 +1,17 @@
-﻿12Tracking Prevention blocked access to storage for <URL>.
-[NEW] Explain Console errors by using Copilot in Edge: click  to explain an error. Learn moreDon't show again
-fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:30 [FCM] script loaded {hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
-fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:578 [FCM] initializing foreground (dashboard) mode
-fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:288 [FCM] dashboard mode, notification permission: default
-fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:292 [FCM] push disabled on this browser - permission is 'default'. Grant notification permission, then log out and back in to register the web token.
-handleForeground @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:292
-init @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:579
-loadNext @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:597
-(anonymous) @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:605
+﻿fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:30 [FCM] script loaded {hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
+fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:602 [FCM] initializing foreground (dashboard) mode
+fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:292 [FCM] dashboard mode, notification permission: denied
+fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:296 [FCM] push disabled on this browser - permission is 'denied'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.
+handleForeground @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:296
+init @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:603
+loadNext @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:621
+(anonymous) @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:629
 script
-loadNext @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:600
-(anonymous) @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:605
+loadNext @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:624
+(anonymous) @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:629
 script
-loadNext @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:600
-loadSdk @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:615
-(anonymous) @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:618
-(anonymous) @ fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:619
-fcm.js?v=gq6hOUJmP9rABaOd7-1wrL78P_oOL4oPYNNnOidKe8M:85 [FCM] service worker ready: /firebase-messaging-sw.js
+loadNext @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:624
+loadSdk @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:639
+(anonymous) @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:642
+(anonymous) @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:643
+fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:89 [FCM] service worker ready: /firebase-messaging-sw.js
