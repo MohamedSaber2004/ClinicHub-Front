@@ -290,7 +290,8 @@
         "15": "ClinicRejected",
         "16": "SupportTicketUpdate",
         "17": "PaymentReceived",
-        "18": "RevenueIncreased"
+        "18": "RevenueIncreased",
+        "19": "AppointmentAccepted"
     };
 
     function typeName(value) {
@@ -302,7 +303,7 @@
     // shared with the mobile catalogue. The web dashboard has no
     // appointment-detail or chat pages, so each group lands on the role's hub
     // page (appointments / clinics / support / notifications).
-    var APPOINTMENT_TYPES = ["AppointmentReminder", "PaymentConfirmation", "AppointmentConfirmation", "AppointmentCancellation", "CancellationWindowClosed", "RefundProcessed", "NewBookingRequest", "AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "PaymentReceived", "RevenueIncreased"];
+    var APPOINTMENT_TYPES = ["AppointmentReminder", "PaymentConfirmation", "AppointmentConfirmation", "AppointmentCancellation", "CancellationWindowClosed", "RefundProcessed", "NewBookingRequest", "AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
     var CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
     var SUPPORT_TYPES = ["SupportTicketUpdate"];
     var NOTIFICATION_TYPES = ["NewMessage", "SystemAnnouncement", "SubscriptionExpiring", "AdExpiring"];
@@ -339,6 +340,10 @@
             window.location.href = target;
         }
     }
+
+    // Exposed for server-rendered lists (bell dropdown, notifications page):
+    // item clicks resolve the NotificationType → role hub page.
+    window.chNavigateByType = navigateByType;
 
     function handleForeground(app) {
         var messaging = getMessaging(app);
@@ -554,17 +559,25 @@
     function bellItemHtml(item) {
         var title = item.titleAr || item.TitleAr || item.title || item.Title || "";
         var body = item.bodyAr || item.BodyAr || item.body || item.Body || item.message || item.Message || "";
+        var type = item.type !== undefined && item.type !== null ? item.type : "";
         var date = item.createdAt || item.createdDate || item.CreatedAt || item.date || item.Date || "";
         if (date) {
             var d = new Date(date);
             if (!isNaN(d.getTime())) date = d.toLocaleString("ar", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
         }
         var timeHtml = date ? '<div class="ch-bell-item-time">' + date + '</div>' : "";
-        return '<div class="ch-bell-item">' +
+        return '<div class="ch-bell-item" data-type="' + type + '" role="button" tabindex="0">' +
             '<div class="ch-bell-item-title">' + title + '</div>' +
             (body ? '<div class="ch-bell-item-body">' + body + '</div>' : "") +
             timeHtml +
             '</div>';
+    }
+
+    function navigateBellItem(itemEl) {
+        var type = itemEl && itemEl.getAttribute ? itemEl.getAttribute("data-type") : "";
+        if (type !== "" && typeof window.chNavigateByType === "function") {
+            window.chNavigateByType(type);
+        }
     }
 
     function renderBellList(items) {
@@ -575,6 +588,18 @@
             return;
         }
         list.innerHTML = items.slice(0, 10).map(bellItemHtml).join("");
+        list.addEventListener("click", function (e) {
+            var item = e.target && e.target.closest ? e.target.closest(".ch-bell-item") : null;
+            if (item) navigateBellItem(item);
+        });
+        list.addEventListener("keydown", function (e) {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            var item = e.target && e.target.closest ? e.target.closest(".ch-bell-item") : null;
+            if (item) {
+                e.preventDefault();
+                navigateBellItem(item);
+            }
+        });
     }
 
     function loadBellList() {

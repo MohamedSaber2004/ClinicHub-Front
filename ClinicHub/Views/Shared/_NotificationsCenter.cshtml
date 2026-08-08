@@ -28,6 +28,7 @@
             16 => "bi-life-preserver",
             17 => "bi-credit-card",
             18 => "bi-graph-up-arrow",
+            19 => "bi-calendar-check",
             _ => "bi-bell"
         };
     }
@@ -63,7 +64,7 @@
             <div class="notif-list">
                 @foreach (var item in notifications)
                 {
-                    <div class="notif-item @(!item.IsRead ? "unread" : "")">
+                    <div class="notif-item @(!item.IsRead ? "unread" : "")" data-type="@item.Type" role="button" tabindex="0" title="الانتقال إلى الصفحة ذات الصلة">
                         <div class="notif-item-icon"><i class="bi @NotificationIcon(item.Type)"></i></div>
                         <div class="notif-item-content">
                             <div class="notif-item-title">
@@ -86,3 +87,30 @@
         }
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var center = document.getElementById('notificationsCenter');
+        if (!center) return;
+
+        function navigateFrom(item) {
+            if (!item || typeof window.chNavigateByType !== 'function') return;
+            var type = item.getAttribute('data-type');
+            if (type) window.chNavigateByType(type);
+        }
+
+        center.addEventListener('click', function (e) {
+            var item = e.target && e.target.closest ? e.target.closest('.notif-item') : null;
+            if (item) navigateFrom(item);
+        });
+
+        center.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            var item = e.target && e.target.closest ? e.target.closest('.notif-item') : null;
+            if (item) {
+                e.preventDefault();
+                navigateFrom(item);
+            }
+        });
+    });
+</script>

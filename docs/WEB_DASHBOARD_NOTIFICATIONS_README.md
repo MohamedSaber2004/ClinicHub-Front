@@ -167,9 +167,11 @@ The deep links are configured in `ClinicHub.Application/Common/DeepLinkRoutes.cs
 | O8 | **Ticket status updated** | `SupportTicketUpdate` (16) | SuperAdmin updates a support ticket | `ticketId, subject, status` | `/support-tickets/{ticketId}` | `Features/Admin/Commands/UpdateSupportTicketStatus/UpdateSupportTicketStatusCommandHandler.cs` |
 | O9 | **Appointment paid (revenue received)** | `PaymentReceived` (17) | Paymob webhook confirms an appointment payment | `amount, patientName, clinicName, appointmentId` | `/appointments/{appointmentId}` | `Features/Payment/Commands/ConfirmPaymentWebhook/ConfirmPaymentWebhookCommandHandler.cs` |
 | O10 | **New chat message** | `NewMessage` (1) | A message is sent in a conversation you belong to | `senderName, conversationId` | `/chat/{conversationId}` | `Features/Conversations/Commands/SendMessage/SendMessageCommandHandler.cs` |
+| O11 | **Booking accepted (shared acceptance event)** | `AppointmentAccepted` (19) | Clinic admin/staff/doctor accepts the booking request | `patientName, clinicName, doctorName, date, time, appointmentId` | `/appointments/{appointmentId}` | `Application/Common/Services/AppointmentAcceptanceService.cs` |
 
 > O1–O3, O8 and O9 were **added** in this update — previously the owner was never told about
 > new bookings, approval/rejection outcomes, ticket updates, or received payments.
+> O11 fires from the same acceptance event as the patient's `AppointmentConfirmation` (3).
 
 ### 3.3 Doctor
 
@@ -178,6 +180,7 @@ The deep links are configured in `ClinicHub.Application/Common/DeepLinkRoutes.cs
 | D1 | **New booking request for this doctor** | `NewBookingRequest` (12) | A patient books with this doctor | `patientName, clinicName, doctorName, date, time, appointmentId` | `/appointments/{appointmentId}` | `CreateAppointmentCommandHandler.cs` |
 | D2 | **Appointment outside doctor availability** | `AppointmentOutsideAvailability` (10) | Hourly validation job | `clinicName, date, time, appointmentId` | `/appointments/{appointmentId}` | `DoctorAvailabilityValidationJob.cs` |
 | D3 | **New chat message** | `NewMessage` (1) | Chat message | `senderName, conversationId` | `/chat/{conversationId}` | `SendMessageCommandHandler.cs` |
+| D4 | **Booking accepted (shared acceptance event)** | `AppointmentAccepted` (19) | Clinic admin/staff/doctor accepts the booking request | `patientName, clinicName, doctorName, date, time, appointmentId` | `/appointments/{appointmentId}` | `AppointmentAcceptanceService.cs` |
 
 ### 3.4 Staff
 
@@ -286,8 +289,8 @@ Title: `زيادة الإيرادات` — Body: `تم دفع {amount} لحجز 
 | Role | Types |
 |---|---|
 | **SuperAdmin** | `ClinicRegistered`, `RevenueIncreased` |
-| **ClinicOwner** | `NewBookingRequest`, `ClinicApproved`, `ClinicRejected`, `PaymentReceived`, `AppointmentOutsideWorkingHours`, `AppointmentOutsideAvailability`, `SubscriptionExpiring`, `AdExpiring`, `SupportTicketUpdate`, `NewMessage` |
-| **Doctor** | `NewBookingRequest`, `AppointmentOutsideAvailability`, `NewMessage` |
+| **ClinicOwner** | `NewBookingRequest`, `AppointmentAccepted`, `ClinicApproved`, `ClinicRejected`, `PaymentReceived`, `AppointmentOutsideWorkingHours`, `AppointmentOutsideAvailability`, `SubscriptionExpiring`, `AdExpiring`, `SupportTicketUpdate`, `NewMessage` |
+| **Doctor** | `NewBookingRequest`, `AppointmentAccepted`, `AppointmentOutsideAvailability`, `NewMessage` |
 | **Staff** | `NewBookingRequest`, `NewMessage` |
 | **Everyone** | `NewMessage` (chat) |
 
