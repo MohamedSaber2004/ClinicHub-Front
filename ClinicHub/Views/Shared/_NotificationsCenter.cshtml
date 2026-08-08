@@ -28,7 +28,8 @@
 
     static string FormatNotificationDate(DateTime value)
     {
-        return value.ToString("d MMM yyyy - hh:mm tt", CultureInfo.GetCultureInfo("ar-EG"));
+        var local = value.Kind == DateTimeKind.Utc ? value.ToLocalTime() : value;
+        return local.ToString("d MMM yyyy - hh:mm tt", CultureInfo.GetCultureInfo("ar-EG"));
     }
 }
 
