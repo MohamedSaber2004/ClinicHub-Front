@@ -6438,6 +6438,66 @@ body {
    Notification Bell (FCM)
    ============================================================ */
 
+.ch-notif-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-6);
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.04));
+}
+
+.ch-notif-banner-text {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--clr-text);
+  font-size: var(--fs-md);
+  font-weight: 500;
+}
+
+.ch-notif-banner-text i {
+  color: var(--clr-info);
+  font-size: 1.15rem;
+}
+
+.ch-notif-banner-btn {
+  border: none;
+  background: var(--clr-info);
+  color: #fff;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.ch-notif-banner-btn:hover {
+  opacity: 0.85;
+}
+
+.ch-notif-banner-close {
+  border: none;
+  background: transparent;
+  color: var(--clr-text-secondary);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.ch-notif-banner-close:hover {
+  color: var(--clr-text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
 .ch-bell {
   position: relative;
   margin-inline-start: var(--space-2);

@@ -5,6 +5,7 @@
 
     var SW_PATH = "/firebase-messaging-sw.js";
     var LOGIN_FORM_ID = "loginForm";
+    var TOKEN_CACHE_KEY = "ch_fcm_token";
 
     // Compat-SDK helpers: firebase-messaging-compat exposes these as methods on
     // the messaging instance (firebase.messaging(app)), not as global functions.
@@ -21,9 +22,17 @@
     }
 
     if (document.getElementById("notificationsCenter")) {
+        console.log("[FCM] script loaded — notifications center page mode");
         initNotificationsPage();
         return;
     }
+
+    console.log("[FCM] script loaded", {
+        hasConfig: !!cfg.apiBaseUrl,
+        hasApiKey: !!FIREBASE_CONFIG.apiKey,
+        hasVapid: !!VAPID_PUBLIC_KEY,
+        isLoginPage: !!document.getElementById(LOGIN_FORM_ID)
+    });
 
     if (!FIREBASE_CONFIG.apiKey || !VAPID_PUBLIC_KEY) {
         console.warn("[FCM] disabled - missing keys in settings:", { hasConfig: !!FIREBASE_CONFIG.apiKey, hasVapid: !!VAPID_PUBLIC_KEY });
@@ -61,7 +70,10 @@
     }
 
     function registerServiceWorker() {
-        if (!("serviceWorker" in navigator)) return Promise.resolve();
+        if (!("serviceWorker" in navigator)) {
+            console.warn("[FCM] service worker API unavailable");
+            return Promise.resolve();
+        }
         return navigator.serviceWorker.register(SW_PATH)
             .then(function () {
                 return Promise.race([
@@ -69,8 +81,11 @@
                     new Promise(function (resolve) { setTimeout(resolve, 2000); })
                 ]);
             })
+            .then(function () {
+                console.log("[FCM] service worker ready:", SW_PATH);
+            })
             .catch(function () {
-                console.warn("[FCM] service worker registration failed");
+                console.warn("[FCM] service worker registration failed:", SW_PATH);
             });
     }
 
@@ -80,27 +95,57 @@
 
         var fcmInput = document.getElementById("fcmToken");
         var platformInput = document.getElementById("devicePlatform");
+        var TOKEN_WAIT_MS = 4000;
         var fillPromise = null;
         var tokenWaitBusy = false;
-        var waitAttempted = false;
+        var tokenWaitAttempted = false;
+        var permissionPending = false;
+
+        function cachedToken() {
+            try { return localStorage.getItem(TOKEN_CACHE_KEY) || ""; } catch (e) { return ""; }
+        }
+
+        // Pre-fill with the last known web token so even a fast or Enter-key
+        // submit still carries one; the background refresh below replaces it.
+        if (fcmInput && cachedToken()) {
+            fcmInput.value = cachedToken();
+            if (platformInput) platformInput.value = "0";
+            console.log("[FCM] pre-filled cached token (" + cachedToken().length + " chars):", cachedToken());
+        }
+
+        function tokenSupported() {
+            return ("Notification" in window) && ("serviceWorker" in navigator);
+        }
 
         function acquireToken() {
             var messaging;
             try {
-                if (typeof firebase === "undefined" || !firebase.messaging) return Promise.resolve(null);
+                if (typeof firebase === "undefined" || !firebase.messaging) {
+                    console.warn("[FCM] cannot produce token - Firebase messaging compat SDK unavailable");
+                    return Promise.resolve(null);
+                }
                 messaging = getMessaging(app);
             } catch (err) {
                 console.warn("[FCM] messaging init failed:", err);
                 return Promise.resolve(null);
             }
-            if (!("Notification" in window) || Notification.permission !== "granted") return Promise.resolve(null);
+            if (!tokenSupported()) {
+                console.warn("[FCM] cannot produce token - Notification/serviceWorker API unavailable (HTTPS required)");
+                return Promise.resolve(null);
+            }
+            if (Notification.permission !== "granted") {
+                console.warn("[FCM] cannot produce token - notification permission is '" + Notification.permission + "'");
+                return Promise.resolve(null);
+            }
+            console.log("[FCM] acquiring token...");
             return registerServiceWorker()
                 .then(function () { return getToken(messaging, { vapidKey: VAPID_PUBLIC_KEY }); })
                 .then(function (token) {
                     if (!token) return null;
                     if (fcmInput) fcmInput.value = token;
                     if (platformInput) platformInput.value = "0";
-                    console.log("[FCM] token set on login");
+                    try { localStorage.setItem(TOKEN_CACHE_KEY, token); } catch (e) {}
+                    console.log("[FCM] token produced successfully (" + token.length + " chars):", token);
                     return token;
                 })
                 .catch(function (err) {
@@ -114,22 +159,47 @@
             return fillPromise;
         }
 
+        // Warm-up on page load: registering the service worker needs no
+        // permission, so do it immediately; fetch the token right away too
+        // when permission is already granted.
+        function warmUp() {
+            if (!tokenSupported()) return;
+            registerServiceWorker().then(function () {
+                if (Notification.permission === "granted") startFill();
+            });
+        }
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", warmUp);
+        } else {
+            warmUp();
+        }
+
         // First interaction is a user gesture: ask permission and start the
         // token fetch in the background, before the user finishes typing.
         document.addEventListener("pointerdown", function () {
-            if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
+            if (!tokenSupported()) return;
             if (Notification.permission === "default") {
                 var req = Notification.requestPermission();
-                if (req && typeof req.then === "function") req.then(function (p) { if (p === "granted") startFill(); });
+                permissionPending = true;
+                if (req && typeof req.then === "function") {
+                    req.then(function (p) {
+                        permissionPending = false;
+                        console.log("[FCM] notification permission result:", p);
+                        if (p === "granted") startFill();
+                    });
+                } else {
+                    permissionPending = false;
+                }
             } else if (Notification.permission === "granted") {
                 startFill();
             }
         }, { once: true, capture: true });
 
         // The form is data-ajax: error-service.js submits it via fetch. We only
-        // intercept briefly when a token is genuinely imminent (permission already
-        // granted and the token fetch is in flight). We never wait for the
-        // permission prompt — the login goes through immediately.
+        // intercept briefly when a token is genuinely imminent (permission
+        // already granted, or a permission prompt is pending and the token
+        // fetch is in flight). The login is never blocked for more than
+        // TOKEN_WAIT_MS — without a token it proceeds and push stays off.
         document.addEventListener("submit", function (e) {
             if (e.target !== form) return;
 
@@ -140,17 +210,18 @@
             }
 
             var tokenReady = !!fcmInput && !!fcmInput.value;
-            var canWait = ("Notification" in window) && ("serviceWorker" in navigator)
-                && Notification.permission === "granted"
+            var canWait = tokenSupported()
+                && (Notification.permission === "granted" || permissionPending)
                 && !!fillPromise
                 && !tokenReady
-                && !waitAttempted;
+                && !tokenWaitAttempted;
 
             if (canWait) {
-                waitAttempted = true;
+                tokenWaitAttempted = true;
                 e.preventDefault();
                 e.stopPropagation();
                 tokenWaitBusy = true;
+                console.log("[FCM] waiting up to " + TOKEN_WAIT_MS + "ms for token before submitting login...");
                 if (typeof showLoader === "function") showLoader();
 
                 var forced = false;
@@ -158,14 +229,20 @@
                     if (forced) return;
                     forced = true;
                     tokenWaitBusy = false;
+                    console.log("[FCM] login submitted. token attached: " + (!!fcmInput && !!fcmInput.value) + (fcmInput && fcmInput.value ? " (" + fcmInput.value.length + " chars)" : ""));
                     try { form.requestSubmit(); } catch (err) { form.submit(); }
                 }
 
-                setTimeout(finish, 1500);
+                setTimeout(finish, TOKEN_WAIT_MS);
                 fillPromise.then(finish);
                 return;
             }
 
+            if (!tokenReady) {
+                console.warn("[FCM] submitting login WITHOUT fcmToken — backend will NOT create a UserFbToken row");
+            } else {
+                console.log("[FCM] submitting login with fcmToken (" + fcmInput.value.length + " chars)");
+            }
             if (typeof showLoader === "function") showLoader();
         }, true);
     }
@@ -197,6 +274,13 @@
         var messaging = getMessaging(app);
         registerServiceWorker();
 
+        console.log("[FCM] dashboard mode, notification permission:", ("Notification" in window) ? Notification.permission : "unavailable");
+        if (!("Notification" in window)) {
+            console.warn("[FCM] push unavailable - Notification API missing (page must be served over HTTPS)");
+        } else if (Notification.permission !== "granted") {
+            console.warn("[FCM] push disabled on this browser - permission is '" + Notification.permission + "'. Grant notification permission, then log out and back in to register the web token.");
+        }
+
         onMessage(messaging, function (payload) {
             var title = payload.notification && payload.notification.title ? payload.notification.title : "Doctory";
             var body = (payload.notification && payload.notification.body) || (payload.data && payload.data.body) || "";
@@ -206,11 +290,79 @@
                 showSuccessModal(title + (body ? "\n" + body : ""));
             }
             navigateByType(type);
+            refreshBell();
         });
 
         injectBell();
         refreshBell();
         setInterval(refreshBell, 60000);
+
+        // Token rotation: browsers rotate FCM tokens over time. Refresh the
+        // cached web token in the background so the next login registers the
+        // current token with the backend (README §3.6).
+        function syncCachedToken() {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            registerServiceWorker()
+                .then(function () { return getToken(messaging, { vapidKey: VAPID_PUBLIC_KEY }); })
+                .then(function (token) {
+                    if (!token) return;
+                    try {
+                        var prev = localStorage.getItem(TOKEN_CACHE_KEY);
+                        if (prev !== token) {
+                            localStorage.setItem(TOKEN_CACHE_KEY, token);
+                            console.log("[FCM] token rotated and cached for next login (" + token.length + " chars):", token);
+                        } else {
+                            console.log("[FCM] token unchanged, cache is up-to-date (" + token.length + " chars)");
+                        }
+                    } catch (e) {}
+                })
+                .catch(function (err) {
+                    console.warn("[FCM] token refresh failed:", err && err.message ? err.message : err);
+                });
+        }
+        if (("Notification" in window) && Notification.permission === "granted") {
+            syncCachedToken();
+        }
+
+        // Visible banner prompting the user to enable browser notifications —
+        // a silent auto-prompt is easy to miss (Edge shows a quiet bell icon in
+        // the address bar instead). The button click is a strong user gesture,
+        // so the permission prompt reliably appears; the fetched token is then
+        // cached and registered with the backend on the next login.
+        function showEnableBanner() {
+            if (!("Notification" in window) || Notification.permission !== "default") return;
+            var main = document.querySelector(".content-body") || document.querySelector("main") || document.body;
+            if (!main || document.getElementById("chNotifBanner")) return;
+
+            var banner = document.createElement("div");
+            banner.id = "chNotifBanner";
+            banner.className = "ch-notif-banner";
+            banner.innerHTML =
+                '<div class="ch-notif-banner-text"><i class="bi bi-bell"></i> فعّل إشعارات المتصفح ليصلك تنبيه المواعيد والحجوزات</div>' +
+                '<button type="button" class="ch-notif-banner-btn" id="chNotifEnableBtn">تفعيل الإشعارات</button>' +
+                '<button type="button" class="ch-notif-banner-close" id="chNotifCloseBtn" aria-label="إغلاق" title="إغلاق">&times;</button>';
+
+            main.insertBefore(banner, main.firstChild);
+
+            document.getElementById("chNotifEnableBtn").addEventListener("click", function () {
+                var req = Notification.requestPermission();
+                if (req && typeof req.then === "function") {
+                    req.then(function (p) {
+                        console.log("[FCM] notification permission result (banner):", p);
+                        if (p === "granted") {
+                            banner.remove();
+                            syncCachedToken();
+                        }
+                    });
+                }
+            });
+
+            document.getElementById("chNotifCloseBtn").addEventListener("click", function () {
+                banner.remove();
+            });
+        }
+
+        showEnableBanner();
     }
 
     function injectBell() {
@@ -388,8 +540,13 @@
             return;
         }
         var app = firebase.initializeApp(FIREBASE_CONFIG);
-        if (isLoginPage()) handleLoginPage(app);
-        else handleForeground(app);
+        if (isLoginPage()) {
+            console.log("[FCM] initializing login page mode");
+            handleLoginPage(app);
+        } else {
+            console.log("[FCM] initializing foreground (dashboard) mode");
+            handleForeground(app);
+        }
     }
 
     function loadSdk(callback) {

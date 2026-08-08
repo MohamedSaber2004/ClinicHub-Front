@@ -1,14 +1,13 @@
-﻿[NEW] Explain Console errors by using Copilot in Edge: click  to explain an error. Learn moreDon't show again
-firebase-messaging-compat.js:1 Uncaught TypeError: Cannot read properties of undefined (reading 'INTERNAL')
-(anonymous) @ firebase-messaging-compat.js:1
-(anonymous) @ firebase-messaging-compat.js:1
-PendingScript
-(anonymous) @ fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:409
-loadSdk @ fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:397
-(anonymous) @ fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:413
-(anonymous) @ fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:414
-fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:12 Uncaught TypeError: firebase.messaging is not a function
-    at getMessaging (fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:12:25)
-    at handleForeground (fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:197:25)
-    at init (fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:388:14)
-    at HTMLScriptElement.<anonymous> (fcm.js?v=0zoKCKa91zbccfShej60nv6mHpL_jXvJeDy05QrKLMw:403:73)
+﻿
+Expression
+﻿
+Specializations:966 [Intervention] Images loaded lazily and replaced with placeholders. Load events are deferred. See https://go.microsoft.com/fwlink/?linkid=2048113
+fcm.js?v=6-hcfwqzC9j…6BqJXAccq3nBbdBg:30 [FCM] script loaded 
+{hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
+fcm.js?v=6-hcfwqzC9j…BqJXAccq3nBbdBg:529 [FCM] initializing foreground (dashboard) mode
+fcm.js?v=6-hcfwqzC9j…BqJXAccq3nBbdBg:277 [FCM] dashboard mode, notification permission: default
+fcm.js?v=6-hcfwqzC9j…BqJXAccq3nBbdBg:281
+ [FCM] push disabled on this browser - permission is 'default'. Grant notification permission, then log out and back in to register the web token.
+fcm.js?v=6-hcfwqzC9j…6BqJXAccq3nBbdBg:85 [FCM] service worker ready: /firebase-messaging-sw.js
+[NEW] Explain Console errors by using Copilot in Edge: click 
+ to explain an error. Learn more
