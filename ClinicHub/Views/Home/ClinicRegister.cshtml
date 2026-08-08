@@ -23,7 +23,9 @@
 <section class="register-section">
     <div class="container">
         <div class="register-form-card">
-            <form method="post" asp-action="ClinicRegister" asp-controller="Home">
+            <form method="post" asp-action="ClinicRegister" asp-controller="Home" id="clinicRegisterForm">
+                <input type="hidden" name="fcmToken" id="fcmToken" />
+                <input type="hidden" name="devicePlatform" id="devicePlatform" value="0" />
 
                 <div class="register-form-section">
                     <h3 class="register-form-title">
@@ -419,4 +421,6 @@
             else { window.addEventListener('load', initMap); }
         })();
     </script>
+    <partial name="_FcmConfig" />
+    <script src="~/js/fcm.js" asp-append-version="true"></script>
 }

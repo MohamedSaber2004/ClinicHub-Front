@@ -24,11 +24,15 @@ messaging.onBackgroundMessage((payload) => {
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const APPOINTMENT_TYPES = ["AppointmentReminder", "AppointmentConfirmation", "AppointmentCancellation", "PaymentConfirmation", "CancellationWindowClosed", "RefundProcessed"];
+const APPOINTMENT_TYPES = ["AppointmentReminder", "PaymentConfirmation", "AppointmentConfirmation", "AppointmentCancellation", "CancellationWindowClosed", "RefundProcessed", "NewBookingRequest", "AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "PaymentReceived", "RevenueIncreased"];
+const CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
+const SUPPORT_TYPES = ["SupportTicketUpdate"];
 const NOTIFICATION_TYPES = ["NewMessage", "SystemAnnouncement", "SubscriptionExpiring", "AdExpiring"];
 const NAV_CACHE = "ch-nav";
 const NAV_KEY_APPOINTMENTS = "/__ch_nav_appointments__";
 const NAV_KEY_NOTIFICATIONS = "/__ch_nav_notifications__";
+const NAV_KEY_CLINICS = "/__ch_nav_clinics__";
+const NAV_KEY_SUPPORT = "/__ch_nav_support__";
 
 // The role-based pages are cached by fcm.js from the dashboard — service
 // workers have no access to localStorage, so the click handler reads them
@@ -42,19 +46,36 @@ async function cachedValue(key) {
     return null;
 }
 
+// First path segment of a deep link, lowercase. Handles both full URLs
+// ("https://your-frontend/appointments/3fa8…") and relative links
+// ("AppointmentDetails/123").
+function firstSegment(link) {
+    if (!link) return "";
+    try {
+        return new URL(link).pathname.split("/").filter(Boolean)[0].toLowerCase() || "";
+    } catch (e) {
+        return link.split("/").filter(Boolean)[0].toLowerCase() || "";
+    }
+}
+
 async function resolveTargetUrl(notification) {
     const type = notification.data?.type || "";
     const link = notification.data?.link || "";
-    // The backend deep links are mobile-style (e.g. "AppointmentDetails/123",
-    // "Appointments", "Notifications") — map their first segment to the cached
-    // web pages when the notification type itself is unknown.
-    const first = link.split("/")[0];
+    const first = firstSegment(link);
 
-    if (APPOINTMENT_TYPES.includes(type) || first === "AppointmentDetails" || first === "Appointments") {
+    if (APPOINTMENT_TYPES.includes(type) || first === "appointments" || first === "appointmentdetails") {
         const path = await cachedValue(NAV_KEY_APPOINTMENTS);
         if (path) return path;
     }
-    if (NOTIFICATION_TYPES.includes(type) || first === "Notifications") {
+    if (CLINIC_TYPES.includes(type) || first === "clinics") {
+        const path = await cachedValue(NAV_KEY_CLINICS);
+        if (path) return path;
+    }
+    if (SUPPORT_TYPES.includes(type) || first === "support-tickets") {
+        const path = await cachedValue(NAV_KEY_SUPPORT);
+        if (path) return path;
+    }
+    if (NOTIFICATION_TYPES.includes(type) || first === "notifications" || first === "chat" || first === "conversations") {
         const path = await cachedValue(NAV_KEY_NOTIFICATIONS);
         if (path) return path;
     }

@@ -163,6 +163,14 @@ catch (Exception ex)
 - **Text safety**: `.auth-email` and other LTR data strings use `overflow-wrap: anywhere` + `max-width: 100%`. Section headers with a badge child (`.detail-section-header`) wrap (`flex-wrap: wrap; gap: var(--space-2)`).
 - **Service worker**: `firebase-messaging-sw.js` embeds the full Firebase web config (worker context cannot read `window.ClinicHubConfig`); page config comes from `_FcmConfig.cshtml` ← `FirebaseWebOptions` ← `appsettings.*.json` `FirebaseWeb` section.
 
+### Web Push / Notification Bell (all dashboards)
+
+- **Enum**: `NotificationType` in `ClinicHub.Services/Enums/NotificationType.cs` — values 0–18 (`NewMessage`=1, `SubscriptionExpiring`=7, `AdExpiring`=9, `AppointmentOutsideAvailability`=10, `AppointmentOutsideWorkingHours`=11, `NewBookingRequest`=12, `ClinicRegistered`=13, `ClinicApproved`=14, `ClinicRejected`=15, `SupportTicketUpdate`=16, `PaymentReceived`=17, `RevenueIncreased`=18). Types 10–18 are dashboard-only; the rest are shared with the mobile catalogue. Docs: `docs/WEB_DASHBOARD_NOTIFICATIONS_README.md` + `docs/NOTIFICATIONS_README.md`.
+- **Bell endpoints** (bearer token, any dashboard role): `GET api/v1/notifications/count` → `ApiResponse<int>` (unread count → badge); `GET api/v1/notifications/pagginated?pageNumber&pageSize` → `PagginatedResult<NotificationDto>`. The list endpoint marks returned items read server-side — refresh the badge after fetching the list.
+- **NotificationDto fields**: display `titleAr`/`bodyAr` (Arabic) — `titleEn`/`bodyEn` are stored empty. `type` comes back as the numeric enum value (int).
+- **fcm.js behaviour**: `TYPE_NAMES` maps numeric types → names; `navigateByType(type)` resolves per role — appointment types (incl. 10–12, 17–18) → role appointments page, clinic types (13–15) → `/Clinic/Index` (owner) or `/Admin/Clinics` (superadmin), `SupportTicketUpdate` → `/Clinic/Support` or `/Admin/Support`, remaining → notifications page. Role pages cached in Cache Storage (`__ch_nav_*` keys) for the service worker's `notificationclick` resolver.
+- **Token registration**: `fcm.js` auto-attaches FCM tokens on the login form (`#loginForm`) and the clinic-registration form (`#clinicRegisterForm` — hidden `fcmToken` + `devicePlatform` inputs; token must be sent at registration time because a pending owner can't log in until approval). Token rotated/registered on dashboards via `POST /api/v1/auth/fcm-token`.
+
 ## Instructions
 
 ### Step 1: Read the plan & understand the endpoint

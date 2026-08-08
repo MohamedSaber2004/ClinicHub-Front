@@ -1,25 +1,62 @@
-﻿
-﻿
-12
-Tracking Prevention blocked access to storage for <URL>.
-[NEW] Explain Console errors by using Copilot in Edge: click 
- to explain an error. Learn more
-Don't show again
-fcm.js?v=glSO3zDK4e0…bl55ZH6htpgRjcMg:30 [FCM] script loaded 
-{hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
-fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:692 [FCM] initializing foreground (dashboard) mode
-fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:317 [FCM] dashboard mode, notification permission: default
-fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:321
- [FCM] push disabled - permission is 'default'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.
-fcm.js?v=glSO3zDK4e0…bl55ZH6htpgRjcMg:89 [FCM] service worker ready: /firebase-messaging-sw.js
-fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:430 [FCM] notification permission result: granted
-fcm.js?v=glSO3zDK4e0…bl55ZH6htpgRjcMg:89 [FCM] service worker ready: /firebase-messaging-sw.js
-Admin:1
- Access to fetch at 'https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations' from origin 'https://doctory.runasp.net' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-loading-service.js?v…PayjgBOuyW0qVoUY:51 
- POST https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations net::ERR_FAILED
-fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:381
- [FCM] token refresh failed: Failed to fetch
-fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:382
- Uncaught (in promise) ReferenceError: logTokenRootCause is not defined
-    at fcm.js?v=glSO3zDK4e0…ZH6htpgRjcMg:382:21
+﻿12Tracking Prevention blocked access to storage for <URL>.
+[NEW] Explain Console errors by using Copilot in Edge: click  to explain an error. Learn moreDon't show again
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:30 [FCM] script loaded {hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:690 [FCM] initializing foreground (dashboard) mode
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:315 [FCM] dashboard mode, notification permission: default
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:319 [FCM] push disabled - permission is 'default'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.
+handleForeground @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:319
+init @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:691
+loadNext @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:709
+(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:717
+script
+loadNext @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:712
+(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:717
+script
+loadNext @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:712
+loadSdk @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:727
+(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:730
+(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:731
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:89 [FCM] service worker ready: /firebase-messaging-sw.js
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:428 [FCM] notification permission result: granted
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:89 [FCM] service worker ready: /firebase-messaging-sw.js
+Admin:1 Access to fetch at 'https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations' from origin 'https://doctory.runasp.net' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+loading-service.js?v=d6ouBt1SUXTWtJR99m70gTKxnPQPayjgBOuyW0qVoUY:51  POST https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations net::ERR_FAILED
+window.fetch @ loading-service.js?v=d6ouBt1SUXTWtJR99m70gTKxnPQPayjgBOuyW0qVoUY:51
+window.fetch @ notification-service.js?v=cxPuqC9gml02PcPGHpH-OcQC5HUkxgff6hPBLUGSJC4:61
+window.fetch @ Admin:437
+(anonymous) @ create-installation-request.ts:66
+(anonymous) @ common.ts:94
+(anonymous) @ create-installation-request.ts:66
+await in (anonymous)
+(anonymous) @ create-installation-request.ts:79
+(anonymous) @ get-installation-entry.ts:157
+(anonymous) @ get-installation-entry.ts:130
+(anonymous) @ idb-manager.ts:113
+await in (anonymous)
+getInstallationEntry @ get-installation-entry.ts:50
+(anonymous) @ get-token.ts:47
+(anonymous) @ config.ts:59
+getHeaders @ requests.ts:370
+(anonymous) @ requests.ts:64
+getNewToken @ requests.ts:102
+getTokenInternal @ token-manager.ts:65
+await in getTokenInternal
+(anonymous) @ getToken.ts:45
+await in (anonymous)
+(anonymous) @ api.ts:122
+getToken @ api.ts:122
+getToken @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:17
+(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:371
+Promise.then
+syncCachedToken @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:371
+(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:431
+Promise.then
+requestPermissionAndEnable @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:425
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:379 [FCM] token refresh failed: Failed to fetch
+(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:379
+Promise.catch
+syncCachedToken @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:378
+(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:431
+Promise.then
+requestPermissionAndEnable @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:425
+fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:103 [FCM] ROOT CAUSE: the request to firebaseinstallations.googleapis.com failed. Check in order: (1) Edge/Chrome Tracking Prevention or an ad blocker blocking googleapis.com — add https://doctory.runasp.net to the exceptions (edge://settings/privacy) or test in InPrivate/another browser; (2) Google Cloud → APIs & Services → Enabled APIs → 'Firebase Installations API' must be ENABLED for project doctory-1aca1; (3) APIs & Services → Credentials → key AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU → API restrictions must allow 'Firebase Installations API' (or 'Don't restrict key'). Verify: curl -X POST https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations -H "x-goog-api-key: AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU" -H "Content-Type: application/json" --data "{\"fid\":\"test\",\"authVersion\":\"FIS_AUTH_VERSION_1\",\"appId\":\"1:1077893614286:web:be3f460b60b1dd290c9e9f\",\"sdkVersion\":\"w:0.6.4\"}" — a 200 response means the server side is fine and the failure is browser-side (Tracking Prevention).

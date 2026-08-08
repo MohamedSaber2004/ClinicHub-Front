@@ -5,6 +5,7 @@
 
     var SW_PATH = "/firebase-messaging-sw.js";
     var LOGIN_FORM_ID = "loginForm";
+    var REGISTER_FORM_ID = "clinicRegisterForm";
     var TOKEN_CACHE_KEY = "ch_fcm_token";
 
     // Compat-SDK helpers: firebase-messaging-compat exposes these as methods on
@@ -22,20 +23,11 @@
     }
 
     if (document.getElementById("notificationsCenter")) {
-        console.log("[FCM] script loaded — notifications center page mode");
         initNotificationsPage();
         return;
     }
 
-    console.log("[FCM] script loaded", {
-        hasConfig: !!cfg.apiBaseUrl,
-        hasApiKey: !!FIREBASE_CONFIG.apiKey,
-        hasVapid: !!VAPID_PUBLIC_KEY,
-        isLoginPage: !!document.getElementById(LOGIN_FORM_ID)
-    });
-
     if (!FIREBASE_CONFIG.apiKey || !VAPID_PUBLIC_KEY) {
-        console.warn("[FCM] disabled - missing keys in settings:", { hasConfig: !!FIREBASE_CONFIG.apiKey, hasVapid: !!VAPID_PUBLIC_KEY });
         return;
     }
 
@@ -71,7 +63,6 @@
 
     function registerServiceWorker() {
         if (!("serviceWorker" in navigator)) {
-            console.warn("[FCM] service worker API unavailable");
             return Promise.resolve();
         }
         return navigator.serviceWorker.register(SW_PATH)
@@ -84,43 +75,23 @@
                     navigator.serviceWorker.ready,
                     new Promise(function (resolve) { setTimeout(resolve, 2000); })
                 ]);
-            })
-            .then(function () {
-                console.log("[FCM] service worker ready:", SW_PATH);
-            })
-            .catch(function () {
-                console.warn("[FCM] service worker registration failed:", SW_PATH);
             });
     }
 
-    // The classic web-push killer: Firebase Installations rejects/blocked
-    // requests so the browser reports a misleading "Failed to fetch / CORS"
-    // error and no token is ever produced. Diagnose the actual cause so it is
-    // never misdiagnosed again.
-    function logTokenRootCause(err) {
-        var msg = (err && err.message) ? err.message : String(err);
-        if (msg.indexOf("Failed to fetch") === -1 && msg.indexOf("NetworkError") === -1 && msg.indexOf("firebaseinstallations") === -1) return;
-        console.error(
-            "[FCM] ROOT CAUSE: the request to firebaseinstallations.googleapis.com failed. Check in order: " +
-            "(1) Edge/Chrome Tracking Prevention or an ad blocker blocking googleapis.com — add " +
-            "https://doctory.runasp.net to the exceptions (edge://settings/privacy) or test in InPrivate/another browser; " +
-            "(2) Google Cloud → APIs & Services → Enabled APIs → 'Firebase Installations API' must be ENABLED for " +
-            "project doctory-1aca1; (3) APIs & Services → Credentials → key AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU → " +
-            "API restrictions must allow 'Firebase Installations API' (or 'Don't restrict key'). " +
-            "Verify: curl -X POST https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations " +
-            "-H \"x-goog-api-key: AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU\" -H \"Content-Type: application/json\" " +
-            "--data \"{\\\"fid\\\":\\\"test\\\",\\\"authVersion\\\":\\\"FIS_AUTH_VERSION_1\\\",\\\"appId\\\":" +
-            "\\\"1:1077893614286:web:be3f460b60b1dd290c9e9f\\\",\\\"sdkVersion\\\":\\\"w:0.6.4\\\"}\" — a 200 " +
-            "response means the server side is fine and the failure is browser-side (Tracking Prevention)."
-        );
+    function tokenSupported() {
+        return ("Notification" in window) && ("serviceWorker" in navigator);
     }
 
-    function handleLoginPage(app) {
-        var form = document.getElementById(LOGIN_FORM_ID);
-        if (!form) return;
+    // Shared token-attach machinery for auth forms (login + clinic
+    // registration): pre-fill the cached token, warm up the service worker,
+    // request permission on the first user gesture, and briefly wait at
+    // submit time for an imminent token. The registration page needs this too
+    // because a pending clinic owner cannot log in until approval — the token
+    // must travel with the registration request or ClinicApproved/ClinicRejected
+    // pushes can never be delivered.
+    function attachTokenFill(app, form, fcmInput, platformInput) {
+        if (!form || !fcmInput) return;
 
-        var fcmInput = document.getElementById("fcmToken");
-        var platformInput = document.getElementById("devicePlatform");
         var TOKEN_WAIT_MS = 4000;
         var fillPromise = null;
         var tokenWaitBusy = false;
@@ -133,50 +104,37 @@
 
         // Pre-fill with the last known web token so even a fast or Enter-key
         // submit still carries one; the background refresh below replaces it.
-        if (fcmInput && cachedToken()) {
+        if (cachedToken()) {
             fcmInput.value = cachedToken();
             if (platformInput) platformInput.value = "0";
-            console.log("[FCM] pre-filled cached token (" + cachedToken().length + " chars):", cachedToken());
-        }
-
-        function tokenSupported() {
-            return ("Notification" in window) && ("serviceWorker" in navigator);
         }
 
         function acquireToken() {
             var messaging;
             try {
                 if (typeof firebase === "undefined" || !firebase.messaging) {
-                    console.warn("[FCM] cannot produce token - Firebase messaging compat SDK unavailable");
                     return Promise.resolve(null);
                 }
                 messaging = getMessaging(app);
             } catch (err) {
-                console.warn("[FCM] messaging init failed:", err);
                 return Promise.resolve(null);
             }
             if (!tokenSupported()) {
-                console.warn("[FCM] cannot produce token - Notification/serviceWorker API unavailable (HTTPS required)");
                 return Promise.resolve(null);
             }
             if (Notification.permission !== "granted") {
-                console.warn("[FCM] cannot produce token - notification permission is '" + Notification.permission + "'");
                 return Promise.resolve(null);
             }
-            console.log("[FCM] acquiring token...");
             return registerServiceWorker()
                 .then(function () { return getToken(messaging, { vapidKey: VAPID_PUBLIC_KEY }); })
                 .then(function (token) {
                     if (!token) return null;
-                    if (fcmInput) fcmInput.value = token;
+                    fcmInput.value = token;
                     if (platformInput) platformInput.value = "0";
                     try { localStorage.setItem(TOKEN_CACHE_KEY, token); } catch (e) {}
-                    console.log("[FCM] token produced successfully (" + token.length + " chars):", token);
                     return token;
                 })
                 .catch(function (err) {
-                    console.warn("[FCM] getToken failed:", err && err.message ? err.message : err);
-                    logTokenRootCause(err);
                     return null;
                 });
         }
@@ -211,7 +169,6 @@
                 if (req && typeof req.then === "function") {
                     req.then(function (p) {
                         permissionPending = false;
-                        console.log("[FCM] notification permission result:", p);
                         if (p === "granted") startFill();
                     });
                 } else {
@@ -222,11 +179,10 @@
             }
         }, { once: true, capture: true });
 
-        // The form is data-ajax: error-service.js submits it via fetch. We only
-        // intercept briefly when a token is genuinely imminent (permission
-        // already granted, or a permission prompt is pending and the token
-        // fetch is in flight). The login is never blocked for more than
-        // TOKEN_WAIT_MS — without a token it proceeds and push stays off.
+        // Intercept submit briefly when a token is genuinely imminent
+        // (permission already granted, or a permission prompt is pending and
+        // the token fetch is in flight). The form is never blocked for more
+        // than TOKEN_WAIT_MS — without a token it proceeds and push stays off.
         document.addEventListener("submit", function (e) {
             if (e.target !== form) return;
 
@@ -236,7 +192,7 @@
                 return;
             }
 
-            var tokenReady = !!fcmInput && !!fcmInput.value;
+            var tokenReady = !!fcmInput.value;
             var canWait = tokenSupported()
                 && (Notification.permission === "granted" || permissionPending)
                 && !!fillPromise
@@ -248,7 +204,6 @@
                 e.preventDefault();
                 e.stopPropagation();
                 tokenWaitBusy = true;
-                console.log("[FCM] waiting up to " + TOKEN_WAIT_MS + "ms for token before submitting login...");
                 if (typeof showLoader === "function") showLoader();
 
                 var forced = false;
@@ -256,7 +211,6 @@
                     if (forced) return;
                     forced = true;
                     tokenWaitBusy = false;
-                    console.log("[FCM] login submitted. token attached: " + (!!fcmInput && !!fcmInput.value) + (fcmInput && fcmInput.value ? " (" + fcmInput.value.length + " chars)" : ""));
                     try { form.requestSubmit(); } catch (err) { form.submit(); }
                 }
 
@@ -265,13 +219,26 @@
                 return;
             }
 
-            if (!tokenReady) {
-                console.warn("[FCM] submitting login WITHOUT fcmToken — backend will NOT create a UserFbToken row");
-            } else {
-                console.log("[FCM] submitting login with fcmToken (" + fcmInput.value.length + " chars)");
-            }
             if (typeof showLoader === "function") showLoader();
         }, true);
+    }
+
+    function handleLoginPage(app) {
+        attachTokenFill(
+            app,
+            document.getElementById(LOGIN_FORM_ID),
+            document.getElementById("fcmToken"),
+            document.getElementById("devicePlatform")
+        );
+    }
+
+    function handleRegisterPage(app) {
+        attachTokenFill(
+            app,
+            document.getElementById(REGISTER_FORM_ID),
+            document.getElementById("fcmToken"),
+            document.getElementById("devicePlatform")
+        );
     }
 
     function roleAppointmentsPath() {
@@ -290,6 +257,8 @@
         caches.open("ch-nav").then(function (cache) {
             cache.put(new Request("/__ch_nav_appointments__"), new Response(roleAppointmentsPath()));
             cache.put(new Request("/__ch_nav_notifications__"), new Response(notificationsPagePath()));
+            cache.put(new Request("/__ch_nav_clinics__"), new Response(clinicsPath() || ""));
+            cache.put(new Request("/__ch_nav_support__"), new Response(supportPath() || ""));
         }).catch(function () {});
     }
 
@@ -301,25 +270,82 @@
         return "/Admin/Notifications";
     }
 
+    // NotificationType enum values (docs/WEB_DASHBOARD_NOTIFICATIONS_README.md
+    // + docs/NOTIFICATIONS_README.md): the list endpoint returns them as
+    // numbers, push payloads carry the enum name. Map numbers → names so both
+    // paths share one resolution logic.
+    var TYPE_NAMES = {
+        "0": "AppointmentReminder",
+        "1": "NewMessage",
+        "2": "PaymentConfirmation",
+        "3": "AppointmentConfirmation",
+        "4": "AppointmentCancellation",
+        "5": "SystemAnnouncement",
+        "6": "CancellationWindowClosed",
+        "7": "SubscriptionExpiring",
+        "8": "RefundProcessed",
+        "9": "AdExpiring",
+        "10": "AppointmentOutsideAvailability",
+        "11": "AppointmentOutsideWorkingHours",
+        "12": "NewBookingRequest",
+        "13": "ClinicRegistered",
+        "14": "ClinicApproved",
+        "15": "ClinicRejected",
+        "16": "SupportTicketUpdate",
+        "17": "PaymentReceived",
+        "18": "RevenueIncreased"
+    };
+
+    function typeName(value) {
+        var name = String(value || "");
+        return TYPE_NAMES[name] || name;
+    }
+
+    // Dashboard target groups — types 10-18 are dashboard-only; the rest are
+    // shared with the mobile catalogue. The web dashboard has no
+    // appointment-detail or chat pages, so each group lands on the role's hub
+    // page (appointments / clinics / support / notifications).
+    var APPOINTMENT_TYPES = ["AppointmentReminder", "PaymentConfirmation", "AppointmentConfirmation", "AppointmentCancellation", "CancellationWindowClosed", "RefundProcessed", "NewBookingRequest", "AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "PaymentReceived", "RevenueIncreased"];
+    var CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
+    var SUPPORT_TYPES = ["SupportTicketUpdate"];
+    var NOTIFICATION_TYPES = ["NewMessage", "SystemAnnouncement", "SubscriptionExpiring", "AdExpiring"];
+
+    function clinicsPath() {
+        var role = (localStorage.getItem("role") || "").toLowerCase();
+        if (role.indexOf("clinic") !== -1) return "/Clinic/Index";
+        if (role.indexOf("super") !== -1) return "/Admin/Clinics";
+        return null;
+    }
+
+    function supportPath() {
+        var role = (localStorage.getItem("role") || "").toLowerCase();
+        if (role.indexOf("clinic") !== -1) return "/Clinic/Support";
+        if (role.indexOf("super") !== -1) return "/Admin/Support";
+        return null;
+    }
+
+    // Mirrors firebase-messaging-sw.js: each NotificationType group lands on
+    // the role-appropriate hub page; unknown types do nothing.
     function navigateByType(type) {
-        var appointmentTypes = ["AppointmentReminder", "AppointmentConfirmation", "AppointmentCancellation", "PaymentConfirmation", "CancellationWindowClosed", "RefundProcessed"];
-        if (appointmentTypes.indexOf(type) !== -1) {
-            window.location.href = roleAppointmentsPath();
+        var name = typeName(type);
+        var target = null;
+        if (APPOINTMENT_TYPES.indexOf(name) !== -1) {
+            target = roleAppointmentsPath();
+        } else if (CLINIC_TYPES.indexOf(name) !== -1) {
+            target = clinicsPath();
+        } else if (SUPPORT_TYPES.indexOf(name) !== -1) {
+            target = supportPath();
+        } else if (NOTIFICATION_TYPES.indexOf(name) !== -1) {
+            target = notificationsPagePath();
+        }
+        if (target && window.location.pathname !== target) {
+            window.location.href = target;
         }
     }
 
     function handleForeground(app) {
         var messaging = getMessaging(app);
         registerServiceWorker();
-
-        console.log("[FCM] dashboard mode, notification permission:", ("Notification" in window) ? Notification.permission : "unavailable");
-        if (!("Notification" in window)) {
-            console.warn("[FCM] push unavailable - Notification API missing (page must be served over HTTPS)");
-        } else if (Notification.permission === "default") {
-            console.warn("[FCM] push disabled - permission is 'default'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.");
-        } else if (Notification.permission === "denied") {
-            console.warn("[FCM] push disabled - permission is 'denied'. A denied browser can never be re-prompted: the user must enable it from the browser site settings (lock icon → Site settings → Notifications → Allow).");
-        }
 
         onMessage(messaging, function (payload) {
             var title = payload.notification && payload.notification.title ? payload.notification.title : "Doctory";
@@ -353,13 +379,7 @@
                 },
                 body: JSON.stringify({ fcmToken: token, devicePlatform: 0 })
             })
-            .then(function (r) { return r.json(); })
-            .then(function (json) {
-                console.log("[FCM] token registered on backend", json && json.data ? json.data : json);
-            })
-            .catch(function (err) {
-                console.warn("[FCM] backend token registration failed:", err);
-            });
+            .catch(function () {});
         }
 
         // Token rotation: browsers rotate FCM tokens over time. Refresh the
@@ -372,13 +392,9 @@
                 .then(function (token) {
                     if (!token) return;
                     try { localStorage.setItem(TOKEN_CACHE_KEY, token); } catch (e) {}
-                    console.log("[FCM] token ready, registering on backend (" + token.length + " chars)");
                     registerTokenOnBackend(token);
                 })
-                .catch(function (err) {
-                    console.warn("[FCM] token refresh failed:", err && err.message ? err.message : err);
-                    logTokenRootCause(err);
-                });
+                .catch(function () {});
         }
         if (("Notification" in window) && Notification.permission === "granted") {
             syncCachedToken();
@@ -425,7 +441,6 @@
             req.then(function (p) {
                 settled = true;
                 clearTimeout(timeout);
-                console.log("[FCM] notification permission result:", p);
                 if (p === "granted") {
                     closeBanner();
                     syncCachedToken();
@@ -546,8 +561,8 @@
     }
 
     function bellItemHtml(item) {
-        var title = item.title || item.Title || "";
-        var body = item.body || item.Body || item.message || item.Message || "";
+        var title = item.titleAr || item.TitleAr || item.title || item.Title || "";
+        var body = item.bodyAr || item.BodyAr || item.body || item.Body || item.message || item.Message || "";
         var date = item.createdAt || item.createdDate || item.CreatedAt || item.date || item.Date || "";
         if (date) {
             var d = new Date(date);
@@ -575,6 +590,9 @@
         fetchJson(notificationsUrl(1, 10)).then(function (data) {
             var items = data && data.items ? data.items : (Array.isArray(data) ? data : []);
             renderBellList(items);
+            // The list endpoint marks returned items as read server-side —
+            // refresh the badge AFTER the fetch (README §1.2).
+            refreshBell();
         }).catch(function () {});
     }
 
@@ -603,9 +621,18 @@
             CancellationWindowClosed: "bi-hourglass-split",
             SubscriptionExpiring: "bi-hourglass-split",
             RefundProcessed: "bi-cash-stack",
-            AdExpiring: "bi-megaphone"
+            AdExpiring: "bi-megaphone",
+            AppointmentOutsideAvailability: "bi-exclamation-octagon",
+            AppointmentOutsideWorkingHours: "bi-clock-history",
+            NewBookingRequest: "bi-calendar-plus",
+            ClinicRegistered: "bi-building-add",
+            ClinicApproved: "bi-patch-check",
+            ClinicRejected: "bi-x-circle",
+            SupportTicketUpdate: "bi-life-preserver",
+            PaymentReceived: "bi-credit-card",
+            RevenueIncreased: "bi-graph-up-arrow"
         };
-        return map[type] || "bi-bell";
+        return map[typeName(type)] || "bi-bell";
     }
 
     function formatDate(value) {
@@ -616,10 +643,10 @@
     }
 
     function notifItemHtml(item) {
-        var title = item.title || item.Title || "";
-        var body = item.body || item.Body || item.message || item.Message || "";
+        var title = item.titleAr || item.TitleAr || item.title || item.Title || "";
+        var body = item.bodyAr || item.BodyAr || item.body || item.Body || item.message || item.Message || "";
         var date = formatDate(item.createdAt || item.createdDate || item.CreatedAt || item.date || item.Date);
-        var type = item.type || item.Type || "";
+        var type = typeName(item.type || item.Type || "");
         var unread = item.isRead === false || item.isUnread === true;
         return '<div class="notif-item' + (unread ? " unread" : "") + '" data-type="' + type + '">' +
             '<div class="notif-item-icon"><i class="bi ' + typeIcon(type) + '"></i></div>' +
@@ -679,15 +706,14 @@
 
     function init() {
         if (typeof firebase === "undefined" || typeof firebase.messaging !== "function") {
-            console.warn("[FCM] disabled - Firebase messaging compat SDK unavailable");
             return;
         }
         var app = firebase.initializeApp(FIREBASE_CONFIG);
         if (isLoginPage()) {
-            console.log("[FCM] initializing login page mode");
             handleLoginPage(app);
+        } else if (document.getElementById(REGISTER_FORM_ID)) {
+            handleRegisterPage(app);
         } else {
-            console.log("[FCM] initializing foreground (dashboard) mode");
             handleForeground(app);
         }
     }
@@ -717,7 +743,6 @@
                 loadNext();
             };
             s.onerror = function () {
-                console.warn("[FCM] SDK script failed to load:", s.src);
                 i += 1;
                 loadNext();
             };
