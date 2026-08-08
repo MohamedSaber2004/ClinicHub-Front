@@ -1,3 +1,43 @@
+@using ClinicHub.Services.ReponseModels
+@using System.Globalization
+@{
+    var notifications = ViewBag.Notifications as IReadOnlyCollection<NotificationDto> ?? new List<NotificationDto>();
+    var errorMessage = ViewBag.ErrorMessage as string;
+}
+
+@functions {
+    static string NotificationIcon(int type)
+    {
+        return type switch
+        {
+            1 => "bi-chat-dots",
+            2 => "bi-credit-card",
+            3 => "bi-calendar-check",
+            4 => "bi-calendar-x",
+            5 => "bi-megaphone",
+            6 => "bi-hourglass-split",
+            7 => "bi-hourglass-split",
+            8 => "bi-cash-stack",
+            9 => "bi-megaphone",
+            10 => "bi-exclamation-octagon",
+            11 => "bi-clock-history",
+            12 => "bi-calendar-plus",
+            13 => "bi-building-add",
+            14 => "bi-patch-check",
+            15 => "bi-x-circle",
+            16 => "bi-life-preserver",
+            17 => "bi-credit-card",
+            18 => "bi-graph-up-arrow",
+            _ => "bi-bell"
+        };
+    }
+
+    static string FormatNotificationDate(DateTime value)
+    {
+        return value.ToString("d MMM yyyy - hh:mm tt", CultureInfo.GetCultureInfo("ar-EG"));
+    }
+}
+
 <div class="notif-page" id="notificationsCenter">
     <h2 class="page-title">
         <span class="page-title-icon">
@@ -6,19 +46,43 @@
         الإشعارات
     </h2>
 
-    <div class="notif-card">
-        <div class="notif-list" id="notifList"></div>
-        <div class="notif-empty" id="notifEmpty" hidden>لا توجد إشعارات</div>
-        <div class="notif-loading" id="notifLoading">
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            جارٍ تحميل الإشعارات...
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-warning">
+            <p>@errorMessage</p>
         </div>
-        <nav class="pagination-nav notif-pagination" id="notifPagination" hidden>
-            <ul class="pagination-list">
-                <li><button class="pagination-link" type="button" id="notifPrev">السابق</button></li>
-                <li><span class="pagination-link pagination-link--active" id="notifPageInfo">1</span></li>
-                <li><button class="pagination-link" type="button" id="notifNext">التالي</button></li>
-            </ul>
-        </nav>
+    }
+
+    <div class="notif-card">
+        @if (notifications.Count == 0)
+        {
+            <div class="notif-empty">لا توجد إشعارات</div>
+        }
+        else
+        {
+            <div class="notif-list">
+                @foreach (var item in notifications)
+                {
+                    <div class="notif-item @(!item.IsRead ? "unread" : "")">
+                        <div class="notif-item-icon"><i class="bi @NotificationIcon(item.Type)"></i></div>
+                        <div class="notif-item-content">
+                            <div class="notif-item-title">
+                                @item.TitleAr
+                                @if (!item.IsRead)
+                                {
+                                    <span class="notif-item-dot"></span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(item.BodyAr))
+                            {
+                                <div class="notif-item-body">@item.BodyAr</div>
+                            }
+                            <div class="notif-item-time">@FormatNotificationDate(item.CreatedAt)</div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <partial name="_Pagination" />
+        }
     </div>
 </div>

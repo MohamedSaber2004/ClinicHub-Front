@@ -28,8 +28,9 @@ namespace ClinicHub.Controllers
         private readonly IAuthService _authService;
         private readonly IAdminPaymentService _adminPaymentService;
         private readonly IAdService _adService;
+        private readonly INotificationService _notificationService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService, INotificationService notificationService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
@@ -45,11 +46,13 @@ namespace ClinicHub.Controllers
             _authService = authService;
             _adminPaymentService = adminPaymentService;
             _adService = adService;
+            _notificationService = notificationService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             await LoadHeaderProfileAsync(_authService);
+            await LoadNotificationsAsync(_notificationService);
             await base.OnActionExecutionAsync(context, next);
         }
 
@@ -1357,9 +1360,75 @@ namespace ClinicHub.Controllers
             return View("Users/Payments");
         }
 
-        public IActionResult Notifications()
+        public async Task<IActionResult> Notifications(int pageNumber = 1, int pageSize = 20)
         {
+            try
+            {
+                var result = await _notificationService.GetNotificationsAsync(pageNumber, pageSize);
+                ViewBag.Notifications = result.Items;
+                ViewBag.Pagination = result;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Notifications = new List<NotificationDto>();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "عذراً، حدث خطأ أثناء تحميل الإشعارات.";
+                ViewBag.Notifications = new List<NotificationDto>();
+            }
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> NotificationsCount()
+        {
+            try
+            {
+                var count = await _notificationService.GetUnreadCountAsync();
+                return Json(new { success = true, count });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, count = 0, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, count = 0, message = "عذراً، حدث خطأ أثناء جلب عدد الإشعارات." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> NotificationsList(int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var result = await _notificationService.GetNotificationsAsync(pageNumber, pageSize);
+                return Json(new
+                {
+                    success = true,
+                    items = result.Items,
+                    pageNumber = result.PageNumber,
+                    pageSize = result.PageSize,
+                    totalPages = result.TotalPages,
+                    totalCount = result.TotalCount,
+                    hasPreviousPage = result.HasPreviousPage,
+                    hasNextPage = result.HasNextPage
+                });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, items = new List<NotificationDto>() });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, items = new List<NotificationDto>() });
+            }
         }
 
         public async Task<IActionResult> Profile()

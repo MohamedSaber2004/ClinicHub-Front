@@ -36,6 +36,24 @@ namespace ClinicHub.Controllers
             }
         }
 
+        /// <summary>
+        /// Loads the unread notification count (GET /notifications/count) for the layout bell
+        /// badge. Fails silently so pages render with a hidden badge when the API is unreachable.
+        /// </summary>
+        protected async Task LoadNotificationsAsync(INotificationService notificationService)
+        {
+            try
+            {
+                ViewBag.UnreadNotificationsCount = await notificationService.GetUnreadCountAsync();
+            }
+            catch (ApiException)
+            {
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         protected IActionResult RedirectJson(string? redirectUrl)
         {
             if (IsAjaxRequest)

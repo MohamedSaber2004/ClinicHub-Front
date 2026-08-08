@@ -28,6 +28,7 @@ namespace ClinicHub.Controllers
         private readonly IClinicDashboardService _clinicDashboardService;
         private readonly IDoctorService _doctorService;
         private readonly IDoctorDashboardService _doctorDashboardService;
+        private readonly INotificationService _notificationService;
 
         public ClinicController(
             ISubscriptionService subscriptionService,
@@ -43,7 +44,8 @@ namespace ClinicHub.Controllers
             IAdService adService,
             IClinicDashboardService clinicDashboardService,
             IDoctorService doctorService,
-            IDoctorDashboardService doctorDashboardService)
+            IDoctorDashboardService doctorDashboardService,
+            INotificationService notificationService)
         {
             _subscriptionService = subscriptionService;
             _planService = planService;
@@ -59,6 +61,7 @@ namespace ClinicHub.Controllers
             _clinicDashboardService = clinicDashboardService;
             _doctorService = doctorService;
             _doctorDashboardService = doctorDashboardService;
+            _notificationService = notificationService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -121,6 +124,7 @@ namespace ClinicHub.Controllers
 
             ViewBag.CurrentUser = CurrentUser;
             await LoadHeaderProfileAsync(_authService);
+            await LoadNotificationsAsync(_notificationService);
             await next();
         }
 
@@ -1028,9 +1032,75 @@ namespace ClinicHub.Controllers
             }
         }
 
-        public IActionResult Notifications()
+        public async Task<IActionResult> Notifications(int pageNumber = 1, int pageSize = 20)
         {
+            try
+            {
+                var result = await _notificationService.GetNotificationsAsync(pageNumber, pageSize);
+                ViewBag.Notifications = result.Items;
+                ViewBag.Pagination = result;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Notifications = new List<NotificationDto>();
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "عذراً، حدث خطأ أثناء تحميل الإشعارات.";
+                ViewBag.Notifications = new List<NotificationDto>();
+            }
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> NotificationsCount()
+        {
+            try
+            {
+                var count = await _notificationService.GetUnreadCountAsync();
+                return Json(new { success = true, count });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, count = 0, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, count = 0, message = "عذراً، حدث خطأ أثناء جلب عدد الإشعارات." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> NotificationsList(int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var result = await _notificationService.GetNotificationsAsync(pageNumber, pageSize);
+                return Json(new
+                {
+                    success = true,
+                    items = result.Items,
+                    pageNumber = result.PageNumber,
+                    pageSize = result.PageSize,
+                    totalPages = result.TotalPages,
+                    totalCount = result.TotalCount,
+                    hasPreviousPage = result.HasPreviousPage,
+                    hasNextPage = result.HasNextPage
+                });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, items = new List<NotificationDto>() });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, items = new List<NotificationDto>() });
+            }
         }
 
         public async Task<IActionResult> Profile()

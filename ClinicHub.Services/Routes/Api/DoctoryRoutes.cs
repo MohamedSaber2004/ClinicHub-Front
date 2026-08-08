@@ -27,6 +27,7 @@ namespace ClinicHub.Services.Routes.Api
             AdminPayments = new AdminPaymentsRoutes(BaseRoute);
             AdminAds = new AdminAdsRoutes(BaseRoute);
             Ads = new AdsRoutes(BaseRoute);
+            Notifications = new NotificationsRoutes(BaseRoute);
         }
 
         public static StaffDashboardRoutes StaffDashboard { get; private set; } = null!;
@@ -47,6 +48,7 @@ namespace ClinicHub.Services.Routes.Api
         public static AdminPaymentsRoutes AdminPayments { get; private set; } = null!;
         public static AdminAdsRoutes AdminAds { get; private set; } = null!;
         public static AdsRoutes Ads { get; private set; } = null!;
+        public static NotificationsRoutes Notifications { get; private set; } = null!;
 
         public class AuthRoutes
         {
@@ -351,6 +353,18 @@ namespace ClinicHub.Services.Routes.Api
             public string CreateOrder(Guid clinicId) => $"{_apiBase}/clinics/{clinicId}/ads/orders";
             public string Packages => $"{_baseRoute}/packages";
             public string PublicActive => $"{_apiBase}/public/ads/active";
+        }
+
+        public class NotificationsRoutes
+        {
+            private readonly string _baseRoute;
+            public NotificationsRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/notifications";
+            }
+
+            public string Count => $"{_baseRoute}/count";
+            public string List => $"{_baseRoute}/pagginated";
         }
     }
 }

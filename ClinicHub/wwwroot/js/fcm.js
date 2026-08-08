@@ -22,11 +22,6 @@
         return messaging.onMessage(callback);
     }
 
-    if (document.getElementById("notificationsCenter")) {
-        initNotificationsPage();
-        return;
-    }
-
     if (!FIREBASE_CONFIG.apiKey || !VAPID_PUBLIC_KEY) {
         return;
     }
@@ -35,21 +30,27 @@
         return cfg.apiBaseUrl || "";
     }
 
+    // The bell badge/list now flow through the MVC controllers (server-side
+    // bearer token via the shared HttpClient) instead of the raw API with a
+    // localStorage token — so the endpoints are role-relative MVC actions.
+    function notificationsBasePath() {
+        var role = (localStorage.getItem("role") || "").toLowerCase();
+        if (role.indexOf("clinic") !== -1) return "/Clinic";
+        if (role.indexOf("doctor") !== -1) return "/Doctor";
+        if (role.indexOf("staff") !== -1) return "/Staff";
+        return "/Admin";
+    }
+
     function notificationsUrl(page, pageSize) {
-        return apiBaseUrl() + "/api/v1/notifications/pagginated?pageNumber=" + (page || 1) + "&pageSize=" + (pageSize || 10);
+        return notificationsBasePath() + "/NotificationsList?pageNumber=" + (page || 1) + "&pageSize=" + (pageSize || 10);
     }
 
     function notificationsCountUrl() {
-        return apiBaseUrl() + "/api/v1/notifications/count";
-    }
-
-    function authHeaders() {
-        var token = localStorage.getItem("accessToken");
-        return token ? { "Authorization": "Bearer " + token } : {};
+        return notificationsBasePath() + "/NotificationsCount";
     }
 
     function fetchJson(url) {
-        return fetch(url, { headers: authHeaders() })
+        return fetch(url)
             .then(function (r) { return r.json().catch(function () { return null; }); })
             .then(function (json) {
                 if (json && json.data !== undefined && json.data !== null) return json.data;
@@ -359,7 +360,7 @@
             refreshBell();
         });
 
-        injectBell();
+        attachBellEvents();
         refreshBell();
         setInterval(refreshBell, 60000);
         cacheNavPaths();
@@ -522,30 +523,16 @@
         showEnableBanner();
     }
 
-    function injectBell() {
-        var header = document.querySelector(".top-header");
-        var user = document.querySelector(".header-user");
-        if (!header) return;
-        if (document.getElementById("chBell")) return;
-
-        var bell = document.createElement("div");
-        bell.className = "ch-bell";
-        bell.id = "chBell";
-        bell.innerHTML =
-            '<button class="ch-bell-btn" type="button" title="الإشعارات" aria-label="الإشعارات">' +
-            '<i class="bi bi-bell"></i>' +
-            '<span class="ch-bell-badge" id="chBellBadge" style="display:none;">0</span>' +
-            '</button>' +
-            '<div class="ch-bell-dropdown" id="chBellDropdown">' +
-            '<div class="ch-bell-header">الإشعارات</div>' +
-            '<div class="ch-bell-list" id="chBellList"><div class="ch-bell-empty">لا توجد إشعارات</div></div>' +
-            '<a class="ch-bell-footer" href="' + notificationsPagePath() + '">عرض كل الإشعارات</a>' +
-            '</div>';
-
-        if (user) header.insertBefore(bell, user);
-        else header.appendChild(bell);
+    // The bell markup is server-rendered in every dashboard layout (badge
+    // count from ViewBag.UnreadNotificationsCount). This only wires up the
+    // toggle/dropdown behaviour and the AJAX list refresh.
+    function attachBellEvents() {
+        var bell = document.getElementById("chBell");
+        if (!bell) return;
 
         var btn = bell.querySelector(".ch-bell-btn");
+        if (!btn) return;
+
         btn.addEventListener("click", function (e) {
             e.stopPropagation();
             var dd = document.getElementById("chBellDropdown");
@@ -555,7 +542,8 @@
 
         document.addEventListener("click", function (e) {
             if (!e.target.closest("#chBell")) {
-                document.getElementById("chBellDropdown").classList.remove("open");
+                var dd = document.getElementById("chBellDropdown");
+                if (dd) dd.classList.remove("open");
             }
         });
     }
@@ -598,110 +586,16 @@
 
     function refreshBell() {
         fetchJson(notificationsCountUrl()).then(function (data) {
-            var count = typeof data === "number" ? data : (data && (data.count !== undefined ? data.count : data.unreadCount)) || 0;
+            var count = (data && (typeof data.count === "number" ? data.count : data.unreadCount)) || 0;
             var badge = document.getElementById("chBellBadge");
             if (!badge) return;
             if (count > 0) {
                 badge.textContent = count > 99 ? "99+" : count;
-                badge.style.display = "flex";
+                badge.hidden = false;
             } else {
-                badge.style.display = "none";
+                badge.hidden = true;
             }
         }).catch(function () {});
-    }
-
-    function typeIcon(type) {
-        var map = {
-            AppointmentReminder: "bi-bell",
-            NewMessage: "bi-chat-dots",
-            PaymentConfirmation: "bi-credit-card",
-            AppointmentConfirmation: "bi-calendar-check",
-            AppointmentCancellation: "bi-calendar-x",
-            SystemAnnouncement: "bi-megaphone",
-            CancellationWindowClosed: "bi-hourglass-split",
-            SubscriptionExpiring: "bi-hourglass-split",
-            RefundProcessed: "bi-cash-stack",
-            AdExpiring: "bi-megaphone",
-            AppointmentOutsideAvailability: "bi-exclamation-octagon",
-            AppointmentOutsideWorkingHours: "bi-clock-history",
-            NewBookingRequest: "bi-calendar-plus",
-            ClinicRegistered: "bi-building-add",
-            ClinicApproved: "bi-patch-check",
-            ClinicRejected: "bi-x-circle",
-            SupportTicketUpdate: "bi-life-preserver",
-            PaymentReceived: "bi-credit-card",
-            RevenueIncreased: "bi-graph-up-arrow"
-        };
-        return map[typeName(type)] || "bi-bell";
-    }
-
-    function formatDate(value) {
-        if (!value) return "";
-        var d = new Date(value);
-        if (isNaN(d.getTime())) return "";
-        return d.toLocaleString("ar", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-    }
-
-    function notifItemHtml(item) {
-        var title = item.titleAr || item.TitleAr || item.title || item.Title || "";
-        var body = item.bodyAr || item.BodyAr || item.body || item.Body || item.message || item.Message || "";
-        var date = formatDate(item.createdAt || item.createdDate || item.CreatedAt || item.date || item.Date);
-        var type = typeName(item.type || item.Type || "");
-        var unread = item.isRead === false || item.isUnread === true;
-        return '<div class="notif-item' + (unread ? " unread" : "") + '" data-type="' + type + '">' +
-            '<div class="notif-item-icon"><i class="bi ' + typeIcon(type) + '"></i></div>' +
-            '<div class="notif-item-content">' +
-            '<div class="notif-item-title">' + title + (unread ? '<span class="notif-item-dot"></span>' : "") + '</div>' +
-            (body ? '<div class="notif-item-body">' + body + '</div>' : "") +
-            (date ? '<div class="notif-item-time">' + date + '</div>' : "") +
-            '</div></div>';
-    }
-
-    function initNotificationsPage() {
-        cacheNavPaths();
-        var page = parseInt((new URLSearchParams(window.location.search)).get("page") || "1", 10) || 1;
-        var list = document.getElementById("notifList");
-        var empty = document.getElementById("notifEmpty");
-        var loading = document.getElementById("notifLoading");
-        var pagination = document.getElementById("notifPagination");
-        var pageInfo = document.getElementById("notifPageInfo");
-        var prevBtn = document.getElementById("notifPrev");
-        var nextBtn = document.getElementById("notifNext");
-        if (!list) return;
-
-        fetchJson(notificationsUrl(page, 20)).then(function (data) {
-            var items = data && data.items ? data.items : (Array.isArray(data) ? data : []);
-            var totalPages = (data && data.totalPages) || 1;
-            var hasPrev = !!(data && data.hasPreviousPage) || page > 1;
-            var hasNext = !!(data && data.hasNextPage) || page < totalPages;
-
-            loading.style.display = "none";
-            if (!items.length) {
-                empty.hidden = false;
-                return;
-            }
-            list.innerHTML = items.map(notifItemHtml).join("");
-            list.querySelectorAll(".notif-item").forEach(function (el) {
-                el.addEventListener("click", function () {
-                    navigateByType(el.getAttribute("data-type"));
-                });
-            });
-
-            pagination.hidden = false;
-            pageInfo.textContent = "صفحة " + page + " من " + totalPages;
-            prevBtn.disabled = !hasPrev;
-            nextBtn.disabled = !hasNext;
-            prevBtn.onclick = function () {
-                if (hasPrev) window.location.href = window.location.pathname + "?page=" + (page - 1);
-            };
-            nextBtn.onclick = function () {
-                if (hasNext) window.location.href = window.location.pathname + "?page=" + (page + 1);
-            };
-        }).catch(function () {
-            loading.style.display = "none";
-            empty.hidden = false;
-            empty.textContent = "تعذر تحميل الإشعارات";
-        });
     }
 
     function init() {

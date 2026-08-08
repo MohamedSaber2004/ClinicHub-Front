@@ -109,6 +109,26 @@
                     <i class="bi bi-chevron-double-right"></i>
                 </button>
                 <div class="flex-fill"></div>
+                <div class="ch-bell" id="chBell">
+                    <button class="ch-bell-btn" type="button" title="الإشعارات" aria-label="الإشعارات">
+                        <i class="bi bi-bell"></i>
+                        @if (ViewBag.UnreadNotificationsCount is int unreadCount && unreadCount > 0)
+                        {
+                            <span class="ch-bell-badge" id="chBellBadge">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
+                        }
+                        else
+                        {
+                            <span class="ch-bell-badge" id="chBellBadge" hidden>0</span>
+                        }
+                    </button>
+                    <div class="ch-bell-dropdown" id="chBellDropdown">
+                        <div class="ch-bell-header">الإشعارات</div>
+                        <div class="ch-bell-list" id="chBellList">
+                            <div class="ch-bell-empty">لا توجد إشعارات</div>
+                        </div>
+                        <a class="ch-bell-footer" href="@StaffRoutes.Pages.Notifications()">عرض كل الإشعارات</a>
+                    </div>
+                </div>
                 <a class="header-user" href="@StaffRoutes.Pages.Profile()">
                     <div class="user-info">
                         <span class="user-name">@_profileName</span>

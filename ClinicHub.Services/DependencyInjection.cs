@@ -129,6 +129,12 @@ namespace ClinicHub.Services
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
+            services.AddHttpClient<INotificationService, NotificationService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
             return services;
         }
     }
