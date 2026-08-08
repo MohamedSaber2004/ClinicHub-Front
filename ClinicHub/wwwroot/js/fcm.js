@@ -255,6 +255,16 @@
         return "/Admin/Index";
     }
 
+    // Service workers cannot read localStorage, so the role-based appointments
+    // path is cached in Cache Storage for the notification click handler in
+    // firebase-messaging-sw.js.
+    function cacheAppointmentsPath() {
+        if (!("caches" in window) || !localStorage.getItem("role")) return;
+        caches.open("ch-nav").then(function (cache) {
+            cache.put(new Request("/__ch_nav_appointments__"), new Response(roleAppointmentsPath()));
+        }).catch(function () {});
+    }
+
     function notificationsPagePath() {
         var role = (localStorage.getItem("role") || "").toLowerCase();
         if (role.indexOf("clinic") !== -1) return "/Clinic/Notifications";
@@ -296,25 +306,44 @@
         injectBell();
         refreshBell();
         setInterval(refreshBell, 60000);
+        cacheAppointmentsPath();
+
+        // Registers the web token with the backend right away — no need to
+        // wait for the next login (POST /api/v1/auth/fcm-token, see
+        // docs/FCM_TOKEN_ENDPOINT_FRONTEND.md).
+        function registerTokenOnBackend(token) {
+            var accessToken = localStorage.getItem("accessToken");
+            if (!accessToken) return;
+
+            fetch(cfg.apiBaseUrl + "/api/v1/auth/fcm-token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + accessToken
+                },
+                body: JSON.stringify({ fcmToken: token, devicePlatform: 0 })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (json) {
+                console.log("[FCM] token registered on backend", json && json.data ? json.data : json);
+            })
+            .catch(function (err) {
+                console.warn("[FCM] backend token registration failed:", err);
+            });
+        }
 
         // Token rotation: browsers rotate FCM tokens over time. Refresh the
-        // cached web token in the background so the next login registers the
-        // current token with the backend (README §3.6).
+        // cached web token in the background and register it on the backend
+        // NOW (README §3.6, docs/FCM_TOKEN_ENDPOINT_FRONTEND.md).
         function syncCachedToken() {
             if (!("Notification" in window) || Notification.permission !== "granted") return;
             registerServiceWorker()
                 .then(function () { return getToken(messaging, { vapidKey: VAPID_PUBLIC_KEY }); })
                 .then(function (token) {
                     if (!token) return;
-                    try {
-                        var prev = localStorage.getItem(TOKEN_CACHE_KEY);
-                        if (prev !== token) {
-                            localStorage.setItem(TOKEN_CACHE_KEY, token);
-                            console.log("[FCM] token rotated and cached for next login (" + token.length + " chars):", token);
-                        } else {
-                            console.log("[FCM] token unchanged, cache is up-to-date (" + token.length + " chars)");
-                        }
-                    } catch (e) {}
+                    try { localStorage.setItem(TOKEN_CACHE_KEY, token); } catch (e) {}
+                    console.log("[FCM] token ready, registering on backend (" + token.length + " chars)");
+                    registerTokenOnBackend(token);
                 })
                 .catch(function (err) {
                     console.warn("[FCM] token refresh failed:", err && err.message ? err.message : err);
@@ -489,6 +518,7 @@
     }
 
     function initNotificationsPage() {
+        cacheAppointmentsPath();
         var page = parseInt((new URLSearchParams(window.location.search)).get("page") || "1", 10) || 1;
         var list = document.getElementById("notifList");
         var empty = document.getElementById("notifEmpty");

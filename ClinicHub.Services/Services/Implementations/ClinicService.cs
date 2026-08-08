@@ -243,6 +243,8 @@ namespace ClinicHub.Services.Services.Implementations
                 if (request.WorkingHoursEnd.HasValue) payload["workingHoursEnd"] = request.WorkingHoursEnd.Value.ToString("HH:mm:ss");
                 if (request.WorkingDays != null && request.WorkingDays.Count > 0)
                     payload["workingDays"] = new JArray(request.WorkingDays.Select(d => (int)d).ToList());
+                if (request.Latitude.HasValue) payload["latitude"] = request.Latitude.Value;
+                if (request.Longitude.HasValue) payload["longitude"] = request.Longitude.Value;
 
                 var json = payload.ToString(Formatting.None);
                 var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");

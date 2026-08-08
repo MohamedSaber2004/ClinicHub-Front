@@ -1,9 +1,59 @@
 # 🔔 Push Notifications & Web Login — Backend Report (for Frontend Team)
 
-**Date:** 2026-08-08
+**Date:** 2026-08-08 (updated after live-system verification)
 **Prepared by:** Backend team (ClinicHub API)
-**Scope:** Why the FCM token is not registered after web login, the FCM producing issue, and why mobile push notifications are not delivered.
+**Scope:** Why the FCM token is not registered after web login, the FCM producing issue, and why push notifications are not displayed on web / delivered on mobile.
 **Related docs:** `docs/FCM_NOTIFICATIONS_README.md`
+
+---
+
+## 0. ⭐ Live-System Verification Results (2026-08-08) — THE ANSWER
+
+We verified every layer against the **live** production deployment. Configuration is **NOT missing** — but there is conclusive evidence the web token has **never been registered**:
+
+| # | Check | Result |
+|---|-------|--------|
+| 1 | Backend Firebase credentials (`firebase-credentials.json`) — OAuth token exchange + real FCM send against the live project | ✅ **VALID** — backend FCM send path works end-to-end |
+| 2 | Firebase project identity: `project_id = doctory-1aca1`, `projectNumber = 1077893614286` (= `messagingSenderId`) | ✅ confirmed from Firebase API |
+| 3 | Live frontend `https://doctory.runasp.net/firebase-messaging-sw.js` — served at domain root with correct senderId `1077893614286`, project `doctory-1aca1` | ✅ correct |
+| 4 | Live login page `window.ClinicHubConfig` — `vapidKey`, `apiKey`, `messagingSenderId` match backend | ✅ correct |
+| 5 | Live login form has hidden inputs `#fcmToken` + `#devicePlatform` (value `0`) | ✅ present |
+| 6 | Live `fcm.js` deployed version == current source (length 25635, includes token-wait + cache logic) | ✅ current |
+| 7 | Deployed API `POST /api/v1/auth/login-web` OpenAPI schema contains `fcmToken` + `devicePlatform` | ✅ supported |
+| 8 | VAPID public key is a mathematically valid EC P-256 (secp256r1) point | ✅ well-formed |
+| 9 | Frontend `DevicePlatform` enum = backend enum (`Web=0, Android=1, iOS=2`) | ✅ match |
+| 10 | **Live DB `UserFbTokens` — tokens by platform** | ❌ **ONLY `Android` rows exist (2 active). ZERO `Web` rows — never a single one, not even soft-deleted.** |
+
+### Conclusion
+
+> The web push token has **never reached the backend** — the DB has never contained a `DevicePlatform = 0` row. Since the deployed frontend **is** sending the login payload with `fcmToken` + `devicePlatform` (verified above), the failure is in **browser-side token production**: `getToken()` returns `null` or throws in real browser sessions, so the form submits **without** an `fcmToken`.
+
+**This is NOT a missing configuration problem.** Config is deployed correctly on both sides. The failure is inside the browser:
+1. **Notification permission is never granted** at login time (fcm.js only fetches a token when `Notification.permission === "granted"`; the prompt is requested on the first click and is easy to ignore/deny). Token-less login → no push, and the DB row is never created.
+2. **`getToken()` throws** — the exact error is logged by `fcm.js` in DevTools console (`[FCM] getToken failed: <error>`). The message identifies the cause:
+   - `messaging/invalid-vapid-key` → the VAPID key is not registered in THIS project's console (Project settings → Cloud Messaging → Web push certificates) — valid point, wrong project.
+   - `messaging/sender-id-mismatch` → senderId mismatch.
+   - `messaging/unsupported-browser` / missing `Notification` → not HTTPS or unsupported browser.
+3. **First-login chicken-and-egg**: on a fresh browser, permission is `"default"`; if the user submits without clicking/granting, that login has no token. The token is cached (`ch_fcm_token`) and only attached at the **next** login.
+
+### What the frontend team must do to confirm (5 minutes)
+
+1. Open DevTools → Console on `https://doctory.runasp.net/Account/Login` (clear console first).
+2. Click anywhere on the page (triggers the permission prompt) → click **Allow**.
+3. Watch console for: `[FCM] token produced successfully (…)` or `[FCM] getToken failed: …`.
+4. Submit login; in DevTools → Network → `login-web` request, confirm the payload contains `fcmToken` (non-empty) and `devicePlatform: 0`.
+5. After login, backend check:
+   ```sql
+   SELECT Id, UserId, Token, DevicePlatform, IsDeleted, CreatedAt
+   FROM UserFbTokens WHERE UserId = '<userId>' ORDER BY CreatedAt DESC;
+   ```
+   Row with `DevicePlatform = 0` = fixed. If the row appears and pushes still don't display, the browser subscription is the issue (permission revoked / SW unregistered).
+
+### Fixes to apply on the frontend
+
+- **Register the token after granting permission, not only at login.** Add a flow where, once permission is granted (e.g., from the dashboard banner in `fcm.js`), the cached token is pushed to the backend immediately (dedicated `POST /api/v1/auth/fcm-token` endpoint — pending on backend) or by forcing a re-login refresh.
+- If the console shows `messaging/invalid-vapid-key`: open Firebase Console → project `doctory-1aca1` → Project settings → **Cloud Messaging** → **Web push certificates** and copy the **current** key into `FirebaseWeb:VapidKey` in the frontend `appsettings.*.json`.
+- Consider disabling the "wait up to 4 s" behavior and instead block submit until a token exists or permission is definitively denied.
 
 ---
 

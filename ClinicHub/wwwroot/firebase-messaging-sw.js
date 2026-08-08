@@ -24,10 +24,45 @@ messaging.onBackgroundMessage((payload) => {
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
+const APPOINTMENT_TYPES = ["AppointmentReminder", "AppointmentConfirmation", "AppointmentCancellation", "PaymentConfirmation", "CancellationWindowClosed", "RefundProcessed"];
+const NAV_CACHE = "ch-nav";
+const NAV_KEY = "/__ch_nav_appointments__";
+
+// The role-based appointments page is cached by fcm.js from the dashboard —
+// service workers have no access to localStorage, so the click handler reads
+// it from the Cache Storage API instead.
+async function cachedAppointmentsPath() {
+    try {
+        const cache = await caches.open(NAV_CACHE);
+        const res = await cache.match(NAV_KEY);
+        if (res) return await res.text();
+    } catch (e) {}
+    return null;
+}
+
+async function resolveTargetUrl(notification) {
+    const type = notification.data?.type || "";
+    if (APPOINTMENT_TYPES.includes(type)) {
+        const cached = await cachedAppointmentsPath();
+        if (cached) return cached;
+    }
+    return notification.data?.link || "/";
+}
+
 self.addEventListener("notificationclick", (event) => {
     event.notification.close();
-    const link = event.notification.data?.link || "/";
-    if (link.startsWith("/")) {
-        event.waitUntil(clients.openWindow(link));
-    }
+    event.waitUntil((async () => {
+        const url = await resolveTargetUrl(event.notification);
+        if (!url.startsWith("/")) return;
+
+        const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+        if (windows.length > 0) {
+            try {
+                await windows[0].focus();
+                await windows[0].navigate(url);
+                return;
+            } catch (e) {}
+        }
+        await self.clients.openWindow(url);
+    })());
 });

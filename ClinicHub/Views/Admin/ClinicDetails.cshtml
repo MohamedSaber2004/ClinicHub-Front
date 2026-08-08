@@ -180,7 +180,11 @@
                 </p>
                 <input type="hidden" id="clinicDetailLat" value="@(clinic.Lat?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.0409")" />
                 <input type="hidden" id="clinicDetailLng" value="@(clinic.Lng?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.3785")" />
+                <input type="text" id="clinicDetailPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
                 <div id="clinicDetailMap" class="register-map-container"></div>
+                <div class="settings-map-tools">
+                    <span class="text-muted settings-coords-display" id="clinicDetailCoordsDisplay"></span>
+                </div>
             </div>
             @if (clinic.WorkingDays != null && clinic.WorkingDays.Any())
             {
@@ -474,7 +478,7 @@
 </div>
 
 @section Scripts {
-    <script src="https://maps.googleapis.com/maps/api/js?key=@ViewBag.GoogleMapsApiKey&callback=initClinicMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=@ViewBag.GoogleMapsApiKey&callback=initClinicMap&libraries=places&language=ar" async defer></script>
     <script>
         function initClinicMap() {
             var lat = parseFloat(document.getElementById('clinicDetailLat').value) || 31.0409;
@@ -490,6 +494,7 @@
             var marker = new google.maps.Marker({
                 position: pos,
                 map: map,
+                draggable: true,
                 title: '@Html.Raw(clinicName.Replace("'", "\\'"))'
             });
             var info = new google.maps.InfoWindow({
@@ -497,6 +502,47 @@
             });
             marker.addListener('click', function() { info.open(map, marker); });
             info.open(map, marker);
+
+            function updateClinicCoords(latLng) {
+                var newLat = latLng.lat().toFixed(6);
+                var newLng = latLng.lng().toFixed(6);
+                document.getElementById('clinicDetailLat').value = newLat;
+                document.getElementById('clinicDetailLng').value = newLng;
+                var display = document.getElementById('clinicDetailCoordsDisplay');
+                if (display) display.textContent = newLat + ', ' + newLng;
+            }
+            var display = document.getElementById('clinicDetailCoordsDisplay');
+            if (display) display.textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
+
+            // Pick a new location: click the map, drag the marker, or search.
+            map.addListener('click', function(e) {
+                marker.setPosition(e.latLng);
+                map.panTo(e.latLng);
+                updateClinicCoords(e.latLng);
+            });
+            marker.addListener('dragend', function(e) {
+                updateClinicCoords(e.latLng);
+            });
+
+            var searchInput = document.getElementById('clinicDetailPlaceSearch');
+            if (searchInput && google.maps.places) {
+                var autocomplete = new google.maps.places.Autocomplete(searchInput);
+                autocomplete.addListener('place_changed', function() {
+                    var place = autocomplete.getPlace();
+                    if (!place.geometry) {
+                        showErrorModal('لم نتمكن من تحديد الموقع المختار. حاول مرة أخرى.');
+                        return;
+                    }
+                    if (place.geometry.viewport) {
+                        map.fitBounds(place.geometry.viewport);
+                    } else {
+                        map.setCenter(place.geometry.location);
+                        map.setZoom(16);
+                    }
+                    marker.setPosition(place.geometry.location);
+                    updateClinicCoords(place.geometry.location);
+                });
+            }
         }
 
         (function() {
@@ -567,6 +613,12 @@
                     workingHours: form.querySelector('[name="workingHours"]').value,
                     workingDays: []
                 };
+                var latVal = parseFloat(document.getElementById('clinicDetailLat').value);
+                var lngVal = parseFloat(document.getElementById('clinicDetailLng').value);
+                if (!isNaN(latVal) && !isNaN(lngVal)) {
+                    data.latitude = latVal;
+                    data.longitude = lngVal;
+                }
                 if (whStart) data.workingHoursStart = whStart;
                 if (whEnd) data.workingHoursEnd = whEnd;
                 return data;
