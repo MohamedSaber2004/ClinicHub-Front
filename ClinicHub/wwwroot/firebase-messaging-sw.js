@@ -25,16 +25,18 @@ messaging.onBackgroundMessage((payload) => {
 });
 
 const APPOINTMENT_TYPES = ["AppointmentReminder", "AppointmentConfirmation", "AppointmentCancellation", "PaymentConfirmation", "CancellationWindowClosed", "RefundProcessed"];
+const NOTIFICATION_TYPES = ["NewMessage", "SystemAnnouncement", "SubscriptionExpiring", "AdExpiring"];
 const NAV_CACHE = "ch-nav";
-const NAV_KEY = "/__ch_nav_appointments__";
+const NAV_KEY_APPOINTMENTS = "/__ch_nav_appointments__";
+const NAV_KEY_NOTIFICATIONS = "/__ch_nav_notifications__";
 
-// The role-based appointments page is cached by fcm.js from the dashboard —
-// service workers have no access to localStorage, so the click handler reads
-// it from the Cache Storage API instead.
-async function cachedAppointmentsPath() {
+// The role-based pages are cached by fcm.js from the dashboard — service
+// workers have no access to localStorage, so the click handler reads them
+// from the Cache Storage API instead.
+async function cachedValue(key) {
     try {
         const cache = await caches.open(NAV_CACHE);
-        const res = await cache.match(NAV_KEY);
+        const res = await cache.match(key);
         if (res) return await res.text();
     } catch (e) {}
     return null;
@@ -43,18 +45,33 @@ async function cachedAppointmentsPath() {
 async function resolveTargetUrl(notification) {
     const type = notification.data?.type || "";
     if (APPOINTMENT_TYPES.includes(type)) {
-        const cached = await cachedAppointmentsPath();
-        if (cached) return cached;
+        const path = await cachedValue(NAV_KEY_APPOINTMENTS);
+        if (path) return path;
     }
-    return notification.data?.link || "/";
+    if (NOTIFICATION_TYPES.includes(type)) {
+        const path = await cachedValue(NAV_KEY_NOTIFICATIONS);
+        if (path) return path;
+    }
+    const link = notification.data?.link || "";
+    if (link.startsWith("/")) return link;
+    return "/";
 }
+
+// Replace the old service worker immediately on the next page load — without
+// skipWaiting a new SW only activates after ALL tabs are closed, so clicks
+// would keep using the previous (broken) handler.
+self.addEventListener("install", () => {
+    self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+    event.waitUntil(self.clients.claim());
+});
 
 self.addEventListener("notificationclick", (event) => {
     event.notification.close();
     event.waitUntil((async () => {
         const url = await resolveTargetUrl(event.notification);
-        if (!url.startsWith("/")) return;
-
         const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
         if (windows.length > 0) {
             try {

@@ -75,7 +75,11 @@
             return Promise.resolve();
         }
         return navigator.serviceWorker.register(SW_PATH)
-            .then(function () {
+            .then(function (reg) {
+                // Force the update check on every load: combined with
+                // skipWaiting() in the SW file, a freshly deployed SW takes
+                // over immediately instead of waiting for all tabs to close.
+                if (reg && typeof reg.update === "function") reg.update();
                 return Promise.race([
                     navigator.serviceWorker.ready,
                     new Promise(function (resolve) { setTimeout(resolve, 2000); })
@@ -255,13 +259,14 @@
         return "/Admin/Index";
     }
 
-    // Service workers cannot read localStorage, so the role-based appointments
-    // path is cached in Cache Storage for the notification click handler in
+    // Service workers cannot read localStorage, so the role-based pages are
+    // cached in Cache Storage for the notification click handler in
     // firebase-messaging-sw.js.
-    function cacheAppointmentsPath() {
+    function cacheNavPaths() {
         if (!("caches" in window) || !localStorage.getItem("role")) return;
         caches.open("ch-nav").then(function (cache) {
             cache.put(new Request("/__ch_nav_appointments__"), new Response(roleAppointmentsPath()));
+            cache.put(new Request("/__ch_nav_notifications__"), new Response(notificationsPagePath()));
         }).catch(function () {});
     }
 
@@ -288,7 +293,7 @@
         if (!("Notification" in window)) {
             console.warn("[FCM] push unavailable - Notification API missing (page must be served over HTTPS)");
         } else if (Notification.permission !== "granted") {
-            console.warn("[FCM] push disabled on this browser - permission is '" + Notification.permission + "'. Grant notification permission, then log out and back in to register the web token.");
+            console.warn("[FCM] push disabled on this browser - permission is '" + Notification.permission + "'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.");
         }
 
         onMessage(messaging, function (payload) {
@@ -306,7 +311,7 @@
         injectBell();
         refreshBell();
         setInterval(refreshBell, 60000);
-        cacheAppointmentsPath();
+        cacheNavPaths();
 
         // Registers the web token with the backend right away — no need to
         // wait for the next login (POST /api/v1/auth/fcm-token, see
@@ -357,7 +362,8 @@
         // a silent auto-prompt is easy to miss (Edge shows a quiet bell icon in
         // the address bar instead). The button click is a strong user gesture,
         // so the permission prompt reliably appears; the fetched token is then
-        // cached and registered with the backend on the next login.
+        // cached and registered with the backend immediately via the
+        // POST /api/v1/auth/fcm-token endpoint.
         function showEnableBanner() {
             if (!("Notification" in window) || Notification.permission !== "default") return;
             var main = document.querySelector(".content-body") || document.querySelector("main") || document.body;
@@ -390,6 +396,25 @@
                 banner.remove();
             });
         }
+
+        // First user interaction on the dashboard is a strong gesture: request
+        // the permission automatically (same pattern as the login page) so
+        // push activates without the user hunting for the banner. The banner
+        // stays as a fallback for users who dismiss the prompt.
+        document.addEventListener("pointerdown", function () {
+            if (!("Notification" in window) || Notification.permission !== "default") return;
+            var req = Notification.requestPermission();
+            if (req && typeof req.then === "function") {
+                req.then(function (p) {
+                    console.log("[FCM] notification permission result (auto):", p);
+                    if (p === "granted") {
+                        var banner = document.getElementById("chNotifBanner");
+                        if (banner) banner.remove();
+                        syncCachedToken();
+                    }
+                });
+            }
+        }, { once: true, capture: true });
 
         showEnableBanner();
     }
@@ -518,7 +543,7 @@
     }
 
     function initNotificationsPage() {
-        cacheAppointmentsPath();
+        cacheNavPaths();
         var page = parseInt((new URLSearchParams(window.location.search)).get("page") || "1", 10) || 1;
         var list = document.getElementById("notifList");
         var empty = document.getElementById("notifEmpty");
