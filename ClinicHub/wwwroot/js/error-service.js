@@ -85,17 +85,32 @@
         return typeof input === 'string' ? input : (input && input.url ? input.url : '');
     }
 
+    function isSameOrigin(input) {
+        var u = getUrl(input);
+        if (!u) return true;
+        if (u.indexOf('http://') !== 0 && u.indexOf('https://') !== 0) {
+            return u.indexOf('//') !== 0;
+        }
+        try {
+            return new URL(u).origin === window.location.origin;
+        } catch (e) {
+            return false;
+        }
+    }
+
     window.fetch = function (input, init) {
         init = init || {};
-        init.headers = init.headers || {};
-        init.headers['Accept-Language'] = 'ar';
-
-        var accessToken = localStorage.getItem('accessToken');
-        if (accessToken) {
-            init.headers['Authorization'] = 'Bearer ' + accessToken;
-        }
-
         var requestUrl = getUrl(input);
+
+        if (isSameOrigin(input)) {
+            init.headers = init.headers || {};
+            init.headers['Accept-Language'] = 'ar';
+
+            var accessToken = localStorage.getItem('accessToken');
+            if (accessToken) {
+                init.headers['Authorization'] = 'Bearer ' + accessToken;
+            }
+        }
 
         return origFetch.call(window, input, init).then(function (response) {
             if (response.status === 401

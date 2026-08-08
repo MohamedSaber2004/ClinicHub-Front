@@ -279,10 +279,22 @@
 
         (function() {
             var origFetch = window.fetch;
+            function isSameOrigin(input) {
+                var u = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+                if (!u) return true;
+                if (u.indexOf('http://') !== 0 && u.indexOf('https://') !== 0) {
+                    return u.indexOf('//') !== 0;
+                }
+                try {
+                    return new URL(u).origin === window.location.origin;
+                } catch (e) {
+                    return false;
+                }
+            }
             window.fetch = function(url, init) {
                 init = init || {};
                 var method = (init.method || 'GET').toUpperCase();
-                if (method !== 'GET' && method !== 'HEAD') {
+                if (method !== 'GET' && method !== 'HEAD' && isSameOrigin(url)) {
                     var token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                     if (token) {
                         if (!init.headers) init.headers = {};
