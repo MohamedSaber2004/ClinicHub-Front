@@ -267,20 +267,12 @@
         return "/Admin/Notifications";
     }
 
-    // NotificationType enum values (docs/WEB_DASHBOARD_NOTIFICATIONS_README.md
-    // + docs/NOTIFICATIONS_README.md): the list endpoint returns them as
-    // numbers, push payloads carry the enum name. Map numbers → names so both
-    // paths share one resolution logic.
+    // NotificationType enum values (docs/WEB_DASHBOARD_NOTIFICATIONS_README.md):
+    // web-dashboard-only catalogue (ClinicHub.Services/Enums/NotificationType.cs).
+    // The list endpoint returns them as numbers, push payloads carry the enum
+    // name. Map numbers → names so both paths share one resolution logic.
     var TYPE_NAMES = {
-        "0": "AppointmentReminder",
-        "1": "NewMessage",
-        "2": "PaymentConfirmation",
-        "3": "AppointmentConfirmation",
-        "4": "AppointmentCancellation",
-        "5": "SystemAnnouncement",
-        "6": "CancellationWindowClosed",
         "7": "SubscriptionExpiring",
-        "8": "RefundProcessed",
         "9": "AdExpiring",
         "10": "AppointmentOutsideAvailability",
         "11": "AppointmentOutsideWorkingHours",
@@ -299,14 +291,13 @@
         return TYPE_NAMES[name] || name;
     }
 
-    // Dashboard target groups — types 10-18 are dashboard-only; the rest are
-    // shared with the mobile catalogue. The web dashboard has no
-    // appointment-detail or chat pages, so each group lands on the role's hub
-    // page (appointments / clinics / support / notifications).
-    var APPOINTMENT_TYPES = ["AppointmentReminder", "PaymentConfirmation", "AppointmentConfirmation", "AppointmentCancellation", "CancellationWindowClosed", "RefundProcessed", "NewBookingRequest", "AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
+    // Dashboard target groups — every type lands on the role's hub page
+    // (appointments / clinics / support / notifications). The web dashboard
+    // has no appointment-detail or chat pages.
+    var APPOINTMENT_TYPES = ["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
     var CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
     var SUPPORT_TYPES = ["SupportTicketUpdate"];
-    var NOTIFICATION_TYPES = ["NewMessage", "SystemAnnouncement", "SubscriptionExpiring", "AdExpiring"];
+    var NOTIFICATION_TYPES = ["SubscriptionExpiring", "AdExpiring"];
 
     function clinicsPath() {
         var role = (localStorage.getItem("role") || "").toLowerCase();

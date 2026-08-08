@@ -24,10 +24,10 @@ messaging.onBackgroundMessage((payload) => {
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const APPOINTMENT_TYPES = ["AppointmentReminder", "PaymentConfirmation", "AppointmentConfirmation", "AppointmentCancellation", "CancellationWindowClosed", "RefundProcessed", "NewBookingRequest", "AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
+const APPOINTMENT_TYPES = ["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
 const CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
 const SUPPORT_TYPES = ["SupportTicketUpdate"];
-const NOTIFICATION_TYPES = ["NewMessage", "SystemAnnouncement", "SubscriptionExpiring", "AdExpiring"];
+const NOTIFICATION_TYPES = ["SubscriptionExpiring", "AdExpiring"];
 const NAV_CACHE = "ch-nav";
 const NAV_KEY_APPOINTMENTS = "/__ch_nav_appointments__";
 const NAV_KEY_NOTIFICATIONS = "/__ch_nav_notifications__";
