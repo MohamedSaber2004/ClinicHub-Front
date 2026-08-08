@@ -235,5 +235,29 @@ namespace ClinicHub.Services.Services.Implementations
 
             return true;
         }
+
+        public async Task<bool> RegisterFcmTokenAsync(FcmTokenRequest request)
+        {
+            var json = JsonConvert.SerializeObject(request, _jsonSettings);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(DoctoryRoutes.Auth.FcmToken, content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في تسجيل جهاز الإشعارات" : combined);
+            }
+
+            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+            var dataToken = obj?["data"] ?? obj?["Data"];
+
+            if (dataToken != null && dataToken.Type == JTokenType.Boolean)
+                return dataToken.Value<bool>();
+
+            return true;
+        }
     }
 }

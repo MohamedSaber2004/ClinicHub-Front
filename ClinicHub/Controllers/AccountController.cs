@@ -151,6 +151,32 @@ namespace ClinicHub.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> RegisterFcmToken([FromBody] FcmTokenRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.FcmToken))
+            {
+                Response.StatusCode = 400;
+                return Json(new { success = false, message = "رمز الجهاز مطلوب." });
+            }
+
+            try
+            {
+                await _authService.RegisterFcmTokenAsync(request);
+                return Json(new { success = true });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = "عذراً، حدث خطأ أثناء تسجيل جهاز الإشعارات." });
+            }
+        }
+
         [HttpGet]
         public IActionResult ForgotPassword()
         {

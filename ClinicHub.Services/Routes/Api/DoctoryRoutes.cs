@@ -67,6 +67,7 @@ namespace ClinicHub.Services.Routes.Api
             public string Logout => $"{BaseRoute}/logout";
             public string Profile => $"{BaseRoute}/profile";
             public string UpdateProfile => $"{BaseRoute}/profile/update";
+            public string FcmToken => $"{BaseRoute}/fcm-token";
         }
 
         public class SpecializationRoutes

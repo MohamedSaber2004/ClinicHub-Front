@@ -26,10 +26,6 @@
         return;
     }
 
-    function apiBaseUrl() {
-        return cfg.apiBaseUrl || "";
-    }
-
     // The bell badge/list now flow through the MVC controllers (server-side
     // bearer token via the shared HttpClient) instead of the raw API with a
     // localStorage token — so the endpoints are role-relative MVC actions.
@@ -349,8 +345,15 @@
         registerServiceWorker();
 
         onMessage(messaging, function (payload) {
+            var title = payload.notification && payload.notification.title ? payload.notification.title : "Doctory";
+            var body = (payload.notification && payload.notification.body) || (payload.data && payload.data.body) || "";
             var type = (payload.data && payload.data.type) || "";
 
+            // Foreground pushes do not reach the service worker — show the
+            // notification natively so the push content is actually visible.
+            if (("Notification" in window) && Notification.permission === "granted") {
+                new Notification(title, { body: body, icon: "/notification_logo.png", badge: "/notification_logo.png" });
+            }
             navigateByType(type);
             refreshBell();
         });
@@ -360,19 +363,15 @@
         setInterval(refreshBell, 60000);
         cacheNavPaths();
 
-        // Registers the web token with the backend right away — no need to
-        // wait for the next login (POST /api/v1/auth/fcm-token, see
-        // docs/FCM_TOKEN_ENDPOINT_FRONTEND.md).
+        // Registers the web token with the backend through the MVC server —
+        // same-origin, authenticated by the HttpOnly session cookie, so it
+        // works on every page load (no localStorage token required, no CORS).
         function registerTokenOnBackend(token) {
-            var accessToken = localStorage.getItem("accessToken");
-            if (!accessToken) return;
+            if (!token) return;
 
-            fetch(cfg.apiBaseUrl + "/api/v1/auth/fcm-token", {
+            fetch("/Account/RegisterFcmToken", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + accessToken
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fcmToken: token, devicePlatform: 0 })
             })
             .catch(function () {});
@@ -392,6 +391,15 @@
                 })
                 .catch(function () {});
         }
+
+        // Re-register the last known token on every dashboard load so the
+        // backend keeps pushing even after refreshes and TempData is gone.
+        var cachedToken = "";
+        try { cachedToken = localStorage.getItem(TOKEN_CACHE_KEY) || ""; } catch (e) {}
+        if (cachedToken && ("Notification" in window) && Notification.permission === "granted") {
+            registerServiceWorker().then(function () { registerTokenOnBackend(cachedToken); });
+        }
+
         if (("Notification" in window) && Notification.permission === "granted") {
             syncCachedToken();
         }

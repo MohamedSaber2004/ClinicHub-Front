@@ -14,5 +14,6 @@ namespace ClinicHub.Services.Contracts
         Task<bool> ResetPasswordAsync(ResetPasswordRequest request);
         Task<UserProfileDto> GetProfileAsync();
         Task<bool> UpdateProfileAsync(UpdateProfileRequest request);
+        Task<bool> RegisterFcmTokenAsync(FcmTokenRequest request);
     }
 }
