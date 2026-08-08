@@ -244,6 +244,7 @@
                         <h6 class="mb-3 fw-bold">تحديد الموقع على الخريطة</h6>
                         <input type="hidden" name="lat" id="createClinicLat" value="" />
                         <input type="hidden" name="lng" id="createClinicLng" value="" />
+                        <input type="text" id="createClinicPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
                         <div id="createClinicMap" class="register-map-container"></div>
                         <div class="row">
                             <div class="col-md-6">
@@ -372,44 +373,94 @@
 </div>
 
 @section Scripts {
-    <script src="https://maps.googleapis.com/maps/api/js?key=@ViewBag.GoogleMapsApiKey&callback=initCreateClinicMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=@ViewBag.GoogleMapsApiKey&callback=initCreateClinicMap&libraries=places&language=ar" async defer></script>
     <script>
+        var createClinicMap = null;
+        var createClinicMarker = null;
+
+        // Maps API callback. The map lives inside a hidden Bootstrap modal:
+        // building it there renders at 0x0 and clicks never place the marker.
+        // If the modal is already visible build now, otherwise the
+        // shown.bs.modal listener builds it lazily.
         function initCreateClinicMap() {
+            var modalEl = document.getElementById('clinicModal');
+            if (modalEl && !modalEl.classList.contains('show')) return;
+            buildCreateClinicMap();
+            if (createClinicMap) google.maps.event.trigger(createClinicMap, 'resize');
+        }
+
+        function buildCreateClinicMap() {
+            if (createClinicMap) return;
+            var mapElem = document.getElementById('createClinicMap');
+            if (!mapElem) return;
             var defaultPos = { lat: 30.0444, lng: 31.2357 };
-            var map = new google.maps.Map(document.getElementById('createClinicMap'), {
+            createClinicMap = new google.maps.Map(mapElem, {
                 center: defaultPos,
                 zoom: 12,
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: false
             });
-            var marker = new google.maps.Marker({
+            createClinicMarker = new google.maps.Marker({
                 position: defaultPos,
-                map: map,
+                map: createClinicMap,
                 draggable: true
             });
-            marker.setVisible(false);
-            map.addListener('click', function(e) {
-                placeMarker(e.latLng);
+            createClinicMarker.setVisible(false);
+            createClinicMap.addListener('click', function(e) {
+                placeCreateMarker(e.latLng);
             });
-            marker.addListener('dragend', function(e) {
-                updateCoords(e.latLng);
+            createClinicMarker.addListener('dragend', function(e) {
+                updateCreateCoords(e.latLng);
             });
-            function placeMarker(latLng) {
-                marker.setPosition(latLng);
-                marker.setVisible(true);
-                map.panTo(latLng);
-                updateCoords(latLng);
-            }
-            function updateCoords(latLng) {
-                var lat = latLng.lat().toFixed(6);
-                var lng = latLng.lng().toFixed(6);
-                document.getElementById('createClinicLat').value = lat;
-                document.getElementById('createClinicLng').value = lng;
-                document.getElementById('createClinicLatDisplay').value = lat;
-                document.getElementById('createClinicLngDisplay').value = lng;
+
+            var searchInput = document.getElementById('createClinicPlaceSearch');
+            if (searchInput && google.maps.places) {
+                var autocomplete = new google.maps.places.Autocomplete(searchInput);
+                autocomplete.addListener('place_changed', function() {
+                    var place = autocomplete.getPlace();
+                    if (!place.geometry) {
+                        showErrorModal('لم نتمكن من تحديد الموقع المختار. حاول مرة أخرى.');
+                        return;
+                    }
+                    if (place.geometry.viewport) {
+                        createClinicMap.fitBounds(place.geometry.viewport);
+                    } else {
+                        createClinicMap.setCenter(place.geometry.location);
+                        createClinicMap.setZoom(16);
+                    }
+                    placeCreateMarker(place.geometry.location);
+                });
             }
         }
+
+        function placeCreateMarker(latLng) {
+            createClinicMarker.setPosition(latLng);
+            createClinicMarker.setVisible(true);
+            createClinicMap.panTo(latLng);
+            updateCreateCoords(latLng);
+        }
+        function updateCreateCoords(latLng) {
+            var lat = latLng.lat().toFixed(6);
+            var lng = latLng.lng().toFixed(6);
+            document.getElementById('createClinicLat').value = lat;
+            document.getElementById('createClinicLng').value = lng;
+            document.getElementById('createClinicLatDisplay').value = lat;
+            document.getElementById('createClinicLngDisplay').value = lng;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var modalEl = document.getElementById('clinicModal');
+            if (!modalEl) return;
+            modalEl.addEventListener('shown.bs.modal', function () {
+                if (typeof google !== 'undefined' && google.maps) {
+                    buildCreateClinicMap();
+                }
+                if (createClinicMap) {
+                    google.maps.event.trigger(createClinicMap, 'resize');
+                }
+            });
+        });
 
         (function() {
             var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';

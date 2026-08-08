@@ -85,6 +85,7 @@ body {
     flex-direction: column;
     flex-shrink: 0;
     height: 100%;
+    overflow: hidden;
     z-index: 100;
     transition: width 0.2s ease;
 }
@@ -95,6 +96,7 @@ body {
     border-bottom: 1px solid var(--clr-border);
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .sidebar-logo {
@@ -122,10 +124,13 @@ body {
 
 .sidebar-menu {
     flex-grow: 1;
+    min-height: 0;
     padding: var(--space-6) var(--space-3) 0;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
 .sidebar-bottom {
@@ -2626,6 +2631,7 @@ body {
 }
 
 .register-map-search {
+  width: 100%;
   margin-bottom: var(--space-2);
 }
 
@@ -5307,6 +5313,8 @@ body {
     right: -274px;
     width: 274px;
     height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
     z-index: 1050;
     transition: right 0.3s ease;
     box-shadow: none;
@@ -6263,6 +6271,11 @@ body {
   height: 300px;
   border-radius: var(--radius-md);
   border: 1px solid var(--clr-border);
+  margin-bottom: var(--space-2);
+}
+
+.settings-map-search {
+  width: 100%;
   margin-bottom: var(--space-2);
 }
 

@@ -132,6 +132,7 @@
                                 <label class="form-label">الموقع على الخريطة</label>
                                 <input type="hidden" id="registerLat" name="Lat" value="31.0409" />
                                 <input type="hidden" id="registerLng" name="Lng" value="31.3785" />
+                                <input type="text" id="registerPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
                                 <div id="registerClinicMap" class="register-map-container"></div>
                                 <div class="register-map-tools">
                                     <button type="button" class="btn btn-sm btn-outline-primary register-location-btn" id="registerMyLocationBtn">
@@ -374,6 +375,26 @@
                     regMarker.setPosition(e.latLng);
                     updateRegCoords(e.latLng.lat(), e.latLng.lng());
                 });
+
+                var searchInput = document.getElementById('registerPlaceSearch');
+                if (searchInput && google.maps.places) {
+                    var autocomplete = new google.maps.places.Autocomplete(searchInput);
+                    autocomplete.addListener('place_changed', function() {
+                        var place = autocomplete.getPlace();
+                        if (!place.geometry) {
+                            alert('لم نتمكن من تحديد الموقع المختار. حاول مرة أخرى.');
+                            return;
+                        }
+                        if (place.geometry.viewport) {
+                            regMap.fitBounds(place.geometry.viewport);
+                        } else {
+                            regMap.setCenter(place.geometry.location);
+                            regMap.setZoom(16);
+                        }
+                        regMarker.setPosition(place.geometry.location);
+                        updateRegCoords(place.geometry.location.lat(), place.geometry.location.lng());
+                    });
+                }
 
                 var myLocBtn = document.getElementById('registerMyLocationBtn');
                 if (myLocBtn) {

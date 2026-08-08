@@ -86,6 +86,7 @@
             <input type="hidden" id="settingsLng" value="@lng.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
             @if (hasMapKey)
             {
+                <input type="text" id="settingsPlaceSearch" class="form-input settings-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
                 <div id="settingsClinicMap" class="settings-map"></div>
                 <div class="settings-map-tools">
                     <button type="button" class="btn btn-sm btn-outline-primary settings-location-btn" id="settingsMyLocationBtn">
@@ -205,6 +206,26 @@
                     updateCoords(e.latLng);
                 });
 
+                var searchInput = document.getElementById('settingsPlaceSearch');
+                if (searchInput && google.maps.places) {
+                    var autocomplete = new google.maps.places.Autocomplete(searchInput);
+                    autocomplete.addListener('place_changed', function() {
+                        var place = autocomplete.getPlace();
+                        if (!place.geometry) {
+                            showErrorModal('لم نتمكن من تحديد الموقع المختار. حاول مرة أخرى.');
+                            return;
+                        }
+                        if (place.geometry.viewport) {
+                            map.fitBounds(place.geometry.viewport);
+                        } else {
+                            map.setCenter(place.geometry.location);
+                            map.setZoom(16);
+                        }
+                        marker.setPosition(place.geometry.location);
+                        updateCoords(place.geometry.location);
+                    });
+                }
+
                 document.getElementById('settingsMyLocationBtn').addEventListener('click', function() {
                     if (!navigator.geolocation) {
                         showErrorModal('الموقع غير مدعوم في متصفحك.');
@@ -222,7 +243,7 @@
                 });
             }
         </script>
-        <script src="https://maps.googleapis.com/maps/api/js?key=@googleMapsApiKey&callback=initSettingsMap&language=ar" async defer></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=@googleMapsApiKey&callback=initSettingsMap&libraries=places&language=ar" async defer></script>
     }
 
     <script>
