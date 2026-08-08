@@ -1,17 +1,23 @@
-﻿fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:30 [FCM] script loaded {hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
-fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:602 [FCM] initializing foreground (dashboard) mode
-fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:292 [FCM] dashboard mode, notification permission: denied
-fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:296 [FCM] push disabled on this browser - permission is 'denied'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.
-handleForeground @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:296
-init @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:603
-loadNext @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:621
-(anonymous) @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:629
-script
-loadNext @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:624
-(anonymous) @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:629
-script
-loadNext @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:624
-loadSdk @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:639
-(anonymous) @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:642
-(anonymous) @ fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:643
-fcm.js?v=7rvVVlmY9L7tjnvh_tNAUNrpuy8JwGeaIPFr9YgYG4I:89 [FCM] service worker ready: /firebase-messaging-sw.js
+﻿
+﻿
+Admin:1
+ Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css.
+Admin:1
+ Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css.
+Admin:1
+ Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css.
+Admin:1
+ Tracking Prevention blocked access to storage for https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css.
+[NEW] Explain Console errors by using Copilot in Edge: click 
+ to explain an error. Learn more
+Don't show again
+[Violation] Forced reflow while executing JavaScript took 36ms
+fcm.js?v=sY019uTHVNl…_a9X777mRemqjARw:30 [FCM] script loaded 
+{hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
+fcm.js?v=sY019uTHVNl…a9X777mRemqjARw:642 [FCM] initializing foreground (dashboard) mode
+fcm.js?v=sY019uTHVNl…a9X777mRemqjARw:292 [FCM] dashboard mode, notification permission: default
+fcm.js?v=sY019uTHVNl…a9X777mRemqjARw:296
+ [FCM] push disabled - permission is 'default'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.
+fcm.js?v=sY019uTHVNl…_a9X777mRemqjARw:89 [FCM] service worker ready: /firebase-messaging-sw.js
+fcm.js?v=sY019uTHVNl…a9X777mRemqjARw:425
+ [FCM] permission still 'default' after re-check

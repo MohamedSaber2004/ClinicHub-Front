@@ -366,6 +366,57 @@
         // so the permission prompt reliably appears; the fetched token is then
         // cached and registered with the backend immediately via the
         // POST /api/v1/auth/fcm-token endpoint.
+        var ENABLE_TIMEOUT_MS = 8000;
+
+        function closeBanner() {
+            var b = document.getElementById("chNotifBanner");
+            if (b) b.remove();
+        }
+
+        function instructionsHtml() {
+            return '<div class="ch-notif-banner-text"><i class="bi bi-bell-slash"></i> الإشعارات معطّلة من المتصفح. فعّلها يدوياً: اضغط على أيقونة الجرس أو القفل بجانب شريط العنوان ← «الإشعارات» ← «السماح»، ثم عُد إلى الصفحة.</div>' +
+                '<button type="button" class="ch-notif-banner-btn" id="chNotifRetryBtn">أعد التحقق</button>' +
+                '<button type="button" class="ch-notif-banner-close" id="chNotifCloseBtn" aria-label="إغلاق" title="إغلاق">&times;</button>';
+        }
+
+        // Requests the permission once. On grant: produce the token and
+        // register it on the backend immediately. If the browser suppresses
+        // the prompt (Edge quiet mode resolves "default", or the promise never
+        // settles), the banner switches to manual instructions so the user
+        // knows the prompt was not shown.
+        function requestPermissionAndEnable() {
+            var req = Notification.requestPermission();
+            if (!req || typeof req.then !== "function") return;
+            var settled = false;
+
+            var timeout = setTimeout(function () {
+                if (settled || Notification.permission === "granted") return;
+                var banner = document.getElementById("chNotifBanner");
+                if (!banner) return;
+                banner.innerHTML = instructionsHtml();
+                document.getElementById("chNotifRetryBtn").addEventListener("click", recheckPermission);
+                document.getElementById("chNotifCloseBtn").addEventListener("click", closeBanner);
+            }, ENABLE_TIMEOUT_MS);
+
+            req.then(function (p) {
+                settled = true;
+                clearTimeout(timeout);
+                console.log("[FCM] notification permission result:", p);
+                if (p === "granted") {
+                    closeBanner();
+                    syncCachedToken();
+                } else if (p === "default") {
+                    // The prompt was suppressed or ignored (quiet mode) —
+                    // guide the user to the address-bar bell/lock icon.
+                    var banner = document.getElementById("chNotifBanner");
+                    if (!banner) return;
+                    banner.innerHTML = instructionsHtml();
+                    document.getElementById("chNotifRetryBtn").addEventListener("click", recheckPermission);
+                    document.getElementById("chNotifCloseBtn").addEventListener("click", closeBanner);
+                }
+            });
+        }
+
         function showEnableBanner() {
             if (!("Notification" in window) || Notification.permission === "granted") return;
             var main = document.querySelector(".content-body") || document.querySelector("main") || document.body;
@@ -383,49 +434,30 @@
 
                 main.insertBefore(banner, main.firstChild);
 
-                document.getElementById("chNotifEnableBtn").addEventListener("click", function () {
-                    var req = Notification.requestPermission();
-                    if (req && typeof req.then === "function") {
-                        req.then(function (p) {
-                            console.log("[FCM] notification permission result (banner):", p);
-                            if (p === "granted") {
-                                banner.remove();
-                                syncCachedToken();
-                            }
-                        });
-                    }
-                });
+                document.getElementById("chNotifEnableBtn").addEventListener("click", requestPermissionAndEnable);
             } else {
                 // Permission is "denied": the browser will NEVER show the prompt
                 // again, so the only fix is the user enabling notifications from
                 // the site settings. Show instructions + a re-check button that
                 // re-reads the permission when the user comes back.
-                banner.innerHTML =
-                    '<div class="ch-notif-banner-text"><i class="bi bi-bell-slash"></i> الإشعارات معطّلة من المتصفح. فعّلها يدوياً: اضغط على أيقونة القفل بجانب شريط العنوان ← «الإشعارات» ← «السماح»، ثم عُد إلى الصفحة.</div>' +
-                    '<button type="button" class="ch-notif-banner-btn" id="chNotifRetryBtn">أعد التحقق</button>' +
-                    '<button type="button" class="ch-notif-banner-close" id="chNotifCloseBtn" aria-label="إغلاق" title="إغلاق">&times;</button>';
-
+                banner.innerHTML = instructionsHtml();
                 main.insertBefore(banner, main.firstChild);
 
                 document.getElementById("chNotifRetryBtn").addEventListener("click", recheckPermission);
             }
 
-            document.getElementById("chNotifCloseBtn").addEventListener("click", function () {
-                banner.remove();
-            });
+            document.getElementById("chNotifCloseBtn").addEventListener("click", closeBanner);
         }
 
         // Re-checks the permission after the user returns from the browser
         // site settings (or clicks "أعد التحقق"): if granted now, produce the
-        // token and register it on the backend immediately.
+        // token and register it on the backend immediately. Silent when still
+        // not granted — no console noise on every focus event.
         function recheckPermission() {
             var banner = document.getElementById("chNotifBanner");
             if (!banner) return;
-            if (!("Notification" in window) || Notification.permission !== "granted") {
-                console.warn("[FCM] permission still '" + (("Notification" in window) ? Notification.permission : "unavailable") + "' after re-check");
-                return;
-            }
-            banner.remove();
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            closeBanner();
             syncCachedToken();
         }
 
@@ -439,21 +471,13 @@
 
         // First user interaction on the dashboard is a strong gesture: request
         // the permission automatically (same pattern as the login page) so
-        // push activates without the user hunting for the banner. The banner
-        // stays as a fallback for users who dismiss the prompt.
-        document.addEventListener("pointerdown", function () {
+        // push activates without the user hunting for the banner. Clicks on
+        // the banner are skipped — the banner button is its own single request
+        // path, avoiding two simultaneous prompts for one click.
+        document.addEventListener("pointerdown", function (e) {
             if (!("Notification" in window) || Notification.permission !== "default") return;
-            var req = Notification.requestPermission();
-            if (req && typeof req.then === "function") {
-                req.then(function (p) {
-                    console.log("[FCM] notification permission result (auto):", p);
-                    if (p === "granted") {
-                        var banner = document.getElementById("chNotifBanner");
-                        if (banner) banner.remove();
-                        syncCachedToken();
-                    }
-                });
-            }
+            if (e.target && e.target.closest && e.target.closest("#chNotifBanner")) return;
+            requestPermissionAndEnable();
         }, { once: true, capture: true });
 
         showEnableBanner();
