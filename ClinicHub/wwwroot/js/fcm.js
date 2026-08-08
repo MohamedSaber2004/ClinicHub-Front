@@ -93,6 +93,28 @@
             });
     }
 
+    // The classic web-push killer: Firebase Installations rejects/blocked
+    // requests so the browser reports a misleading "Failed to fetch / CORS"
+    // error and no token is ever produced. Diagnose the actual cause so it is
+    // never misdiagnosed again.
+    function logTokenRootCause(err) {
+        var msg = (err && err.message) ? err.message : String(err);
+        if (msg.indexOf("Failed to fetch") === -1 && msg.indexOf("NetworkError") === -1 && msg.indexOf("firebaseinstallations") === -1) return;
+        console.error(
+            "[FCM] ROOT CAUSE: the request to firebaseinstallations.googleapis.com failed. Check in order: " +
+            "(1) Edge/Chrome Tracking Prevention or an ad blocker blocking googleapis.com — add " +
+            "https://doctory.runasp.net to the exceptions (edge://settings/privacy) or test in InPrivate/another browser; " +
+            "(2) Google Cloud → APIs & Services → Enabled APIs → 'Firebase Installations API' must be ENABLED for " +
+            "project doctory-1aca1; (3) APIs & Services → Credentials → key AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU → " +
+            "API restrictions must allow 'Firebase Installations API' (or 'Don't restrict key'). " +
+            "Verify: curl -X POST https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations " +
+            "-H \"x-goog-api-key: AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU\" -H \"Content-Type: application/json\" " +
+            "--data \"{\\\"fid\\\":\\\"test\\\",\\\"authVersion\\\":\\\"FIS_AUTH_VERSION_1\\\",\\\"appId\\\":" +
+            "\\\"1:1077893614286:web:be3f460b60b1dd290c9e9f\\\",\\\"sdkVersion\\\":\\\"w:0.6.4\\\"}\" — a 200 " +
+            "response means the server side is fine and the failure is browser-side (Tracking Prevention)."
+        );
+    }
+
     function handleLoginPage(app) {
         var form = document.getElementById(LOGIN_FORM_ID);
         if (!form) return;
@@ -157,30 +179,6 @@
                     logTokenRootCause(err);
                     return null;
                 });
-        }
-
-        // The #1 web-push killer: Firebase Installations rejects the request
-        // with a 400/403 whose response carries no CORS headers, so the
-        // browser reports a misleading "Failed to fetch / CORS" error and no
-        // token is ever produced. This is a PROJECT-SIDE rejection — the
-        // firebaseConfig itself is usually correct — caused by API-key
-        // restrictions or the Firebase Installations API being disabled.
-        function logTokenRootCause(err) {
-            var msg = (err && err.message) ? err.message : String(err);
-            if (msg.indexOf("Failed to fetch") === -1 && msg.indexOf("NetworkError") === -1 && msg.indexOf("firebaseinstallations") === -1) return;
-            console.error(
-                "[FCM] ROOT CAUSE: Firebase Installations (firebaseinstallations.googleapis.com) rejected the request " +
-                "(CORS-masked 4xx) — a PROJECT-SIDE config issue, NOT a code bug. Fix in Google/Firebase consoles: " +
-                "(1) console.cloud.google.com → APIs & Services → Enabled APIs → enable 'Firebase Installations API' for " +
-                "project doctory-1aca1; (2) APIs & Services → Credentials → open key AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU → " +
-                "allow 'Firebase Cloud Messaging API' + 'Firebase Installations API' (or remove API restrictions) and add " +
-                "https://doctory.runasp.net to the HTTP referrers. Verify with: curl -X POST " +
-                "\"https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations\" -H " +
-                "\"x-goog-api-key: AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU\" -H \"Content-Type: application/json\" " +
-                "--data \"{\\\"fid\\\":\\\"test\\\",\\\"authVersion\\\":\\\"FIS_AUTH_VERSION_1\\\",\\\"appId\\\":" +
-                "\\\"1:1077893614286:web:be3f460b60b1dd290c9e9f\\\",\\\"sdkVersion\\\":\\\"w:0.6.4\\\"}\" " +
-                "— a 200 response means the fix worked."
-            );
         }
 
         function startFill() {

@@ -1,10 +1,25 @@
-﻿// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU",
-  authDomain: "doctory-1aca1.firebaseapp.com",
-  projectId: "doctory-1aca1",
-  storageBucket: "doctory-1aca1.firebasestorage.app",
-  messagingSenderId: "1077893614286",
-  appId: "1:1077893614286:web:be3f460b60b1dd290c9e9f",
-  measurementId: "G-FQGVDLQC6Q"
-};
+﻿
+﻿
+12
+Tracking Prevention blocked access to storage for <URL>.
+[NEW] Explain Console errors by using Copilot in Edge: click 
+ to explain an error. Learn more
+Don't show again
+fcm.js?v=glSO3zDK4e0…bl55ZH6htpgRjcMg:30 [FCM] script loaded 
+{hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
+fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:692 [FCM] initializing foreground (dashboard) mode
+fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:317 [FCM] dashboard mode, notification permission: default
+fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:321
+ [FCM] push disabled - permission is 'default'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.
+fcm.js?v=glSO3zDK4e0…bl55ZH6htpgRjcMg:89 [FCM] service worker ready: /firebase-messaging-sw.js
+fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:430 [FCM] notification permission result: granted
+fcm.js?v=glSO3zDK4e0…bl55ZH6htpgRjcMg:89 [FCM] service worker ready: /firebase-messaging-sw.js
+Admin:1
+ Access to fetch at 'https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations' from origin 'https://doctory.runasp.net' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+loading-service.js?v…PayjgBOuyW0qVoUY:51 
+ POST https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations net::ERR_FAILED
+fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:381
+ [FCM] token refresh failed: Failed to fetch
+fcm.js?v=glSO3zDK4e0…l55ZH6htpgRjcMg:382
+ Uncaught (in promise) ReferenceError: logTokenRootCause is not defined
+    at fcm.js?v=glSO3zDK4e0…ZH6htpgRjcMg:382:21
