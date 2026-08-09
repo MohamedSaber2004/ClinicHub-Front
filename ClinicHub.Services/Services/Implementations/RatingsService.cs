@@ -60,5 +60,19 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
             }
         }
+
+        public async Task<List<RatingDto>> GetReceptionRatingsAsync(Guid clinicId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(DoctoryRoutes.Ratings.ReceptionRatings(clinicId));
+                return await _deserializerService.DeserializeApiResponse<List<RatingDto>>(response, "حدث خطأ في جلب تقييمات الاستقبال");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
     }
 }

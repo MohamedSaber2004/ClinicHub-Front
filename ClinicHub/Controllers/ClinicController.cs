@@ -1038,6 +1038,7 @@ namespace ClinicHub.Controllers
         public async Task<IActionResult> Ratings()
         {
             var ratings = new List<RatingDto>();
+            var receptionRatings = new List<RatingDto>();
             var cleanlinessRatings = new List<RatingDto>();
             try
             {
@@ -1045,13 +1046,17 @@ namespace ClinicHub.Controllers
                 {
                     var clinicId = CurrentUser.ClinicId.Value;
                     ratings = await _ratingsService.GetClinicRatingsAsync(clinicId);
+                    receptionRatings = await _ratingsService.GetReceptionRatingsAsync(clinicId);
                     cleanlinessRatings = await _ratingsService.GetPlaceCleanlinessRatingsAsync(clinicId);
                 }
 
                 ViewBag.Ratings = ratings;
+                ViewBag.ReceptionRatings = receptionRatings;
                 ViewBag.CleanlinessRatings = cleanlinessRatings;
                 ViewBag.AverageRating = ratings.Count > 0 ? ratings.Average(r => r.Value) : 0;
                 ViewBag.TotalRatings = ratings.Count;
+                ViewBag.ReceptionAverage = receptionRatings.Count > 0 ? receptionRatings.Average(r => r.Value) : 0;
+                ViewBag.TotalReceptionRatings = receptionRatings.Count;
                 ViewBag.CleanlinessAverage = cleanlinessRatings.Count > 0 ? cleanlinessRatings.Average(r => r.Value) : 0;
                 ViewBag.TotalCleanlinessRatings = cleanlinessRatings.Count;
             }
@@ -1079,7 +1084,7 @@ namespace ClinicHub.Controllers
                 ViewBag.ErrorMessage = ex.Message;
                 ViewBag.Notifications = new List<NotificationDto>();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ViewBag.ErrorMessage = "عذراً، حدث خطأ أثناء تحميل الإشعارات.";
                 ViewBag.Notifications = new List<NotificationDto>();
@@ -1100,7 +1105,7 @@ namespace ClinicHub.Controllers
                 Response.StatusCode = ex.StatusCode;
                 return Json(new { success = false, count = 0, message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Response.StatusCode = 500;
                 return Json(new { success = false, count = 0, message = "عذراً، حدث خطأ أثناء جلب عدد الإشعارات." });
@@ -1130,7 +1135,7 @@ namespace ClinicHub.Controllers
                 Response.StatusCode = ex.StatusCode;
                 return Json(new { success = false, items = new List<NotificationDto>() });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Response.StatusCode = 500;
                 return Json(new { success = false, items = new List<NotificationDto>() });

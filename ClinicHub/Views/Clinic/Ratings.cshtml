@@ -1,11 +1,15 @@
 @{
+    Layout = "_ClinicLayout";
     ViewData["Title"] = "التقييمات";
     var ratings = (List<RatingDto>)(ViewBag.Ratings ?? new List<RatingDto>());
+    var receptionRatings = (List<RatingDto>)(ViewBag.ReceptionRatings ?? new List<RatingDto>());
     var cleanlinessRatings = (List<RatingDto>)(ViewBag.CleanlinessRatings ?? new List<RatingDto>());
-    var averageRating = (double)(ViewBag.AverageRating ?? 0);
-    var totalRatings = (int)(ViewBag.TotalRatings ?? 0);
-    var cleanlinessAverage = (double)(ViewBag.CleanlinessAverage ?? 0);
-    var totalCleanlinessRatings = (int)(ViewBag.TotalCleanlinessRatings ?? 0);
+    var averageRating = ViewBag.AverageRating is double clinicAvg ? clinicAvg : 0;
+    var totalRatings = ViewBag.TotalRatings is int clinicTotal ? clinicTotal : 0;
+    var receptionAverage = ViewBag.ReceptionAverage is double receptionAvg ? receptionAvg : 0;
+    var totalReceptionRatings = ViewBag.TotalReceptionRatings is int receptionTotal ? receptionTotal : 0;
+    var cleanlinessAverage = ViewBag.CleanlinessAverage is double cleanlinessAvg ? cleanlinessAvg : 0;
+    var totalCleanlinessRatings = ViewBag.TotalCleanlinessRatings is int cleanlinessTotal ? cleanlinessTotal : 0;
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
 }
 
@@ -45,23 +49,16 @@
     }
     else if (ratings.Count > 0)
     {
-        <div class="ratings-header-card">
+        <div class="ratings-header-card ratings-header-card--inline">
             <div class="rhc-score">
                 <span class="rhc-number">@averageRating.ToString("F1")</span>
-                <div class="stars-inline">
-                    @{ int fullStars = (int)Math.Floor(averageRating); bool hasHalf = averageRating - fullStars >= 0.5 && fullStars < 5; int emptyStars = 5 - fullStars - (hasHalf ? 1 : 0); }
-                    @for (int i = 0; i < fullStars; i++) { <svg width="18" height="18" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                    @if (hasHalf) { <svg width="18" height="18" viewBox="0 0 24 24"><defs><clipPath id="rhcHalf"><rect x="0" y="0" width="9" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#rhcHalf)"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB" clip-path="url(#rhcHalf)"/></svg> }
-                    @for (int i = 0; i < emptyStars; i++) { <svg width="18" height="18" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                </div>
+                <partial name="_StarRating" model="new { Value = averageRating, Size = 18 }" />
             </div>
         </div>
         <div class="ratings-list">
             @foreach (var r in ratings)
             {
-                var rFullStars = r.Value;
-                var rEmptyStars = 5 - rFullStars;
-                var initial = !string.IsNullOrEmpty(r.UserName) ? r.UserName.Substring(0, 1) : "م";
+                var initial = !string.IsNullOrEmpty(r.UserName) ? System.Globalization.StringInfo.GetNextTextElement(r.UserName) : "م";
                 <div class="rating-full-card">
                     <div class="rfc-avatar">@initial</div>
                     <div class="rfc-content">
@@ -69,10 +66,56 @@
                             <span class="rfc-name">@r.UserName</span>
                             <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
                         </div>
-                        <div>
-                            @for (int i = 0; i < rFullStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                            @for (int i = 0; i < rEmptyStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                        <partial name="_StarRating" model="new { Value = r.Value, Size = 14 }" />
+                        @if (!string.IsNullOrEmpty(r.Review))
+                        {
+                            <p class="rfc-comment">@r.Review</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="detail-card">
+    <div class="detail-section-header">
+        <h5>
+            <i class="bi bi-person-badge"></i>
+            تقييم الاستقبال
+        </h5>
+        <span class="badge badge-info">@totalReceptionRatings تقييم</span>
+    </div>
+
+    @if (receptionRatings.Count == 0 && !hasError)
+    {
+        <div class="empty-state">
+            <div class="icon-wrapper icon-wrapper--amber">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <p>لا توجد تقييمات للاستقبال بعد.</p>
+        </div>
+    }
+    else if (receptionRatings.Count > 0)
+    {
+        <div class="ratings-header-card ratings-header-card--inline">
+            <div class="rhc-score">
+                <span class="rhc-number">@receptionAverage.ToString("F1")</span>
+                <partial name="_StarRating" model="new { Value = receptionAverage, Size = 18 }" />
+            </div>
+        </div>
+        <div class="ratings-list">
+            @foreach (var r in receptionRatings)
+            {
+                var initial = !string.IsNullOrEmpty(r.UserName) ? System.Globalization.StringInfo.GetNextTextElement(r.UserName) : "م";
+                <div class="rating-full-card">
+                    <div class="rfc-avatar">@initial</div>
+                    <div class="rfc-content">
+                        <div class="rfc-header">
+                            <span class="rfc-name">@r.UserName</span>
+                            <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
                         </div>
+                        <partial name="_StarRating" model="new { Value = r.Value, Size = 14 }" />
                         @if (!string.IsNullOrEmpty(r.Review))
                         {
                             <p class="rfc-comment">@r.Review</p>
@@ -104,23 +147,16 @@
     }
     else if (cleanlinessRatings.Count > 0)
     {
-        <div class="ratings-header-card">
+        <div class="ratings-header-card ratings-header-card--inline">
             <div class="rhc-score">
                 <span class="rhc-number">@cleanlinessAverage.ToString("F1")</span>
-                <div class="stars-inline">
-                    @{ int cFullStars = (int)Math.Floor(cleanlinessAverage); bool cHasHalf = cleanlinessAverage - cFullStars >= 0.5 && cFullStars < 5; int cEmptyStars = 5 - cFullStars - (cHasHalf ? 1 : 0); }
-                    @for (int i = 0; i < cFullStars; i++) { <svg width="18" height="18" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                    @if (cHasHalf) { <svg width="18" height="18" viewBox="0 0 24 24"><defs><clipPath id="rhcHalf2"><rect x="0" y="0" width="9" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#rhcHalf2)"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB" clip-path="url(#rhcHalf2)"/></svg> }
-                    @for (int i = 0; i < cEmptyStars; i++) { <svg width="18" height="18" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                </div>
+                <partial name="_StarRating" model="new { Value = cleanlinessAverage, Size = 18 }" />
             </div>
         </div>
         <div class="ratings-list">
             @foreach (var r in cleanlinessRatings)
             {
-                var rFullStars = r.Value;
-                var rEmptyStars = 5 - rFullStars;
-                var initial = !string.IsNullOrEmpty(r.UserName) ? r.UserName.Substring(0, 1) : "م";
+                var initial = !string.IsNullOrEmpty(r.UserName) ? System.Globalization.StringInfo.GetNextTextElement(r.UserName) : "م";
                 <div class="rating-full-card">
                     <div class="rfc-avatar">@initial</div>
                     <div class="rfc-content">
@@ -128,10 +164,7 @@
                             <span class="rfc-name">@r.UserName</span>
                             <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
                         </div>
-                        <div>
-                            @for (int i = 0; i < rFullStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                            @for (int i = 0; i < rEmptyStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                        </div>
+                        <partial name="_StarRating" model="new { Value = r.Value, Size = 14 }" />
                         @if (!string.IsNullOrEmpty(r.Review))
                         {
                             <p class="rfc-comment">@r.Review</p>

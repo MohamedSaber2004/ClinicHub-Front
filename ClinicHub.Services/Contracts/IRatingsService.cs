@@ -7,5 +7,6 @@ namespace ClinicHub.Services.Contracts
         Task<List<RatingDto>> GetDoctorRatingsAsync(Guid doctorId);
         Task<List<RatingDto>> GetClinicRatingsAsync(Guid clinicId);
         Task<List<RatingDto>> GetPlaceCleanlinessRatingsAsync(Guid clinicId);
+        Task<List<RatingDto>> GetReceptionRatingsAsync(Guid clinicId);
     }
 }

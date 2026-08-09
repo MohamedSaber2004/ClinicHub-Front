@@ -3447,6 +3447,14 @@ body {
   flex-shrink: 0;
 }
 
+.stars-inline .star-filled {
+  color: var(--clr-brass);
+}
+
+.stars-inline .star-empty {
+  color: var(--clr-border);
+}
+
 /* Load More / Infinite Scroll */
 .load-more-indicator {
   display: flex;
@@ -3907,6 +3915,27 @@ body {
   color: var(--clr-text-secondary);
 }
 
+.ratings-header-card--inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--space-4) 0 var(--space-5);
+  margin-bottom: var(--space-5);
+  border: none;
+  background: none;
+  text-align: left;
+}
+
+.ratings-header-card--inline .rhc-score {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.rating-full-card .stars-inline {
+  align-self: flex-start;
+}
+
 .ratings-list {
   display: flex;
   flex-direction: column;
@@ -3957,11 +3986,6 @@ body {
 }
 
 .rfc-date {
-  font-size: 12px;
-  color: var(--clr-text-secondary);
-}
-
-.rfc-doctor {
   font-size: 12px;
   color: var(--clr-text-secondary);
 }

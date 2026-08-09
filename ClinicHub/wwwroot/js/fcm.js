@@ -158,23 +158,35 @@
 
         // First interaction is a user gesture: ask permission and start the
         // token fetch in the background, before the user finishes typing.
-        document.addEventListener("pointerdown", function () {
+        // Not once-only: if the browser suppresses the prompt (quiet mode),
+        // the next interaction retries automatically.
+        var permissionPromptBusy = false;
+        function maybeRequestPermission() {
             if (!tokenSupported()) return;
-            if (Notification.permission === "default") {
-                var req = Notification.requestPermission();
-                permissionPending = true;
-                if (req && typeof req.then === "function") {
-                    req.then(function (p) {
-                        permissionPending = false;
-                        if (p === "granted") startFill();
-                    });
-                } else {
-                    permissionPending = false;
-                }
-            } else if (Notification.permission === "granted") {
+            if (Notification.permission === "granted") {
                 startFill();
+                return;
             }
-        }, { once: true, capture: true });
+            if (Notification.permission !== "default" || permissionPromptBusy) return;
+            permissionPromptBusy = true;
+            var req = Notification.requestPermission();
+            permissionPending = true;
+            if (req && typeof req.then === "function") {
+                req.then(function (p) {
+                    permissionPending = false;
+                    permissionPromptBusy = false;
+                    if (p === "granted") startFill();
+                });
+            } else {
+                permissionPending = false;
+                permissionPromptBusy = false;
+            }
+        }
+        document.addEventListener("pointerdown", maybeRequestPermission, { capture: true });
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+            maybeRequestPermission();
+        }, { capture: true });
 
         // Intercept submit briefly when a token is genuinely imminent
         // (permission already granted, or a permission prompt is pending and
@@ -375,12 +387,17 @@
 
         // Token rotation: browsers rotate FCM tokens over time. Refresh the
         // cached web token in the background and register it on the backend
-        // NOW (README §3.6, docs/FCM_TOKEN_ENDPOINT_FRONTEND.md).
+        // NOW (README §3.6, docs/FCM_TOKEN_ENDPOINT_FRONTEND.md). When the
+        // browser has no fresh token yet, fall back to the last known cached
+        // token so every dashboard load re-registers exactly once.
         function syncCachedToken() {
             if (!("Notification" in window) || Notification.permission !== "granted") return;
             registerServiceWorker()
                 .then(function () { return getToken(messaging, { vapidKey: VAPID_PUBLIC_KEY }); })
                 .then(function (token) {
+                    if (!token) {
+                        try { token = localStorage.getItem(TOKEN_CACHE_KEY) || ""; } catch (e) { token = ""; }
+                    }
                     if (!token) return;
                     try { localStorage.setItem(TOKEN_CACHE_KEY, token); } catch (e) {}
                     registerTokenOnBackend(token);
@@ -388,14 +405,9 @@
                 .catch(function () {});
         }
 
-        // Re-register the last known token on every dashboard load so the
-        // backend keeps pushing even after refreshes and TempData is gone.
-        var cachedToken = "";
-        try { cachedToken = localStorage.getItem(TOKEN_CACHE_KEY) || ""; } catch (e) {}
-        if (cachedToken && ("Notification" in window) && Notification.permission === "granted") {
-            registerServiceWorker().then(function () { registerTokenOnBackend(cachedToken); });
-        }
-
+        // Re-register on every dashboard load so the backend keeps pushing
+        // even after refreshes and TempData is gone. Single registration
+        // path — the cached token is only a fallback inside syncCachedToken.
         if (("Notification" in window) && Notification.permission === "granted") {
             syncCachedToken();
         }
@@ -512,12 +524,28 @@
         // the permission automatically (same pattern as the login page) so
         // push activates without the user hunting for the banner. Clicks on
         // the banner are skipped — the banner button is its own single request
-        // path, avoiding two simultaneous prompts for one click.
-        document.addEventListener("pointerdown", function (e) {
+        // path, avoiding two simultaneous prompts for one click. Not once-only:
+        // if the browser suppresses the prompt (Edge quiet mode), the next
+        // interaction retries automatically instead of relying on the manual
+        // banner instructions.
+        var permissionPromptBusy = false;
+        function maybeAutoRequestPermission() {
+            if (permissionPromptBusy) return;
             if (!("Notification" in window) || Notification.permission !== "default") return;
-            if (e.target && e.target.closest && e.target.closest("#chNotifBanner")) return;
+            permissionPromptBusy = true;
             requestPermissionAndEnable();
-        }, { once: true, capture: true });
+            setTimeout(function () { permissionPromptBusy = false; }, 3000);
+        }
+        function bannerFreeTarget(e) {
+            return !(e.target && e.target.closest && e.target.closest("#chNotifBanner"));
+        }
+        document.addEventListener("pointerdown", function (e) {
+            if (bannerFreeTarget(e)) maybeAutoRequestPermission();
+        }, { capture: true });
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+            if (bannerFreeTarget(e)) maybeAutoRequestPermission();
+        }, { capture: true });
 
         showEnableBanner();
     }

@@ -27,6 +27,10 @@
         }
     }
 
+    // Expose the loader to other scripts (e.g. fcm.js guards with
+    // `typeof showLoader === "function"` before calling it).
+    window.showLoader = showLoader;
+
     window.loadingService = {
         show: function () {
             activeRequests++;

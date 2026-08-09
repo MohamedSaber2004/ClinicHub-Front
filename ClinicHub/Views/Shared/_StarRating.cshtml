@@ -1,0 +1,30 @@
+@model dynamic
+@{
+    double value = Convert.ToDouble(Model.Value);
+    int size = Model.Size != null ? Convert.ToInt32(Model.Size) : 16;
+    int fullStars = Math.Min((int)Math.Floor(value), 5);
+    bool hasHalf = value - fullStars >= 0.5 && fullStars < 5;
+    int emptyStars = Math.Max(0, 5 - fullStars - (hasHalf ? 1 : 0));
+    string label = value.ToString("0.#") + " من 5";
+    string starPath = "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z";
+}
+<div class="stars-inline" role="img" aria-label="@label">
+    @for (int i = 0; i < fullStars; i++)
+    {
+        <svg class="star-filled" width="@size" height="@size" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="@starPath"/></svg>
+    }
+    @if (hasHalf)
+    {
+        <svg width="@size" height="@size" viewBox="0 0 24 24" aria-hidden="true">
+            <defs>
+                <clipPath id="starHalfClip"><rect x="0" y="0" width="12" height="24"/></clipPath>
+            </defs>
+            <path class="star-empty" fill="currentColor" d="@starPath"/>
+            <path class="star-filled" fill="currentColor" clip-path="url(#starHalfClip)" d="@starPath"/>
+        </svg>
+    }
+    @for (int i = 0; i < emptyStars; i++)
+    {
+        <svg class="star-empty" width="@size" height="@size" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="@starPath"/></svg>
+    }
+</div>

@@ -58,7 +58,7 @@ namespace ClinicHub.Controllers
                 ViewBag.ErrorMessage = ex.Message;
                 ViewBag.Notifications = new List<NotificationDto>();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ViewBag.ErrorMessage = "عذراً، حدث خطأ أثناء تحميل الإشعارات.";
                 ViewBag.Notifications = new List<NotificationDto>();
@@ -79,7 +79,7 @@ namespace ClinicHub.Controllers
                 Response.StatusCode = ex.StatusCode;
                 return Json(new { success = false, count = 0, message = ex.Message });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Response.StatusCode = 500;
                 return Json(new { success = false, count = 0, message = "عذراً، حدث خطأ أثناء جلب عدد الإشعارات." });
@@ -109,7 +109,7 @@ namespace ClinicHub.Controllers
                 Response.StatusCode = ex.StatusCode;
                 return Json(new { success = false, items = new List<NotificationDto>() });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Response.StatusCode = 500;
                 return Json(new { success = false, items = new List<NotificationDto>() });

@@ -384,6 +384,7 @@ namespace ClinicHub.Services.Routes.Api
             public string DoctorRatings(Guid doctorId) => $"{_apiBase}/doctors/{doctorId}/ratings";
             public string ClinicRatings(Guid clinicId) => $"{_apiBase}/clinics/{clinicId}/ratings";
             public string PlaceCleanlinessRatings(Guid clinicId) => $"{_apiBase}/clinics/{clinicId}/place-cleanliness-ratings";
+            public string ReceptionRatings(Guid clinicId) => $"{_apiBase}/clinics/{clinicId}/reception-ratings";
         }
     }
 }
