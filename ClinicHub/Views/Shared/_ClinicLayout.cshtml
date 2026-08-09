@@ -144,6 +144,10 @@
                             <span>دعم ذو أولوية</span>
                         </a>
                     }
+                    <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Ratings") ? "active" : "")" href="@ClinicRoutes.Pages.Ratings()">
+                        <i class="bi bi-star"></i>
+                        <span>التقييمات</span>
+                    </a>
                     <div class="sidebar-section">لوحة الطبيب</div>
                     <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "DoctorAppointments") ? "active" : "")" href="@ClinicRoutes.Pages.DoctorAppointments()">
                         <i class="bi bi-calendar3"></i>

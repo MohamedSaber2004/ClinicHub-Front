@@ -4,6 +4,7 @@ namespace ClinicHub.Data
     {
         public int Id { get; set; }
         public Guid? ClinicId { get; set; }
+        public Guid? DoctorId { get; set; }
         public UserRole Role { get; set; }
         public Permission Permissions { get; set; }
         public PlanFeature PlanFeatures { get; set; }

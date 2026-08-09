@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "التقييمات";
+    var ratings = (List<RatingDto>)(ViewBag.Ratings ?? new List<RatingDto>());
+    var averageRating = (double)(ViewBag.AverageRating ?? 0);
+    var totalRatings = (int)(ViewBag.TotalRatings ?? 0);
+    var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
+
+    int fullStars = (int)Math.Floor(averageRating);
+    bool hasHalf = averageRating - fullStars >= 0.5 && fullStars < 5;
+    int emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+}
+
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+    </span>
+    التقييمات
+</h2>
+
+@if (hasError)
+{
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
+    </div>
+}
+
+<div class="ratings-header-card">
+    <div class="rhc-score">
+        <span class="rhc-number">@averageRating.ToString("F1")</span>
+        <div class="stars-inline">
+            @for (int i = 0; i < fullStars; i++) { <svg width="18" height="18" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+            @if (hasHalf) { <svg width="18" height="18" viewBox="0 0 24 24"><defs><clipPath id="rhcHalf"><rect x="0" y="0" width="9" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#rhcHalf)"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB" clip-path="url(#rhcHalf)"/></svg> }
+            @for (int i = 0; i < emptyStars; i++) { <svg width="18" height="18" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+        </div>
+        <span class="rhc-count">@totalRatings تقييم</span>
+    </div>
+</div>
+
+@if (ratings.Count == 0 && !hasError)
+{
+    <div class="empty-state">
+        <div class="icon-wrapper icon-wrapper--amber">
+            <i class="bi bi-star"></i>
+        </div>
+        <p>لا توجد تقييمات بعد.</p>
+    </div>
+}
+else if (ratings.Count > 0)
+{
+    <div class="ratings-list">
+        @foreach (var r in ratings)
+        {
+            var rFullStars = r.Value;
+            var rEmptyStars = 5 - rFullStars;
+            var initial = !string.IsNullOrEmpty(r.UserName) ? r.UserName.Substring(0, 1) : "م";
+            <div class="rating-full-card">
+                <div class="rfc-avatar">@initial</div>
+                <div class="rfc-content">
+                    <div class="rfc-header">
+                        <span class="rfc-name">@r.UserName</span>
+                        <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
+                    </div>
+                    <div>
+                        @for (int i = 0; i < rFullStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                        @for (int i = 0; i < rEmptyStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                    </div>
+                    @if (!string.IsNullOrEmpty(r.Review))
+                    {
+                        <p class="rfc-comment">@r.Review</p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

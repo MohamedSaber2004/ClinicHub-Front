@@ -29,6 +29,7 @@ namespace ClinicHub.Controllers
         private readonly IDoctorService _doctorService;
         private readonly IDoctorDashboardService _doctorDashboardService;
         private readonly INotificationService _notificationService;
+        private readonly IRatingsService _ratingsService;
 
         public ClinicController(
             ISubscriptionService subscriptionService,
@@ -45,7 +46,8 @@ namespace ClinicHub.Controllers
             IClinicDashboardService clinicDashboardService,
             IDoctorService doctorService,
             IDoctorDashboardService doctorDashboardService,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IRatingsService ratingsService)
         {
             _subscriptionService = subscriptionService;
             _planService = planService;
@@ -62,6 +64,7 @@ namespace ClinicHub.Controllers
             _doctorService = doctorService;
             _doctorDashboardService = doctorDashboardService;
             _notificationService = notificationService;
+            _ratingsService = ratingsService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -1030,6 +1033,37 @@ namespace ClinicHub.Controllers
                 Response.StatusCode = 500;
                 return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
             }
+        }
+
+        public async Task<IActionResult> Ratings()
+        {
+            var ratings = new List<RatingDto>();
+            var cleanlinessRatings = new List<RatingDto>();
+            try
+            {
+                if (CurrentUser?.ClinicId != null)
+                {
+                    var clinicId = CurrentUser.ClinicId.Value;
+                    ratings = await _ratingsService.GetClinicRatingsAsync(clinicId);
+                    cleanlinessRatings = await _ratingsService.GetPlaceCleanlinessRatingsAsync(clinicId);
+                }
+
+                ViewBag.Ratings = ratings;
+                ViewBag.CleanlinessRatings = cleanlinessRatings;
+                ViewBag.AverageRating = ratings.Count > 0 ? ratings.Average(r => r.Value) : 0;
+                ViewBag.TotalRatings = ratings.Count;
+                ViewBag.CleanlinessAverage = cleanlinessRatings.Count > 0 ? cleanlinessRatings.Average(r => r.Value) : 0;
+                ViewBag.TotalCleanlinessRatings = cleanlinessRatings.Count;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+            catch (Exception)
+            {
+                ViewBag.ErrorMessage = "عذراً، حدث خطأ أثناء تحميل التقييمات.";
+            }
+            return View();
         }
 
         public async Task<IActionResult> Notifications(int pageNumber = 1, int pageSize = 20)

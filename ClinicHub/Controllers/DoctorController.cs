@@ -17,14 +17,16 @@ namespace ClinicHub.Controllers
         private readonly IAuthService _authService;
         private readonly IAttachmentService _attachmentService;
         private readonly INotificationService _notificationService;
+        private readonly IRatingsService _ratingsService;
 
-        public DoctorController(IDoctorService doctorService, IDoctorDashboardService doctorDashboardService, IAuthService authService, IAttachmentService attachmentService, INotificationService notificationService)
+        public DoctorController(IDoctorService doctorService, IDoctorDashboardService doctorDashboardService, IAuthService authService, IAttachmentService attachmentService, INotificationService notificationService, IRatingsService ratingsService)
         {
             _doctorService = doctorService;
             _doctorDashboardService = doctorDashboardService;
             _authService = authService;
             _attachmentService = attachmentService;
             _notificationService = notificationService;
+            _ratingsService = ratingsService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -40,6 +42,7 @@ namespace ClinicHub.Controllers
             {
                 Id = 2,
                 ClinicId = MockData.ClinicId_Heart,
+                DoctorId = MockIds.Doctor(2),
                 Role = UserRole.Doctor,
                 Permissions = RolePermissions.For(UserRole.Doctor),
                 PlanFeatures = PlanFeature.ManageAppointments | PlanFeature.ManagePatientRecords,
@@ -117,6 +120,31 @@ namespace ClinicHub.Controllers
                 Response.StatusCode = 500;
                 return Json(new { success = false, items = new List<NotificationDto>() });
             }
+        }
+
+        public async Task<IActionResult> Ratings()
+        {
+            try
+            {
+                var ratings = CurrentUser?.DoctorId != null
+                    ? await _ratingsService.GetDoctorRatingsAsync(CurrentUser.DoctorId.Value)
+                    : new List<RatingDto>();
+
+                ViewBag.Ratings = ratings;
+                ViewBag.AverageRating = ratings.Count > 0 ? ratings.Average(r => r.Value) : 0;
+                ViewBag.TotalRatings = ratings.Count;
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.Ratings = new List<RatingDto>();
+            }
+            catch (Exception)
+            {
+                ViewBag.ErrorMessage = "عذراً، حدث خطأ أثناء تحميل التقييمات.";
+                ViewBag.Ratings = new List<RatingDto>();
+            }
+            return View();
         }
 
         public async Task<IActionResult> Profile()

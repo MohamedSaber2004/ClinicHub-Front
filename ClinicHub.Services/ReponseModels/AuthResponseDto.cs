@@ -8,6 +8,7 @@ namespace ClinicHub.Services.ReponseModels
         string Roles,
         Guid Id,
         Guid? ClinicId = null,
+        Guid? DoctorId = null,
         string? ProfilePictureUrl = null,
         bool IsFreelanceDoctor = false);
 }

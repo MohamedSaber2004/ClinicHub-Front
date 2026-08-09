@@ -28,6 +28,7 @@ namespace ClinicHub.Services.Routes.Api
             AdminAds = new AdminAdsRoutes(BaseRoute);
             Ads = new AdsRoutes(BaseRoute);
             Notifications = new NotificationsRoutes(BaseRoute);
+            Ratings = new RatingsRoutes(BaseRoute);
         }
 
         public static StaffDashboardRoutes StaffDashboard { get; private set; } = null!;
@@ -49,6 +50,7 @@ namespace ClinicHub.Services.Routes.Api
         public static AdminAdsRoutes AdminAds { get; private set; } = null!;
         public static AdsRoutes Ads { get; private set; } = null!;
         public static NotificationsRoutes Notifications { get; private set; } = null!;
+        public static RatingsRoutes Ratings { get; private set; } = null!;
 
         public class AuthRoutes
         {
@@ -366,6 +368,22 @@ namespace ClinicHub.Services.Routes.Api
 
             public string Count => $"{_baseRoute}/count";
             public string List => $"{_baseRoute}/pagginated";
+        }
+
+        public class RatingsRoutes
+        {
+            private readonly string _apiBase;
+            public string BaseRoute { get; }
+            public RatingsRoutes(string baseRoute)
+            {
+                _apiBase = baseRoute;
+                BaseRoute = $"{baseRoute}/ratings";
+            }
+
+            public string Create => BaseRoute;
+            public string DoctorRatings(Guid doctorId) => $"{_apiBase}/doctors/{doctorId}/ratings";
+            public string ClinicRatings(Guid clinicId) => $"{_apiBase}/clinics/{clinicId}/ratings";
+            public string PlaceCleanlinessRatings(Guid clinicId) => $"{_apiBase}/clinics/{clinicId}/place-cleanliness-ratings";
         }
     }
 }

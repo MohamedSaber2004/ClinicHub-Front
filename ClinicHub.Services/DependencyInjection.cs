@@ -135,6 +135,12 @@ namespace ClinicHub.Services
             })
             .AddHttpMessageHandler<BearerTokenHandler>();
 
+            services.AddHttpClient<IRatingsService, RatingsService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
             return services;
         }
     }

@@ -1,62 +1,109 @@
-﻿12Tracking Prevention blocked access to storage for <URL>.
-[NEW] Explain Console errors by using Copilot in Edge: click  to explain an error. Learn moreDon't show again
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:30 [FCM] script loaded {hasConfig: true, hasApiKey: true, hasVapid: true, isLoginPage: false}
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:690 [FCM] initializing foreground (dashboard) mode
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:315 [FCM] dashboard mode, notification permission: default
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:319 [FCM] push disabled - permission is 'default'. Click 'تفعيل الإشعارات' in the banner to enable browser notifications.
-handleForeground @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:319
-init @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:691
-loadNext @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:709
-(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:717
-script
-loadNext @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:712
-(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:717
-script
-loadNext @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:712
-loadSdk @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:727
-(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:730
-(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:731
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:89 [FCM] service worker ready: /firebase-messaging-sw.js
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:428 [FCM] notification permission result: granted
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:89 [FCM] service worker ready: /firebase-messaging-sw.js
-Admin:1 Access to fetch at 'https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations' from origin 'https://doctory.runasp.net' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-loading-service.js?v=d6ouBt1SUXTWtJR99m70gTKxnPQPayjgBOuyW0qVoUY:51  POST https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations net::ERR_FAILED
-window.fetch @ loading-service.js?v=d6ouBt1SUXTWtJR99m70gTKxnPQPayjgBOuyW0qVoUY:51
-window.fetch @ notification-service.js?v=cxPuqC9gml02PcPGHpH-OcQC5HUkxgff6hPBLUGSJC4:61
-window.fetch @ Admin:437
-(anonymous) @ create-installation-request.ts:66
-(anonymous) @ common.ts:94
-(anonymous) @ create-installation-request.ts:66
-await in (anonymous)
-(anonymous) @ create-installation-request.ts:79
-(anonymous) @ get-installation-entry.ts:157
-(anonymous) @ get-installation-entry.ts:130
-(anonymous) @ idb-manager.ts:113
-await in (anonymous)
-getInstallationEntry @ get-installation-entry.ts:50
-(anonymous) @ get-token.ts:47
-(anonymous) @ config.ts:59
-getHeaders @ requests.ts:370
-(anonymous) @ requests.ts:64
-getNewToken @ requests.ts:102
-getTokenInternal @ token-manager.ts:65
-await in getTokenInternal
-(anonymous) @ getToken.ts:45
-await in (anonymous)
-(anonymous) @ api.ts:122
-getToken @ api.ts:122
-getToken @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:17
-(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:371
-Promise.then
-syncCachedToken @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:371
-(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:431
-Promise.then
-requestPermissionAndEnable @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:425
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:379 [FCM] token refresh failed: Failed to fetch
-(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:379
-Promise.catch
-syncCachedToken @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:378
-(anonymous) @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:431
-Promise.then
-requestPermissionAndEnable @ fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:425
-fcm.js?v=H2ErNKhDKHsaY_iJSekqIdcWTqC_qWR0zd82N7F4OI8:103 [FCM] ROOT CAUSE: the request to firebaseinstallations.googleapis.com failed. Check in order: (1) Edge/Chrome Tracking Prevention or an ad blocker blocking googleapis.com — add https://doctory.runasp.net to the exceptions (edge://settings/privacy) or test in InPrivate/another browser; (2) Google Cloud → APIs & Services → Enabled APIs → 'Firebase Installations API' must be ENABLED for project doctory-1aca1; (3) APIs & Services → Credentials → key AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU → API restrictions must allow 'Firebase Installations API' (or 'Don't restrict key'). Verify: curl -X POST https://firebaseinstallations.googleapis.com/v1/projects/doctory-1aca1/installations -H "x-goog-api-key: AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU" -H "Content-Type: application/json" --data "{\"fid\":\"test\",\"authVersion\":\"FIS_AUTH_VERSION_1\",\"appId\":\"1:1077893614286:web:be3f460b60b1dd290c9e9f\",\"sdkVersion\":\"w:0.6.4\"}" — a 200 response means the server side is fine and the failure is browser-side (Tracking Prevention).
+﻿الخطوات العملية
+1) ضيفي الـ MCP servers (أمر واحد لكل واحد في التيرمنال)
+bash
+opencode mcp add sequential-thinking -- npx -y @modelcontextprotocol/server-sequential-thinking
+
+opencode mcp add semgrep -- uvx semgrep-mcp
+
+opencode mcp add github -- npx -y @modelcontextprotocol/server-github
+
+opencode mcp add playwright -- npx -y @playwright/mcp
+2) أو حطيهم كلهم مرة واحدة في opencode.json (جوه مجلد المشروع)
+json
+{
+  "mcp": {
+    "sequential-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": true
+    },
+    "semgrep": {
+      "type": "local",
+      "command": ["uvx", "semgrep-mcp"],
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp"],
+      "enabled": false
+    }
+  }
+}
+
+ملاحظة: خليتلك playwright: enabled: false كمثال — فعّليه بس وقت ما تعملي performance test فعليًا، عشان توفري context tokens زي ما اتكلمنا.
+
+3) اعملي الـ subagents (ملفات Markdown)
+
+جوه مجلد .opencode/agent/ (أو ~/.config/opencode/agent/ للـ global) اعملي ملفين:
+
+.opencode/agent/reviewer.md
+
+markdown
+---
+description: يراجع الكود بعد كل build زي senior engineer
+mode: subagent
+---
+راجع الـ diff الأخير وركّز على: bugs محتملة، edge cases ناقصة،
+naming واضح، تكرار كود ممكن يتلغى، وتوافق مع باقي كود المشروع.
+اديني ملاحظاتك كـ bullet points، ومتعدليش الكود إلا لو طلبت منك صراحةً.
+
+.opencode/agent/security-reviewer.md
+
+markdown
+---
+description: يراجع الكود من ناحية الأمان زي مهندس أمن
+mode: subagent
+---
+راجع الـ diff الأخير بعقلية مهندس أمن: auth logic، input validation،
+permissions/access control، exposure لبيانات حساسة، وأي منطق
+ممكن يتستغل حتى لو مفيش pattern معروف. اربطه بنتيجة Semgrep لو موجودة
+وكمّلها بحاجات المنطق اللي الأدوات الثابتة مش بتشوفها.
+4) الـ workflow اليومي بتاعك
+1. Tab → Plan mode → اكتبي المهمة → opencode يحط خطة
+2. Tab → Build mode → ينفذ
+3. @reviewer → مراجعة كود عامة
+4. @security-reviewer → مراجعة أمان
+5. شغّلي Semgrep يدويًا أو عبر custom command: opencode run "افحص آخر تغييرات بـ semgrep"
+6. لو حسّاسة/API: فعّلي playwright وقتها وشغّلي k6 عبر shell command عادي
+5) لو عايزة تختصري كل ده في أمر واحد
+
+اعملي custom command في .opencode/command/full-check.md:
+
+markdown
+---
+description: تشغيل كل الفحوصات مرة واحدة
+---
+شغّل Semgrep على آخر التغييرات، بعدين استدعي @reviewer و@security-reviewer،
+واديني تقرير موحد بالمشاكل مرتبة حسب الأهمية.
+
+وبعدين تكتبي بس /full-check في opencode وهو يعمل كل حاجة.
+
+عايزاني أضبطلك أوامر الـ custom command لتشغيل k6 أو Lighthouse تلقائيًا كمان، ولا كفاية كده كبداية؟
+
+طب ازاي اعمل markdown لكل subagent هشغله؟؟؟؟
+
+عادي، خطوة بخطوة من غير تعقيد:
+
+اعملي المجلد المناسب لو مش موجود
+من جوه مجلد المشروع بتاعك (مش مهم فين بالظبط داخل opencode، بس لازم تكوني فاتحة المشروع في التيرمنال): mkdir -p .opencode/agent المجلد ده لو مش موجود هيقولك mkdir ويعمله عادي جديد، مش حاجة تعملي حاجة تانية.
+1
+2
+3
+4
+5
+
+خلاصة سريعة عشان تفتكري:
+
+ملف واحد = subagent واحد
+المكان: .opencode/agent/اسم-الايجنت.md
+اسم الملف (من غير .md) = الاسم اللي هتناديه بيه بـ @
+الشكل: --- description + mode: subagent --- ثم الـ prompt
+
+تحب حاجة عملية: بدل ما تكتبي الملفات يدويًا، ممكن تقولي لـ opencode نفسه وهو مفتوح: "اعملي subagent اسمه reviewer بيراجع الكود بعد كل build" وهو غالبًا هيعرف يعمل الملف صح لوحده لأنه فاهم بنية نفسه.
+
+عايزاني أكتبلك محتوى الملفين كاملين (reviewer.md و security-reviewer.md) جاهزين تعمليهم copy-paste على طول؟

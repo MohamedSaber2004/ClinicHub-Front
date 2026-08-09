@@ -48,6 +48,7 @@ namespace ClinicHub.Controllers
             TempData["UserId"] = result.Id.ToString();
             TempData["Role"] = result.Roles;
             TempData["ClinicId"] = result.ClinicId?.ToString();
+            TempData["DoctorId"] = result.DoctorId?.ToString();
             TempData["AccessToken"] = result.AccessToken;
             TempData["RefreshToken"] = result.RefreshToken;
 
