@@ -158,28 +158,27 @@
 
         // First interaction is a user gesture: ask permission and start the
         // token fetch in the background, before the user finishes typing.
-        // Not once-only: if the browser suppresses the prompt (quiet mode),
-        // the next interaction retries automatically.
-        var permissionPromptBusy = false;
+        // Exactly ONE request per page load: repeated suppressed prompts are
+        // what push Chrome/Edge into "quieter messaging" auto-block mode for
+        // the origin, so retries happen only via the banner button.
+        var permissionRequested = false;
         function maybeRequestPermission() {
             if (!tokenSupported()) return;
             if (Notification.permission === "granted") {
                 startFill();
                 return;
             }
-            if (Notification.permission !== "default" || permissionPromptBusy) return;
-            permissionPromptBusy = true;
+            if (permissionRequested || Notification.permission !== "default") return;
+            permissionRequested = true;
             var req = Notification.requestPermission();
             permissionPending = true;
             if (req && typeof req.then === "function") {
                 req.then(function (p) {
                     permissionPending = false;
-                    permissionPromptBusy = false;
                     if (p === "granted") startFill();
                 });
             } else {
                 permissionPending = false;
-                permissionPromptBusy = false;
             }
         }
         document.addEventListener("pointerdown", maybeRequestPermission, { capture: true });
@@ -426,7 +425,11 @@
         }
 
         function instructionsHtml() {
-            return '<div class="ch-notif-banner-text"><i class="bi bi-bell-slash"></i> الإشعارات معطّلة من المتصفح. فعّلها يدوياً: اضغط على أيقونة الجرس أو القفل بجانب شريط العنوان ← «الإشعارات» ← «السماح»، ثم عُد إلى الصفحة.</div>' +
+            return '<div class="ch-notif-banner-text"><i class="bi bi-bell-slash"></i> الإشعارات معطّلة من المتصفح أو محظورة على هذا الموقع. لإعادة تفعيلها:' +
+                '<br>• كروم: افتح <b>chrome://settings/content/notifications</b> ← فعّل «يمكن للمواقع طلب الإشعارات» ← تأكد أن <b>localhost:5046</b> في قائمة «السماح» ← عطّل «استخدام رسائل أكثر هدوءاً».' +
+                '<br>• إيدج: افتح <b>edge://settings/content/notifications</b> وافعل الشيء نفسه.' +
+                '<br>• فايرفوكس: افتح <b>about:preferences#privacy</b> ← «الإشعارات» ← «الإعدادات» ← امنح <b>localhost:5046</b> السماح.' +
+                '<br>ثم عُد إلى الصفحة واضغط «أعد التحقق».</div>' +
                 '<button type="button" class="ch-notif-banner-btn" id="chNotifRetryBtn">أعد التحقق</button>' +
                 '<button type="button" class="ch-notif-banner-close" id="chNotifCloseBtn" aria-label="إغلاق" title="إغلاق">&times;</button>';
         }
@@ -524,17 +527,16 @@
         // the permission automatically (same pattern as the login page) so
         // push activates without the user hunting for the banner. Clicks on
         // the banner are skipped — the banner button is its own single request
-        // path, avoiding two simultaneous prompts for one click. Not once-only:
-        // if the browser suppresses the prompt (Edge quiet mode), the next
-        // interaction retries automatically instead of relying on the manual
-        // banner instructions.
-        var permissionPromptBusy = false;
+        // path, avoiding two simultaneous prompts for one click. Exactly ONE
+        // request per page load: repeated suppressed prompts are what push
+        // Chrome/Edge into "quieter messaging" auto-block mode for the origin,
+        // so retries happen only via the banner button.
+        var permissionRequested = false;
         function maybeAutoRequestPermission() {
-            if (permissionPromptBusy) return;
+            if (permissionRequested) return;
             if (!("Notification" in window) || Notification.permission !== "default") return;
-            permissionPromptBusy = true;
+            permissionRequested = true;
             requestPermissionAndEnable();
-            setTimeout(function () { permissionPromptBusy = false; }, 3000);
         }
         function bannerFreeTarget(e) {
             return !(e.target && e.target.closest && e.target.closest("#chNotifBanner"));
