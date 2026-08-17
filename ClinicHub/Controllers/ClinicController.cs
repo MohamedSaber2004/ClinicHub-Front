@@ -107,8 +107,10 @@ namespace ClinicHub.Controllers
 
                     if (!isSubscriptionAction)
                     {
-                        TempData["ErrorMessage"] = "انتهت صلاحية الاشتراك. يرجى تجديد الاشتراك للمتابعة.";
-                        context.Result = new RedirectToActionResult("MySubscription", "Clinic", null);
+                        Response.StatusCode = 403;
+                        context.Result = IsAjaxRequest
+                            ? new JsonResult(new { success = false, message = "انتهت صلاحية الاشتراك. يرجى تجديد الاشتراك للمتابعة." })
+                            : new ViewResult { ViewName = "Forbidden" };
                         ViewBag.CurrentUser = CurrentUser;
                         return;
                     }

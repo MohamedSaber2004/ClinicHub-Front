@@ -15,19 +15,43 @@ namespace ClinicHub.Controllers
         private readonly IAuthService _authService;
         private readonly IAttachmentService _attachmentService;
         private readonly INotificationService _notificationService;
+        private readonly ISubscriptionService _subscriptionService;
 
-        public StaffController(IStaffDashboardService staffDashboardService, IAuthService authService, IAttachmentService attachmentService, INotificationService notificationService)
+        public StaffController(IStaffDashboardService staffDashboardService, IAuthService authService, IAttachmentService attachmentService, INotificationService notificationService, ISubscriptionService subscriptionService)
         {
             _staffDashboardService = staffDashboardService;
             _authService = authService;
             _attachmentService = attachmentService;
             _notificationService = notificationService;
+            _subscriptionService = subscriptionService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            await LoadHeaderProfileAsync(_authService);
-            await LoadNotificationsAsync(_notificationService);
+            try
+            {
+                var subscriptionTask = _subscriptionService.GetMySubscriptionAsync();
+                var profileTask = LoadHeaderProfileAsync(_authService);
+                var notificationsTask = LoadNotificationsAsync(_notificationService);
+
+                await Task.WhenAll(subscriptionTask, profileTask, notificationsTask);
+
+                var subscription = subscriptionTask.Result;
+                bool isExpired = !subscription.IsActive || subscription.EndDate < DateTime.UtcNow;
+
+                if (isExpired)
+                {
+                    Response.StatusCode = 403;
+                    context.Result = IsAjaxRequest
+                        ? new JsonResult(new { success = false, message = "انتهت صلاحية اشتراك العيادة. يرجى تجديد الاشتراك للمتابعة." })
+                        : new ViewResult { ViewName = "Forbidden" };
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
             await base.OnActionExecutionAsync(context, next);
         }
 

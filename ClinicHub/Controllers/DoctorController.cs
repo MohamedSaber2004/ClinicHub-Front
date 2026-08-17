@@ -18,8 +18,9 @@ namespace ClinicHub.Controllers
         private readonly IAttachmentService _attachmentService;
         private readonly INotificationService _notificationService;
         private readonly IRatingsService _ratingsService;
+        private readonly ISubscriptionService _subscriptionService;
 
-        public DoctorController(IDoctorService doctorService, IDoctorDashboardService doctorDashboardService, IAuthService authService, IAttachmentService attachmentService, INotificationService notificationService, IRatingsService ratingsService)
+        public DoctorController(IDoctorService doctorService, IDoctorDashboardService doctorDashboardService, IAuthService authService, IAttachmentService attachmentService, INotificationService notificationService, IRatingsService ratingsService, ISubscriptionService subscriptionService)
         {
             _doctorService = doctorService;
             _doctorDashboardService = doctorDashboardService;
@@ -27,12 +28,35 @@ namespace ClinicHub.Controllers
             _attachmentService = attachmentService;
             _notificationService = notificationService;
             _ratingsService = ratingsService;
+            _subscriptionService = subscriptionService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            await LoadHeaderProfileAsync(_authService);
-            await LoadNotificationsAsync(_notificationService);
+            try
+            {
+                var subscriptionTask = _subscriptionService.GetMySubscriptionAsync();
+                var profileTask = LoadHeaderProfileAsync(_authService);
+                var notificationsTask = LoadNotificationsAsync(_notificationService);
+
+                await Task.WhenAll(subscriptionTask, profileTask, notificationsTask);
+
+                var subscription = subscriptionTask.Result;
+                bool isExpired = !subscription.IsActive || subscription.EndDate < DateTime.UtcNow;
+
+                if (isExpired)
+                {
+                    Response.StatusCode = 403;
+                    context.Result = IsAjaxRequest
+                        ? new JsonResult(new { success = false, message = "انتهت صلاحية اشتراك العيادة. يرجى تجديد الاشتراك للمتابعة." })
+                        : new ViewResult { ViewName = "Forbidden" };
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
             await base.OnActionExecutionAsync(context, next);
         }
 

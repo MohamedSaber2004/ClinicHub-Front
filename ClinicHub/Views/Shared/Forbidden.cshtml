@@ -1,0 +1,30 @@
+@{
+    ViewData["Title"] = "الوصول مرفوض";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card text-center">
+        <div class="icon-wrapper icon-wrapper--danger icon-wrapper-lg">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
+            </svg>
+        </div>
+
+        <h1 class="text-h1 mb-3">
+            الوصول مرفوض
+        </h1>
+
+        <p class="auth-description">
+            اشتراك العيادة غير نشط أو منتهي الصلاحية. يرجى تجديد الاشتراك لإعادة استخدام إدارة العيادة.
+        </p>
+
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary btn-lg">
+                تجديد الاشتراك
+            </a>
+            <a href="@HomeRoutes.Pages.Index()" class="btn btn-outline-primary btn-lg">
+                العودة للرئيسية
+            </a>
+        </div>
+    </div>
+</div>
