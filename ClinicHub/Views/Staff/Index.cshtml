@@ -209,7 +209,7 @@ else if (stats != null)
                     data: { id: id },
                     success: function (res) {
                         if (res && res.success) {
-                            showSuccessModal('تم قبول الحجز وتم إرسال رابط الدفع للمريض');
+                            showSuccessModal(res.message || 'تم قبول الحجز وتم إرسال رابط الدفع للمريض');
                             $('#req-' + id).fadeOut(400, function () { $(this).remove(); });
                         } else {
                             showErrorModal((res && res.message) || 'حدث خطأ أثناء القبول');
@@ -229,13 +229,13 @@ else if (stats != null)
             var reason = prompt('يرجى إدخال سبب الرفض (اختياري):');
             if (reason === null) return;
             $.ajax({
-                url: '/Staff/RejectAppointment',
+                url: '/Staff/RejectAppointment?id=' + encodeURIComponent(id),
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ reason: reason || '' }),
                 success: function (res) {
                     if (res && res.success) {
-                        showSuccessModal('تم رفض الحجز');
+                        showSuccessModal(res.message || 'تم رفض الحجز');
                         $('#req-' + id).fadeOut(400, function () { $(this).remove(); });
                     } else {
                         showErrorModal((res && res.message) || 'حدث خطأ أثناء الرفض');

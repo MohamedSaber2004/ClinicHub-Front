@@ -29,15 +29,15 @@
             </div>
             <div class="modal-body-custom">
                 <input type="hidden" id="doctorActionType" value="" />
-                <div class="form-group">
-                    <label class="form-label" for="doctorActionReason">سبب الرفض (اختياري للقبول)</label>
-                    <textarea id="doctorActionReason" class="form-input" rows="3" placeholder="اكتب سبب القرار..."></textarea>
+                <div class="form-group" id="doctorActionReasonGroup">
+                    <label class="form-label" for="doctorActionReason">سبب الرفض</label>
+                    <textarea id="doctorActionReason" class="form-input" rows="3" placeholder="اكتب سبب الرفض..."></textarea>
                 </div>
                 <div class="action-confirm-message mt-2" id="doctorActionConfirmMsg"></div>
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary" id="doctorConfirmActionBtn" data-bs-dismiss="modal">تأكيد</button>
+                <button type="button" class="btn btn-primary" id="doctorConfirmActionBtn">تأكيد</button>
             </div>
         </div>
     </div>
@@ -221,12 +221,15 @@
         function openActionModal(type) {
             if (!selectedRequestId) return;
             document.getElementById('doctorActionType').value = type;
+            var reasonGroup = document.getElementById('doctorActionReasonGroup');
             if (type === 'accept') {
                 document.getElementById('doctorActionModalTitle').textContent = 'قبول طلب التحقق';
                 document.getElementById('doctorActionConfirmMsg').innerHTML = '<div class="alert alert-success">سيتم قبول الطلب وتفعيل حساب الطبيب.</div>';
+                if (reasonGroup) reasonGroup.style.display = 'none';
             } else {
                 document.getElementById('doctorActionModalTitle').textContent = 'رفض طلب التحقق';
                 document.getElementById('doctorActionConfirmMsg').innerHTML = '<div class="alert alert-danger">سيتم رفض الطلب مع إرسال سبب الرفض للطبيب.</div>';
+                if (reasonGroup) reasonGroup.style.display = '';
             }
             actionModal.show();
         }
@@ -238,6 +241,22 @@
             if (rejectBtn) rejectBtn.addEventListener('click', function() { openActionModal('reject'); });
         }
 
+        function updateCardInPlace(req) {
+            var card = document.querySelector('.verification-card[data-request-id="' + req.id + '"]');
+            if (card) {
+                var badge = card.querySelector('.vc-status .badge');
+                if (badge) badge.outerHTML = getStatusHtml(req.status);
+            }
+            if (selectedRequestId === req.id) {
+                var detailStatus = document.getElementById('detailStatus');
+                if (detailStatus) detailStatus.innerHTML = getStatusHtml(req.status);
+                var acceptBtn = document.getElementById('acceptRequestBtn');
+                var rejectBtn = document.getElementById('rejectRequestBtn');
+                if (acceptBtn) acceptBtn.disabled = true;
+                if (rejectBtn) rejectBtn.disabled = true;
+            }
+        }
+
         function bindConfirmButton() {
             var confirmBtn = document.getElementById('doctorConfirmActionBtn');
             if (!confirmBtn) return;
@@ -246,6 +265,17 @@
                 var reason = document.getElementById('doctorActionReason').value;
                 var req = verificationRequests.find(function(r) { return r.id === selectedRequestId; });
                 if (!req) return;
+
+                confirmBtn.disabled = true;
+                var originalHtml = confirmBtn.innerHTML;
+                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جارٍ المعالجة...';
+
+                function finish() {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = originalHtml;
+                    if (actionModal) actionModal.hide();
+                    document.getElementById('doctorActionReason').value = '';
+                }
 
                 var url = type === 'accept'
                     ? '/Admin/AcceptVerification?userId=' + encodeURIComponent(req.userId)
@@ -256,13 +286,16 @@
                     .then(function(data) {
                         if (data.success) {
                             req.status = type === 'accept' ? 1 : 2;
+                            finish();
                             showSuccessModal(data.message || (type === 'accept' ? 'تم قبول طلب التحقق بنجاح' : 'تم رفض طلب التحقق بنجاح'));
-                            refreshVerificationList();
+                            updateCardInPlace(req);
                         } else {
+                            finish();
                             showErrorModal(data.message || (type === 'accept' ? 'فشل قبول طلب التحقق' : 'فشل رفض طلب التحقق'));
                         }
                     })
                     .catch(function() {
+                        finish();
                         showErrorModal('عذراً، حدث خطأ غير متوقع أثناء معالجة الطلب.');
                     });
             });

@@ -64,7 +64,7 @@
                 }
                 @foreach (var app in appointments)
                 {
-                    <tr>
+                    <tr data-id="@app.Id">
                         <td>
                             <div class="table-user">
                                 <span class="table-avatar">@(string.IsNullOrWhiteSpace(app.Patient?.Initial) ? Initial(app.Patient?.Name) : app.Patient.Initial)</span>
@@ -109,13 +109,38 @@
 
 @section Scripts {
     <script>
+        var _staffStatus = {
+            accepted: { cls: 'badge-success', label: 'مقبول - بانتظار الدفع' },
+            rejected: { cls: 'badge-danger', label: 'مرفوض' },
+            confirmed: { cls: 'badge-success', label: 'مؤكد - مدفوع' }
+        };
+
+        function updateStaffRow(id, statusKey, actionsHtml) {
+            var row = document.querySelector('tr[data-id="' + id + '"]');
+            if (!row) return;
+            var statusFilter = document.querySelector('.filter-bar select[name="status"]');
+            if (statusFilter && statusFilter.value !== '' && statusFilter.value !== statusKey) {
+                row.style.transition = 'opacity .3s';
+                row.style.opacity = '0';
+                setTimeout(function () { row.remove(); }, 300);
+                return;
+            }
+            var badge = row.querySelector('.badge');
+            if (badge && _staffStatus[statusKey]) {
+                badge.className = 'badge ' + _staffStatus[statusKey].cls;
+                badge.textContent = _staffStatus[statusKey].label;
+            }
+            var actionsCell = row.querySelector('.appointment-actions');
+            if (actionsCell) actionsCell.innerHTML = actionsHtml;
+        }
+
         $(document).on('click', '.btn-approve', function () {
             var id = $(this).data('id');
             if (!id) return;
             showConfirmModal('بعد القبول سيتم إرسال رابط الدفع للمريض لإتمام الدفع. هل تريد المتابعة؟', function () {
                 StaffDashboardService.approveAppointment(id).then(function () {
                     showSuccessModal('تم قبول الحجز وتم إرسال رابط الدفع للمريض');
-                    location.reload();
+                    updateStaffRow(id, 'accepted', '<span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>');
                 }).catch(function (err) {
                     showErrorModal((err && err.message) || 'حدث خطأ أثناء القبول');
                 });
@@ -129,7 +154,7 @@
             if (reason === null) return;
             StaffDashboardService.rejectAppointment(id, reason || '').then(function () {
                 showSuccessModal('تم رفض الحجز');
-                location.reload();
+                updateStaffRow(id, 'rejected', '<span>—</span>');
             }).catch(function (err) {
                 showErrorModal((err && err.message) || 'حدث خطأ أثناء الرفض');
             });
@@ -142,7 +167,7 @@
                 StaffDashboardService.checkInPatient(id)
                     .then(function () {
                         showSuccessModal('تم تسجيل وصول المريض بنجاح');
-                        location.reload();
+                        updateStaffRow(id, 'confirmed', '<button class="btn btn-sm btn-outline-primary btn-checkin" data-id="' + id + '"><i class="bi bi-box-arrow-in-right"></i> تسجيل وصول</button>');
                     })
                     .catch(function (err) {
                         showErrorModal((err && err.message) || 'حدث خطأ أثناء تسجيل الوصول');

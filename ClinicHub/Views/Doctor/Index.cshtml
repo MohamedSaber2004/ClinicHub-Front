@@ -126,7 +126,7 @@
                 @foreach (var app in recentAppointments)
                 {
                     var patientName = !string.IsNullOrWhiteSpace(app.PatientFullName) ? app.PatientFullName : (app.BookedByUserName ?? "مريض");
-                    <tr>
+                    <tr data-id="@app.Id">
                         <td>
                             <div class="table-user">
                                 <span class="table-avatar">@Initial(patientName)</span>
@@ -176,6 +176,25 @@
 
 @section Scripts {
     <script>
+        var _statusLabels = { 2: 'ملغى', 3: 'مكتمل', 6: 'بانتظار الدفع' };
+        var _statusClasses = { 2: 'badge-danger', 3: 'badge-success', 6: 'badge-warning' };
+
+        function updateRowAfterStatus(appointmentId, statusCode) {
+            var row = document.querySelector('tr[data-id="' + appointmentId + '"]');
+            if (!row) return;
+            var badge = row.querySelector('.badge');
+            if (badge) {
+                badge.className = 'badge ' + (_statusClasses[statusCode] || 'badge-secondary');
+                badge.textContent = _statusLabels[statusCode] || 'غير معروف';
+            }
+            var actionsCell = row.lastElementChild;
+            if (actionsCell) {
+                actionsCell.innerHTML = statusCode === 6
+                    ? '<span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>'
+                    : '<span>—</span>';
+            }
+        }
+
         window.acceptAppointment = function (appointmentId) {
             if (typeof showConfirmModal === 'function') {
                 showConfirmModal('بعد القبول سيتم إرسال رابط الدفع للمريض لإتمام الدفع. هل تريد المتابعة؟', function () {
@@ -207,7 +226,7 @@
                 } else {
                     alert(data.message || 'تم تحديث حالة الموعد بنجاح');
                 }
-                location.reload();
+                updateRowAfterStatus(appointmentId, statusCode);
             } catch (err) {
                 if (typeof showErrorModal === 'function') {
                     showErrorModal(err.message);

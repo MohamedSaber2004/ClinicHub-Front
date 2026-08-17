@@ -211,10 +211,12 @@
             var fullName = $('#profileFullName').val().trim();
             if (!fullName) { showErrorModal('يرجى إدخال الاسم الكامل'); return; }
 
+            var birthDate = $('#profileBirthDate').val() || '@BirthDateText()';
+
             var formData = new FormData();
             formData.append('fullName', fullName);
             formData.append('phoneNumber', $('#profilePhone').val().trim());
-            formData.append('birthDate', $('#profileBirthDate').val());
+            formData.append('birthDate', birthDate);
             formData.append('gender', $('#profileGender').val());
             var fileInput = $('#profileImageInput')[0];
             if (fileInput.files && fileInput.files[0]) {

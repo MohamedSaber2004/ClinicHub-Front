@@ -1180,7 +1180,7 @@ namespace ClinicHub.Controllers
                 {
                     FullName = string.IsNullOrWhiteSpace(fullName) ? null : fullName,
                     PhoneNumber = string.IsNullOrWhiteSpace(phoneNumber) ? null : phoneNumber,
-                    BirthDate = DateTime.TryParse(birthDateText, out var birthDate) ? birthDate : null,
+                    BirthDate = DateTime.TryParseExact(birthDateText, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var birthDate) ? birthDate.ToString("yyyy-MM-dd") : null,
                     Gender = int.TryParse(genderText, out var gender) ? gender : null,
                     ProfileImageUrl = profileImageUrl
                 };

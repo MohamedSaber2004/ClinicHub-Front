@@ -11,7 +11,7 @@ namespace ClinicHub.Services.RequestModels
         public string Email { get; set; } = null!;
         public string PhoneNumber { get; set; } = null!;
         public string Password { get; set; } = null!;
-        public DateTime? BirthDate { get; set; }
+        public string? BirthDate { get; set; }
         public Gender? Gender { get; set; } = Enums.Gender.Male;
         public string? FcmToken { get; set; }
         public int? DevicePlatform { get; set; }

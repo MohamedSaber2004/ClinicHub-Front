@@ -965,8 +965,8 @@
             var phone = $('#editDoctorPhone').val().trim();
             if (phone !== orig.phone) payload.phoneNumber = phone;
 
-            var birthDate = $('#editDoctorBirthDate').val();
-            if (birthDate !== orig.birthDate) payload.birthDate = birthDate;
+            var birthDate = $('#editDoctorBirthDate').val() || null;
+            if (birthDate !== (orig.birthDate || null)) payload.birthDate = birthDate;
 
             var gender = $('#editDoctorGender').val();
             if (gender !== orig.gender) payload.gender = parseInt(gender);
