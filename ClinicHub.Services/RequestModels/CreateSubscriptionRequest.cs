@@ -5,7 +5,7 @@ namespace ClinicHub.Services.RequestModels
         public Guid ClinicId { get; set; }
         public Guid PlanId { get; set; }
         public int Period { get; set; }
-        public DateTime? StartDate { get; set; }
+        public string? StartDate { get; set; }
         public decimal? Amount { get; set; }
     }
 }

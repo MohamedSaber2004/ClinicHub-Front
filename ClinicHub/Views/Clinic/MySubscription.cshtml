@@ -87,24 +87,49 @@ else
                             <button class="btn btn-danger" onclick="cancelSubscription()">إلغاء الاشتراك</button>
                         </div>
                     }
+                    else
+                    {
+                        <div class="subs-detail-footer">
+                            <div class="renew-alert">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                                <span>اشتراكك منتهٍ أو غير نشط. يرجى التجديد للاستمرار في استخدام لوحة التحكم.</span>
+                            </div>
+                            <a href="@ClinicRoutes.Pages.Subscribe()@($"?planId={subscription.PlanId}&period={subscription.Period}")"
+                               class="btn btn-primary btn-renew">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" fill="currentColor"/></svg>
+                                تجديد الاشتراك — @planNameText
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="subs-plans-preview">
-                    <h4>الباقات المتاحة</h4>
+                    <h4>@(subscription.IsActive ? "الباقات المتاحة" : "اختر باقة للتجديد")</h4>
                     <div class="subscription-plans">
                         @foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
                         {
                             var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
                             var isTop = plan.SortOrder >= maxSort;
                             var planClass = isTop ? "plan-premium" : "plan-free";
+                            var isCurrent = plan.Id.ToString() == subscription.PlanId.ToString();
                             <div class="plan-card @planClass">
                                 <div class="plan-header">
                                     <h3 class="plan-name">@plan.NameAr</h3>
                                     <p class="plan-price">@plan.PriceMonthly.ToString("N0") <span class="plan-currency">ج.م</span></p>
                                 </div>
                                 <div class="plan-footer">
-                                    <span class="plan-current">@(plan.Id.ToString() == subscription.PlanId.ToString() ? "الباقة الحالية" : "")</span>
+                                    @if (subscription.IsActive)
+                                    {
+                                        <span class="plan-current">@(isCurrent ? "الباقة الحالية" : "")</span>
+                                    }
+                                    else
+                                    {
+                                        <a href="@ClinicRoutes.Pages.Subscribe()@($"?planId={plan.Id}&period={subscription.Period}")"
+                                           class="btn btn-sm @(isCurrent ? "btn-primary" : "btn-secondary") btn-plan-subscribe">
+                                            @(isCurrent ? "تجديد هذه الباقة" : "اشترك بهذه الباقة")
+                                        </a>
+                                    }
                                 </div>
                             </div>
                         }
@@ -185,6 +210,38 @@ else
     }
     .subs-plans-preview .plan-card {
         padding: var(--space-3) var(--space-4);
+    }
+    /* Renew subscription styles */
+    .renew-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        background: color-mix(in srgb, var(--clr-warning) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--clr-warning) 40%, transparent);
+        border-radius: var(--radius-md);
+        color: var(--clr-text);
+        font-size: var(--fs-sm);
+        margin-bottom: var(--space-3);
+    }
+    .renew-alert svg {
+        flex-shrink: 0;
+        color: var(--clr-warning);
+        margin-top: 1px;
+    }
+    .btn-renew {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        width: 100%;
+        justify-content: center;
+    }
+    .btn-plan-subscribe {
+        width: 100%;
+        text-align: center;
+    }
+    .subs-plans-preview .plan-footer {
+        padding-top: var(--space-2);
     }
 </style>
 
