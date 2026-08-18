@@ -67,9 +67,10 @@
                 }
                 else
                 {
+                    var errorMsg = TempData["ErrorMessage"] as string ?? TempData["Error"] as string;
                     <h1 class="text-h1">فشلت عملية الدفع</h1>
                     <p class="result-desc">
-                        حدث خطأ أثناء معالجة عملية الدفع. يرجى المحاولة مرة أخرى أو اختيار باقة مختلفة.
+                        @(!string.IsNullOrWhiteSpace(errorMsg) ? errorMsg : "حدث خطأ أثناء معالجة عملية الدفع. يرجى المحاولة مرة أخرى أو اختيار باقة مختلفة.")
                     </p>
                 }
                 <div class="result-redirect-notice">

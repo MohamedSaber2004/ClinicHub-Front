@@ -913,13 +913,17 @@ namespace ClinicHub.Controllers
                     }
                 }
 
+                var clinicIdCookie = Request.Cookies["ClinicId"];
+                Guid? clinicId = Guid.TryParse(clinicIdCookie, out var cid) && cid != Guid.Empty ? cid : CurrentUser?.ClinicId;
+
                 var returnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult";
 
                 var result = await _subscriptionService.InitiatePaymentAsync(new InitiatePaymentRequest
                 {
                     PlanId = planId,
                     Period = period,
-                    ReturnUrl = returnUrl
+                    ReturnUrl = returnUrl,
+                    ClinicId = clinicId
                 });
 
                 var targetUrl = result?.TargetRedirectUrl;
@@ -952,6 +956,18 @@ namespace ClinicHub.Controllers
                 if (string.IsNullOrWhiteSpace(request.ReturnUrl))
                 {
                     request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult";
+                }
+                if (!request.ClinicId.HasValue || request.ClinicId == Guid.Empty)
+                {
+                    var clinicIdCookie = Request.Cookies["ClinicId"];
+                    if (Guid.TryParse(clinicIdCookie, out var cid) && cid != Guid.Empty)
+                    {
+                        request.ClinicId = cid;
+                    }
+                    else if (CurrentUser?.ClinicId != null && CurrentUser.ClinicId != Guid.Empty)
+                    {
+                        request.ClinicId = CurrentUser.ClinicId;
+                    }
                 }
                 var result = await _subscriptionService.InitiatePaymentAsync(request);
                 return Json(new { success = true, targetUrl = result?.TargetRedirectUrl });

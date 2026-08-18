@@ -61,6 +61,14 @@ namespace ClinicHub.Controllers
             };
             Response.Cookies.Append("AccessToken", result.AccessToken!, cookieOptions);
             Response.Cookies.Append("RefreshToken", result.RefreshToken!, cookieOptions);
+            if (result.ClinicId.HasValue)
+            {
+                Response.Cookies.Append("ClinicId", result.ClinicId.Value.ToString(), cookieOptions);
+            }
+            if (result.DoctorId.HasValue)
+            {
+                Response.Cookies.Append("DoctorId", result.DoctorId.Value.ToString(), cookieOptions);
+            }
         }
 
         [HttpPost]

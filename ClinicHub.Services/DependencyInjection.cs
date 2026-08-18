@@ -1,4 +1,4 @@
-﻿using ClinicHub.Services.Contracts;
+using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Services.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -48,7 +48,8 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
-            .AddHttpMessageHandler<BearerTokenHandler>();
+            .AddHttpMessageHandler<BearerTokenHandler>()
+            .AddHttpMessageHandler<ClinicHeaderHandler>();
 
             services.AddHttpClient<IDoctorService, DoctorService>(client =>
             {
@@ -69,7 +70,8 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
-            .AddHttpMessageHandler<BearerTokenHandler>();
+            .AddHttpMessageHandler<BearerTokenHandler>()
+            .AddHttpMessageHandler<ClinicHeaderHandler>();
 
             services.AddHttpClient<IAdminSubscriptionService, AdminSubscriptionService>(client =>
             {
