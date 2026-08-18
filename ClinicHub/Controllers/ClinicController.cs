@@ -125,6 +125,19 @@ namespace ClinicHub.Controllers
                     Permissions = RolePermissions.For(UserRole.ClinicOwner),
                     HasActivePlan = false
                 };
+
+                string? action = context.RouteData.Values["action"]?.ToString()?.ToLower();
+                bool isSubscriptionAction = action is "mysubscription" or "subscribe" or "initiatepayment" or "cancelsubscription";
+
+                if (!isSubscriptionAction)
+                {
+                    Response.StatusCode = 403;
+                    context.Result = IsAjaxRequest
+                        ? new JsonResult(new { success = false, message = "انتهت صلاحية الاشتراك أو لا يوجد اشتراك نشط. يرجى تجديد الاشتراك للمتابعة." })
+                        : new ViewResult { ViewName = "Forbidden" };
+                    ViewBag.CurrentUser = CurrentUser;
+                    return;
+                }
             }
 
             ViewBag.CurrentUser = CurrentUser;
