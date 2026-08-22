@@ -4314,6 +4314,10 @@ body {
   color: #FFFFFF;
 }
 
+.error-modal-icon-wrapper--success {
+  background-color: var(--clr-success);
+}
+
 .error-modal-title {
   font-size: 20px;
   font-weight: 600;

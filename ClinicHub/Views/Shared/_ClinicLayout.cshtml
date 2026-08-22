@@ -317,8 +317,22 @@
                 setTimeout(dismiss, duration);
             }
 
-            window.showSuccessModal = function (msg) { showToast(msg, 'success'); };
-            window.showErrorModal   = function (msg) { showToast(msg, 'error'); };
+            window.showSuccessModal = function (msg) {
+                var msgEl = document.getElementById('globalSuccessMsg');
+                if (msgEl) msgEl.innerHTML = msg;
+                var modalEl = document.getElementById('globalSuccessModal');
+                if (!modalEl) return;
+                var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.show();
+            };
+            window.showErrorModal   = function (msg) {
+                var msgEl = document.getElementById('globalErrorMsg');
+                if (msgEl) msgEl.innerHTML = msg;
+                var modalEl = document.getElementById('globalErrorModal');
+                if (!modalEl) return;
+                var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.show();
+            };
             window.showInfoToast    = function (msg) { showToast(msg, 'info'); };
         })();
         /* ─────────────────────────────────────────────────────────────── */
