@@ -1,146 +1,42 @@
-﻿هل نظرا او عمليا اقدر مثلا اعمل frontend project mvc واقدر اشغله ب angular spa يعني اعمل mix في نفس المشروع؟
-
-أيوه، نظريًا وعمليًا تقدر تعمل mix بين ASP.NET Core MVC و Angular SPA في نفس المشروع، لكن لازم تفرق بين دمجهم فعليًا وبين مجرد إن الاتنين موجودين في نفس الـ solution.
-
-الشكل الممكن
-
-مثلاً:
-
-MyApp
-│
-├── Controllers/
-│   ├── HomeController.cs
-│   └── AccountController.cs
-│
-├── Views/
-│   ├── Home/
-│   └── Account/
-│
-├── ClientApp/
-│   └── Angular
-│       ├── src/
-│       └── package.json
-│
-└── Program.cs
-
-وتقدر تخلي:
-
-Browser
-   │
-   ├── /              → MVC View
-   │
-   ├── /account       → MVC View
-   │
-   └── /dashboard     → Angular SPA
-                          │
-                          ↓
-                       .NET API
-
-يعني مثلاً:
-
-https://example.com/
-
-تفتح MVC.
-
-بينما:
-
-https://example.com/dashboard
-
-تفتح Angular SPA.
-
-لكن هل أنصحك تعمل كده؟
-
-في بعض الحالات نعم، لكن مش كاختيار افتراضي.
-
-لو المشروع عندك مثلاً:
-
-MVC مناسب لـ
-Login
-Register
-Landing pages
-SEO pages
-Server-rendered pages
-Pages بسيطة
-Angular مناسب لـ
-Dashboard
-Admin panel
-Complex forms
-Real-time UI
-Highly interactive pages
-SPA experience
-
-فممكن جداً تعمل:
-
-ASP.NET Core
-│
-├── MVC
-│   ├── Home
-│   ├── About
-│   ├── Login
-│   └── Products
-│
-├── Angular SPA
-│   └── Dashboard
-│       ├── Users
-│       ├── Reports
-│       ├── Orders
-│       └── Settings
-│
-└── API
-    ├── /api/users
-    ├── /api/orders
-    └── /api/products
-
-وده architecture معقول.
-
-لكن فيه نقطة مهمة
-
-لو أنت بالفعل عامل MVC Frontend وعايز تضيف Angular، متعملش Angular داخل كل View.
-
-يعني لا أنصح بحاجة زي:
-
-<!-- MVC View -->
-
-<h1>Products</h1>
-
-<app-products></app-products>
-
-<script src="angular.js"></script>
-
-وتبدأ تخلي بعض الـ components MVC وبعضها Angular بشكل عشوائي.
-
-ده ممكن، لكن مع الوقت هيبقى المشروع صعب في:
-
-routing
-state management
-authentication
-deployment
-build process
-debugging
-الأفضل لو عايز Hybrid
-
-خلي عندك boundary واضح:
-
-ASP.NET Core MVC
-        │
-        ├── Server-rendered pages
-        │
-        └── Angular SPA
-                 │
-                 ↓
-             ASP.NET API
-
-مثلاً:
-
-/                    → MVC
-/products             → MVC
-/about                → MVC
-
-/app                   → Angular
-/app/dashboard         → Angular
-/app/products          → Angular
-/app/orders            → Angular
-
-والـ Angular كله يتعامل مع:
-
-/api/*
+﻿main.js?v=1.0:7
+ [spa-shell] bootstrap failed m: NG0908
+    at new e (main.js?v=1.0:7:19030)
+    at Object.ngZoneFactory [as useFactory] (main.js?v=1.0:7:52778)
+    at Object.r [as factory] (main.js?v=1.0:7:4916)
+    at Ne.hydrate (main.js?v=1.0:7:4054)
+    at Ne.get (main.js?v=1.0:7:3219)
+    at gu (main.js?v=1.0:7:56873)
+    at ts (main.js?v=1.0:7:58681)
+    at Mr (main.js?v=1.0:7:70182)
+    at main.js?v=1.0:7:74754
+9
+main.js?v=1.0:1
+ Uncaught TypeError: Cannot convert undefined or null to object
+    at getOwnPropertyDescriptors (<anonymous>)
+    at $ (main.js?v=1.0:1:436)
+    at HTMLDocument.<anonymous> (SubscriptionManagement:553:17)
+    at HTMLDocument.dispatch (jquery.min.js:2:43064)
+    at v.handle (jquery.min.js:2:41048)
+SubscriptionManagement/Create:1 
+ Failed to load resource: the server responded with a status of 400 ()
+4
+main.js?v=1.0:1
+ Uncaught TypeError: Cannot convert undefined or null to object
+    at getOwnPropertyDescriptors (<anonymous>)
+    at $ (main.js?v=1.0:1:436)
+    at HTMLDocument.<anonymous> (SubscriptionManagement:553:17)
+    at HTMLDocument.dispatch (jquery.min.js:2:43064)
+    at v.handle (jquery.min.js:2:41048)
+SubscriptionManagement/Revoke:1 
+ Failed to load resource: the server responded with a status of 403 ()
+main.js?v=1.0:1
+ Uncaught TypeError: Cannot convert undefined or null to object
+    at getOwnPropertyDescriptors (<anonymous>)
+    at $ (main.js?v=1.0:1:436)
+    at HTMLDocument.<anonymous> (SubscriptionManagement:553:17)
+    at HTMLDocument.dispatch (jquery.min.js:2:43064)
+    at v.handle (jquery.min.js:2:41048)
+[NEW] Explain Console errors by using Copilot in Edge: click 
+ to explain an error. Learn more
+Don't show again
+﻿
