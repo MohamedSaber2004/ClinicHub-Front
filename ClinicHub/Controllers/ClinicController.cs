@@ -120,15 +120,32 @@ namespace ClinicHub.Controllers
             catch (ApiException ex) when (ex.StatusCode == 401 || ex.StatusCode == 403)
             {
                 // SuperAdmin accounts own no clinic subscription — the backend rejects
-                // every clinic-scoped call with 403. Never trap them in a login loop;
-                // route them to the admin panel where subscription management lives.
+                // every clinic-scoped call with 403. Never trap them in a login loop.
+                // The JWT bit alone is NOT enough: accounts holding BOTH roles would be
+                // yanked into the admin shell mid-subscribe, so require the live profile
+                // to confirm the SuperAdmin role before routing into /Admin.
                 if (ex.StatusCode == 403 && TokenGrantsSuperAdmin(context.HttpContext))
                 {
-                    TempData["ErrorMessage"] = "حسابات المشرف العام لا تملك اشتراك عيادة. يمكنك إدارة اشتراكات العيادات من لوحة تحكم الإدارة.";
-                    context.Result = IsAjaxRequest
-                        ? new JsonResult(new { redirectUrl = AdminRoutes.Pages.SubscriptionManagement() })
-                        : new RedirectResult(AdminRoutes.Pages.SubscriptionManagement());
-                    return;
+                    bool confirmedSuperAdmin = true;
+                    try
+                    {
+                        var confirmProfile = await _authService.GetProfileAsync();
+                        if (confirmProfile != null)
+                            confirmedSuperAdmin = string.Equals(confirmProfile.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase);
+                    }
+                    catch
+                    {
+                        // Profile endpoint unreachable — fall back to the token verdict.
+                    }
+
+                    if (confirmedSuperAdmin)
+                    {
+                        TempData["ErrorMessage"] = "حسابات المشرف العام لا تملك اشتراك عيادة. يمكنك إدارة اشتراكات العيادات من لوحة تحكم الإدارة.";
+                        context.Result = IsAjaxRequest
+                            ? new JsonResult(new { redirectUrl = AdminRoutes.Pages.SubscriptionManagement() })
+                            : new RedirectResult(AdminRoutes.Pages.SubscriptionManagement());
+                        return;
+                    }
                 }
 
                 // Authentication/authorization problem (expired or stale token) — NOT an
