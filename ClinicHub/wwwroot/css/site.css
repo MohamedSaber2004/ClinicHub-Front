@@ -8170,9 +8170,17 @@ img {
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .ch-toast,
-  .ch-toast.toast-hiding,
   .ch-toast-progress {
     animation: none !important;
+  }
+
+  .ch-toast-progress {
+    display: none;
+  }
+
+  .ch-toast.toast-hiding {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 

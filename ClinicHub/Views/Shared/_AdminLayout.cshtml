@@ -236,11 +236,20 @@
 
                 container.appendChild(toast);
 
+                var dismissed = false;
+
                 function dismiss() {
+                    if (dismissed) return;
+                    dismissed = true;
                     toast.classList.add('toast-hiding');
-                    toast.addEventListener('animationend', function () { toast.remove(); }, { once: true });
+                    window.setTimeout(function () {
+                        if (toast.isConnected) toast.remove();
+                    }, 400);
                 }
 
+                toast.addEventListener('animationend', function (e) {
+                    if (e.animationName === 'toast-out') toast.remove();
+                });
                 toast.querySelector('.ch-toast-close').addEventListener('click', dismiss);
                 setTimeout(dismiss, duration);
             }
