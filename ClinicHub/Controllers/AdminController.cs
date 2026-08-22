@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
+using ClinicHub.Routes;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.Options;
@@ -51,13 +52,37 @@ namespace ClinicHub.Controllers
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            await LoadHeaderProfileAsync(_authService);
-            await LoadNotificationsAsync(_notificationService);
-            await base.OnActionExecutionAsync(context, next);
-        }
+            // Verify the caller's REAL identity against the backend API instead of
+            // assuming every visitor of /Admin is a SuperAdmin. Without this check the
+            // admin shell renders for anyone while every API call fails with 403.
+            UserProfileDto? profile;
+            try
+            {
+                profile = await _authService.GetProfileAsync();
+            }
+            catch (ApiException ex) when (ex.StatusCode == 401 || ex.StatusCode == 403)
+            {
+                var loginUrl = $"{HomeRoutes.Account.Login()}?returnUrl={Uri.EscapeDataString(context.HttpContext.Request.Path + context.HttpContext.Request.QueryString)}";
+                context.Result = IsAjaxRequest
+                    ? new JsonResult(new { redirectUrl = loginUrl })
+                    : new RedirectResult(loginUrl);
+                return;
+            }
+            catch
+            {
+                // Backend unreachable — identity cannot be verified; fail closed.
+                Response.StatusCode = 503;
+                context.Result = new ViewResult { ViewName = "ServiceUnavailable" };
+                return;
+            }
 
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
+            if (profile == null || !string.Equals(profile.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "هذه الصفحة مخصصة لحسابات المشرف العام فقط.";
+                context.Result = new RedirectResult(HomeRoutes.Pages.Index());
+                return;
+            }
+
             CurrentUser = new CurrentUserContext
             {
                 Id = 1,
@@ -69,7 +94,12 @@ namespace ClinicHub.Controllers
                                PlanFeature.ManageDoctors,
                 HasActivePlan = true
             };
-            base.OnActionExecuting(context);
+
+            ViewBag.CurrentUser = CurrentUser;
+            ViewBag.HeaderProfile = profile;
+
+            await LoadNotificationsAsync(_notificationService);
+            await base.OnActionExecutionAsync(context, next);
         }
 
         public async Task<IActionResult> Index()

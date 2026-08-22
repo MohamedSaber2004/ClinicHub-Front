@@ -103,7 +103,7 @@ namespace ClinicHub.Services.Services.Implementations
         /// are deduplicated: if another request already rotated the cookie, the new value
         /// is picked up without hitting the backend again.
         /// </summary>
-        private async Task<string?> TryRefreshTokenAsync(string tokenUsed, Uri requestUri, CancellationToken cancellationToken)
+        private async Task<string?> TryRefreshTokenAsync(string? tokenUsed, Uri requestUri, CancellationToken cancellationToken)
         {
             var httpContext = _httpContextAccessor.HttpContext;
             var refreshToken = httpContext?.Request.Cookies["RefreshToken"]
