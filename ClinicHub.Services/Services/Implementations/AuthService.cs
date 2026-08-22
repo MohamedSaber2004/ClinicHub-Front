@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.Options;
@@ -19,7 +19,8 @@ namespace ClinicHub.Services.Services.Implementations
         private static readonly JsonSerializerSettings _jsonSettings = new()
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            MissingMemberHandling = MissingMemberHandling.Ignore
+            MissingMemberHandling = MissingMemberHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore
         };
 
         private readonly HttpClient _httpClient;

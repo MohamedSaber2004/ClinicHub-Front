@@ -4395,6 +4395,14 @@ body {
 }
 
 /* ============================================================
+   Global Loading Overlay — Skeleton Screen
+   ============================================================ */
+
+/* ============================================================
+   Global Loading Overlay & Seamless Skeleton Shell
+   ============================================================ */
+
+/* ============================================================
    Global Loading Overlay
    ============================================================ */
 
@@ -4405,24 +4413,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Light veil only — the content stays readable behind it, so a
-     request never feels like the page died. No backdrop-filter:
-     a full-viewport blur re-composites every frame of every
-     request and makes the app feel slower, not faster. */
-  background-color: rgba(255, 255, 255, 0.62);
+  background-color: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   opacity: 0;
   pointer-events: none;
-  /* Initial page-load moment — brief, so it never feels like a wait.
-     No fill-mode: after the run, opacity falls back to 0 and the
-     JS-toggled .loading-active class takes over untouched. */
-  animation: page-load-moment 1s ease;
-}
-
-@keyframes page-load-moment {
-  0% { opacity: 0; }
-  8% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
+  transition: opacity 0.2s ease;
 }
 
 .loading-overlay.loading-active {
@@ -4437,7 +4433,7 @@ body {
   gap: var(--space-4, 16px);
 }
 
-/* The brass rail — one drawn line, one orbiting rider */
+/* The orbit spinner */
 .loading-orbit {
   position: relative;
   width: 96px;
@@ -4462,14 +4458,14 @@ body {
 
 .loading-ring-track {
   fill: none;
-  stroke: rgba(10, 46, 38, 0.1);
+  stroke: rgba(13, 95, 78, 0.1);
   stroke-width: 3;
 }
 
 .loading-ring-rotor {
   transform-box: fill-box;
   transform-origin: center;
-  animation: arc-spin 1s linear 0.55s infinite;
+  animation: arc-spin 1s linear infinite;
   will-change: transform;
 }
 
@@ -4477,53 +4473,98 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* The arc draws itself from the top, then the rotor carries it */
 .loading-ring-arc {
   fill: none;
-  stroke: var(--clr-brass);
-  stroke-width: 3;
+  stroke: var(--clr-primary, #0D5F4E);
+  stroke-width: 3.5;
   stroke-linecap: round;
   stroke-dasharray: 132 44;
-  stroke-dashoffset: 176;
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: rotate(-90deg);
-  animation: draw-arc 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes draw-arc {
-  to { stroke-dashoffset: 44; }
+  stroke-dashoffset: 44;
 }
 
 .loading-orbit-dot {
-  fill: var(--clr-primary);
+  fill: var(--clr-brass, #C8973A);
 }
 
 .loading-orbit-word {
   position: relative;
-  font-family: var(--ff-display);
+  font-family: var(--ff-display, 'Cairo', sans-serif);
   font-size: 13px;
-  font-weight: 600;
-  color: var(--clr-text);
-  opacity: 0;
-  animation: word-in 0.6s ease 0.35s forwards, word-breathe 2.2s ease-in-out 1s infinite;
-}
-
-@keyframes word-in {
-  to { opacity: 1; }
+  font-weight: 700;
+  color: var(--clr-primary, #0D5F4E);
+  letter-spacing: 0.5px;
+  animation: word-breathe 2.2s ease-in-out infinite;
 }
 
 @keyframes word-breathe {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.72; }
+  50% { opacity: 0.65; }
 }
 
 .loading-text {
-  font-family: var(--ff-body);
+  font-family: var(--ff-body, 'Cairo', sans-serif);
   font-size: var(--fs-md, 14px);
-  font-weight: var(--fw-md-medium, 500);
-  color: var(--clr-text-secondary);
+  font-weight: 600;
+  color: var(--clr-text-secondary, #66748C);
   margin: 0;
+}
+
+/* ============================================================
+   Card Entrance Animations & Micro-Interactions
+   ============================================================ */
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card {
+  animation: cardEntrance 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stats-grid .stat-card:nth-child(1) { animation-delay: 0.04s; }
+.stats-grid .stat-card:nth-child(2) { animation-delay: 0.08s; }
+.stats-grid .stat-card:nth-child(3) { animation-delay: 0.12s; }
+.stats-grid .stat-card:nth-child(4) { animation-delay: 0.16s; }
+
+.table-card {
+  animation: cardEntrance 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+
+.staff-card {
+  animation: cardEntrance 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.staff-grid .staff-card:nth-child(1) { animation-delay: 0.04s; }
+.staff-grid .staff-card:nth-child(2) { animation-delay: 0.08s; }
+.staff-grid .staff-card:nth-child(3) { animation-delay: 0.12s; }
+.staff-grid .staff-card:nth-child(4) { animation-delay: 0.16s; }
+.staff-grid .staff-card:nth-child(5) { animation-delay: 0.20s; }
+.staff-grid .staff-card:nth-child(6) { animation-delay: 0.24s; }
+
+.detail-card,
+.clinic-detail-header,
+.doctor-detail-header,
+.profile-card {
+  animation: cardEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.06s both;
+}
+
+.rating-full-card {
+  animation: cardEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.ratings-list .rating-full-card:nth-child(1) { animation-delay: 0.04s; }
+.ratings-list .rating-full-card:nth-child(2) { animation-delay: 0.08s; }
+.ratings-list .rating-full-card:nth-child(3) { animation-delay: 0.12s; }
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .skeleton-content-body { padding: 18px 14px; }
+  .skeleton-bar--title { width: 150px; }
+  .skeleton-bar--btn { width: 85px; height: 34px; }
 }
 
 /* ============================================================
@@ -7931,3 +7972,207 @@ img {
 .stat-card {
   contain: layout style;
 }
+
+/* ============================================================
+   Toast Notification System
+   ============================================================ */
+
+#toast-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10500;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  width: min(380px, calc(100vw - 40px));
+}
+
+.ch-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg, 12px);
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(56, 65, 82, 0.14), 0 2px 6px rgba(56, 65, 82, 0.08);
+  pointer-events: all;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  animation: toast-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.ch-toast.toast-hiding {
+  animation: toast-out 0.24s ease forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(-12px) scale(0.96);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+}
+
+/* Colour variants */
+.ch-toast--success {
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.ch-toast--error {
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.ch-toast--info {
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* Left accent stripe */
+.ch-toast::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: 12px 0 0 12px;
+}
+
+.ch-toast--success::before { background: var(--clr-success, #10b981); }
+.ch-toast--error::before   { background: var(--clr-danger,  #ef4444); }
+.ch-toast--info::before    { background: var(--clr-info,    #3b82f6); }
+
+/* Icon circle */
+.ch-toast-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full, 9999px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-toast--success .ch-toast-icon { background: rgba(16, 185, 129, 0.12); color: var(--clr-success); }
+.ch-toast--error   .ch-toast-icon { background: rgba(239, 68, 68, 0.12);  color: var(--clr-danger);  }
+.ch-toast--info    .ch-toast-icon { background: rgba(59, 130, 246, 0.12); color: var(--clr-info);    }
+
+.ch-toast-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Body */
+.ch-toast-body {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.ch-toast-title {
+  font-size: var(--fs-md, 14px);
+  font-weight: 600;
+  color: var(--clr-text, #384152);
+  margin: 0 0 3px;
+  line-height: 1.4;
+}
+
+.ch-toast-msg {
+  font-size: 13px;
+  color: var(--clr-text-secondary, #66748C);
+  line-height: 1.6;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Close button */
+.ch-toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--clr-text-secondary, #66748C);
+  cursor: pointer;
+  padding: 2px;
+  line-height: 1;
+  border-radius: var(--radius-xs, 4px);
+  transition: color 0.15s, background 0.15s;
+  margin-top: -1px;
+}
+
+.ch-toast-close:hover {
+  background: var(--clr-bg, #F2F5F9);
+  color: var(--clr-text, #384152);
+}
+
+.ch-toast-close svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+/* Auto-dismiss progress bar */
+.ch-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  transform-origin: left center;
+  animation: toast-progress linear forwards;
+}
+
+.ch-toast--success .ch-toast-progress { background: var(--clr-success, #10b981); }
+.ch-toast--error   .ch-toast-progress { background: var(--clr-danger, #ef4444); }
+.ch-toast--info    .ch-toast-progress { background: var(--clr-info, #3b82f6); }
+
+@keyframes toast-progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  #toast-container {
+    top: auto;
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ch-toast,
+  .ch-toast.toast-hiding,
+  .ch-toast-progress {
+    animation: none !important;
+  }
+}
+

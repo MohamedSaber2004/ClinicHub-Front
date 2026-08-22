@@ -14,10 +14,7 @@
     <noscript><link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" /></noscript>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    @if (!string.IsNullOrWhiteSpace(_doctoryOptions?.Value.BaseUrl))
-    {
-        <link rel="preconnect" href="@_doctoryOptions.Value.BaseUrl" crossorigin />
-    }
+
     <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
@@ -265,6 +262,8 @@
     <partial name="_SuccessModal" />
     <partial name="_ConfirmModal" />
     <partial name="_LoadingSpinner" />
+    <!-- Toast container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -274,6 +273,70 @@
     <partial name="_FcmConfig" />
     <script src="~/js/fcm.js" asp-append-version="true"></script>
     <script>
+        /* ── Toast system override ───────────────────────────────────── */
+        (function () {
+            var SUCCESS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+            var ERROR_ICON   = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>';
+            var CLOSE_ICON   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+            function showToast(message, type, duration) {
+                duration = duration || (type === 'error' ? 6000 : 4000);
+                var container = document.getElementById('toast-container');
+                if (!container) return;
+
+                var title = type === 'success' ? 'تم بنجاح' : (type === 'error' ? 'خطأ' : 'تنبيه');
+                var icon  = type === 'success' ? SUCCESS_ICON : ERROR_ICON;
+
+                var toast = document.createElement('div');
+                toast.className = 'ch-toast ch-toast--' + type;
+                toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+                toast.innerHTML =
+                    '<div class="ch-toast-icon">' + icon + '</div>' +
+                    '<div class="ch-toast-body">' +
+                        '<p class="ch-toast-title">' + title + '</p>' +
+                        '<p class="ch-toast-msg">' + message.replace(/\n/g, '<br>') + '</p>' +
+                    '</div>' +
+                    '<button class="ch-toast-close" aria-label="إغلاق">' + CLOSE_ICON + '</button>' +
+                    '<div class="ch-toast-progress" style="animation-duration:' + duration + 'ms"></div>';
+
+                container.appendChild(toast);
+
+                function dismiss() {
+                    toast.classList.add('toast-hiding');
+                    toast.addEventListener('animationend', function () { toast.remove(); }, { once: true });
+                }
+
+                toast.querySelector('.ch-toast-close').addEventListener('click', dismiss);
+                setTimeout(dismiss, duration);
+            }
+
+            window.showSuccessModal = function (msg) { showToast(msg, 'success'); };
+            window.showErrorModal   = function (msg) { showToast(msg, 'error'); };
+            window.showInfoToast    = function (msg) { showToast(msg, 'info'); };
+        })();
+        /* ─────────────────────────────────────────────────────────────── */
+
+        document.addEventListener("DOMContentLoaded", function () {
+            @if (TempData["SuccessMessage"] != null || ViewBag.SuccessMessage != null)
+            {
+                var successMsg = TempData["SuccessMessage"] ?? ViewBag.SuccessMessage;
+                <text>
+                    if (typeof showSuccessModal === 'function') {
+                        showSuccessModal(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(successMsg.ToString())));
+                    }
+                </text>
+            }
+            @if (TempData["ErrorMessage"] != null || ViewBag.ErrorMessage != null)
+            {
+                var errorMsg = TempData["ErrorMessage"] ?? ViewBag.ErrorMessage;
+                <text>
+                    if (typeof showErrorModal === 'function') {
+                        showErrorModal(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(errorMsg.ToString())));
+                    }
+                </text>
+            }
+        });
+
         @if (TempData["UserId"] != null)
         {
             <text>

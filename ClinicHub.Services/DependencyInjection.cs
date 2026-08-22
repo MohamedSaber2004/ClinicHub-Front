@@ -12,23 +12,27 @@ namespace ClinicHub.Services
 
             services.AddTransient<BearerTokenHandler>();
             services.AddTransient<ClinicHeaderHandler>();
+            services.AddTransient<ApiLoggingHandler>();
 
             services.AddHttpClient<IAuthService, AuthService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<ISpecializationService, SpecializationService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IUserService, UserService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
@@ -36,18 +40,21 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IUserVerificationService, UserVerificationService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IClinicService, ClinicService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
@@ -55,6 +62,7 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddScoped<IAttachmentUrlResolver, AttachmentUrlResolver>();
@@ -64,12 +72,14 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<ISubscriptionService, SubscriptionService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
@@ -77,12 +87,14 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IClinicDoctorService, ClinicDoctorService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
@@ -90,6 +102,7 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
@@ -97,24 +110,28 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IAdminDashboardService, AdminDashboardService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IDoctorDashboardService, DoctorDashboardService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IClinicDashboardService, ClinicDashboardService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
@@ -122,12 +139,14 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IAdService, AdService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
             .AddHttpMessageHandler<ClinicHeaderHandler>();
 
@@ -135,12 +154,14 @@ namespace ClinicHub.Services
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             services.AddHttpClient<IRatingsService, RatingsService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
             })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
             return services;

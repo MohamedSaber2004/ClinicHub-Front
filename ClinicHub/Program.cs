@@ -60,6 +60,9 @@ namespace ClinicHub
             builder.Services.Configure<FirebaseWebOptions>(builder.Configuration.GetSection("FirebaseWeb"));
             builder.Services.AddServices();
 
+            builder.Services.AddReverseProxy()
+                .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
             var app = builder.Build();
 
             // Compress responses (Brotli/Gzip) — must run before static files
@@ -91,6 +94,8 @@ namespace ClinicHub
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.MapReverseProxy();
 
             app.MapControllerRoute(
                 name: "default",
