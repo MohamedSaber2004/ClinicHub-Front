@@ -55,6 +55,14 @@ public class HomeController : BaseController
                 ViewBag.ErrorMessage = ex.Message;
                 ViewBag.Plans = new List<Services.ReponseModels.PlanDto>();
             }
+            catch (Exception ex)
+            {
+                // Transient failures against the remote API must degrade gracefully,
+                // not blow up into the global "service unavailable" page.
+                _logger.LogError(ex, "Failed to load plans on Subscriptions page");
+                ViewBag.ErrorMessage = "تعذر تحميل الباقات حالياً، يرجى المحاولة بعد قليل.";
+                ViewBag.Plans = new List<Services.ReponseModels.PlanDto>();
+            }
             return View();
         }
 
@@ -64,7 +72,7 @@ public class HomeController : BaseController
             {
                 ViewBag.Plans = await _planService.GetAllAsync();
             }
-            catch (ApiException)
+            catch (Exception)
             {
                 ViewBag.Plans = new List<Services.ReponseModels.PlanDto>();
             }
@@ -73,7 +81,7 @@ public class HomeController : BaseController
             {
                 ViewBag.Specializations = await _specializationService.GetActiveAsync();
             }
-            catch (ApiException)
+            catch (Exception)
             {
                 ViewBag.Specializations = new List<Services.ReponseModels.SpecializationDto>();
             }
@@ -108,7 +116,14 @@ public class HomeController : BaseController
                 _logger.LogError(ex, "Clinic registration failed");
             }
 
-            ViewBag.Plans = await _planService.GetAllAsync();
+            try
+            {
+                ViewBag.Plans = await _planService.GetAllAsync();
+            }
+            catch (Exception)
+            {
+                ViewBag.Plans = new List<Services.ReponseModels.PlanDto>();
+            }
             ViewBag.GoogleMapsApiKey = _googleMapsOptions.Value.ApiKey;
             try
             {
@@ -246,6 +261,11 @@ public class HomeController : BaseController
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
+            var feature = HttpContext.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
+            if (feature?.Error != null)
+            {
+                _logger.LogError(feature.Error, "Unhandled exception at {Path}", feature.Path);
+            }
             return View("ServiceUnavailable");
         }
     }
