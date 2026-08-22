@@ -210,7 +210,15 @@ namespace ClinicHub.Services.Services.Implementations
             var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
             var dataToken = obj?["data"] ?? obj?["Data"];
             var dataJson = dataToken?.ToString() ?? responseBody;
-            return JsonConvert.DeserializeObject<UserProfileDto>(dataJson, _jsonSettings) ?? new UserProfileDto();
+
+            // Tolerant parse: skip members whose backend type doesn't map cleanly
+            // (e.g. Gender/Language enums) instead of failing the whole profile.
+            var settings = new JsonSerializerSettings(_jsonSettings)
+            {
+                Error = (sender, args) => args.ErrorContext.Handled = true
+            };
+
+            return JsonConvert.DeserializeObject<UserProfileDto>(dataJson, settings) ?? new UserProfileDto();
         }
 
         public async Task<bool> UpdateProfileAsync(UpdateProfileRequest request)

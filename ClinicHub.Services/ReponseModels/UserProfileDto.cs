@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace ClinicHub.Services.ReponseModels
 {
     public class UserProfileDto
@@ -10,7 +12,12 @@ namespace ClinicHub.Services.ReponseModels
         public DateTime? BirthDate { get; set; }
         public string? ProfilePictureUrl { get; set; }
         public string Language { get; set; } = null!;
+
+        // The backend serializes this field as "roles" (see AuthDto.UserProfileDto record);
+        // without this mapping the property stayed null and every role-based check failed.
+        [JsonProperty("roles")]
         public string? Role { get; set; }
+
         public bool IsFreelanceDoctor { get; set; }
     }
 }
