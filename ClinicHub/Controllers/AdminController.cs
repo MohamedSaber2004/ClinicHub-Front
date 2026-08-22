@@ -1,4 +1,7 @@
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
@@ -52,13 +55,19 @@ namespace ClinicHub.Controllers
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            // Verify the caller's REAL identity against the backend API instead of
-            // assuming every visitor of /Admin is a SuperAdmin. Without this check the
-            // admin shell renders for anyone while every API call fails with 403.
-            UserProfileDto? profile;
+            // ── Layer 1: identity straight from the signed JWT ──────────────────────
+            // The UserTypes claim is a bitmask written by the backend at login
+            // (None=0, User=1, SuperAdmin=2, Doctor=4, Staff=8, ClinicOwner=16).
+            // Reading it directly removes any dependency on profile-DTO mapping drift.
+            bool tokenIsSuperAdmin = TokenGrantsSuperAdmin(context.HttpContext);
+
+            // ── Layer 2: live profile check (also refreshes the header identity) ────
+            UserProfileDto? profile = null;
+            bool profileLoaded = false;
             try
             {
                 profile = await _authService.GetProfileAsync();
+                profileLoaded = true;
             }
             catch (ApiException ex) when (ex.StatusCode == 401 || ex.StatusCode == 403)
             {
@@ -70,13 +79,21 @@ namespace ClinicHub.Controllers
             }
             catch
             {
-                // Backend unreachable — identity cannot be verified; fail closed.
-                Response.StatusCode = 503;
-                context.Result = new ViewResult { ViewName = "ServiceUnavailable" };
-                return;
+                // API unreachable — a token-holder may still proceed (read-only identity),
+                // everyone else is denied because we cannot verify them.
+                if (!tokenIsSuperAdmin)
+                {
+                    Response.StatusCode = 503;
+                    context.Result = new ViewResult { ViewName = "ServiceUnavailable" };
+                    return;
+                }
             }
 
-            if (profile == null || !string.Equals(profile.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
+            bool isSuperAdmin = tokenIsSuperAdmin ||
+                                (profileLoaded && profile != null &&
+                                 string.Equals(profile.Role, "SuperAdmin", StringComparison.OrdinalIgnoreCase));
+
+            if (!isSuperAdmin)
             {
                 TempData["ErrorMessage"] = "هذه الصفحة مخصصة لحسابات المشرف العام فقط.";
                 context.Result = new RedirectResult(HomeRoutes.Pages.Index());
@@ -96,10 +113,55 @@ namespace ClinicHub.Controllers
             };
 
             ViewBag.CurrentUser = CurrentUser;
-            ViewBag.HeaderProfile = profile;
+            if (profileLoaded) ViewBag.HeaderProfile = profile;
 
             await LoadNotificationsAsync(_notificationService);
             await base.OnActionExecutionAsync(context, next);
+        }
+
+        /// <summary>
+        /// Decodes the JWT payload of the AccessToken cookie (no signature verification —
+        /// the token's validity is enforced by the backend on every API call) and checks
+        /// whether the UserTypes bitmask includes the SuperAdmin bit.
+        /// </summary>
+        private static bool TokenGrantsSuperAdmin(HttpContext httpContext)
+        {
+            var jwt = httpContext.Request.Cookies["AccessToken"]
+                   ?? httpContext.Request.Cookies["accessToken"];
+            if (string.IsNullOrWhiteSpace(jwt)) return false;
+
+            var parts = jwt.Split('.');
+            if (parts.Length < 2) return false;
+
+            try
+            {
+                var payload = parts[1].Replace('-', '+').Replace('_', '/');
+                payload = (payload.Length % 4) switch
+                {
+                    2 => payload + "==",
+                    3 => payload + "=",
+                    _ => payload
+                };
+
+                using var doc = JsonDocument.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(payload)));
+                var root = doc.RootElement;
+
+                foreach (var claimName in new[] { "UserTypes", "usertypes", "userTypes" })
+                {
+                    if (root.TryGetProperty(claimName, out var ut) &&
+                        int.TryParse(ut.ToString(), out var mask))
+                    {
+                        const int SuperAdminBit = 2; // UserType.SuperAdmin
+                        return (mask & SuperAdminBit) != 0;
+                    }
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<IActionResult> Index()
