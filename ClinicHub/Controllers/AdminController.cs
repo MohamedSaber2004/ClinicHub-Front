@@ -119,51 +119,6 @@ namespace ClinicHub.Controllers
             await base.OnActionExecutionAsync(context, next);
         }
 
-        /// <summary>
-        /// Decodes the JWT payload of the AccessToken cookie (no signature verification —
-        /// the token's validity is enforced by the backend on every API call) and checks
-        /// whether the UserTypes bitmask includes the SuperAdmin bit.
-        /// </summary>
-        private static bool TokenGrantsSuperAdmin(HttpContext httpContext)
-        {
-            var jwt = httpContext.Request.Cookies["AccessToken"]
-                   ?? httpContext.Request.Cookies["accessToken"];
-            if (string.IsNullOrWhiteSpace(jwt)) return false;
-
-            var parts = jwt.Split('.');
-            if (parts.Length < 2) return false;
-
-            try
-            {
-                var payload = parts[1].Replace('-', '+').Replace('_', '/');
-                payload = (payload.Length % 4) switch
-                {
-                    2 => payload + "==",
-                    3 => payload + "=",
-                    _ => payload
-                };
-
-                using var doc = JsonDocument.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(payload)));
-                var root = doc.RootElement;
-
-                foreach (var claimName in new[] { "UserTypes", "usertypes", "userTypes" })
-                {
-                    if (root.TryGetProperty(claimName, out var ut) &&
-                        int.TryParse(ut.ToString(), out var mask))
-                    {
-                        const int SuperAdminBit = 2; // UserType.SuperAdmin
-                        return (mask & SuperAdminBit) != 0;
-                    }
-                }
-
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         public async Task<IActionResult> Index()
         {
             ViewBag.Stats = new List<MockStat>();
