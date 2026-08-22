@@ -150,7 +150,20 @@ namespace ClinicHub.Controllers
 
                 // Authentication/authorization problem (expired or stale token) — NOT an
                 // expired subscription. Send the user to login to get a fresh JWT instead
-                // of showing the misleading "subscription expired" page.
+                // of showing the misleading "subscription expired" page. If the token is
+                // valid but belongs to a different account, explain the session swap —
+                // tabs share one cookie jar, so a newer login silently replaced this one.
+                try
+                {
+                    var swappedProfile = await _authService.GetProfileAsync();
+                    if (swappedProfile != null)
+                        TempData["ErrorMessage"] = $"تم تبديل جلستك في هذا التبويب بسبب تسجيل الدخول بحساب آخر ({swappedProfile.FullName}) من نفس المتصفح. سجّل الدخول مجدداً بحسابك للمتابعة.";
+                }
+                catch
+                {
+                    // Profile unreachable — keep the plain login redirect.
+                }
+
                 var loginUrl = $"{HomeRoutes.Account.Login()}?returnUrl={Uri.EscapeDataString(context.HttpContext.Request.Path + context.HttpContext.Request.QueryString)}";
                 context.Result = IsAjaxRequest
                     ? new JsonResult(new { redirectUrl = loginUrl })

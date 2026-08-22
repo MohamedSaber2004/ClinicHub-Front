@@ -21,6 +21,9 @@ namespace ClinicHub.Controllers
         public IActionResult Login(string? returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
+            // Tabs share one cookie jar: signing in while another account is active
+            // silently replaces that session. Warn the user before it happens.
+            ViewBag.HasActiveSession = Request.Cookies.ContainsKey("AccessToken");
             return View();
         }
 

@@ -19,6 +19,13 @@
             </div>
         }
 
+        @if (ViewBag.HasActiveSession is true)
+        {
+            <div class="alert alert-warning text-center auth-alert">
+                أنت مسجّل حالياً بحساب آخر في هذا المتصفح — تسجيل الدخول الآن سيستبدل الجلسة الحالية.
+            </div>
+        }
+
         <form asp-controller="Account" asp-action="Login" method="post" data-ajax="true" id="loginForm">
             @if (ViewBag.ReturnUrl != null)
             {

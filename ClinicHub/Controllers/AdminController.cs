@@ -95,8 +95,18 @@ namespace ClinicHub.Controllers
 
             if (!isSuperAdmin)
             {
-                TempData["ErrorMessage"] = "هذه الصفحة مخصصة لحسابات المشرف العام فقط.";
-                context.Result = new RedirectResult(HomeRoutes.Pages.Index());
+                // A valid-but-different identity almost always means another account was
+                // signed in from the same browser afterwards — tabs share ONE cookie jar,
+                // so the newer login silently replaced this session. Say so plainly and
+                // route to login with returnUrl for a one-click recovery.
+                TempData["ErrorMessage"] = profileLoaded && profile != null
+                    ? $"تم تبديل جلستك في هذا التبويب بسبب تسجيل الدخول بحساب آخر ({profile.FullName}) من نفس المتصفح. هذه الصفحة مخصصة لحسابات المشرف العام فقط — سجّل الدخول مجدداً للمتابعة."
+                    : "هذه الصفحة مخصصة لحسابات المشرف العام فقط.";
+
+                var adminLoginUrl = $"{HomeRoutes.Account.Login()}?returnUrl={Uri.EscapeDataString(context.HttpContext.Request.Path + context.HttpContext.Request.QueryString)}";
+                context.Result = IsAjaxRequest
+                    ? new JsonResult(new { redirectUrl = adminLoginUrl })
+                    : new RedirectResult(adminLoginUrl);
                 return;
             }
 
