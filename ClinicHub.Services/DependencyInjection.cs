@@ -14,6 +14,9 @@ namespace ClinicHub.Services
             services.AddTransient<ClinicHeaderHandler>();
             services.AddTransient<ApiLoggingHandler>();
 
+            // Clean client (no auth handlers) used by BearerTokenHandler to rotate tokens.
+            services.AddHttpClient("BearerTokenRefresh");
+
             services.AddHttpClient<IAuthService, AuthService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");

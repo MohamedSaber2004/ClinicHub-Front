@@ -9,6 +9,7 @@ using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.Options;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.RequestModels;
+using ClinicHub.Routes;
 
 namespace ClinicHub.Controllers
 {
@@ -115,6 +116,16 @@ namespace ClinicHub.Controllers
                         return;
                     }
                 }
+            }
+            catch (ApiException ex) when (ex.StatusCode == 401 || ex.StatusCode == 403)
+            {
+                // Authentication/authorization problem (expired or stale token) — NOT an
+                // expired subscription. Send the user to login to get a fresh JWT instead
+                // of showing the misleading "subscription expired" page.
+                var loginUrl = $"{HomeRoutes.Account.Login()}?returnUrl={Uri.EscapeDataString(context.HttpContext.Request.Path + context.HttpContext.Request.QueryString)}";
+                context.Result = IsAjaxRequest
+                    ? new JsonResult(new { redirectUrl = loginUrl })
+                    : new RedirectResult(loginUrl);
             }
             catch
             {
