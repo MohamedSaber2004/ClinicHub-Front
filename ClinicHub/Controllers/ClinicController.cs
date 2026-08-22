@@ -936,8 +936,16 @@ namespace ClinicHub.Controllers
                     }
                 }
 
-                var clinicIdCookie = Request.Cookies["ClinicId"];
-                Guid? clinicId = Guid.TryParse(clinicIdCookie, out var cid) && cid != Guid.Empty ? cid : CurrentUser?.ClinicId;
+                // Verified identity first: CurrentUser.ClinicId comes from the
+                // authenticated subscription API. The cookie is only a fallback for
+                // accounts without a subscription yet — never let it override it.
+                Guid? clinicId = CurrentUser?.ClinicId;
+                if (clinicId == null || clinicId == Guid.Empty)
+                {
+                    var clinicIdCookie = Request.Cookies["ClinicId"];
+                    if (Guid.TryParse(clinicIdCookie, out var cid) && cid != Guid.Empty)
+                        clinicId = cid;
+                }
 
                 var returnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult";
 
@@ -982,14 +990,15 @@ namespace ClinicHub.Controllers
                 }
                 if (!request.ClinicId.HasValue || request.ClinicId == Guid.Empty)
                 {
-                    var clinicIdCookie = Request.Cookies["ClinicId"];
-                    if (Guid.TryParse(clinicIdCookie, out var cid) && cid != Guid.Empty)
-                    {
-                        request.ClinicId = cid;
-                    }
-                    else if (CurrentUser?.ClinicId != null && CurrentUser.ClinicId != Guid.Empty)
+                    if (CurrentUser?.ClinicId != null && CurrentUser.ClinicId != Guid.Empty)
                     {
                         request.ClinicId = CurrentUser.ClinicId;
+                    }
+                    else
+                    {
+                        var clinicIdCookie = Request.Cookies["ClinicId"];
+                        if (Guid.TryParse(clinicIdCookie, out var cid) && cid != Guid.Empty)
+                            request.ClinicId = cid;
                     }
                 }
                 var result = await _subscriptionService.InitiatePaymentAsync(request);

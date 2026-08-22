@@ -61,13 +61,26 @@ namespace ClinicHub.Controllers
             };
             Response.Cookies.Append("AccessToken", result.AccessToken!, cookieOptions);
             Response.Cookies.Append("RefreshToken", result.RefreshToken!, cookieOptions);
+
+            // Identity cookies must never outlive the account that owns them.
+            // A stale ClinicId/DoctorId from a previous login leaks one user's
+            // clinic/doctor context into another user's session.
             if (result.ClinicId.HasValue)
             {
                 Response.Cookies.Append("ClinicId", result.ClinicId.Value.ToString(), cookieOptions);
             }
+            else
+            {
+                Response.Cookies.Delete("ClinicId");
+            }
+
             if (result.DoctorId.HasValue)
             {
                 Response.Cookies.Append("DoctorId", result.DoctorId.Value.ToString(), cookieOptions);
+            }
+            else
+            {
+                Response.Cookies.Delete("DoctorId");
             }
         }
 
@@ -131,6 +144,11 @@ namespace ClinicHub.Controllers
                     // ignore backend error — always clear local session
                 }
             }
+
+            Response.Cookies.Delete("AccessToken");
+            Response.Cookies.Delete("RefreshToken");
+            Response.Cookies.Delete("ClinicId");
+            Response.Cookies.Delete("DoctorId");
 
             return RedirectJson(Url.Action("Login"));
         }
