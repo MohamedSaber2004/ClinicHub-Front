@@ -156,36 +156,12 @@
             warmUp();
         }
 
-        // First interaction is a user gesture: ask permission and start the
-        // token fetch in the background, before the user finishes typing.
-        // Exactly ONE request per page load: repeated suppressed prompts are
-        // what push Chrome/Edge into "quieter messaging" auto-block mode for
-        // the origin, so retries happen only via the banner button.
-        var permissionRequested = false;
-        function maybeRequestPermission() {
-            if (!tokenSupported()) return;
-            if (Notification.permission === "granted") {
-                startFill();
-                return;
-            }
-            if (permissionRequested || Notification.permission !== "default") return;
-            permissionRequested = true;
-            var req = Notification.requestPermission();
-            permissionPending = true;
-            if (req && typeof req.then === "function") {
-                req.then(function (p) {
-                    permissionPending = false;
-                    if (p === "granted") startFill();
-                });
-            } else {
-                permissionPending = false;
-            }
-        }
-        document.addEventListener("pointerdown", maybeRequestPermission, { capture: true });
-        document.addEventListener("keydown", function (e) {
-            if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
-            maybeRequestPermission();
-        }, { capture: true });
+        // Permission is NEVER requested automatically anymore — not even on
+        // the first gesture (the surprise popup annoyed users and pushed
+        // browsers toward quieter-messaging auto-blocking). The token is
+        // acquired silently here only when the user ALREADY granted
+        // permission; otherwise they opt in later via the dashboard banner
+        // button, which registers the fresh token with the backend.
 
         // Intercept submit briefly when a token is genuinely imminent
         // (permission already granted, or a permission prompt is pending and
@@ -523,31 +499,10 @@
         });
         window.addEventListener("focus", recheckPermission);
 
-        // First user interaction on the dashboard is a strong gesture: request
-        // the permission automatically (same pattern as the login page) so
-        // push activates without the user hunting for the banner. Clicks on
-        // the banner are skipped — the banner button is its own single request
-        // path, avoiding two simultaneous prompts for one click. Exactly ONE
-        // request per page load: repeated suppressed prompts are what push
-        // Chrome/Edge into "quieter messaging" auto-block mode for the origin,
-        // so retries happen only via the banner button.
-        var permissionRequested = false;
-        function maybeAutoRequestPermission() {
-            if (permissionRequested) return;
-            if (!("Notification" in window) || Notification.permission !== "default") return;
-            permissionRequested = true;
-            requestPermissionAndEnable();
-        }
-        function bannerFreeTarget(e) {
-            return !(e.target && e.target.closest && e.target.closest("#chNotifBanner"));
-        }
-        document.addEventListener("pointerdown", function (e) {
-            if (bannerFreeTarget(e)) maybeAutoRequestPermission();
-        }, { capture: true });
-        document.addEventListener("keydown", function (e) {
-            if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
-            if (bannerFreeTarget(e)) maybeAutoRequestPermission();
-        }, { capture: true });
+        // Opt-in only: the permission prompt fires exclusively from the
+        // banner button (requestPermissionAndEnable) — no automatic request on
+        // page clicks or keypresses. Users who already granted permission get
+        // their token silently via warmUp/syncCachedToken above.
 
         showEnableBanner();
     }
