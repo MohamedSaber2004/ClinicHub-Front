@@ -229,19 +229,22 @@ namespace ClinicHub.Services.Routes.Api
             }
             public string List => $"{BaseRoute}";
         }
-
         public class SubscriptionRoutes
         {
             public string BaseRoute { get; }
+            public string PaymentsRoot { get; }
+
             public SubscriptionRoutes(string baseRoute)
             {
                 BaseRoute = $"{baseRoute}/subscriptions";
+                PaymentsRoot = baseRoute + "/payments";
             }
+
             public string My => $"{BaseRoute}/my";
             public string InitiatePayment => $"{BaseRoute}/initiate-payment";
             public string Cancel => $"{BaseRoute}/my/cancel";
+            public string VerifyLatestSubscriptionPayment => $"{PaymentsRoot}/verify-latest-subscription";
         }
-
         public class AdminSubscriptionRoutes
         {
             public string DashboardRoute { get; }

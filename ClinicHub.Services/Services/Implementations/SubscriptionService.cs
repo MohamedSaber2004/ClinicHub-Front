@@ -26,6 +26,7 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly string _initiateUrl;
         private readonly string _cancelUrl;
         private readonly string _registerUrl;
+        private readonly string _verifyLatestPaymentUrl;
 
         public SubscriptionService(HttpClient httpClient, IOptions<Doctory> doctoryOptions)
         {
@@ -36,6 +37,7 @@ namespace ClinicHub.Services.Services.Implementations
             _initiateUrl = DoctoryRoutes.Subscriptions.InitiatePayment;
             _cancelUrl = DoctoryRoutes.Subscriptions.Cancel;
             _registerUrl = DoctoryRoutes.Clinics.Register;
+            _verifyLatestPaymentUrl = DoctoryRoutes.Subscriptions.VerifyLatestSubscriptionPayment;
         }
 
         public async Task<InitiatePaymentResponseDto> InitiatePaymentAsync(InitiatePaymentRequest request)
@@ -75,6 +77,24 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException(500, "استجابة فارغة من الخادم");
 
             return DeserializeData<SubscriptionDto>(responseBody);
+        }
+
+        public async Task<SubscriptionPaymentVerificationDto> VerifyLatestSubscriptionPaymentAsync()
+        {
+            var response = await _httpClient.GetAsync(_verifyLatestPaymentUrl);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ أثناء التحقق من الدفع" : combined);
+            }
+
+            if (string.IsNullOrWhiteSpace(responseBody))
+                return new SubscriptionPaymentVerificationDto { Status = "none" };
+
+            return DeserializeData<SubscriptionPaymentVerificationDto>(responseBody);
         }
 
         private static T DeserializeData<T>(string responseBody) where T : class

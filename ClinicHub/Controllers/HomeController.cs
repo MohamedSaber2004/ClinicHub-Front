@@ -217,10 +217,29 @@ public class HomeController : BaseController
             return View();
         }
 
-        public IActionResult PaymentResult(bool success = false, string? type = null)
+        public async Task<IActionResult> PaymentResult(bool success = false, string? type = null)
         {
             ViewBag.PaymentSuccess = success;
             ViewBag.PaymentType = type;
+            ViewBag.VerificationStatus = null;
+            ViewBag.SubscriptionActive = false;
+            ViewBag.SubscriptionEndDate = null;
+
+            if (Request.Cookies.ContainsKey("AccessToken"))
+            {
+                try
+                {
+                    var verification = await _subscriptionService.VerifyLatestSubscriptionPaymentAsync();
+                    ViewBag.VerificationStatus = verification.Status;
+                    ViewBag.SubscriptionActive = verification.SubscriptionActive;
+                    ViewBag.SubscriptionEndDate = verification.EndDate;
+                }
+                catch
+                {
+                    // Verification is best-effort — fall back to the generic result UI.
+                }
+            }
+
             return View();
         }
 

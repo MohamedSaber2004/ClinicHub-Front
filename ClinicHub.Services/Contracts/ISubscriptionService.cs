@@ -9,5 +9,6 @@ namespace ClinicHub.Services.Contracts
         Task<SubscriptionDto> GetMySubscriptionAsync();
         Task<string> CancelMySubscriptionAsync();
         Task<RegisterClinicResponseDto> RegisterClinicAsync(RegisterClinicRequest request);
+        Task<SubscriptionPaymentVerificationDto> VerifyLatestSubscriptionPaymentAsync();
     }
 }
