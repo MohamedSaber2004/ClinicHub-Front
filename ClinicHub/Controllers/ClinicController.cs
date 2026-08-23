@@ -823,6 +823,14 @@ namespace ClinicHub.Controllers
 
         public IActionResult Reports(string period = "week", int? doctorId = null)
         {
+            if (CurrentUser == null || !CurrentUser.HasActivePlan || !CurrentUser.HasFeature(PlanFeature.AdvancedReports))
+            {
+                TempData["ErrorMessage"] = "التقارير المتقدمة متاحة في الباقة الممتازة — قم بترقية باقتك للوصول إليها.";
+                if (IsAjaxRequest)
+                    return Json(new { redirectUrl = ClinicRoutes.Pages.MySubscription() });
+                return RedirectToAction("MySubscription");
+            }
+
             ViewBag.SelectedPeriod = string.IsNullOrWhiteSpace(period) ? "week" : period.ToLower();
             ViewBag.SelectedDoctorId = doctorId;
             ViewBag.OperationalSummary = MockData.GetOperationalSummary(ViewBag.SelectedPeriod);
