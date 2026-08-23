@@ -129,7 +129,7 @@ namespace ClinicHub.Services.Services.Implementations
                 var payload = JsonSerializer.Serialize(new { refreshToken });
                 using var content = new StringContent(payload, Encoding.UTF8, "application/json");
 
-                using var refreshResponse = await cleanClient.PostAsync($"{baseUrl}/auth/refresh-token", content, cancellationToken);
+                using var refreshResponse = await cleanClient.PostAsync($"{baseUrl}/api/{Routes.Api.DoctoryRoutes.Version}/auth/refresh-token", content, cancellationToken);
                 if (!refreshResponse.IsSuccessStatusCode)
                     return null;
 

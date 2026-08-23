@@ -7,7 +7,19 @@ namespace ClinicHub.Services.Routes.Api
 
         public static void Initialize(string baseUrl)
         {
-            BaseRoute = $"{baseUrl}/api/{Version}";
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                throw new InvalidOperationException(
+                    "Doctory:BaseUrl is not configured. Set it in appsettings.json / appsettings.Development.json " +
+                    "to the backend API root, e.g. \"https://doctory-icare.runasp.net\" (hosted) or " +
+                    "\"http://localhost:5027\" (local ClinicHub.API). The value must include the http:// or https:// scheme.");
+
+            if (!Uri.TryCreate(baseUrl.Trim(), UriKind.Absolute, out var baseUri) ||
+                (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps))
+                throw new InvalidOperationException(
+                    $"Doctory:BaseUrl \"{baseUrl}\" is not a valid absolute URI. " +
+                    "It must start with http:// or https://, e.g. \"http://localhost:5027\".");
+
+            BaseRoute = $"{baseUri.ToString().TrimEnd('/')}/api/{Version}";
 
             Auth = new AuthRoutes(BaseRoute);
             Specializations = new SpecializationRoutes(BaseRoute);
