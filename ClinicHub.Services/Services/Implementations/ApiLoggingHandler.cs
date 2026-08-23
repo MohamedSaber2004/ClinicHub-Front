@@ -1,3 +1,4 @@
+using ClinicHub.Services.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace ClinicHub.Services.Services.Implementations
@@ -36,6 +37,24 @@ namespace ClinicHub.Services.Services.Implementations
             try
             {
                 response = await base.SendAsync(request, cancellationToken);
+            }
+            catch (HttpRequestException ex)
+            {
+                sw.Stop();
+                _logger.LogError(ex,
+                    "[API ✖] {Method} {Endpoint} — unreachable after {ElapsedMs} ms",
+                    method, endpoint, sw.ElapsedMilliseconds);
+                throw new ApiException(503,
+                    "تعذّر الاتصال بخادم النظام. تأكد من تشغيل الخادم وتوفر الإنترنت ثم أعد المحاولة.");
+            }
+            catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                sw.Stop();
+                _logger.LogError(ex,
+                    "[API ✖] {Method} {Endpoint} — timed out after {ElapsedMs} ms",
+                    method, endpoint, sw.ElapsedMilliseconds);
+                throw new ApiException(504,
+                    "استغرق الاتصال بالخادم وقتاً أطول من المعتاد. يرجى المحاولة مرة أخرى.");
             }
             catch (Exception ex)
             {

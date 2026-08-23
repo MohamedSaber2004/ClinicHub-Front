@@ -44,28 +44,30 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
-        public async Task<List<SupportTicketDto>> GetUrgentTicketsAsync()
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync(DoctoryRoutes.AdminDashboard.UrgentTickets);
-                return await _deserializerService.DeserializeApiResponse<List<SupportTicketDto>>(response, "حدث خطأ في جلب التذاكر العاجلة");
-            }
-            catch (ApiException) { throw; }
-            catch (Exception ex)
-            {
-                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
-            }
-        }
+        public async Task<List<RevenueTrendPointDto>> GetRevenueTrendAsync(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+            => await GetGraphListAsync<RevenueTrendPointDto>(DoctoryRoutes.AdminDashboard.RevenueTrend(granularity, fromDate, toDate));
 
-        public async Task<PagginatedResult<SubscriptionDto>> GetSubscriptionsAsync(int pageNumber = 1, int pageSize = 5)
+        public async Task<List<ClinicsGrowthPointDto>> GetClinicsGrowthAsync(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+            => await GetGraphListAsync<ClinicsGrowthPointDto>(DoctoryRoutes.AdminDashboard.ClinicsGrowth(granularity, fromDate, toDate));
+
+        public async Task<List<SubscriptionsByPlanDto>> GetSubscriptionsByPlanAsync(DateTime? fromDate = null, DateTime? toDate = null)
+            => await GetGraphListAsync<SubscriptionsByPlanDto>(DoctoryRoutes.AdminDashboard.SubscriptionsByPlan(fromDate, toDate));
+
+        public async Task<List<UsersGrowthPointDto>> GetUsersGrowthAsync(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+            => await GetGraphListAsync<UsersGrowthPointDto>(DoctoryRoutes.AdminDashboard.UsersGrowth(granularity, fromDate, toDate));
+
+        public async Task<List<AppointmentsSummaryPointDto>> GetAppointmentsSummaryAsync(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+            => await GetGraphListAsync<AppointmentsSummaryPointDto>(DoctoryRoutes.AdminDashboard.AppointmentsSummary(granularity, fromDate, toDate));
+
+        private async Task<List<T>> GetGraphListAsync<T>(string url)
         {
             try
             {
-                var url = $"{DoctoryRoutes.AdminDashboard.Subscriptions}?pageNumber={pageNumber}&pageSize={pageSize}";
                 var response = await _httpClient.GetAsync(url);
-                var body = await response.Content.ReadAsStringAsync();
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    return new List<T>();
 
+                var body = await response.Content.ReadAsStringAsync();
                 if (!response.IsSuccessStatusCode)
                 {
                     var errors = ApiErrorExtractor.ExtractErrors(body);
@@ -75,52 +77,7 @@ namespace ClinicHub.Services.Services.Implementations
                 var obj = JsonConvert.DeserializeObject<JObject>(body);
                 var dataToken = obj?["data"] ?? obj?["Data"];
                 var dataJson = dataToken?.ToString() ?? body;
-                return JsonConvert.DeserializeObject<PagginatedResult<SubscriptionDto>>(dataJson, _jsonSettings) ?? new PagginatedResult<SubscriptionDto>(new List<SubscriptionDto>(), 0);
-            }
-            catch (ApiException) { throw; }
-            catch (Exception ex)
-            {
-                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
-            }
-        }
-
-        public async Task<PagginatedResult<SupportTicketDto>> GetTicketsAsync(int? status = null, int? priority = null, int pageNumber = 1, int pageSize = 20)
-        {
-            try
-            {
-                var url = $"{DoctoryRoutes.AdminDashboard.Tickets}?pageNumber={pageNumber}&pageSize={pageSize}";
-                if (status.HasValue) url += $"&status={status.Value}";
-                if (priority.HasValue) url += $"&priority={priority.Value}";
-
-                var response = await _httpClient.GetAsync(url);
-                var body = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errors = ApiErrorExtractor.ExtractErrors(body);
-                    throw new ApiException((int)response.StatusCode, string.Join(" ", errors));
-                }
-
-                var obj = JsonConvert.DeserializeObject<JObject>(body);
-                var dataToken = obj?["data"] ?? obj?["Data"];
-                var dataJson = dataToken?.ToString() ?? body;
-                return JsonConvert.DeserializeObject<PagginatedResult<SupportTicketDto>>(dataJson, _jsonSettings) ?? new PagginatedResult<SupportTicketDto>(new List<SupportTicketDto>(), 0);
-            }
-            catch (ApiException) { throw; }
-            catch (Exception ex)
-            {
-                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
-            }
-        }
-
-        public async Task<bool> UpdateTicketStatusAsync(Guid id, int status)
-        {
-            try
-            {
-                var json = JsonConvert.SerializeObject(new { status }, _jsonSettings);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PutAsync(DoctoryRoutes.AdminDashboard.UpdateTicketStatus(id), content);
-                return await _deserializerService.DeserializeApiResponse<bool>(response, "حدث خطأ في تحديث حالة التذكرة");
+                return JsonConvert.DeserializeObject<List<T>>(dataJson, _jsonSettings) ?? new List<T>();
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

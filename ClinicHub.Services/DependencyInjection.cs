@@ -9,17 +9,22 @@ namespace ClinicHub.Services
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
             services.AddHttpContextAccessor();
+            services.AddMemoryCache();
 
             services.AddTransient<BearerTokenHandler>();
             services.AddTransient<ClinicHeaderHandler>();
             services.AddTransient<ApiLoggingHandler>();
 
             // Clean client (no auth handlers) used by BearerTokenHandler to rotate tokens.
-            services.AddHttpClient("BearerTokenRefresh");
+            services.AddHttpClient("BearerTokenRefresh", client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
 
             services.AddHttpClient<IAuthService, AuthService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -27,6 +32,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<ISpecializationService, SpecializationService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -34,6 +40,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IUserService, UserService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
@@ -42,6 +49,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IAttachmentService, AttachmentService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -49,6 +57,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IUserVerificationService, UserVerificationService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -56,6 +65,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IClinicService, ClinicService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
@@ -64,6 +74,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IDoctorService, DoctorService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -74,6 +85,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IPlanService, PlanService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -81,6 +93,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<ISubscriptionService, SubscriptionService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
@@ -89,6 +102,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IAdminSubscriptionService, AdminSubscriptionService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -96,6 +110,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IClinicDoctorService, ClinicDoctorService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
@@ -104,6 +119,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IClinicStaffService, ClinicStaffService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
@@ -112,6 +128,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IStaffDashboardService, StaffDashboardService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -119,6 +136,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IAdminDashboardService, AdminDashboardService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -126,6 +144,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IDoctorDashboardService, DoctorDashboardService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -133,6 +152,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IClinicDashboardService, ClinicDashboardService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
@@ -141,6 +161,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IAdminPaymentService, AdminPaymentService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -148,6 +169,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IAdService, AdService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>()
@@ -156,6 +178,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<INotificationService, NotificationService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
@@ -163,6 +186,7 @@ namespace ClinicHub.Services
             services.AddHttpClient<IRatingsService, RatingsService>(client =>
             {
                 client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();

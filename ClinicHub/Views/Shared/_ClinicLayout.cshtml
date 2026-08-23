@@ -90,9 +90,8 @@
                         bool canShowDoctors = _user?.Has(Permission.ManageClinicDoctors) == true && _user?.HasFeature(PlanFeature.ManageDoctors) == true;
                         bool canShowReports = (_user?.HasFeature(PlanFeature.BasicReports) == true || _user?.HasFeature(PlanFeature.AdvancedReports) == true) && _user?.HasActivePlan == true;
                         bool canShowMarketing = _user?.HasFeature(PlanFeature.MarketingTools) == true && _user?.HasActivePlan == true;
-                        bool canShowPrioritySupport = _user?.HasFeature(PlanFeature.PrioritySupport) == true && _user?.HasActivePlan == true;
                     }
-                    @if (canShowMedicalRecords || canShowStaff || canShowDoctors || canShowReports || canShowMarketing || canShowPrioritySupport)
+                    @if (canShowMedicalRecords || canShowStaff || canShowDoctors || canShowReports || canShowMarketing)
                     {
                         <div class="sidebar-section">الخدمات التشغيلية</div>
                     }
@@ -130,13 +129,6 @@
                         <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Marketing") ? "active" : "")" href="@ClinicRoutes.Pages.Marketing()">
                             <i class="bi bi-megaphone"></i>
                             <span>الخدمات الإعلانية</span>
-                        </a>
-                    }
-                    @if (canShowPrioritySupport)
-                    {
-                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Support") ? "active" : "")" href="@ClinicRoutes.Pages.Support()">
-                            <i class="bi bi-headset"></i>
-                            <span>دعم ذو أولوية</span>
                         </a>
                     }
                     <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Ratings") ? "active" : "")" href="@ClinicRoutes.Pages.Ratings()">

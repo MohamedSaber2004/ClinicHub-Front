@@ -242,7 +242,6 @@
             cache.put(new Request("/__ch_nav_appointments__"), new Response(roleAppointmentsPath()));
             cache.put(new Request("/__ch_nav_notifications__"), new Response(notificationsPagePath()));
             cache.put(new Request("/__ch_nav_clinics__"), new Response(clinicsPath() || ""));
-            cache.put(new Request("/__ch_nav_support__"), new Response(supportPath() || ""));
         }).catch(function () {});
     }
 
@@ -267,7 +266,6 @@
         "13": "ClinicRegistered",
         "14": "ClinicApproved",
         "15": "ClinicRejected",
-        "16": "SupportTicketUpdate",
         "17": "PaymentReceived",
         "18": "RevenueIncreased",
         "19": "AppointmentAccepted"
@@ -279,24 +277,16 @@
     }
 
     // Dashboard target groups — every type lands on the role's hub page
-    // (appointments / clinics / support / notifications). The web dashboard
+    // (appointments / clinics / notifications). The web dashboard
     // has no appointment-detail or chat pages.
     var APPOINTMENT_TYPES = ["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
     var CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
-    var SUPPORT_TYPES = ["SupportTicketUpdate"];
     var NOTIFICATION_TYPES = ["SubscriptionExpiring", "AdExpiring"];
 
     function clinicsPath() {
         var role = (localStorage.getItem("role") || "").toLowerCase();
         if (role.indexOf("clinic") !== -1) return "/Clinic/Index";
         if (role.indexOf("super") !== -1) return "/Admin/Clinics";
-        return null;
-    }
-
-    function supportPath() {
-        var role = (localStorage.getItem("role") || "").toLowerCase();
-        if (role.indexOf("clinic") !== -1) return "/Clinic/Support";
-        if (role.indexOf("super") !== -1) return "/Admin/Support";
         return null;
     }
 
@@ -309,8 +299,6 @@
             target = roleAppointmentsPath();
         } else if (CLINIC_TYPES.indexOf(name) !== -1) {
             target = clinicsPath();
-        } else if (SUPPORT_TYPES.indexOf(name) !== -1) {
-            target = supportPath();
         } else if (NOTIFICATION_TYPES.indexOf(name) !== -1) {
             target = notificationsPagePath();
         }

@@ -3,9 +3,9 @@
     ViewData["Title"] = "لوحة تحكم المدير";
     Layout = "_AdminLayout";
     var stats = ViewBag.Stats as List<MockStat> ?? new();
-    var tickets = ViewBag.UrgentTickets as List<MockTableRow> ?? new();
-    var subscribers = ViewBag.Subscribers as List<MockTableRow> ?? new();
-    var activityLog = ViewBag.ActivityLog as List<MockTableRow> ?? new();
+    var days = ViewBag.Days is int d ? d : 30;
+    string[] rangeLabels = { "آخر 7 أيام", "آخر 30 يوماً", "آخر 90 يوماً" };
+    int[] rangeValues = { 7, 30, 90 };
 }
 
 <h2 class="page-title">
@@ -19,6 +19,16 @@
     </span>
     لوحة التحكم - نظرة عامة
 </h2>
+
+@if (ViewBag.HasError == true)
+{
+    <div class="table-card">
+        <div class="table-card-header">
+            <h3 class="table-card-title">تعذّر تحميل البيانات</h3>
+        </div>
+        <p style="margin:0">@ViewBag.ErrorMessage</p>
+    </div>
+}
 
 <!-- KPI Stat Cards -->
 <div class="stats-grid">
@@ -38,117 +48,240 @@
     }
 </div>
 
-<div class="table-card" id="urgent-tickets">
-        <div class="table-card-header">
-            <h3 class="table-card-title">
-    <span class="subtitle-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
-        </svg>
-    </span>
-    تذاكر الدعم العاجلة
-</h3>
-        </div>
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>الموضوع</th>
-                        <th>مقدم البلاغ</th>
-                        <th>الأولوية</th>
-                        <th>التاريخ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var row in tickets)
-                    {
-                        <tr>
-                            <td class="text-md">@row.Cells["code"]</td>
-                            <td class="text-md-medium">@row.Cells["subject"]</td>
-                            <td class="text-md">@row.Cells["reporter"]</td>
-                            <td><span class="badge @row.Cells["priorityClass"]">@row.Cells["priority"]</span></td>
-                            <td class="text-md">@row.Cells["date"]</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+<!-- Graphs -->
+<div class="table-card" id="dashboard-graphs">
+    <div class="table-card-header">
+        <h3 class="table-card-title">
+            <span class="subtitle-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z" fill="currentColor"/>
+                </svg>
+            </span>
+            إحصائيات الأداء والرسوم البيانية
+        </h3>
+        <div class="range-tabs" role="group" aria-label="نطاق زمني">
+            @for (int i = 0; i < rangeValues.Length; i++)
+            {
+                <a class="range-tab @(days == rangeValues[i] ? "active" : "")"
+                   href="@Url.Action("Index", new { days = rangeValues[i] })">@rangeLabels[i]</a>
+            }
         </div>
     </div>
 
-<div class="table-card" id="subscriptions">
-        <div class="table-card-header">
-            <h3 class="table-card-title">
-    <span class="subtitle-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05c1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
-        </svg>
-    </span>
-    المشتركون في النظام
-</h3>
+    <div class="charts-grid">
+        <div class="chart-card chart-card--wide">
+            <h4 class="chart-title">إجمالي الإيرادات</h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="revenueTrendChart"></canvas>
+                <div class="chart-empty" data-for="revenueTrendChart">
+                    <span class="empty-state-icon">📈</span>
+                    <p class="empty-desc">لا توجد بيانات إيرادات لهذه الفترة بعد</p>
+                </div>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>اسم العيادة</th>
-                        <th>تاريخ الاشتراك</th>
-                        <th>تاريخ الانتهاء</th>
-                        <th>الباقة</th>
-                        <th>عدد الأطباء</th>
-                        <th>الحالة</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var row in subscribers)
-                    {
-                        <tr>
-                            <td class="text-md-medium">@row.Cells["name"]</td>
-                            <td class="text-md">@row.Cells["start"]</td>
-                            <td class="text-md">@row.Cells["end"]</td>
-                            <td><span class="badge @row.Cells["packageClass"]">@row.Cells["package"]</span></td>
-                            <td class="text-md">@row.Cells["doctors"]</td>
-                            <td><span class="badge @row.Cells["statusClass"]">@row.Cells["status"]</span></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+
+        <div class="chart-card">
+            <h4 class="chart-title">نمو العيادات</h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="clinicsGrowthChart"></canvas>
+                <div class="chart-empty" data-for="clinicsGrowthChart">
+                    <span class="empty-state-icon">🏥</span>
+                    <p class="empty-desc">لا توجد بيانات نمو عيادات لهذه الفترة بعد</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h4 class="chart-title">الاشتراكات حسب الباقة</h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="subscriptionsByPlanChart"></canvas>
+                <div class="chart-empty" data-for="subscriptionsByPlanChart">
+                    <span class="empty-state-icon">💳</span>
+                    <p class="empty-desc">لا توجد اشتراكات في هذه الفترة بعد</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h4 class="chart-title">نمو المستخدمين</h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="usersGrowthChart"></canvas>
+                <div class="chart-empty" data-for="usersGrowthChart">
+                    <span class="empty-state-icon">👥</span>
+                    <p class="empty-desc">لا توجد بيانات نمو مستخدمين لهذه الفترة بعد</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h4 class="chart-title">ملخص المواعيد</h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="appointmentsSummaryChart"></canvas>
+                <div class="chart-empty" data-for="appointmentsSummaryChart">
+                    <span class="empty-state-icon">📅</span>
+                    <p class="empty-desc">لا توجد مواعيد في هذه الفترة بعد</p>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="table-card" id="activity-log">
-        <div class="table-card-header">
-            <h3 class="table-card-title">
-    <span class="subtitle-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 18H6V4h7v5h5v11zm-4-5l-4-4 1.41-1.41L12 12.17l2.59-2.58L16 11l-4 4z" fill="currentColor"/>
-        </svg>
-    </span>
-    سجل العمليات والنشاطات
-</h3>
-        </div>
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>التاريخ</th>
-                        <th>الإجراء</th>
-                        <th>المستخدم</th>
-                        <th>التفاصيل</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var row in activityLog)
-                    {
-                        <tr>
-                            <td class="text-md">@row.Cells["date"]</td>
-                            <td class="text-md-medium">@row.Cells["action"]</td>
-                            <td class="text-md">@row.Cells["user"]</td>
-                            <td class="text-md">@row.Cells["detail"]</td>
-                        </tr>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            var palettes = {
+                primary: '#0D5F4E',
+                primarySoft: 'rgba(13, 95, 78, 0.14)',
+                blue: '#2F6FB2',
+                blueSoft: 'rgba(47, 111, 178, 0.14)',
+                amber: '#D08A1E',
+                amberSoft: 'rgba(208, 138, 30, 0.16)',
+                green: '#1E8A5A',
+                greenSoft: 'rgba(30, 138, 90, 0.16)',
+                danger: '#B13B32',
+                dangerSoft: 'rgba(177, 59, 50, 0.16)'
+            };
+
+            Chart.defaults.font.family = "'Cairo', sans-serif";
+            Chart.defaults.font.size = 12;
+            Chart.defaults.color = '#5A6B66';
+            Chart.defaults.plugins.legend.rtl = true;
+            Chart.defaults.plugins.legend.textDirection = 'rtl';
+            Chart.defaults.plugins.tooltip.rtl = true;
+            Chart.defaults.plugins.tooltip.textDirection = 'rtl';
+
+            function baseOptions(extra) {
+                var options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(90,107,102,0.10)' } }
+                    },
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } }
+                };
+                if (extra) { Object.assign(options, extra); }
+                return options;
+            }
+
+            function makeChart(canvasId, config) {
+                var el = document.getElementById(canvasId);
+                if (!el) return null;
+                return new Chart(el.getContext('2d'), config);
+            }
+
+            function toggleEmpty(canvasId, hasData) {
+                document.querySelectorAll('.chart-empty[data-for="' + canvasId + '"]').forEach(function (n) {
+                    n.classList.toggle('visible', !hasData);
+                });
+            }
+
+            function periodLabels(rows) {
+                return (rows || []).map(function (r) { return r.period; });
+            }
+
+            var revenue = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.RevenueTrendJson as string) ? "[]" : ViewBag.RevenueTrendJson));
+            var clinics = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.ClinicsGrowthJson as string) ? "[]" : ViewBag.ClinicsGrowthJson));
+            var plans = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.SubscriptionsByPlanJson as string) ? "[]" : ViewBag.SubscriptionsByPlanJson));
+            var users = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.UsersGrowthJson as string) ? "[]" : ViewBag.UsersGrowthJson));
+            var appts = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.AppointmentsSummaryJson as string) ? "[]" : ViewBag.AppointmentsSummaryJson));
+
+            var revenueChart = makeChart('revenueTrendChart', {
+                type: 'line',
+                data: {
+                    labels: periodLabels(revenue),
+                    datasets: [{
+                        label: 'الإيرادات (ج.م)',
+                        data: revenue.map(function (r) { return r.revenue; }),
+                        borderColor: palettes.primary,
+                        backgroundColor: palettes.primarySoft,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        borderWidth: 2
+                    }]
+                },
+                options: baseOptions()
+            });
+            toggleEmpty('revenueTrendChart', revenue.length > 0);
+
+            var clinicsChart = makeChart('clinicsGrowthChart', {
+                type: 'bar',
+                data: {
+                    labels: periodLabels(clinics),
+                    datasets: [
+                        { label: 'عيادات جديدة', data: clinics.map(function (r) { return r.newClinics; }), backgroundColor: palettes.blue, borderRadius: 4 },
+                        { label: 'إجمالي العيادات', data: clinics.map(function (r) { return r.totalClinics; }), backgroundColor: palettes.blueSoft, borderRadius: 4 }
+                    ]
+                },
+                options: baseOptions({ scales: { x: { grid: { display: false } }, y: { stacked: false, beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(90,107,102,0.10)' } } } })
+            });
+            toggleEmpty('clinicsGrowthChart', clinics.length > 0);
+
+            var planColors = [palettes.primary, palettes.blue, palettes.amber, palettes.green, palettes.danger];
+            var subsByPlanChart = makeChart('subscriptionsByPlanChart', {
+                type: 'doughnut',
+                data: {
+                    labels: plans.map(function (p) { return p.planName; }),
+                    datasets: [{
+                        data: plans.map(function (p) { return p.subscriptionsCount; }),
+                        backgroundColor: planColors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: baseOptions({ cutout: '62%' })
+            });
+            toggleEmpty('subscriptionsByPlanChart', plans.length > 0);
+
+            var usersChart = makeChart('usersGrowthChart', {
+                type: 'line',
+                data: {
+                    labels: periodLabels(users),
+                    datasets: [{
+                        label: 'مستخدمون جدد',
+                        data: users.map(function (u) { return u.newUsers; }),
+                        borderColor: palettes.green,
+                        backgroundColor: palettes.greenSoft,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        borderWidth: 2
+                    }, {
+                        label: 'إجمالي المستخدمين',
+                        data: users.map(function (u) { return u.totalUsers; }),
+                        borderColor: palettes.blue,
+                        borderDash: [6, 4],
+                        fill: false,
+                        tension: 0.35,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }]
+                },
+                options: baseOptions()
+            });
+            toggleEmpty('usersGrowthChart', users.length > 0);
+
+            var apptsChart = makeChart('appointmentsSummaryChart', {
+                type: 'bar',
+                data: {
+                    labels: periodLabels(appts),
+                    datasets: [
+                        { label: 'مكتملة', data: appts.map(function (a) { return a.completedCount; }), backgroundColor: palettes.green, borderRadius: 4 },
+                        { label: 'ملغاة', data: appts.map(function (a) { return a.cancelledCount; }), backgroundColor: palettes.danger, borderRadius: 4 },
+                        { label: 'قيد الانتظار', data: appts.map(function (a) { return a.pendingCount; }), backgroundColor: palettes.amber, borderRadius: 4 }
+                    ]
+                },
+                options: baseOptions({
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(90,107,102,0.10)' } }
                     }
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-
+                })
+            });
+            toggleEmpty('appointmentsSummaryChart', appts.length > 0);
+        })();
+    </script>
+}

@@ -287,10 +287,29 @@ namespace ClinicHub.Services.Routes.Api
             }
 
             public string Stats => $"{_baseRoute}/stats";
-            public string UrgentTickets => $"{_baseRoute}/urgent-tickets";
-            public string Subscriptions => $"{_baseRoute}/subscriptions";
-            public string Tickets => $"{_baseRoute}/tickets";
-            public string UpdateTicketStatus(Guid id) => $"{_baseRoute}/tickets/{id}/status";
+            public string RevenueTrend(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+                => $"{_baseRoute}/revenue-trend{BuildGraphQuery(granularity, fromDate, toDate)}";
+            public string ClinicsGrowth(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+                => $"{_baseRoute}/clinics-growth{BuildGraphQuery(granularity, fromDate, toDate)}";
+            public string SubscriptionsByPlan(DateTime? fromDate = null, DateTime? toDate = null)
+            {
+                var query = new List<string>();
+                if (fromDate.HasValue) query.Add($"fromDate={Uri.EscapeDataString(fromDate.Value.ToString("yyyy-MM-dd"))}");
+                if (toDate.HasValue) query.Add($"toDate={Uri.EscapeDataString(toDate.Value.ToString("yyyy-MM-dd"))}");
+                return query.Count == 0 ? $"{_baseRoute}/subscriptions-by-plan" : $"{_baseRoute}/subscriptions-by-plan?{string.Join("&", query)}";
+            }
+            public string UsersGrowth(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+                => $"{_baseRoute}/users-growth{BuildGraphQuery(granularity, fromDate, toDate)}";
+            public string AppointmentsSummary(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+                => $"{_baseRoute}/appointments-summary{BuildGraphQuery(granularity, fromDate, toDate)}";
+
+            private static string BuildGraphQuery(string granularity, DateTime? fromDate, DateTime? toDate)
+            {
+                var query = new List<string> { $"granularity={granularity}" };
+                if (fromDate.HasValue) query.Add($"fromDate={Uri.EscapeDataString(fromDate.Value.ToString("yyyy-MM-dd"))}");
+                if (toDate.HasValue) query.Add($"toDate={Uri.EscapeDataString(toDate.Value.ToString("yyyy-MM-dd"))}");
+                return $"?{string.Join("&", query)}";
+            }
         }
 
         public class DoctorDashboardRoutes

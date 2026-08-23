@@ -10,7 +10,6 @@ namespace ClinicHub.Services.Enums
         ClinicRegistered = 13,
         ClinicApproved = 14,
         ClinicRejected = 15,
-        SupportTicketUpdate = 16,
         PaymentReceived = 17,
         RevenueIncreased = 18,
         AppointmentAccepted = 19

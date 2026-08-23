@@ -26,13 +26,11 @@ messaging.onBackgroundMessage((payload) => {
 
 const APPOINTMENT_TYPES = ["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
 const CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
-const SUPPORT_TYPES = ["SupportTicketUpdate"];
 const NOTIFICATION_TYPES = ["SubscriptionExpiring", "AdExpiring"];
 const NAV_CACHE = "ch-nav";
 const NAV_KEY_APPOINTMENTS = "/__ch_nav_appointments__";
 const NAV_KEY_NOTIFICATIONS = "/__ch_nav_notifications__";
 const NAV_KEY_CLINICS = "/__ch_nav_clinics__";
-const NAV_KEY_SUPPORT = "/__ch_nav_support__";
 
 // The role-based pages are cached by fcm.js from the dashboard — service
 // workers have no access to localStorage, so the click handler reads them
@@ -69,10 +67,6 @@ async function resolveTargetUrl(notification) {
     }
     if (CLINIC_TYPES.includes(type) || first === "clinics") {
         const path = await cachedValue(NAV_KEY_CLINICS);
-        if (path) return path;
-    }
-    if (SUPPORT_TYPES.includes(type) || first === "support-tickets") {
-        const path = await cachedValue(NAV_KEY_SUPPORT);
         if (path) return path;
     }
     if (NOTIFICATION_TYPES.includes(type) || first === "notifications" || first === "chat" || first === "conversations") {

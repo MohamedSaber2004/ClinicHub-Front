@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Caching.Memory;
 using ClinicHub.Data;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
@@ -13,6 +14,8 @@ namespace ClinicHub.Controllers
     {
         protected CurrentUserContext? CurrentUser { get; set; }
         protected bool IsAjaxRequest => Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
+        private IMemoryCache Cache => HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
 
         /// <summary>
         /// Decodes the JWT payload of the AccessToken cookie (no signature verification —
@@ -68,13 +71,24 @@ namespace ClinicHub.Controllers
 
         /// <summary>
         /// Loads the logged-in user profile (GET /auth/profile) for the layout header.
-        /// Fails silently so pages render with fallback placeholders when the API is unreachable.
+        /// Cached 60s per access token so navigating between pages doesn't re-hit the
+        /// API on every request. Fails silently so pages render with fallback
+        /// placeholders when the API is unreachable.
         /// </summary>
         protected async Task LoadHeaderProfileAsync(IAuthService authService)
         {
+            var cacheKey = $"hdr:profile:{TokenFingerprint()}";
+            if (Cache.TryGetValue(cacheKey, out UserProfileDto? cached) && cached is not null)
+            {
+                ViewBag.HeaderProfile = cached;
+                return;
+            }
+
             try
             {
-                ViewBag.HeaderProfile = await authService.GetProfileAsync();
+                var profile = await authService.GetProfileAsync();
+                ViewBag.HeaderProfile = profile;
+                Cache.Set(cacheKey, profile, TimeSpan.FromSeconds(60));
             }
             catch (ApiException)
             {
@@ -86,13 +100,23 @@ namespace ClinicHub.Controllers
 
         /// <summary>
         /// Loads the unread notification count (GET /notifications/count) for the layout bell
-        /// badge. Fails silently so pages render with a hidden badge when the API is unreachable.
+        /// badge. Cached 30s per access token. Fails silently so pages render with a hidden
+        /// badge when the API is unreachable.
         /// </summary>
         protected async Task LoadNotificationsAsync(INotificationService notificationService)
         {
+            var cacheKey = $"notif:count:{TokenFingerprint()}";
+            if (Cache.TryGetValue(cacheKey, out int cachedCount))
+            {
+                ViewBag.UnreadNotificationsCount = cachedCount;
+                return;
+            }
+
             try
             {
-                ViewBag.UnreadNotificationsCount = await notificationService.GetUnreadCountAsync();
+                var count = await notificationService.GetUnreadCountAsync();
+                ViewBag.UnreadNotificationsCount = count;
+                Cache.Set(cacheKey, count, TimeSpan.FromSeconds(30));
             }
             catch (ApiException)
             {
@@ -100,6 +124,13 @@ namespace ClinicHub.Controllers
             catch (Exception)
             {
             }
+        }
+
+        private string TokenFingerprint()
+        {
+            var token = Request.Cookies["AccessToken"] ?? Request.Cookies["accessToken"] ?? string.Empty;
+            var bytes = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(token));
+            return Convert.ToHexString(bytes, 0, 8);
         }
 
         protected IActionResult RedirectJson(string? redirectUrl)

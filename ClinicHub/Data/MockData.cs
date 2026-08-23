@@ -9,7 +9,6 @@ namespace ClinicHub.Data
         public static Guid Patient(int id) => Guid.Parse($"30000000-0000-0000-0000-{id:D12}");
         public static Guid History(int id) => Guid.Parse($"40000000-0000-0000-0000-{id:D12}");
         public static Guid Doctor(int id) => Guid.Parse($"50000000-0000-0000-0000-{id:D12}");
-        public static Guid Ticket(int id) => Guid.Parse($"60000000-0000-0000-0000-{id:D12}");
         public static Guid AppointmentRevenue(int id) => Guid.Parse($"70000000-0000-0000-0000-{id:D12}");
     }
 
@@ -141,13 +140,6 @@ namespace ClinicHub.Data
             new() { Cells = new() { { "name", "د. خان" }, { "role", "خبير طبي" }, { "specialty", "الأمراض الجلدية" } } },
             new() { Cells = new() { { "name", "د. عبد الله" }, { "role", "مسؤول اتصال" }, { "specialty", "أمراض الأعصاب" } } },
             new() { Cells = new() { { "name", "د. علياء" }, { "role", "متعاون" }, { "specialty", "طب الأسرة" } } },
-        };
-
-        public static List<MockTableRow> GetUrgentTickets() => new()
-        {
-            new() { Cells = new() { { "code", "#1024" }, { "subject", "تعطل نظام تسجيل الدخول" }, { "reporter", "عيادة السلام" }, { "priority", "عالية" }, { "priorityClass", "badge-danger" }, { "date", "2026-07-03" } } },
-            new() { Cells = new() { { "code", "#1021" }, { "subject", "مشكلة في عرض التقارير" }, { "reporter", "عيادات التخصصات الدقيقة" }, { "priority", "عالية" }, { "priorityClass", "badge-danger" }, { "date", "2026-07-01" } } },
-            new() { Cells = new() { { "code", "#1023" }, { "subject", "استفسار عن فاتورة شهر يونيو" }, { "reporter", "د. سارة أحمد" }, { "priority", "متوسطة" }, { "priorityClass", "badge-warning" }, { "date", "2026-07-02" } } },
         };
 
         public static List<MockTableRow> GetSubscribers() => new()
@@ -948,15 +940,6 @@ namespace ClinicHub.Data
             };
         }
 
-        public static List<MockSupportTicket> GetSupportTickets() => new()
-        {
-            new() { Id = 1, Code = "#1024", Subject = "تعطل نظام تسجيل الدخول", Reporter = "عيادة السلام", Priority = "عالية", PriorityClass = "badge-danger", Status = "مفتوح", StatusClass = "badge-info", Date = "2026-07-03 09:15", HasAttachment = true, Description = "نواجه مشكلة في تسجيل الدخول إلى النظام منذ صباح اليوم. تظهر رسالة خطأ \"تعذر الاتصال بالخادم\" عند محاولة الدخول. الرجاء المساعدة في أقرب وقت ممكن حيث أن جميع العمليات متوقفة.", Attachments = new() { "screenshot_error.png", "error_log.txt" } },
-            new() { Id = 2, Code = "#1023", Subject = "استفسار عن فاتورة شهر يونيو", Reporter = "د. سارة أحمد", Priority = "متوسطة", PriorityClass = "badge-warning", Status = "قيد المعالجة", StatusClass = "badge-warning", Date = "2026-07-02 14:30", HasAttachment = false, Description = "أود الاستفسار عن تفاصيل فاتورة شهر يونيو الخاصة بعمليات الطبيب. يظهر مبلغ مختلف عن المتوقع. أرجو توضيح البنود.", Attachments = new() },
-            new() { Id = 3, Code = "#1022", Subject = "طلب إضافة تخصص جديد (جراحة التجميل)", Reporter = "مستشفى النور", Priority = "متوسطة", PriorityClass = "badge-warning", Status = "مفتوح", StatusClass = "badge-info", Date = "2026-07-02 10:00", HasAttachment = true, Description = "نرغب في إضافة تخصص جراحة التجميل إلى قائمة التخصصات المتاحة في النظام. المرفقات تحتوي على المستندات المطلوبة والموافقات.", Attachments = new() { "طلب_اضافة_تخصص.pdf" } },
-            new() { Id = 4, Code = "#1021", Subject = "مشكلة في عرض التقارير", Reporter = "عيادات التخصصات الدقيقة", Priority = "عالية", PriorityClass = "badge-danger", Status = "قيد المعالجة", StatusClass = "badge-warning", Date = "2026-07-01 16:45", HasAttachment = false, Description = "لا تظهر التقارير الإحصائية بشكل صحيح منذ تحديث النظام الأخير. بعض البيانات مفقودة والرسوم البيانية لا تعمل.", Attachments = new() },
-            new() { Id = 5, Code = "#1020", Subject = "اقتراح تحسين واجهة المستخدم", Reporter = "د. خالد الزهراني", Priority = "منخفضة", PriorityClass = "badge-success", Status = "تم الحل", StatusClass = "badge-success", Date = "2026-06-28 11:00", HasAttachment = false, Description = "اقتراح بإضافة زر للتبديل بين الوضع الفاتح والداكن في لوحة التحكم، وإمكانية تخصيص الألوان حسب كل عيادة.", Attachments = new() },
-        };
-
         // ========== Staff Mock Data ==========
         public static List<MockStat> GetStaffDashboardStats() => new()
         {
@@ -1315,23 +1298,6 @@ public class MockPatientHistory
     public string Status { get; set; } = "";
     public string StatusClass { get; set; } = "badge-success";
 }
-
-// ========== Support Tickets Models ==========
-    public class MockSupportTicket
-    {
-        public int Id { get; set; }
-        public string Code { get; set; } = "";
-        public string Subject { get; set; } = "";
-        public string Reporter { get; set; } = "";
-        public string Priority { get; set; } = "";
-        public string PriorityClass { get; set; } = "badge-warning";
-        public string Status { get; set; } = "";
-        public string StatusClass { get; set; } = "badge-info";
-        public string Date { get; set; } = "";
-        public bool HasAttachment { get; set; }
-        public string Description { get; set; } = "";
-        public List<string> Attachments { get; set; } = new();
-    }
 
     // ========== Subscription Models (New System) ==========
     public class MockPlan

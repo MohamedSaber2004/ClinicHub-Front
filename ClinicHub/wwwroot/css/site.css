@@ -1500,6 +1500,96 @@ body {
     box-shadow: var(--shadow-xs);
 }
 
+/* Dashboard Graphs */
+.range-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: var(--clr-bg, #f6f8f7);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: 2px;
+    margin-inline-start: auto;
+}
+
+.range-tab {
+    font-size: 12px;
+    font-weight: var(--fw-lg-medium);
+    color: var(--clr-text-secondary);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: calc(var(--radius-md) - 3px);
+    transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+.range-tab:hover {
+    color: var(--clr-primary);
+}
+
+.range-tab.active {
+    background-color: var(--clr-primary);
+    color: #fff;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+    padding: var(--space-5);
+}
+
+.chart-card {
+    background-color: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    min-width: 0;
+}
+
+.chart-card--wide {
+    grid-column: 1 / -1;
+}
+
+.chart-title {
+    font-size: var(--fs-md);
+    font-weight: var(--fw-lg-medium);
+    color: var(--clr-text);
+    margin: 0 0 var(--space-3);
+}
+
+.chart-canvas-wrap {
+    position: relative;
+    height: 260px;
+}
+
+.chart-card--wide .chart-canvas-wrap {
+    height: 300px;
+}
+
+.chart-empty {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    text-align: center;
+    background-color: var(--clr-surface);
+    color: var(--clr-text-secondary);
+}
+
+.chart-empty.visible {
+    display: flex;
+}
+
+@media (max-width: 1100px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 .register-patient-card {
     max-width: 600px;
 }

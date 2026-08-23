@@ -5,8 +5,6 @@ namespace ClinicHub.Services.ReponseModels
         public int VerificationRequestsCount { get; set; }
         public int ActiveClinicsCount { get; set; }
         public int TotalUsersCount { get; set; }
-        public int SupportTicketsCount { get; set; }
-        public int UrgentSupportTicketsCount { get; set; }
         public int SpecializationsCount { get; set; }
         public int ActiveAdsCount { get; set; }
         public int RevokedSubscriptionsCount { get; set; }

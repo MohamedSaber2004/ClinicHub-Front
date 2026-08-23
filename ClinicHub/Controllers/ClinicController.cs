@@ -915,11 +915,6 @@ namespace ClinicHub.Controllers
             return View();
         }
 
-        public IActionResult Support()
-        {
-            return View();
-        }
-
         [Route("Clinic/MySubscription")]
         public async Task<IActionResult> MySubscription()
         {

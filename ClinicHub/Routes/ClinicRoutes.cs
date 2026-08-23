@@ -15,7 +15,6 @@ namespace ClinicHub.Routes
             public static string Reports() => $"{Base}/Reports";
             public static string Ratings() => $"{Base}/Ratings";
             public static string Marketing() => $"{Base}/Marketing";
-            public static string Support() => $"{Base}/Support";
             public static string Settings() => $"{Base}/Settings";
             public static string MySubscription() => $"{Base}/MySubscription";
             public static string Profile() => $"{Base}/Profile";
