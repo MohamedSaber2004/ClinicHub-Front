@@ -1,12 +1,448 @@
+@using ClinicHub.Data
 @{
-    ViewData["Title"] = "التقارير - Doctory";
+    ViewData["Title"] = "التقارير التشغيلية - Doctory";
     Layout = "_ClinicLayout";
+
+    var selectedPeriod = ViewBag.SelectedPeriod as string ?? "week";
+    var summary = ViewBag.OperationalSummary as MockOperationalSummary ?? new MockOperationalSummary();
+    var hourlyTraffic = ViewBag.HourlyTraffic as List<MockHourlyTraffic> ?? new List<MockHourlyTraffic>();
+    var weeklyWorkload = ViewBag.WeeklyWorkload as List<MockDayWorkload> ?? new List<MockDayWorkload>();
+    var doctorPerformance = ViewBag.DoctorPerformance as List<MockDoctorOperationalStat> ?? new List<MockDoctorOperationalStat>();
+    var recentLogs = ViewBag.RecentVisitsLog as List<MockOperationalVisitLog> ?? new List<MockOperationalVisitLog>();
 }
 
 <div class="page-header">
-    <h2 class="page-title mb-0">التقارير</h2>
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+            </svg>
+        </span>
+        التقارير التشغيلية ومؤشرات الأداء
+    </h2>
+    <div class="reports-header-actions print-hide">
+        <button type="button" class="btn btn-outline" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i> طباعة التقرير
+        </button>
+        <button type="button" class="btn btn-primary" onclick="handleExportReport()">
+            <i class="bi bi-download me-1"></i> تصدير البيانات (Excel)
+        </button>
+    </div>
 </div>
 
-<div class="table-card p-5">
-    <p class="text-muted mb-0">سيتم إضافة محتوى صفحة التقارير قريباً</p>
+<!-- Quick Period & Filter Toolbar -->
+<div class="period-pills-bar print-hide">
+    <div class="period-pills">
+        <a href="/Clinic/Reports?period=today" class="period-pill @(selectedPeriod == "today" ? "active" : "")">
+            <i class="bi bi-calendar-event"></i> اليوم
+        </a>
+        <a href="/Clinic/Reports?period=week" class="period-pill @(selectedPeriod == "week" ? "active" : "")">
+            <i class="bi bi-calendar-week"></i> هذا الأسبوع
+        </a>
+        <a href="/Clinic/Reports?period=month" class="period-pill @(selectedPeriod == "month" ? "active" : "")">
+            <i class="bi bi-calendar-month"></i> هذا الشهر
+        </a>
+        <a href="/Clinic/Reports?period=last30" class="period-pill @(selectedPeriod == "last30" ? "active" : "")">
+            <i class="bi bi-clock-history"></i> آخر 30 يوم
+        </a>
+    </div>
+
+    <div class="reports-filters-group">
+        <select class="form-select" id="doctorFilter" onchange="applyReportFilter()">
+            <option value="">جميع الأطباء</option>
+            <option value="1">د. سارة أحمد (جلدية)</option>
+            <option value="2">د. عمار السيد (أسنان)</option>
+            <option value="3">د. خالد الزهراني (عظام)</option>
+            <option value="4">د. نورة السعيد (أطفال)</option>
+        </select>
+        <select class="form-select" id="specialtyFilter" onchange="applyReportFilter()">
+            <option value="">جميع التخصصات</option>
+            <option value="derma">جلدية وتجميل</option>
+            <option value="dental">أسنان</option>
+            <option value="ortho">عظام ومفاصل</option>
+            <option value="pediatrics">أطفال</option>
+        </select>
+    </div>
 </div>
+
+<!-- Operational KPI Statistics Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">@summary.TotalAppointments</span>
+            <span class="stat-label">إجمالي المواعيد المحجوزة</span>
+            <div class="stat-subtext">
+                <span class="badge badge-info"><i class="bi bi-calendar-check me-1"></i>فترة التقرير</span>
+            </div>
+        </div>
+        <div class="icon-wrapper icon-wrapper--blue">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 4h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">@summary.CompletedVisits</span>
+            <span class="stat-label">الزيارات المكتملة</span>
+            <div class="stat-subtext">
+                <span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>@summary.CompletionRate% معدل الإنجاز</span>
+            </div>
+        </div>
+        <div class="icon-wrapper icon-wrapper--green">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">@summary.CancelledVisits</span>
+            <span class="stat-label">الإلغاءات وعدم الحضور</span>
+            <div class="stat-subtext">
+                <span class="badge badge-warning">@summary.CancelledVisits ملغى (@summary.CancellationRate%)</span>
+                <span class="badge badge-danger">@summary.NoShowVisits غياب (@summary.NoShowRate%)</span>
+            </div>
+        </div>
+        <div class="icon-wrapper icon-wrapper--amber">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">@summary.AvgWaitTimeMinutes دقيقة</span>
+            <span class="stat-label">متوسط زمن الانتظار</span>
+            <div class="stat-subtext">
+                <span class="badge badge-primary"><i class="bi bi-stopwatch me-1"></i>الكشف: @summary.AvgConsultationMinutes دقيقة</span>
+            </div>
+        </div>
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Visual Analytics Grid (Pure CSS Visualization) -->
+<div class="reports-analytics-grid">
+    <!-- Card 1: Attendance & Compliance -->
+    <div class="analytics-card">
+        <div class="analytics-card-header">
+            <h3 class="analytics-card-title">
+                <i class="bi bi-pie-chart text-success"></i>
+                معدلات الحضور والالتزام
+            </h3>
+            <span class="badge badge-success analytics-card-badge">نسب التوزيع</span>
+        </div>
+        <p class="text-muted mb-2 fs-sm">توزيع حالات المواعيد المحجوزة خلال الفترة المحددة</p>
+        
+        <div class="metric-bar-wrapper">
+            <div class="metric-bar-track">
+                <div class="metric-bar-segment metric-bar-segment--success w-pct-84" title="مكتملة: @summary.CompletionRate%"></div>
+                <div class="metric-bar-segment metric-bar-segment--warning w-pct-11" title="ملغاة: @summary.CancellationRate%"></div>
+                <div class="metric-bar-segment metric-bar-segment--danger w-pct-5" title="عدم حضور: @summary.NoShowRate%"></div>
+            </div>
+        </div>
+
+        <div class="metric-legend">
+            <div class="metric-legend-item">
+                <div class="metric-legend-info">
+                    <span class="metric-legend-dot metric-legend-dot--success"></span>
+                    <span>حضور وزيارات مكتملة</span>
+                </div>
+                <span class="metric-legend-val">@summary.CompletedVisits زيارة (@summary.CompletionRate%)</span>
+            </div>
+            <div class="metric-legend-item">
+                <div class="metric-legend-info">
+                    <span class="metric-legend-dot metric-legend-dot--warning"></span>
+                    <span>مواعيد ملغاة مسبقاً</span>
+                </div>
+                <span class="metric-legend-val">@summary.CancelledVisits موعد (@summary.CancellationRate%)</span>
+            </div>
+            <div class="metric-legend-item">
+                <div class="metric-legend-info">
+                    <span class="metric-legend-dot metric-legend-dot--danger"></span>
+                    <span>غياب دون إخطار (No-Show)</span>
+                </div>
+                <span class="metric-legend-val">@summary.NoShowVisits موعد (@summary.NoShowRate%)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Peak Hours & Hourly Volume -->
+    <div class="analytics-card">
+        <div class="analytics-card-header">
+            <h3 class="analytics-card-title">
+                <i class="bi bi-bar-chart-line text-primary"></i>
+                ساعات الذروة وكثافة الزيارات
+            </h3>
+            <span class="badge badge-primary analytics-card-badge">الذروة: @summary.PeakTimeSlot</span>
+        </div>
+        <p class="text-muted mb-2 fs-sm">توزيع تدفق المرضى على الفترات الزمنية للعيادة</p>
+
+        <div class="css-bar-chart">
+            @foreach (var slot in hourlyTraffic)
+            {
+                var hClass = slot.HeightPercentage switch
+                {
+                    100 => "h-pct-100",
+                    85 => "h-pct-85",
+                    55 => "h-pct-55",
+                    50 => "h-pct-50",
+                    45 => "h-pct-45",
+                    _ => "h-pct-35"
+                };
+
+                <div class="css-bar-column @(slot.IsPeak ? "is-peak" : "")">
+                    @if (slot.IsPeak)
+                    {
+                        <span class="peak-indicator">ذروة</span>
+                    }
+                    <span class="css-bar-value">@slot.AppointmentCount</span>
+                    <div class="css-bar-track">
+                        <div class="css-bar-fill @hClass" title="@slot.TimeSlot: @slot.AppointmentCount موعد"></div>
+                    </div>
+                    <span class="css-bar-label">@slot.SlotLabel</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Card 3: Weekly Workload & Capacity -->
+    <div class="analytics-card">
+        <div class="analytics-card-header">
+            <h3 class="analytics-card-title">
+                <i class="bi bi-calendar-check text-amber"></i>
+                توزيع الأحمال اليومية
+            </h3>
+            <span class="badge badge-warning analytics-card-badge">اليوم الأكثر إشغالاً: @summary.BusiestDay</span>
+        </div>
+        <p class="text-muted mb-3 fs-sm">نسب الإشغال والتشغيل عبر أيام الأسبوع</p>
+
+        <div class="workload-list">
+            @foreach (var day in weeklyWorkload)
+            {
+                var wClass = day.CapacityPercentage switch
+                {
+                    95 => "w-pct-95 workload-bar-fill--peak",
+                    80 => "w-pct-80 workload-bar-fill--high",
+                    78 => "w-pct-78 workload-bar-fill--normal",
+                    75 => "w-pct-75 workload-bar-fill--normal",
+                    70 => "w-pct-70 workload-bar-fill--normal",
+                    _ => "w-pct-60 workload-bar-fill--normal"
+                };
+
+                <div class="workload-item">
+                    <div class="workload-item-header">
+                        <span class="workload-day">@day.DayName</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="workload-count">@day.CompletedVisits من @day.TotalAppointments موعد</span>
+                            <span class="badge @day.StatusClass">@day.StatusText</span>
+                        </div>
+                    </div>
+                    <div class="workload-bar-track">
+                        <div class="workload-bar-fill @wClass"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Doctor Operational Performance Table -->
+<div class="table-card mb-5">
+    <div class="analytics-card-header">
+        <h3 class="analytics-card-title">
+            <i class="bi bi-person-workspace text-primary"></i>
+            تقرير إنتاجية وأداء أطباء العيادة
+        </h3>
+        <span class="text-muted fs-sm">إجمالي @doctorPerformance.Count أطباء نشطين</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الطبيب</th>
+                    <th>التخصص</th>
+                    <th>إجمالي المواعيد</th>
+                    <th>الزيارات المكتملة</th>
+                    <th>الملغاة / غياب</th>
+                    <th>متوسط مدة الكشف</th>
+                    <th>التقييم</th>
+                    <th>حالة التشغيل</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var doc in doctorPerformance)
+                {
+                    var progClass = doc.CompletionPercentage switch
+                    {
+                        >= 85 => "w-pct-87",
+                        >= 82 => "w-pct-84",
+                        >= 80 => "w-pct-80",
+                        _ => "w-pct-75"
+                    };
+
+                    <tr>
+                        <td>@doc.Id</td>
+                        <td>
+                            <div class="user-avatar-cell">
+                                <div class="avatar avatar--circle avatar--sm bg-primary text-white">
+                                    @doc.Initial
+                                </div>
+                                <div class="user-info-text">
+                                    <span class="user-name">@doc.Name</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-info">@doc.Specialty</span>
+                        </td>
+                        <td>
+                            <span class="fw-bold font-data">@doc.TotalAppointments</span>
+                        </td>
+                        <td>
+                            <div class="table-progress">
+                                <span class="table-progress-val">@doc.CompletedVisits</span>
+                                <div class="table-progress-track">
+                                    <div class="table-progress-fill @progClass"></div>
+                                </div>
+                                <span class="text-muted fs-sm font-data">@doc.CompletionPercentage%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="text-warning font-data">@doc.CancelledCount ملغى</span> / 
+                            <span class="text-danger font-data">@doc.NoShowCount غياب</span>
+                        </td>
+                        <td>
+                            <span class="font-data">@doc.AvgConsultationMinutes دقيقة</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-1">
+                                <i class="bi bi-star-fill text-amber fs-sm"></i>
+                                <span class="fw-bold font-data">@doc.Rating.ToString("0.0")</span>
+                                <span class="text-muted fs-sm">(@doc.ReviewCount)</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge @doc.WorkloadBadge">@doc.WorkloadStatus</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Operational Flow & Traffic Log -->
+<div class="table-card">
+    <div class="analytics-card-header">
+        <h3 class="analytics-card-title">
+            <i class="bi bi-card-checklist text-primary"></i>
+            سجل حركة الزيارات وأوقات الانتظار الفعلية
+        </h3>
+        <span class="text-muted fs-sm"><i class="bi bi-clock me-1"></i>تحديث لحظي</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>المريض</th>
+                    <th>الطبيب المعالج</th>
+                    <th>العيادة</th>
+                    <th>موعد الحجز</th>
+                    <th>وقت الحضور الفعلي</th>
+                    <th>مدة الانتظار</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in recentLogs)
+                {
+                    <tr>
+                        <td>@log.Id</td>
+                        <td>
+                            <div class="user-avatar-cell">
+                                <div class="avatar avatar--circle avatar--sm bg-secondary text-white">
+                                    @log.PatientInitial
+                                </div>
+                                <span class="user-name">@log.PatientName</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fw-semibold">@log.DoctorName</span>
+                            <span class="text-muted fs-sm d-block">@log.Specialty</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-subtle">@log.RoomNumber</span>
+                        </td>
+                        <td>
+                            <span class="font-data">@log.ScheduledTime</span>
+                        </td>
+                        <td>
+                            <span class="font-data">@log.CheckInTime</span>
+                        </td>
+                        <td>
+                            @if (log.WaitTimeMinutes > 0)
+                            {
+                                <span class="badge @(log.WaitTimeMinutes > 15 ? "badge-warning" : "badge-success")">
+                                    @log.WaitTimeMinutes دقيقة
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge @log.StatusClass">@log.Status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function applyReportFilter() {
+        var doctorId = document.getElementById('doctorFilter')?.value;
+        var specialty = document.getElementById('specialtyFilter')?.value;
+        var currentParams = new URLSearchParams(window.location.search);
+        
+        if (doctorId) {
+            currentParams.set('doctorId', doctorId);
+        } else {
+            currentParams.delete('doctorId');
+        }
+        
+        if (specialty) {
+            currentParams.set('specialty', specialty);
+        } else {
+            currentParams.delete('specialty');
+        }
+
+        window.location.search = currentParams.toString();
+    }
+
+    function handleExportReport() {
+        if (typeof showToast === 'function') {
+            showToast('جاري تصدير التقرير التشغيلي بصيغة Excel...', 'info');
+            setTimeout(function () {
+                showToast('تم تحميل التقرير بنجاح', 'success');
+            }, 1200);
+        } else {
+            alert('تم تجهيز التقرير التشغيلي للتصدير بنجاح');
+        }
+    }
+</script>
