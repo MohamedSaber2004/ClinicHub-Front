@@ -8295,3 +8295,468 @@ img {
   }
 }
 
+/* ============================================================
+   Operational Reports Page Styles
+   ============================================================ */
+
+.reports-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.period-pills-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.period-pills {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.period-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--clr-text-secondary);
+  background-color: var(--clr-surface-subtle);
+  border: 1px solid var(--clr-border);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.period-pill:hover {
+  color: var(--clr-primary);
+  border-color: var(--clr-primary);
+  background-color: var(--clr-primary-light);
+}
+
+.period-pill.active {
+  color: var(--clr-surface);
+  background-color: var(--clr-primary);
+  border-color: var(--clr-primary);
+  font-weight: var(--fw-bold);
+  box-shadow: var(--shadow-xs);
+}
+
+.reports-filters-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.reports-filters-group .form-select {
+  min-width: 170px;
+}
+
+.stat-subtext {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  margin-top: var(--space-1);
+}
+
+.stat-subtext .badge {
+  font-size: 11px;
+  padding: 2px 8px;
+}
+
+.reports-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.analytics-card {
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analytics-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.analytics-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.analytics-card-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--clr-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.analytics-card-badge {
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+}
+
+/* 1. Multi-segment Progress Meter */
+.metric-bar-wrapper {
+  margin-top: var(--space-3);
+}
+
+.metric-bar-track {
+  display: flex;
+  height: 18px;
+  width: 100%;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background-color: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+}
+
+.metric-bar-segment {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.metric-bar-segment--success {
+  background-color: var(--clr-success);
+}
+
+.metric-bar-segment--warning {
+  background-color: var(--clr-warning);
+}
+
+.metric-bar-segment--danger {
+  background-color: var(--clr-danger);
+}
+
+.metric-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.metric-legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-sm);
+}
+
+.metric-legend-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--clr-text-secondary);
+}
+
+.metric-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.metric-legend-dot--success {
+  background-color: var(--clr-success);
+}
+
+.metric-legend-dot--warning {
+  background-color: var(--clr-warning);
+}
+
+.metric-legend-dot--danger {
+  background-color: var(--clr-danger);
+}
+
+.metric-legend-val {
+  font-weight: var(--fw-bold);
+  color: var(--clr-text);
+  font-family: var(--ff-data);
+}
+
+/* 2. Pure CSS Hourly Column Chart */
+.css-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 170px;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-2) 0;
+  border-bottom: 2px solid var(--clr-border);
+  margin-bottom: var(--space-3);
+}
+
+.css-bar-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.css-bar-value {
+  font-size: 11px;
+  font-weight: var(--fw-bold);
+  color: var(--clr-text-secondary);
+  margin-bottom: var(--space-1);
+  font-family: var(--ff-data);
+}
+
+.css-bar-track {
+  width: 100%;
+  max-width: 38px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background-color: var(--clr-primary-light);
+  overflow: hidden;
+}
+
+.css-bar-fill {
+  width: 100%;
+  background-color: var(--clr-primary);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: height 0.4s ease;
+}
+
+.css-bar-column.is-peak .css-bar-fill {
+  background-color: var(--clr-brass);
+}
+
+.css-bar-label {
+  font-size: 11px;
+  color: var(--clr-text-secondary);
+  margin-top: var(--space-2);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.peak-indicator {
+  position: absolute;
+  top: -18px;
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  background-color: var(--clr-brass-soft);
+  color: var(--clr-brass-deep);
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--clr-brass);
+}
+
+/* 3. Day-by-Day Workload Bars */
+.workload-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.workload-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.workload-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-sm);
+}
+
+.workload-day {
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+}
+
+.workload-count {
+  color: var(--clr-text-secondary);
+  font-size: 12px;
+  font-family: var(--ff-data);
+}
+
+.workload-bar-track {
+  width: 100%;
+  height: 8px;
+  background-color: var(--clr-bg);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  border: 1px solid var(--clr-border);
+}
+
+.workload-bar-fill {
+  height: 100%;
+  background-color: var(--clr-primary);
+  border-radius: var(--radius-pill);
+  transition: width 0.4s ease;
+}
+
+.workload-bar-fill--peak {
+  background-color: var(--clr-danger);
+}
+
+.workload-bar-fill--high {
+  background-color: var(--clr-warning);
+}
+
+.workload-bar-fill--normal {
+  background-color: var(--clr-primary);
+}
+
+/* Inline Table Progress */
+.table-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.table-progress-track {
+  flex: 1;
+  height: 6px;
+  background-color: var(--clr-bg);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  min-width: 60px;
+  border: 1px solid var(--clr-border);
+}
+
+.table-progress-fill {
+  height: 100%;
+  background-color: var(--clr-success);
+  border-radius: var(--radius-pill);
+}
+
+.table-progress-val {
+  font-size: 12px;
+  font-weight: var(--fw-bold);
+  font-family: var(--ff-data);
+  color: var(--clr-text);
+  min-width: 32px;
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .sidebar,
+  .top-header,
+  .period-pills-bar,
+  .reports-header-actions,
+  .btn,
+  .print-hide {
+    display: none !important;
+  }
+
+  .main-content,
+  .app-container,
+  .content-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+
+  .page-header {
+    border-bottom: 2px solid #000000;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card,
+  .analytics-card,
+  .table-card {
+    box-shadow: none !important;
+    border: 1px solid #CCCCCC !important;
+    break-inside: avoid;
+  }
+
+  .custom-table th,
+  .custom-table td {
+    border-color: #DDDDDD !important;
+    padding: 8px !important;
+  }
+}
+
+/* Dimension utilities for chart columns & progress bars */
+.w-pct-5 { width: 5%; }
+.w-pct-10 { width: 10%; }
+.w-pct-11 { width: 11%; }
+.w-pct-15 { width: 15%; }
+.w-pct-20 { width: 20%; }
+.w-pct-25 { width: 25%; }
+.w-pct-30 { width: 30%; }
+.w-pct-35 { width: 35%; }
+.w-pct-40 { width: 40%; }
+.w-pct-45 { width: 45%; }
+.w-pct-50 { width: 50%; }
+.w-pct-55 { width: 55%; }
+.w-pct-60 { width: 60%; }
+.w-pct-65 { width: 65%; }
+.w-pct-70 { width: 70%; }
+.w-pct-75 { width: 75%; }
+.w-pct-78 { width: 78%; }
+.w-pct-80 { width: 80%; }
+.w-pct-82 { width: 82%; }
+.w-pct-84 { width: 84%; }
+.w-pct-85 { width: 85%; }
+.w-pct-86 { width: 86%; }
+.w-pct-87 { width: 87%; }
+.w-pct-90 { width: 90%; }
+.w-pct-95 { width: 95%; }
+.w-pct-100 { width: 100%; }
+
+.h-pct-20 { height: 20%; }
+.h-pct-30 { height: 30%; }
+.h-pct-35 { height: 35%; }
+.h-pct-40 { height: 40%; }
+.h-pct-45 { height: 45%; }
+.h-pct-50 { height: 50%; }
+.h-pct-55 { height: 55%; }
+.h-pct-60 { height: 60%; }
+.h-pct-65 { height: 65%; }
+.h-pct-70 { height: 70%; }
+.h-pct-75 { height: 75%; }
+.h-pct-80 { height: 80%; }
+.h-pct-85 { height: 85%; }
+.h-pct-90 { height: 90%; }
+.h-pct-95 { height: 95%; }
+.h-pct-100 { height: 100%; }
+
+

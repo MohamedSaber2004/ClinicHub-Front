@@ -1077,6 +1077,104 @@ namespace ClinicHub.Data
         new() { Id = 11, PatientName = "منى سعيد", PatientInitial = "م", DoctorName = "د. خالد الزهراني", Date = "2026-07-21", Time = "09:45", Amount = 310, Method = "بطاقة", MethodClass = "badge-info", Status = "مدفوعة", StatusClass = "badge-success" },
             new() { Id = 12, PatientName = "أحمد عبد الله", PatientInitial = "أ", DoctorName = "د. سارة أحمد", Date = "2026-07-20", Time = "12:30", Amount = 265, Method = "نقداً", MethodClass = "badge-primary", Status = "معلقة", StatusClass = "badge-warning" },
         };
+
+        public static MockOperationalSummary GetOperationalSummary(string period = "week") => period switch
+        {
+            "today" => new MockOperationalSummary
+            {
+                TotalAppointments = 28,
+                CompletedVisits = 24,
+                CompletionRate = 85.7,
+                CancelledVisits = 3,
+                CancellationRate = 10.7,
+                NoShowVisits = 1,
+                NoShowRate = 3.6,
+                AvgWaitTimeMinutes = 14,
+                AvgConsultationMinutes = 22,
+                PeakTimeSlot = "11:00 ص - 01:00 م",
+                BusiestDay = "اليوم"
+            },
+            "month" => new MockOperationalSummary
+            {
+                TotalAppointments = 612,
+                CompletedVisits = 518,
+                CompletionRate = 84.6,
+                CancelledVisits = 64,
+                CancellationRate = 10.5,
+                NoShowVisits = 30,
+                NoShowRate = 4.9,
+                AvgWaitTimeMinutes = 17,
+                AvgConsultationMinutes = 26,
+                PeakTimeSlot = "05:00 م - 07:00 م",
+                BusiestDay = "الأحد"
+            },
+            "last30" => new MockOperationalSummary
+            {
+                TotalAppointments = 590,
+                CompletedVisits = 498,
+                CompletionRate = 84.4,
+                CancelledVisits = 62,
+                CancellationRate = 10.5,
+                NoShowVisits = 30,
+                NoShowRate = 5.1,
+                AvgWaitTimeMinutes = 18,
+                AvgConsultationMinutes = 25,
+                PeakTimeSlot = "05:00 م - 07:00 م",
+                BusiestDay = "الإثنين"
+            },
+            _ => new MockOperationalSummary // "week"
+            {
+                TotalAppointments = 148,
+                CompletedVisits = 124,
+                CompletionRate = 83.8,
+                CancelledVisits = 16,
+                CancellationRate = 10.8,
+                NoShowVisits = 8,
+                NoShowRate = 5.4,
+                AvgWaitTimeMinutes = 16,
+                AvgConsultationMinutes = 24,
+                PeakTimeSlot = "11:00 ص - 01:00 م",
+                BusiestDay = "الأحد"
+            }
+        };
+
+        public static List<MockHourlyTraffic> GetHourlyTraffic() => new()
+        {
+            new() { TimeSlot = "09:00 ص - 11:00 ص", SlotLabel = "09-11 ص", AppointmentCount = 22, HeightPercentage = 55, IsPeak = false },
+            new() { TimeSlot = "11:00 ص - 01:00 م", SlotLabel = "11-01 م", AppointmentCount = 40, HeightPercentage = 100, IsPeak = true },
+            new() { TimeSlot = "01:00 م - 03:00 م", SlotLabel = "01-03 م", AppointmentCount = 18, HeightPercentage = 45, IsPeak = false },
+            new() { TimeSlot = "03:00 م - 05:00 م", SlotLabel = "03-05 م", AppointmentCount = 14, HeightPercentage = 35, IsPeak = false },
+            new() { TimeSlot = "05:00 م - 07:00 م", SlotLabel = "05-07 م", AppointmentCount = 34, HeightPercentage = 85, IsPeak = false },
+            new() { TimeSlot = "07:00 م - 09:00 م", SlotLabel = "07-09 م", AppointmentCount = 20, HeightPercentage = 50, IsPeak = false },
+        };
+
+        public static List<MockDayWorkload> GetWeeklyWorkload() => new()
+        {
+            new() { DayName = "السبت", TotalAppointments = 24, CompletedVisits = 20, CapacityPercentage = 75, StatusClass = "badge-success", StatusText = "معتدل" },
+            new() { DayName = "الأحد", TotalAppointments = 32, CompletedVisits = 28, CapacityPercentage = 95, StatusClass = "badge-danger", StatusText = "ذروة تشغيلية" },
+            new() { DayName = "الإثنين", TotalAppointments = 26, CompletedVisits = 22, CapacityPercentage = 80, StatusClass = "badge-warning", StatusText = "مرتفع" },
+            new() { DayName = "الثلاثاء", TotalAppointments = 22, CompletedVisits = 19, CapacityPercentage = 70, StatusClass = "badge-success", StatusText = "معتدل" },
+            new() { DayName = "الأربعاء", TotalAppointments = 25, CompletedVisits = 21, CapacityPercentage = 78, StatusClass = "badge-success", StatusText = "معتدل" },
+            new() { DayName = "الخميس", TotalAppointments = 19, CompletedVisits = 14, CapacityPercentage = 60, StatusClass = "badge-info", StatusText = "طبيعي" },
+        };
+
+        public static List<MockDoctorOperationalStat> GetDoctorOperationalStats() => new()
+        {
+            new() { Id = 1, Name = "د. سارة أحمد", Specialty = "جلدية وتجميل", Initial = "س", TotalAppointments = 46, CompletedVisits = 40, CompletionPercentage = 87, CancelledCount = 4, NoShowCount = 2, AvgConsultationMinutes = 20, Rating = 4.9, ReviewCount = 38, WorkloadBadge = "badge-danger", WorkloadStatus = "مرتفع" },
+            new() { Id = 2, Name = "د. عمار السيد", Specialty = "أسنان", Initial = "ع", TotalAppointments = 38, CompletedVisits = 32, CompletionPercentage = 84, CancelledCount = 4, NoShowCount = 2, AvgConsultationMinutes = 30, Rating = 4.8, ReviewCount = 29, WorkloadBadge = "badge-warning", WorkloadStatus = "معتدل" },
+            new() { Id = 3, Name = "د. خالد الزهراني", Specialty = "عظام ومفاصل", Initial = "خ", TotalAppointments = 34, CompletedVisits = 28, CompletionPercentage = 82, CancelledCount = 4, NoShowCount = 2, AvgConsultationMinutes = 25, Rating = 4.7, ReviewCount = 22, WorkloadBadge = "badge-success", WorkloadStatus = "منتظم" },
+            new() { Id = 4, Name = "د. نورة السعيد", Specialty = "أطفال وحديثي الولادة", Initial = "ن", TotalAppointments = 30, CompletedVisits = 24, CompletionPercentage = 80, CancelledCount = 4, NoShowCount = 2, AvgConsultationMinutes = 22, Rating = 4.9, ReviewCount = 31, WorkloadBadge = "badge-info", WorkloadStatus = "منتظم" },
+        };
+
+        public static List<MockOperationalVisitLog> GetRecentOperationalLogs() => new()
+        {
+            new() { Id = 1, PatientName = "أحمد مصطفى", PatientInitial = "أ", DoctorName = "د. سارة أحمد", Specialty = "جلدية", ScheduledTime = "09:30 ص", CheckInTime = "09:25 ص", WaitTimeMinutes = 10, Status = "مكتمل", StatusClass = "badge-success", RoomNumber = "عيادة 101" },
+            new() { Id = 2, PatientName = "منى عبد الرحمن", PatientInitial = "م", DoctorName = "د. عمار السيد", Specialty = "أسنان", ScheduledTime = "10:00 ص", CheckInTime = "09:50 ص", WaitTimeMinutes = 15, Status = "مكتمل", StatusClass = "badge-success", RoomNumber = "عيادة 103" },
+            new() { Id = 3, PatientName = "طارق محمود", PatientInitial = "ط", DoctorName = "د. خالد الزهراني", Specialty = "عظام", ScheduledTime = "10:30 ص", CheckInTime = "10:28 ص", WaitTimeMinutes = 18, Status = "في الانتظار", StatusClass = "badge-warning", RoomNumber = "عيادة 102" },
+            new() { Id = 4, PatientName = "ريهام إبراهيم", PatientInitial = "ر", DoctorName = "د. نورة السعيد", Specialty = "أطفال", ScheduledTime = "11:00 ص", CheckInTime = "11:05 ص", WaitTimeMinutes = 12, Status = "جاري الكشف", StatusClass = "badge-info", RoomNumber = "عيادة 104" },
+            new() { Id = 5, PatientName = "زياد فؤاد", PatientInitial = "ز", DoctorName = "د. سارة أحمد", Specialty = "جلدية", ScheduledTime = "11:30 ص", CheckInTime = "-", WaitTimeMinutes = 0, Status = "ملغى مسبقاً", StatusClass = "badge-danger", RoomNumber = "عيادة 101" },
+            new() { Id = 6, PatientName = "نادية العلي", PatientInitial = "ن", DoctorName = "د. عمار السيد", Specialty = "أسنان", ScheduledTime = "12:00 م", CheckInTime = "11:45 ص", WaitTimeMinutes = 20, Status = "مكتمل", StatusClass = "badge-success", RoomNumber = "عيادة 103" },
+        };
     }
 
     // ========== User Models ==========
@@ -1360,6 +1458,74 @@ public class MockPatientHistory
         public string MethodClass { get; set; } = "badge-info";
         public string Status { get; set; } = "";
         public string StatusClass { get; set; } = "badge-success";
+    }
+
+    // ========== Operational Report Models ==========
+    public class MockOperationalSummary
+    {
+        public int TotalAppointments { get; set; }
+        public int CompletedVisits { get; set; }
+        public double CompletionRate { get; set; }
+        public int CancelledVisits { get; set; }
+        public double CancellationRate { get; set; }
+        public int NoShowVisits { get; set; }
+        public double NoShowRate { get; set; }
+        public int AvgWaitTimeMinutes { get; set; }
+        public int AvgConsultationMinutes { get; set; }
+        public string PeakTimeSlot { get; set; } = "";
+        public string BusiestDay { get; set; } = "";
+    }
+
+    public class MockHourlyTraffic
+    {
+        public string TimeSlot { get; set; } = "";
+        public int AppointmentCount { get; set; }
+        public int HeightPercentage { get; set; }
+        public bool IsPeak { get; set; }
+        public string SlotLabel { get; set; } = "";
+    }
+
+    public class MockDayWorkload
+    {
+        public string DayName { get; set; } = "";
+        public int TotalAppointments { get; set; }
+        public int CompletedVisits { get; set; }
+        public int CapacityPercentage { get; set; }
+        public string StatusClass { get; set; } = "badge-success";
+        public string StatusText { get; set; } = "معتدل";
+    }
+
+    public class MockDoctorOperationalStat
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Specialty { get; set; } = "";
+        public string Initial { get; set; } = "";
+        public int TotalAppointments { get; set; }
+        public int CompletedVisits { get; set; }
+        public int CompletionPercentage { get; set; }
+        public int CancelledCount { get; set; }
+        public int NoShowCount { get; set; }
+        public int AvgConsultationMinutes { get; set; }
+        public double Rating { get; set; }
+        public int ReviewCount { get; set; }
+        public string WorkloadBadge { get; set; } = "badge-success";
+        public string WorkloadStatus { get; set; } = "مكتمل";
+    }
+
+    public class MockOperationalVisitLog
+    {
+        public int Id { get; set; }
+        public string PatientName { get; set; } = "";
+        public string PatientInitial { get; set; } = "";
+        public string DoctorName { get; set; } = "";
+        public string Specialty { get; set; } = "";
+        public string ScheduledTime { get; set; } = "";
+        public string CheckInTime { get; set; } = "";
+        public int WaitTimeMinutes { get; set; }
+        public string Status { get; set; } = "";
+        public string StatusClass { get; set; } = "badge-success";
+        public string RoomNumber { get; set; } = "";
     }
 
 }

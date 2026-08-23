@@ -821,8 +821,15 @@ namespace ClinicHub.Controllers
             }
         }
 
-        public IActionResult Reports()
+        public IActionResult Reports(string period = "week", int? doctorId = null)
         {
+            ViewBag.SelectedPeriod = string.IsNullOrWhiteSpace(period) ? "week" : period.ToLower();
+            ViewBag.SelectedDoctorId = doctorId;
+            ViewBag.OperationalSummary = MockData.GetOperationalSummary(ViewBag.SelectedPeriod);
+            ViewBag.HourlyTraffic = MockData.GetHourlyTraffic();
+            ViewBag.WeeklyWorkload = MockData.GetWeeklyWorkload();
+            ViewBag.DoctorPerformance = MockData.GetDoctorOperationalStats();
+            ViewBag.RecentVisitsLog = MockData.GetRecentOperationalLogs();
             return View();
         }
 
