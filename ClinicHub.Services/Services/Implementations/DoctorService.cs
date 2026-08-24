@@ -31,6 +31,21 @@ namespace ClinicHub.Services.Services.Implementations
             DoctoryRoutes.Initialize(doctoryOptions.Value.BaseUrl);
         }
 
+        public async Task<DoctorDto> GetMyProfileAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(DoctoryRoutes.Doctors.GetMyProfile);
+                return await _deserializerService.DeserializeApiResponse<DoctorDto>(response, "تعذر تحميل ملف الطبيب")
+                    ?? new DoctorDto();
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"تعذر تحميل ملف الطبيب: {ex.Message}");
+            }
+        }
+
         public async Task<PagginatedResult<UserResponseDto>> GetAllDoctorsPagginatedAsync(GetAllDoctorsRequest request)
         {
             try

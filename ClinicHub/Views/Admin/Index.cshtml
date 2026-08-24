@@ -1,8 +1,8 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "لوحة تحكم المدير";
     Layout = "_AdminLayout";
-    var stats = ViewBag.Stats as List<MockStat> ?? new();
+    var stats = ViewBag.Stats as List<StatCardDto> ?? new();
     var days = ViewBag.Days is int d ? d : 30;
     string[] rangeLabels = { "آخر 7 أيام", "آخر 30 يوماً", "آخر 90 يوماً" };
     int[] rangeValues = { 7, 30, 90 };

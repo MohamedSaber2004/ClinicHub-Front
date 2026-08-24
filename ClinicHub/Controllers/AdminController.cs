@@ -34,8 +34,9 @@ namespace ClinicHub.Controllers
         private readonly IAdService _adService;
         private readonly INotificationService _notificationService;
         private readonly IPlatformSettingService _platformSettingService;
+        private readonly IClinicDoctorService _clinicDoctorService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService, INotificationService notificationService, IPlatformSettingService platformSettingService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService, INotificationService notificationService, IPlatformSettingService platformSettingService, IClinicDoctorService clinicDoctorService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
@@ -53,6 +54,7 @@ namespace ClinicHub.Controllers
             _adService = adService;
             _notificationService = notificationService;
             _platformSettingService = platformSettingService;
+            _clinicDoctorService = clinicDoctorService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -139,7 +141,7 @@ namespace ClinicHub.Controllers
             var toDate = DateTime.Today.AddDays(1);
             var fromDate = DateTime.Today.AddDays(-days);
 
-            ViewBag.Stats = new List<MockStat>();
+            ViewBag.Stats = new List<StatCardDto>();
             ViewBag.HasError = false;
             ViewBag.RevenueTrendJson = "[]";
             ViewBag.ClinicsGrowthJson = "[]";
@@ -150,44 +152,44 @@ namespace ClinicHub.Controllers
             try
             {
                 var stats = await _adminDashboardService.GetStatsAsync();
-                ViewBag.Stats = new List<MockStat>
+                ViewBag.Stats = new List<StatCardDto>
                 {
-                    new MockStat
+                    new StatCardDto
                     {
                         Value = stats.VerificationRequestsCount.ToString("N0"),
                         Label = "طلبات التحقق المعلقة",
                         IconColor = "amber",
                         SvgPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
                     },
-                    new MockStat
+                    new StatCardDto
                     {
                         Value = stats.ActiveClinicsCount.ToString("N0"),
                         Label = "العيادات النشطة",
                         IconColor = "primary",
                         SvgPath = "M3 21h18v-2H3v2zM5 17h4a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1zm10 0h4a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1z"
                     },
-                    new MockStat
+                    new StatCardDto
                     {
                         Value = stats.TotalUsersCount.ToString("N0"),
                         Label = "إجمالي المستخدمين",
                         IconColor = "blue",
                         SvgPath = "M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05c1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
                     },
-                    new MockStat
+                    new StatCardDto
                     {
                         Value = stats.SpecializationsCount.ToString("N0"),
                         Label = "التخصصات الطبية",
                         IconColor = "green",
                         SvgPath = "M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"
                     },
-                    new MockStat
+                    new StatCardDto
                     {
                         Value = stats.ActiveAdsCount.ToString("N0"),
                         Label = "الإعلانات النشطة",
                         IconColor = "brass",
                         SvgPath = "M18 11v2h4v-2h-4zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4-.4.54-.8 1.08-1.2 1.61zM20.4 5.6c-.4-.53-.8-1.07-1.2-1.6-.99.74-2.24 1.68-3.2 2.4.4.53.8 1.07 1.2 1.6.96-.72 2.21-1.65 3.2-2.4zM4 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1v4h2v-4h1l5 3V6L8 9H4zm11.5 3c0-1.33-.58-2.53-1.5-3.35v6.69c.92-.81 1.5-2.01 1.5-3.34z"
                     },
-                    new MockStat
+                    new StatCardDto
                     {
                         Value = stats.RevokedSubscriptionsCount.ToString("N0"),
                         Label = "الاشتراكات الملغاة",
@@ -635,10 +637,17 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Doctors/Details/{id}")]
-        public IActionResult DoctorDetails(Guid id)
+        public async Task<IActionResult> DoctorDetails(Guid id)
         {
-            ViewBag.Doctor = MockData.GetDoctorById(id);
-            ViewBag.Clinics = MockData.GetClinics();
+            ViewBag.Doctor = (DoctorDto?)null;
+            try
+            {
+                ViewBag.Doctor = await _clinicDoctorService.GetDoctorByIdAsync(id);
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] ??= ex.Message;
+            }
             return View("DoctorDetails");
         }
 
@@ -1223,7 +1232,7 @@ namespace ClinicHub.Controllers
                 };
                 var allUsers = await _userService.GetAllUsersPagginatedAsync(request);
 
-                var users = allUsers.Items.Select(u => new MockUser
+                var users = allUsers.Items.Select(u => new UserListItemDto
                 {
                     Id = u.Id,
                     Name = u.FullName,
@@ -1234,11 +1243,8 @@ namespace ClinicHub.Controllers
                     RegistrationDate = u.CreatedAt.ToString("d MMMM yyyy"),
                     Status = u.IsActive ? "نشط" : "غير نشط",
                     StatusClass = u.IsActive ? "badge-success" : "badge-warning",
-                    Role = MapUserTypeToRole(u.Roles.FirstOrDefault()),
-                    Roles = u.Roles.Select(r => MapUserTypeToRole(r)).Where(r => r != UserRole.Patient).ToList(),
-                    TotalVisits = 0,
-                    AvgRating = 0,
-                    TotalSpent = "0"
+                    Role = MapUserTypeToRole(u.Roles.FirstOrDefault()).ToString(),
+                    Roles = u.Roles.Select(r => MapUserTypeToRole(r).ToString()).Where(r => r != UserRole.Patient.ToString()).ToList()
                 }).ToList();
 
                 if (!string.IsNullOrEmpty(status))
@@ -1250,7 +1256,7 @@ namespace ClinicHub.Controllers
                 var pageUsers = users.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
                 ViewBag.Users = pageUsers;
-                ViewBag.Pagination = PagginatedResult<MockUser>.Create(pageUsers, filteredTotal, pageNumber, pageSize);
+                ViewBag.Pagination = PagginatedResult<UserListItemDto>.Create(pageUsers, filteredTotal, pageNumber, pageSize);
                 ViewBag.SearchTerm = searchTerm;
                 ViewBag.StatusFilter = status;
                 ViewBag.UserTypesFilter = userTypes;
@@ -1259,7 +1265,7 @@ namespace ClinicHub.Controllers
             catch (ApiException ex)
             {
                 ViewBag.ErrorMessage = ex.Message;
-                ViewBag.Users = new List<MockUser>();
+                ViewBag.Users = new List<UserListItemDto>();
             }
 
             try
@@ -1374,28 +1380,43 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Users/Overview/{id}")]
-        public IActionResult UsersOverview(int id)
+        public async Task<IActionResult> UsersOverview(Guid id)
         {
-            var overview = MockData.GetUserOverview(id);
-            overview.Image = _attachmentUrlResolver.Resolve(overview.Image);
-            ViewBag.User = overview;
+            ViewBag.User = await LoadUserOverviewAsync(id);
             return View("Users/Overview");
         }
 
         [Route("Admin/Users/Visits/{id}")]
-        public IActionResult UsersVisits(int id)
+        public async Task<IActionResult> UsersVisits(Guid id)
         {
+            var overview = await LoadUserOverviewAsync(id);
             ViewBag.UserId = id;
-            ViewBag.Visits = MockData.GetUserVisits(id);
+            ViewBag.User = overview;
+            ViewBag.Visits = overview.RecentVisits;
             return View("Users/Visits");
         }
 
         [Route("Admin/Users/Requests/{id}")]
-        public IActionResult UsersRequests(int id)
+        public async Task<IActionResult> UsersRequests(Guid id)
         {
+            var overview = await LoadUserOverviewAsync(id);
             ViewBag.UserId = id;
-            ViewBag.Requests = MockData.GetUserRequests(id);
+            ViewBag.User = overview;
+            ViewBag.Requests = overview.Requests;
             return View("Users/Requests");
+        }
+
+        private async Task<AdminUserOverviewDto> LoadUserOverviewAsync(Guid id)
+        {
+            try
+            {
+                return await _adminDashboardService.GetUserOverviewAsync(id) ?? new AdminUserOverviewDto();
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] ??= ex.Message;
+                return new AdminUserOverviewDto();
+            }
         }
 
         [HttpPost]
@@ -1487,10 +1508,12 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Users/Payments/{id}")]
-        public IActionResult UsersPayments(int id)
+        public async Task<IActionResult> UsersPayments(Guid id)
         {
+            var overview = await LoadUserOverviewAsync(id);
             ViewBag.UserId = id;
-            ViewBag.Payments = MockData.GetUserPayments(id);
+            ViewBag.User = overview;
+            ViewBag.Payments = overview.Payments;
             return View("Users/Payments");
         }
 

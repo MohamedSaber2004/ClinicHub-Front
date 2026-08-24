@@ -11,7 +11,7 @@
     string GetRoleName(UserType role) => role switch
     {
         UserType.Doctor => "طبيب",
-        UserType.ClinicOwner => "مالك عيادة",
+        UserType.ClinicOwner => "مدير عيادة",
         UserType.Staff => "موظف",
         _ => role.ToString()
     };

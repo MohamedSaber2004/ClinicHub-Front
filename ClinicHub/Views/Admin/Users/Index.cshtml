@@ -1,8 +1,8 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "المستخدمين";
     Layout = "_AdminLayout";
-    var users = ViewBag.Users as List<MockUser> ?? new();
+    var users = ViewBag.Users as List<UserListItemDto> ?? new();
     var statusFilter = ViewBag.StatusFilter as string;
     var isActiveSelected = statusFilter == "نشط";
     var isInactiveSelected = statusFilter == "غير نشط";
@@ -25,7 +25,7 @@
     <select id="filterUserTypes" name="userTypes" class="form-select" onchange="this.form.submit()">
         <option value="">جميع الأدوار</option>
         <option value="2" selected="@(userTypesFilter == "2")">مدير النظام</option>
-        <option value="16" selected="@(userTypesFilter == "16")">مالك عيادة</option>
+        <option value="16" selected="@(userTypesFilter == "16")">مدير عيادة</option>
         <option value="4" selected="@(userTypesFilter == "4")">طبيب</option>
         <option value="8" selected="@(userTypesFilter == "8")">موظف</option>
         <option value="1" selected="@(userTypesFilter == "1")">مريض</option>
@@ -76,16 +76,16 @@
                         <td>
                             <div class="role-list">
                             @{
-                                var roleNames = u.Roles.Count > 0 ? u.Roles : new List<UserRole> { u.Role };
+                                var roleNames = u.Roles.Count > 0 ? u.Roles : new List<string> { u.Role };
                                 foreach (var r in roleNames)
                                 {
                                     var roleName = r switch
                                     {
-                                        UserRole.SystemAdmin => "مدير النظام",
-                                        UserRole.ClinicOwner => "مالك عيادة",
-                                        UserRole.ClinicManager => "مدير عيادة",
-                                        UserRole.Doctor => "طبيب",
-                                        UserRole.ClinicStaff => "موظف",
+                                        "SystemAdmin" => "مدير النظام",
+                                        "ClinicOwner" => "مدير عيادة",
+                                        "ClinicManager" => "مدير عيادة",
+                                        "Doctor" => "طبيب",
+                                        "ClinicStaff" => "موظف",
                                         _ => "مريض"
                                     };
                                     <span class="badge badge-info">@roleName</span>

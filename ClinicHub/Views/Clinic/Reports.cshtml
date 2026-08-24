@@ -1,14 +1,34 @@
-@using ClinicHub.Data
 @{
     ViewData["Title"] = "التقارير التشغيلية - Doctory";
     Layout = "_ClinicLayout";
 
     var selectedPeriod = ViewBag.SelectedPeriod as string ?? "week";
-    var summary = ViewBag.OperationalSummary as MockOperationalSummary ?? new MockOperationalSummary();
-    var hourlyTraffic = ViewBag.HourlyTraffic as List<MockHourlyTraffic> ?? new List<MockHourlyTraffic>();
-    var weeklyWorkload = ViewBag.WeeklyWorkload as List<MockDayWorkload> ?? new List<MockDayWorkload>();
-    var doctorPerformance = ViewBag.DoctorPerformance as List<MockDoctorOperationalStat> ?? new List<MockDoctorOperationalStat>();
-    var recentLogs = ViewBag.RecentVisitsLog as List<MockOperationalVisitLog> ?? new List<MockOperationalVisitLog>();
+    var selectedDoctorId = ViewBag.SelectedDoctorId as Guid?;
+    var report = ViewBag.Report as ClinicOperationalReportDto ?? new ClinicOperationalReportDto();
+    var clinicDoctors = ViewBag.ClinicDoctors as List<DoctorDto> ?? new List<DoctorDto>();
+
+    string StatusLabel(int s) => s switch
+    {
+        0 => "معلق",
+        1 => "مؤكد",
+        2 => "ملغي",
+        3 => "مكتمل",
+        4 => "محجوز",
+        5 => "لم يحضر",
+        6 => "مقبول",
+        7 => "مرفوض",
+        _ => "-"
+    };
+
+    string StatusClass(int s) => s switch
+    {
+        3 => "badge-success",
+        2 or 7 or 5 => "badge-danger",
+        0 or 1 or 4 or 6 => "badge-info",
+        _ => "badge-subtle"
+    };
+
+    int Nearest5(double v) => Math.Clamp((int)Math.Round(v / 5.0) * 5, 5, 100);
 }
 
 <div class="page-header">
@@ -23,9 +43,6 @@
     <div class="reports-header-actions print-hide">
         <button type="button" class="btn btn-outline" onclick="window.print()">
             <i class="bi bi-printer me-1"></i> طباعة التقرير
-        </button>
-        <button type="button" class="btn btn-primary" onclick="handleExportReport()">
-            <i class="bi bi-download me-1"></i> تصدير البيانات (Excel)
         </button>
     </div>
 </div>
@@ -47,29 +64,25 @@
         </a>
     </div>
 
-    <div class="reports-filters-group">
-        <select class="form-select" id="doctorFilter" onchange="applyReportFilter()">
-            <option value="">جميع الأطباء</option>
-            <option value="1">د. سارة أحمد (جلدية)</option>
-            <option value="2">د. عمار السيد (أسنان)</option>
-            <option value="3">د. خالد الزهراني (عظام)</option>
-            <option value="4">د. نورة السعيد (أطفال)</option>
-        </select>
-        <select class="form-select" id="specialtyFilter" onchange="applyReportFilter()">
-            <option value="">جميع التخصصات</option>
-            <option value="derma">جلدية وتجميل</option>
-            <option value="dental">أسنان</option>
-            <option value="ortho">عظام ومفاصل</option>
-            <option value="pediatrics">أطفال</option>
-        </select>
-    </div>
+    @if (clinicDoctors.Count > 0)
+    {
+        <div class="reports-filters-group">
+            <select class="form-select" onchange="window.location = '/Clinic/Reports?period=@selectedPeriod' + (this.value ? '&doctorId=' + this.value : '')">
+                <option value="">جميع الأطباء</option>
+                @foreach (var d in clinicDoctors)
+                {
+                    <option value="@d.Id" selected="@(selectedDoctorId == d.Id)">@d.UserName (@d.SpecializationName)</option>
+                }
+            </select>
+        </div>
+    }
 </div>
 
 <!-- Operational KPI Statistics Grid -->
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@summary.TotalAppointments</span>
+            <span class="stat-value">@report.TotalAppointments</span>
             <span class="stat-label">إجمالي المواعيد المحجوزة</span>
             <div class="stat-subtext">
                 <span class="badge badge-info"><i class="bi bi-calendar-check me-1"></i>فترة التقرير</span>
@@ -84,10 +97,10 @@
 
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@summary.CompletedVisits</span>
+            <span class="stat-value">@report.CompletedVisits</span>
             <span class="stat-label">الزيارات المكتملة</span>
             <div class="stat-subtext">
-                <span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>@summary.CompletionRate% معدل الإنجاز</span>
+                <span class="badge badge-success"><i class="bi bi-check-circle me-1"></i>@report.CompletionRate% معدل الإنجاز</span>
             </div>
         </div>
         <div class="icon-wrapper icon-wrapper--green">
@@ -99,11 +112,11 @@
 
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@summary.CancelledVisits</span>
+            <span class="stat-value">@report.CancelledVisits</span>
             <span class="stat-label">الإلغاءات وعدم الحضور</span>
             <div class="stat-subtext">
-                <span class="badge badge-warning">@summary.CancelledVisits ملغى (@summary.CancellationRate%)</span>
-                <span class="badge badge-danger">@summary.NoShowVisits غياب (@summary.NoShowRate%)</span>
+                <span class="badge badge-warning">@report.CancelledVisits ملغى (@report.CancellationRate%)</span>
+                <span class="badge badge-danger">@report.NoShowVisits غياب (@report.NoShowRate%)</span>
             </div>
         </div>
         <div class="icon-wrapper icon-wrapper--amber">
@@ -115,15 +128,15 @@
 
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@summary.AvgWaitTimeMinutes دقيقة</span>
-            <span class="stat-label">متوسط زمن الانتظار</span>
+            <span class="stat-value">@report.PeriodRevenue.ToString("N0") ج.م</span>
+            <span class="stat-label">إيرادات الفترة</span>
             <div class="stat-subtext">
-                <span class="badge badge-primary"><i class="bi bi-stopwatch me-1"></i>الكشف: @summary.AvgConsultationMinutes دقيقة</span>
+                <span class="badge badge-primary"><i class="bi bi-cash-stack me-1"></i>مدفوعات محصّلة</span>
             </div>
         </div>
         <div class="icon-wrapper icon-wrapper--primary">
             <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
             </svg>
         </div>
     </div>
@@ -141,12 +154,27 @@
             <span class="badge badge-success analytics-card-badge">نسب التوزيع</span>
         </div>
         <p class="text-muted mb-2 fs-sm">توزيع حالات المواعيد المحجوزة خلال الفترة المحددة</p>
-        
+
+        @{
+            var completedCls = Nearest5(report.CompletionRate);
+            var cancelledCls = Nearest5(report.CancellationRate);
+            var noShowRaw = Math.Max(0, 100 - report.CompletionRate - report.CancellationRate);
+            var noShowCls = Nearest5(noShowRaw);
+        }
         <div class="metric-bar-wrapper">
             <div class="metric-bar-track">
-                <div class="metric-bar-segment metric-bar-segment--success w-pct-84" title="مكتملة: @summary.CompletionRate%"></div>
-                <div class="metric-bar-segment metric-bar-segment--warning w-pct-11" title="ملغاة: @summary.CancellationRate%"></div>
-                <div class="metric-bar-segment metric-bar-segment--danger w-pct-5" title="عدم حضور: @summary.NoShowRate%"></div>
+                @if (report.CompletionRate > 0)
+                {
+                    <div class="metric-bar-segment metric-bar-segment--success w-pct-@completedCls" title="مكتملة: @report.CompletionRate%"></div>
+                }
+                @if (report.CancellationRate > 0)
+                {
+                    <div class="metric-bar-segment metric-bar-segment--warning w-pct-@cancelledCls" title="ملغاة: @report.CancellationRate%"></div>
+                }
+                @if (noShowRaw > 0)
+                {
+                    <div class="metric-bar-segment metric-bar-segment--danger w-pct-@noShowCls" title="عدم حضور: @report.NoShowRate%"></div>
+                }
             </div>
         </div>
 
@@ -156,21 +184,21 @@
                     <span class="metric-legend-dot metric-legend-dot--success"></span>
                     <span>حضور وزيارات مكتملة</span>
                 </div>
-                <span class="metric-legend-val">@summary.CompletedVisits زيارة (@summary.CompletionRate%)</span>
+                <span class="metric-legend-val">@report.CompletedVisits زيارة (@report.CompletionRate%)</span>
             </div>
             <div class="metric-legend-item">
                 <div class="metric-legend-info">
                     <span class="metric-legend-dot metric-legend-dot--warning"></span>
                     <span>مواعيد ملغاة مسبقاً</span>
                 </div>
-                <span class="metric-legend-val">@summary.CancelledVisits موعد (@summary.CancellationRate%)</span>
+                <span class="metric-legend-val">@report.CancelledVisits موعد (@report.CancellationRate%)</span>
             </div>
             <div class="metric-legend-item">
                 <div class="metric-legend-info">
                     <span class="metric-legend-dot metric-legend-dot--danger"></span>
                     <span>غياب دون إخطار (No-Show)</span>
                 </div>
-                <span class="metric-legend-val">@summary.NoShowVisits موعد (@summary.NoShowRate%)</span>
+                <span class="metric-legend-val">@report.NoShowVisits موعد (@report.NoShowRate%)</span>
             </div>
         </div>
     </div>
@@ -182,22 +210,14 @@
                 <i class="bi bi-bar-chart-line text-primary"></i>
                 ساعات الذروة وكثافة الزيارات
             </h3>
-            <span class="badge badge-primary analytics-card-badge">الذروة: @summary.PeakTimeSlot</span>
+            <span class="badge badge-primary analytics-card-badge">الذروة: @report.PeakTimeSlot</span>
         </div>
         <p class="text-muted mb-2 fs-sm">توزيع تدفق المرضى على الفترات الزمنية للعيادة</p>
 
         <div class="css-bar-chart">
-            @foreach (var slot in hourlyTraffic)
+            @foreach (var slot in report.HourlyTraffic)
             {
-                var hClass = slot.HeightPercentage switch
-                {
-                    100 => "h-pct-100",
-                    85 => "h-pct-85",
-                    55 => "h-pct-55",
-                    50 => "h-pct-50",
-                    45 => "h-pct-45",
-                    _ => "h-pct-35"
-                };
+                var hPct = Nearest5(slot.HeightPercentage);
 
                 <div class="css-bar-column @(slot.IsPeak ? "is-peak" : "")">
                     @if (slot.IsPeak)
@@ -206,7 +226,10 @@
                     }
                     <span class="css-bar-value">@slot.AppointmentCount</span>
                     <div class="css-bar-track">
-                        <div class="css-bar-fill @hClass" title="@slot.TimeSlot: @slot.AppointmentCount موعد"></div>
+                        @if (slot.AppointmentCount > 0)
+                        {
+                            <div class="css-bar-fill h-pct-@hPct" title="@slot.SlotLabel: @slot.AppointmentCount موعد"></div>
+                        }
                     </div>
                     <span class="css-bar-label">@slot.SlotLabel</span>
                 </div>
@@ -221,35 +244,36 @@
                 <i class="bi bi-calendar-check text-amber"></i>
                 توزيع الأحمال اليومية
             </h3>
-            <span class="badge badge-warning analytics-card-badge">اليوم الأكثر إشغالاً: @summary.BusiestDay</span>
+            <span class="badge badge-warning analytics-card-badge">اليوم الأكثر إشغالاً: @report.BusiestDayName</span>
         </div>
         <p class="text-muted mb-3 fs-sm">نسب الإشغال والتشغيل عبر أيام الأسبوع</p>
 
         <div class="workload-list">
-            @foreach (var day in weeklyWorkload)
+            @foreach (var day in report.WeeklyWorkload)
             {
-                var wClass = day.CapacityPercentage switch
-                {
-                    95 => "w-pct-95 workload-bar-fill--peak",
-                    80 => "w-pct-80 workload-bar-fill--high",
-                    78 => "w-pct-78 workload-bar-fill--normal",
-                    75 => "w-pct-75 workload-bar-fill--normal",
-                    70 => "w-pct-70 workload-bar-fill--normal",
-                    _ => "w-pct-60 workload-bar-fill--normal"
-                };
+                var wPct = Nearest5(day.CapacityPercentage);
+                var wVariant = day.CapacityPercentage >= 90 ? "workload-bar-fill--peak"
+                    : day.CapacityPercentage >= 70 ? "workload-bar-fill--high"
+                    : "workload-bar-fill--normal";
+                var statusText = day.CapacityPercentage >= 90 ? "مزدحم" : day.CapacityPercentage >= 70 ? "متوازن" : "هادئ";
+                var statusClass = day.CapacityPercentage >= 90 ? "badge-danger" : day.CapacityPercentage >= 70 ? "badge-success" : "badge-info";
 
                 <div class="workload-item">
                     <div class="workload-item-header">
                         <span class="workload-day">@day.DayName</span>
                         <div class="d-flex align-items-center gap-2">
                             <span class="workload-count">@day.CompletedVisits من @day.TotalAppointments موعد</span>
-                            <span class="badge @day.StatusClass">@day.StatusText</span>
+                            <span class="badge @statusClass">@statusText</span>
                         </div>
                     </div>
                     <div class="workload-bar-track">
-                        <div class="workload-bar-fill @wClass"></div>
+                        <div class="workload-bar-fill @wVariant w-pct-@wPct"></div>
                     </div>
                 </div>
+            }
+            @if (report.WeeklyWorkload.Count == 0)
+            {
+                <p class="text-muted">لا توجد مواعيد في هذه الفترة.</p>
             }
         </div>
     </div>
@@ -262,7 +286,7 @@
             <i class="bi bi-person-workspace text-primary"></i>
             تقرير إنتاجية وأداء أطباء العيادة
         </h3>
-        <span class="text-muted fs-sm">إجمالي @doctorPerformance.Count أطباء نشطين</span>
+        <span class="text-muted fs-sm">إجمالي @report.Doctors.Count أطباء نشطين</span>
     </div>
 
     <div class="table-responsive">
@@ -275,32 +299,31 @@
                     <th>إجمالي المواعيد</th>
                     <th>الزيارات المكتملة</th>
                     <th>الملغاة / غياب</th>
-                    <th>متوسط مدة الكشف</th>
                     <th>التقييم</th>
                     <th>حالة التشغيل</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var doc in doctorPerformance)
+                @{ var rowIndex = 0; }
+                @foreach (var doc in report.Doctors.OrderByDescending(d => d.TotalAppointments))
                 {
-                    var progClass = doc.CompletionPercentage switch
-                    {
-                        >= 85 => "w-pct-87",
-                        >= 82 => "w-pct-84",
-                        >= 80 => "w-pct-80",
-                        _ => "w-pct-75"
-                    };
+                    rowIndex++;
+                    var progPct = Nearest5(doc.CompletionPercentage);
+                    var workloadStatus = doc.TotalAppointments == 0 ? "خامل"
+                        : doc.CompletionPercentage >= 80 ? "متميز"
+                        : doc.CompletionPercentage >= 50 ? "نشط"
+                        : "يحتاج متابعة";
+                    var workloadBadge = doc.TotalAppointments == 0 ? "badge-subtle"
+                        : doc.CompletionPercentage >= 80 ? "badge-success"
+                        : doc.CompletionPercentage >= 50 ? "badge-info"
+                        : "badge-warning";
 
                     <tr>
-                        <td>@doc.Id</td>
+                        <td>@rowIndex</td>
                         <td>
                             <div class="user-avatar-cell">
-                                <div class="avatar avatar--circle avatar--sm bg-primary text-white">
-                                    @doc.Initial
-                                </div>
-                                <div class="user-info-text">
-                                    <span class="user-name">@doc.Name</span>
-                                </div>
+                                <div class="avatar avatar--sm bg-primary text-white">@doc.Name.Substring(0, 1)</div>
+                                <span class="user-name">@doc.Name</span>
                             </div>
                         </td>
                         <td>
@@ -313,29 +336,37 @@
                             <div class="table-progress">
                                 <span class="table-progress-val">@doc.CompletedVisits</span>
                                 <div class="table-progress-track">
-                                    <div class="table-progress-fill @progClass"></div>
+                                    <div class="table-progress-fill w-pct-@progPct"></div>
                                 </div>
                                 <span class="text-muted fs-sm font-data">@doc.CompletionPercentage%</span>
                             </div>
                         </td>
                         <td>
-                            <span class="text-warning font-data">@doc.CancelledCount ملغى</span> / 
+                            <span class="text-warning font-data">@doc.CancelledCount ملغى</span> /
                             <span class="text-danger font-data">@doc.NoShowCount غياب</span>
                         </td>
                         <td>
-                            <span class="font-data">@doc.AvgConsultationMinutes دقيقة</span>
+                            @if (doc.ReviewCount > 0)
+                            {
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="bi bi-star-fill text-amber fs-sm"></i>
+                                    <span class="fw-bold font-data">@doc.Rating.ToString("0.0")</span>
+                                    <span class="text-muted fs-sm">(@doc.ReviewCount)</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted fs-sm">-</span>
+                            }
                         </td>
                         <td>
-                            <div class="d-flex align-items-center gap-1">
-                                <i class="bi bi-star-fill text-amber fs-sm"></i>
-                                <span class="fw-bold font-data">@doc.Rating.ToString("0.0")</span>
-                                <span class="text-muted fs-sm">(@doc.ReviewCount)</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge @doc.WorkloadBadge">@doc.WorkloadStatus</span>
+                            <span class="badge @workloadBadge">@workloadStatus</span>
                         </td>
                     </tr>
+                }
+                @if (report.Doctors.Count == 0)
+                {
+                    <tr><td colspan="8" class="text-center text-muted">لا يوجد أطباء لعرضهم.</td></tr>
                 }
             </tbody>
         </table>
@@ -347,9 +378,9 @@
     <div class="analytics-card-header">
         <h3 class="analytics-card-title">
             <i class="bi bi-card-checklist text-primary"></i>
-            سجل حركة الزيارات وأوقات الانتظار الفعلية
+            سجل حركة الزيارات خلال فترة التقرير
         </h3>
-        <span class="text-muted fs-sm"><i class="bi bi-clock me-1"></i>تحديث لحظي</span>
+        <span class="text-muted fs-sm"><i class="bi bi-clock me-1"></i>@report.RecentVisits.Count حركة</span>
     </div>
 
     <div class="table-responsive">
@@ -359,90 +390,43 @@
                     <th>#</th>
                     <th>المريض</th>
                     <th>الطبيب المعالج</th>
-                    <th>العيادة</th>
+                    <th>التخصص</th>
                     <th>موعد الحجز</th>
-                    <th>وقت الحضور الفعلي</th>
-                    <th>مدة الانتظار</th>
                     <th>الحالة</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var log in recentLogs)
+                @{ var logIndex = 0; }
+                @foreach (var log in report.RecentVisits)
                 {
+                    logIndex++;
                     <tr>
-                        <td>@log.Id</td>
+                        <td>@logIndex</td>
                         <td>
                             <div class="user-avatar-cell">
-                                <div class="avatar avatar--circle avatar--sm bg-secondary text-white">
-                                    @log.PatientInitial
-                                </div>
+                                <div class="avatar avatar--sm bg-secondary text-white">@(log.PatientName.Length > 0 ? log.PatientName.Substring(0, 1) : "-")</div>
                                 <span class="user-name">@log.PatientName</span>
                             </div>
                         </td>
                         <td>
                             <span class="fw-semibold">@log.DoctorName</span>
-                            <span class="text-muted fs-sm d-block">@log.Specialty</span>
                         </td>
                         <td>
-                            <span class="badge badge-subtle">@log.RoomNumber</span>
+                            <span class="badge badge-subtle">@log.Specialty</span>
                         </td>
                         <td>
-                            <span class="font-data">@log.ScheduledTime</span>
+                            <span class="font-data">@log.AppointmentDate.ToString("yyyy-MM-dd") - @log.StartTime.ToString(@"hh\:mm")</span>
                         </td>
                         <td>
-                            <span class="font-data">@log.CheckInTime</span>
-                        </td>
-                        <td>
-                            @if (log.WaitTimeMinutes > 0)
-                            {
-                                <span class="badge @(log.WaitTimeMinutes > 15 ? "badge-warning" : "badge-success")">
-                                    @log.WaitTimeMinutes دقيقة
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">-</span>
-                            }
-                        </td>
-                        <td>
-                            <span class="badge @log.StatusClass">@log.Status</span>
+                            <span class="badge @StatusClass((int)log.Status)">@StatusLabel((int)log.Status)</span>
                         </td>
                     </tr>
+                }
+                @if (report.RecentVisits.Count == 0)
+                {
+                    <tr><td colspan="6" class="text-center text-muted">لا توجد زيارات مسجلة في هذه الفترة.</td></tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
-
-<script>
-    function applyReportFilter() {
-        var doctorId = document.getElementById('doctorFilter')?.value;
-        var specialty = document.getElementById('specialtyFilter')?.value;
-        var currentParams = new URLSearchParams(window.location.search);
-        
-        if (doctorId) {
-            currentParams.set('doctorId', doctorId);
-        } else {
-            currentParams.delete('doctorId');
-        }
-        
-        if (specialty) {
-            currentParams.set('specialty', specialty);
-        } else {
-            currentParams.delete('specialty');
-        }
-
-        window.location.search = currentParams.toString();
-    }
-
-    function handleExportReport() {
-        if (typeof showToast === 'function') {
-            showToast('جاري تصدير التقرير التشغيلي بصيغة Excel...', 'info');
-            setTimeout(function () {
-                showToast('تم تحميل التقرير بنجاح', 'success');
-            }, 1200);
-        } else {
-            alert('تم تجهيز التقرير التشغيلي للتصدير بنجاح');
-        }
-    }
-</script>

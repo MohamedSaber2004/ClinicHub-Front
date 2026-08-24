@@ -16,7 +16,7 @@
             return apiRole switch
             {
                 "SuperAdmin" => "المشرف العام",
-                "ClinicOwner" => "مالك عيادة",
+                "ClinicOwner" => "مدير عيادة",
                 "ClinicManager" => "مدير عيادة",
                 "Doctor" => "طبيب",
                 "Staff" => "موظف عيادة",
@@ -26,7 +26,7 @@
         return (ViewBag.CurrentUser as CurrentUserContext)?.Role switch
         {
             UserRole.SystemAdmin => "المشرف العام",
-            UserRole.ClinicOwner => "مالك عيادة",
+            UserRole.ClinicOwner => "مدير عيادة",
             UserRole.ClinicManager => "مدير عيادة",
             UserRole.Doctor => "طبيب",
             UserRole.ClinicStaff => "موظف عيادة",

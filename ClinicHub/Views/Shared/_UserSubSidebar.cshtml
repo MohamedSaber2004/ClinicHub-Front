@@ -1,6 +1,6 @@
 @using ClinicHub.Routes
 @{
-    var userId = ViewBag.UserId as int? ?? ViewBag.User?.Id as int? ?? 1;
+    var userId = ViewBag.UserId is Guid g ? g : Guid.Empty;
     var currentSection = ViewBag.SubSidebarSection as string ?? "overview";
     bool IsActive(string section) => currentSection == section;
 }

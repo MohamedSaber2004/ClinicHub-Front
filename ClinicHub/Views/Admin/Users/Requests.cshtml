@@ -1,10 +1,34 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "الطلبات";
     Layout = "_AdminLayout";
     ViewBag.SubSidebarSection = "requests";
-    ViewBag.UserId = ViewBag.UserId as int? ?? 1;
-    var requests = ViewBag.Requests as List<MockTableRow> ?? new();
+    ViewBag.UserId = ViewBag.UserId is Guid g ? g : (Guid?)null;
+    var requests = ViewBag.Requests as List<AdminUserRequestDto> ?? new();
+
+    string RoleLabel(int r) => r switch
+    {
+        16 => "مدير عيادة",
+        4 => "طبيب",
+        8 => "موظف عيادة",
+        _ => "غير معروف"
+    };
+
+    string StatusLabel(int s) => s switch
+    {
+        0 => "قيد الانتظار",
+        1 => "مقبول",
+        2 => "مرفوض",
+        _ => "-"
+    };
+
+    string StatusClass(int s) => s switch
+    {
+        0 => "badge-warning",
+        1 => "badge-success",
+        2 => "badge-danger",
+        _ => "badge-subtle"
+    };
 }
 
 <div class="user-detail-layout">
@@ -22,19 +46,23 @@
                         <tr>
                             <th>نوع الطلب</th>
                             <th>الحالة</th>
-                            <th>التاريخ</th>
-                            <th>ملاحظات</th>
+                            <th>تاريخ الطلب</th>
+                            <th>تاريخ المراجعة</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var r in requests)
                         {
                             <tr>
-                                <td class="text-md-medium">@r.Cells["type"]</td>
-                                <td><span class="badge @r.Cells["statusClass"]">@r.Cells["status"]</span></td>
-                                <td class="text-md">@r.Cells["date"]</td>
-                                <td class="text-md">@r.Cells["notes"]</td>
+                                <td><span class="badge badge-info">@RoleLabel(r.RequestedRole)</span></td>
+                                <td><span class="badge @StatusClass(r.Status)">@StatusLabel(r.Status)</span></td>
+                                <td class="text-md">@r.RequestedAt.ToString("yyyy-MM-dd")</td>
+                                <td class="text-md">@(r.ReviewedAt?.ToString("yyyy-MM-dd") ?? "—")</td>
                             </tr>
+                        }
+                        @if (requests.Count == 0)
+                        {
+                            <tr><td colspan="4" class="text-center text-muted">لا توجد طلبات لهذا المستخدم.</td></tr>
                         }
                     </tbody>
                 </table>

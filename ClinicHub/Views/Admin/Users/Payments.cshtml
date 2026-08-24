@@ -1,10 +1,42 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "مدفوعات المستخدم";
     Layout = "_AdminLayout";
     ViewBag.SubSidebarSection = "payments";
-    ViewBag.UserId = ViewBag.UserId as int? ?? 1;
-    var payments = ViewBag.Payments as List<MockPayment> ?? new();
+    ViewBag.UserId = ViewBag.UserId is Guid g ? g : (Guid?)null;
+    var payments = ViewBag.Payments as List<AdminUserPaymentDto> ?? new();
+
+    string TypeLabel(int t) => t switch
+    {
+        0 => "اشتراك",
+        1 => "موعد",
+        2 => "إعلان",
+        _ => "-"
+    };
+
+    string MethodLabel(int m) => m switch
+    {
+        0 => "نقدي",
+        1 => "محفظة إلكترونية",
+        _ => "—"
+    };
+
+    string StatusLabel(int s) => s switch
+    {
+        0 => "معلق",
+        1 => "مدفوع",
+        2 => "فاشل",
+        3 => "مسترجع",
+        _ => "-"
+    };
+
+    string StatusClass(int s) => s switch
+    {
+        1 => "badge-success",
+        2 => "badge-danger",
+        0 => "badge-warning",
+        _ => "badge-info"
+    };
 }
 
 <div class="user-detail-layout">
@@ -29,16 +61,22 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @{ var i = 0; }
                         @foreach (var p in payments)
                         {
+                            i++;
                             <tr>
-                                <td class="text-md">@p.Code</td>
-                                <td><span class="badge @p.TypeClass">@p.Type</span></td>
-                                <td class="text-md-medium">@p.Amount @MockData.CurrencySymbol</td>
-                                <td class="text-md">@p.Method</td>
-                                <td><span class="badge @p.StatusClass">@p.Status</span></td>
-                                <td class="text-md">@p.Date</td>
+                                <td class="text-md">@i</td>
+                                <td><span class="badge badge-subtle">@TypeLabel(p.Type)</span></td>
+                                <td class="text-md-medium">@p.Amount.ToString("N2") ج.م</td>
+                                <td class="text-md">@MethodLabel(p.Method)</td>
+                                <td><span class="badge @StatusClass(p.Status)">@StatusLabel(p.Status)</span></td>
+                                <td class="text-md">@p.CreatedAt.ToString("yyyy-MM-dd")</td>
                             </tr>
+                        }
+                        @if (payments.Count == 0)
+                        {
+                            <tr><td colspan="6" class="text-center text-muted">لا توجد مدفوعات لهذا المستخدم.</td></tr>
                         }
                     </tbody>
                 </table>

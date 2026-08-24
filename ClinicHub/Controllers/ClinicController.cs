@@ -326,7 +326,7 @@ namespace ClinicHub.Controllers
         public async Task<IActionResult> DoctorAvailability()
         {
             ViewBag.AvailabilityJson = "[]";
-            ViewBag.Stats = new List<MockStat>();
+            ViewBag.Stats = new List<StatCardDto>();
             ViewBag.TypicalDuration = 30;
 
             try
@@ -442,7 +442,7 @@ namespace ClinicHub.Controllers
             return defaults;
         }
 
-        private static List<MockStat> BuildAvailabilityStats(List<DoctorAvailabilityDto> items)
+        private static List<StatCardDto> BuildAvailabilityStats(List<DoctorAvailabilityDto> items)
         {
             var activeDays = items.Select(i => i.DayOfWeek).Distinct().Count();
 
@@ -902,7 +902,7 @@ namespace ClinicHub.Controllers
             }
         }
 
-        public IActionResult Reports(string period = "week", int? doctorId = null)
+        public async Task<IActionResult> Reports(string period = "week", Guid? doctorId = null)
         {
             if (CurrentUser == null || !CurrentUser.HasActivePlan || !CurrentUser.HasFeature(PlanFeature.AdvancedReports))
             {
@@ -912,13 +912,33 @@ namespace ClinicHub.Controllers
                 return RedirectToAction("MySubscription");
             }
 
-            ViewBag.SelectedPeriod = string.IsNullOrWhiteSpace(period) ? "week" : period.ToLower();
+            var selectedPeriod = string.IsNullOrWhiteSpace(period) ? "week" : period.ToLower();
+            ViewBag.SelectedPeriod = selectedPeriod;
             ViewBag.SelectedDoctorId = doctorId;
-            ViewBag.OperationalSummary = MockData.GetOperationalSummary(ViewBag.SelectedPeriod);
-            ViewBag.HourlyTraffic = MockData.GetHourlyTraffic();
-            ViewBag.WeeklyWorkload = MockData.GetWeeklyWorkload();
-            ViewBag.DoctorPerformance = MockData.GetDoctorOperationalStats();
-            ViewBag.RecentVisitsLog = MockData.GetRecentOperationalLogs();
+            ViewBag.Report = new ClinicOperationalReportDto();
+            ViewBag.ClinicDoctors = new List<DoctorDto>();
+
+            try
+            {
+                ViewBag.Report = await _clinicDashboardService.GetOperationalReportAsync(selectedPeriod, doctorId);
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] ??= ex.Message;
+            }
+            catch (Exception)
+            {
+            }
+
+            try
+            {
+                var doctors = await _clinicDoctorService.GetDoctorsAsync(CurrentUser.ClinicId ?? Guid.Empty, 1, 100);
+                ViewBag.ClinicDoctors = doctors?.Items ?? new List<DoctorDto>();
+            }
+            catch (ApiException)
+            {
+            }
+
             return View();
         }
 

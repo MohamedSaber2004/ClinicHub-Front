@@ -47,10 +47,10 @@
                         var _profileRoleLabel = _profile?.Role switch
                         {
                             "SuperAdmin" => "المشرف العام",
-                            "ClinicOwner" => "مالك عيادة",
+                            "ClinicOwner" => "مدير عيادة",
                             "Doctor" => "طبيب",
                             "Staff" => "موظف عيادة",
-                            _ => (_user?.Role switch { UserRole.SystemAdmin => "المشرف العام", UserRole.ClinicOwner => "مالك عيادة", UserRole.ClinicManager => "مدير عيادة", UserRole.Doctor => "طبيب", UserRole.ClinicStaff => "موظف عيادة", _ => "مستخدم" })
+                            _ => (_user?.Role switch { UserRole.SystemAdmin => "المشرف العام", UserRole.ClinicOwner => "مدير عيادة", UserRole.ClinicManager => "مدير عيادة", UserRole.Doctor => "طبيب", UserRole.ClinicStaff => "موظف عيادة", _ => "مستخدم" })
                         };
                         var _profileInitial = !string.IsNullOrWhiteSpace(_profile?.FullName) ? _profile.FullName.Substring(0, 1) : "ط";
                         var _profilePic = _attachmentUrlResolver.Resolve(_profile?.ProfilePictureUrl);

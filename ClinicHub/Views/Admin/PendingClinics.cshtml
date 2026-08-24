@@ -49,7 +49,7 @@
                     {
                         var statusText = req.Status switch { VerificationStatus.Pending => "قيد الانتظار", VerificationStatus.Approved => "مقبول", VerificationStatus.Rejected => "مرفوض", _ => "غير معروف" };
                         var statusClass = req.Status switch { VerificationStatus.Pending => "badge-warning", VerificationStatus.Approved => "badge-success", VerificationStatus.Rejected => "badge-danger", _ => "badge-info" };
-                        var roleText = req.RequestedRole switch { UserType.ClinicOwner => "مالك عيادة", UserType.Doctor => "طبيب", UserType.Staff => "موظف", _ => req.RequestedRole.ToString() };
+                        var roleText = req.RequestedRole switch { UserType.ClinicOwner => "مدير عيادة", UserType.Doctor => "طبيب", UserType.Staff => "موظف", _ => req.RequestedRole.ToString() };
                         <tr>
                             <td class="text-md-medium">@req.UserFullName</td>
                             <td class="text-md">@req.UserEmail</td>

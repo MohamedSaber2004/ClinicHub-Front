@@ -44,6 +44,22 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
+        public async Task<ClinicOperationalReportDto> GetOperationalReportAsync(string? period = "week", Guid? doctorId = null)
+        {
+            try
+            {
+                var url = DoctoryRoutes.ClinicDashboard.OperationalReport(period, doctorId);
+                var response = await _httpClient.GetAsync(url);
+                return await _deserializerService.DeserializeApiResponse<ClinicOperationalReportDto>(response, "تعذر تحميل التقرير التشغيلي")
+                    ?? new ClinicOperationalReportDto();
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"تعذر تحميل التقرير التشغيلي: {ex.Message}");
+            }
+        }
+
         public async Task<List<RevenueTrendPointDto>> GetRevenueTrendAsync(string? granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
         {
             try

@@ -7,6 +7,8 @@ namespace ClinicHub.Services.Contracts
     {
         Task<PagginatedResult<UserResponseDto>> GetAllDoctorsPagginatedAsync(GetAllDoctorsRequest request);
 
+        Task<DoctorDto> GetMyProfileAsync();
+
         Task<List<DoctorAvailabilityDto>> GetMyAvailabilityAsync();
 
         Task<List<DoctorAvailabilityDto>> ReplaceWeeklyAvailabilityAsync(ReplaceWeeklyAvailabilityRequest request);

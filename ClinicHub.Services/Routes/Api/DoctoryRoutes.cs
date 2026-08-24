@@ -188,6 +188,7 @@ namespace ClinicHub.Services.Routes.Api
             public string GetAllClinicsForViewingOnly => $"{BaseRoute}/clinics";
             public string ListByClinic(Guid clinicId) => $"{AdminClinicRoute}/{clinicId}/doctors";
             public string GetById(Guid id) => $"{_baseRoute}/doctors/{id}";
+            public string GetMyProfile => $"{_baseRoute}/doctors/me";
             public string Create => $"{AdminClinicRoute}/doctors";
             public string Update(Guid id) => $"{_baseRoute}/doctors/{id}";
             public string Delete(Guid id) => $"{_baseRoute}/doctors/{id}";
@@ -315,6 +316,7 @@ namespace ClinicHub.Services.Routes.Api
             }
 
             public string Stats => $"{_baseRoute}/stats";
+            public string UserOverview(Guid id) => $"{_baseRoute}/users/{id}/overview";
             public string RevenueTrend(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
                 => $"{_baseRoute}/revenue-trend{BuildGraphQuery(granularity, fromDate, toDate)}";
             public string ClinicsGrowth(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
@@ -368,6 +370,12 @@ namespace ClinicHub.Services.Routes.Api
             }
 
             public string Stats => $"{_baseRoute}/dashboard/stats";
+            public string OperationalReport(string? period = "week", Guid? doctorId = null)
+            {
+                var query = new List<string> { $"period={Uri.EscapeDataString(period ?? "week")}" };
+                if (doctorId.HasValue) query.Add($"doctorId={doctorId.Value}");
+                return $"{_baseRoute}/operational-report?{string.Join("&", query)}";
+            }
             public string RevenueTrend(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
                 => $"{_baseRoute}/dashboard/revenue-trend{BuildGraphQuery(granularity, fromDate, toDate)}";
             public string AppointmentsSummary(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)

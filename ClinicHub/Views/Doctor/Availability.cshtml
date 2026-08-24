@@ -1,7 +1,6 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
-    ViewData["Title"] = "أوقات العمل المتاحة";
-    var stats = ViewBag.Stats as List<MockStat> ?? new();
+    var stats = ViewBag.Stats as List<StatCardDto> ?? new();
     var typicalDuration = (int)(ViewBag.TypicalDuration ?? 30);
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
 }

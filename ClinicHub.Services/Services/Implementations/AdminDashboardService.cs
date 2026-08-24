@@ -30,6 +30,21 @@ namespace ClinicHub.Services.Services.Implementations
             DoctoryRoutes.Initialize(doctoryOptions.Value.BaseUrl);
         }
 
+        public async Task<AdminUserOverviewDto> GetUserOverviewAsync(Guid userId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(DoctoryRoutes.AdminDashboard.UserOverview(userId));
+                return await _deserializerService.DeserializeApiResponse<AdminUserOverviewDto>(response, "تعذر تحميل بيانات المستخدم")
+                    ?? new AdminUserOverviewDto();
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"تعذر تحميل بيانات المستخدم: {ex.Message}");
+            }
+        }
+
         public async Task<AdminDashboardStatsDto> GetStatsAsync()
         {
             try

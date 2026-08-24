@@ -31,6 +31,9 @@ namespace ClinicHub.Controllers
             _subscriptionService = subscriptionService;
         }
 
+        private Guid? _resolvedClinicId;
+        private Guid? _resolvedDoctorId;
+
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             try
@@ -42,16 +45,27 @@ namespace ClinicHub.Controllers
                 await Task.WhenAll(subscriptionTask, profileTask, notificationsTask);
 
                 var subscription = subscriptionTask.Result;
+                _resolvedClinicId = subscription.ClinicId;
                 bool isExpired = !subscription.IsActive || subscription.EndDate < DateTime.UtcNow;
 
                 if (isExpired)
                 {
                     Response.StatusCode = 403;
                     context.Result = IsAjaxRequest
-                        ? new JsonResult(new { success = false, message = "انتهت صلاحية اشتراك العيادة. يرجى تجديد الاشتراك للمتابعة." })
+                        ? new JsonResult(new { success = false, message = "انتهت صلاحية الاشتراك. يرجى تجديد الاشتراك للمتابعة." })
                         : new ViewResult { ViewName = "Forbidden" };
                     return;
                 }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                var me = await _doctorService.GetMyProfileAsync();
+                _resolvedDoctorId = me.Id;
+                _resolvedClinicId ??= me.ClinicId;
             }
             catch
             {
@@ -64,9 +78,8 @@ namespace ClinicHub.Controllers
         {
             CurrentUser = new CurrentUserContext
             {
-                Id = 2,
-                ClinicId = MockData.ClinicId_Heart,
-                DoctorId = MockIds.Doctor(2),
+                ClinicId = _resolvedClinicId,
+                DoctorId = _resolvedDoctorId,
                 Role = UserRole.Doctor,
                 Permissions = RolePermissions.For(UserRole.Doctor),
                 PlanFeatures = PlanFeature.ManageAppointments | PlanFeature.ManagePatientRecords,
@@ -366,7 +379,7 @@ namespace ClinicHub.Controllers
         public async Task<IActionResult> Availability()
         {
             ViewBag.AvailabilityJson = "[]";
-            ViewBag.Stats = new List<MockStat>();
+            ViewBag.Stats = new List<StatCardDto>();
             ViewBag.TypicalDuration = 30;
 
             try
@@ -444,7 +457,7 @@ namespace ClinicHub.Controllers
             return defaults;
         }
 
-        private static List<MockStat> BuildAvailabilityStats(List<DoctorAvailabilityDto> items)
+        private static List<StatCardDto> BuildAvailabilityStats(List<DoctorAvailabilityDto> items)
         {
             var activeDays = items.Select(i => i.DayOfWeek).Distinct().Count();
 

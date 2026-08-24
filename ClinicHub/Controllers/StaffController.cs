@@ -37,6 +37,7 @@ namespace ClinicHub.Controllers
                 await Task.WhenAll(subscriptionTask, profileTask, notificationsTask);
 
                 var subscription = subscriptionTask.Result;
+                _resolvedClinicId = subscription.ClinicId;
                 bool isExpired = !subscription.IsActive || subscription.EndDate < DateTime.UtcNow;
 
                 if (isExpired)
@@ -55,12 +56,13 @@ namespace ClinicHub.Controllers
             await base.OnActionExecutionAsync(context, next);
         }
 
+        private Guid? _resolvedClinicId;
+
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             CurrentUser = new CurrentUserContext
             {
-                Id = 5,
-                ClinicId = MockData.ClinicId_Heart,
+                ClinicId = _resolvedClinicId,
                 Role = UserRole.ClinicStaff,
                 Permissions = RolePermissions.For(UserRole.ClinicStaff),
                 PlanFeatures = PlanFeature.ManageAppointments | PlanFeature.ManageStaff,
