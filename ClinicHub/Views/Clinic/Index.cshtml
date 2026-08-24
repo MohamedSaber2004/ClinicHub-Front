@@ -99,6 +99,31 @@
     </div>
 </div>
 
+<!-- Charts Grid -->
+<div class="charts-grid">
+    <div class="chart-card chart-card--wide">
+        <h4 class="chart-title">تطور الإيرادات - آخر 30 يوماً</h4>
+        <div class="chart-canvas-wrap">
+            <canvas id="revenueTrendChart"></canvas>
+            <div class="chart-empty" data-for="revenueTrendChart">
+                <i class="bi bi-graph-up"></i>
+                <span>لا توجد إيرادات مسجلة في هذه الفترة</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h4 class="chart-title">ملخص الزيارات</h4>
+        <div class="chart-canvas-wrap">
+            <canvas id="appointmentsSummaryChart"></canvas>
+            <div class="chart-empty" data-for="appointmentsSummaryChart">
+                <i class="bi bi-calendar2-check"></i>
+                <span>لا توجد زيارات في هذه الفترة</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Dashboard grid: Today's overview -->
 <div class="dashboard-tables-grid">
     <!-- Today's Stats Summary -->
@@ -159,4 +184,91 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            var palettes = {
+                primary: '#0D5F4E',
+                primarySoft: 'rgba(13, 95, 78, 0.14)',
+                green: '#1E8A5A',
+                amber: '#D08A1E',
+                danger: '#B13B32',
+                blue: '#2F6FB2'
+            };
+
+            Chart.defaults.font.family = "'Cairo', sans-serif";
+            Chart.defaults.font.size = 12;
+            Chart.defaults.color = '#5A6B66';
+            Chart.defaults.plugins.legend.rtl = true;
+            Chart.defaults.plugins.legend.textDirection = 'rtl';
+            Chart.defaults.plugins.tooltip.rtl = true;
+            Chart.defaults.plugins.tooltip.textDirection = 'rtl';
+
+            function baseOptions(extra) {
+                var options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(90,107,102,0.10)' } }
+                    },
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } }
+                };
+                if (extra) { Object.assign(options, extra); }
+                return options;
+            }
+
+            function makeChart(canvasId, config) {
+                var el = document.getElementById(canvasId);
+                if (!el) return null;
+                return new Chart(el.getContext('2d'), config);
+            }
+
+            function toggleEmpty(canvasId, hasData) {
+                document.querySelectorAll('.chart-empty[data-for="' + canvasId + '"]').forEach(function (n) {
+                    n.classList.toggle('visible', !hasData);
+                });
+            }
+
+            var revenue = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.RevenueTrendJson as string) ? "[]" : ViewBag.RevenueTrendJson));
+            var appts = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.AppointmentsSummaryJson as string) ? "[]" : ViewBag.AppointmentsSummaryJson));
+
+            makeChart('revenueTrendChart', {
+                type: 'line',
+                data: {
+                    labels: (revenue || []).map(function (r) { return r.period; }),
+                    datasets: [{
+                        label: 'الإيرادات (ج.م)',
+                        data: (revenue || []).map(function (r) { return r.revenue; }),
+                        borderColor: palettes.primary,
+                        backgroundColor: palettes.primarySoft,
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        borderWidth: 2
+                    }]
+                },
+                options: baseOptions()
+            });
+            toggleEmpty('revenueTrendChart', (revenue || []).some(function (r) { return r.revenue > 0; }));
+
+            makeChart('appointmentsSummaryChart', {
+                type: 'bar',
+                data: {
+                    labels: (appts || []).map(function (r) { return r.period; }),
+                    datasets: [
+                        { label: 'مكتملة', data: (appts || []).map(function (r) { return r.completedCount; }), backgroundColor: palettes.green, borderRadius: 4 },
+                        { label: 'قيد الانتظار', data: (appts || []).map(function (r) { return r.pendingCount; }), backgroundColor: palettes.blue, borderRadius: 4 },
+                        { label: 'ملغاة', data: (appts || []).map(function (r) { return r.cancelledCount; }), backgroundColor: palettes.danger, borderRadius: 4 }
+                    ]
+                },
+                options: baseOptions({ scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(90,107,102,0.10)' } } } })
+            });
+            toggleEmpty('appointmentsSummaryChart', (appts || []).length > 0);
+        })();
+    </script>
+}
 

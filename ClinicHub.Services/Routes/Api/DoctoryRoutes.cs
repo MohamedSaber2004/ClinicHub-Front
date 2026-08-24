@@ -354,9 +354,21 @@ namespace ClinicHub.Services.Routes.Api
             }
 
             public string Stats => $"{_baseRoute}/dashboard/stats";
+            public string RevenueTrend(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+                => $"{_baseRoute}/dashboard/revenue-trend{BuildGraphQuery(granularity, fromDate, toDate)}";
+            public string AppointmentsSummary(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+                => $"{_baseRoute}/dashboard/appointments-summary{BuildGraphQuery(granularity, fromDate, toDate)}";
             public string Bookings => $"{_baseRoute}/bookings";
             public string AcceptBooking => $"{_baseRoute}/bookings/accept";
             public string RejectBooking => $"{_baseRoute}/bookings/reject";
+
+            private static string BuildGraphQuery(string granularity, DateTime? fromDate, DateTime? toDate)
+            {
+                var query = new List<string> { $"granularity={granularity}" };
+                if (fromDate.HasValue) query.Add($"fromDate={Uri.EscapeDataString(fromDate.Value.ToString("yyyy-MM-dd"))}");
+                if (toDate.HasValue) query.Add($"toDate={Uri.EscapeDataString(toDate.Value.ToString("yyyy-MM-dd"))}");
+                return $"?{string.Join("&", query)}";
+            }
         }
 
         public class AdminPaymentsRoutes

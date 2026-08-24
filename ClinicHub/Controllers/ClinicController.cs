@@ -217,7 +217,32 @@ namespace ClinicHub.Controllers
             {
                 ViewBag.DashboardStats = null;
             }
+
+            await LoadDashboardGraphsAsync();
             return View();
+        }
+
+        private async Task LoadDashboardGraphsAsync()
+        {
+            var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var toDate = DateTime.Today.AddDays(1);
+            var fromDate = DateTime.Today.AddDays(-29);
+            ViewBag.RevenueTrendJson = "[]";
+            ViewBag.AppointmentsSummaryJson = "[]";
+
+            try
+            {
+                var revenue = await _clinicDashboardService.GetRevenueTrendAsync("day", fromDate, toDate);
+                ViewBag.RevenueTrendJson = JsonSerializer.Serialize(revenue, jsonOptions);
+            }
+            catch (ApiException) { TempData["Error"] ??= "تعذر تحميل رسم الإيرادات"; }
+
+            try
+            {
+                var summary = await _clinicDashboardService.GetAppointmentsSummaryAsync("day", fromDate, toDate);
+                ViewBag.AppointmentsSummaryJson = JsonSerializer.Serialize(summary, jsonOptions);
+            }
+            catch (ApiException) { TempData["Error"] ??= "تعذر تحميل رسم الزيارات"; }
         }
 
         public async Task<IActionResult> DoctorAppointments(string? status, string? startDate, string? endDate, string? searchTerm, int pageNumber = 1, int pageSize = 10)

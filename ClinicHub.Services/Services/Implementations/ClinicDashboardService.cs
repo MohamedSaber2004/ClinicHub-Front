@@ -44,6 +44,36 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
+        public async Task<List<RevenueTrendPointDto>> GetRevenueTrendAsync(string? granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            try
+            {
+                var url = DoctoryRoutes.ClinicDashboard.RevenueTrend(granularity ?? "day", fromDate, toDate);
+                var response = await _httpClient.GetAsync(url);
+                return await _deserializerService.DeserializeApiResponse<List<RevenueTrendPointDto>>(response, "تعذر تحميل رسم الإيرادات") ?? new List<RevenueTrendPointDto>();
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"تعذر تحميل رسم الإيرادات: {ex.Message}");
+            }
+        }
+
+        public async Task<List<AppointmentsSummaryPointDto>> GetAppointmentsSummaryAsync(string? granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            try
+            {
+                var url = DoctoryRoutes.ClinicDashboard.AppointmentsSummary(granularity ?? "day", fromDate, toDate);
+                var response = await _httpClient.GetAsync(url);
+                return await _deserializerService.DeserializeApiResponse<List<AppointmentsSummaryPointDto>>(response, "تعذر تحميل رسم الزيارات") ?? new List<AppointmentsSummaryPointDto>();
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"تعذر تحميل رسم الزيارات: {ex.Message}");
+            }
+        }
+
         public async Task<PagginatedResult<ClinicBookingDto>> GetBookingsAsync(string? status = null, int pageNumber = 1, int pageSize = 20)
         {
             try
