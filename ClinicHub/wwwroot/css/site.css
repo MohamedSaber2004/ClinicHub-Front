@@ -8072,15 +8072,18 @@ img {
 .subscription-section,
 .subscription-benefits,
 .subscription-cta-section,
-.about-page-section {
+.about-page-section,
+.table-card,
+.reports-analytics-grid {
   content-visibility: auto;
   contain-intrinsic-size: auto 480px;
 }
 
-/* Stat cards repaint in isolation; the hover lift stays cheap.
-   (layout+style only — paint is not contained, so the hover
-   shadow can still escape the card) */
-.stat-card {
+/* Isolated layout containment for rapid composite rendering without layout thrashing */
+.stat-card,
+.analytics-card,
+.plan-card,
+.detail-card {
   contain: layout style;
 }
 

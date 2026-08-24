@@ -63,22 +63,22 @@
   --clr-primary-bg: #E4F1EC;
 
   /* === Typography === */
-  --ff-display: 'Reem Kufi', 'Cairo', sans-serif;
-  --ff-body: 'IBM Plex Sans Arabic', 'Mulish', 'Cairo', sans-serif;
+  --ff-display: 'IBM Plex Sans Arabic', 'Reem Kufi', sans-serif;
+  --ff-body: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --ff-data: 'IBM Plex Mono', 'IBM Plex Sans Arabic', monospace;
   --ff-primary: var(--ff-body);
 
-  --fs-h1: 38px;
-  --lh-h1: 48px;
-  --fw-h1: 600;
-  --fs-h2: 26px;
-  --lh-h2: 34px;
-  --fw-h2: 600;
-  --fs-h3: 20px;
-  --lh-h3: 28px;
+  --fs-h1: 32px;
+  --lh-h1: 42px;
+  --fw-h1: 700;
+  --fs-h2: 24px;
+  --lh-h2: 32px;
+  --fw-h2: 700;
+  --fs-h3: 18px;
+  --lh-h3: 26px;
   --fw-h3: 600;
   --fs-lg: 16px;
-  --lh-lg: 25px;
+  --lh-lg: 26px;
   --fw-lg: 400;
   --fw-lg-medium: 500;
   --fs-md: 14px;
@@ -116,16 +116,18 @@
   --radius-full: 50%;
   --radius-pill: 999px;
 
-  /* === Shadows (soft, green-tinted) === */
-  --shadow-xs: 0 1px 2px rgba(10, 46, 38, 0.05);
-  --shadow-sm: 0 1px 3px rgba(10, 46, 38, 0.06), 0 1px 2px rgba(10, 46, 38, 0.04);
-  --shadow-md: 0 6px 18px rgba(10, 46, 38, 0.09), 0 2px 6px rgba(10, 46, 38, 0.05);
-  --shadow-lg: 0 18px 44px rgba(10, 46, 38, 0.14), 0 4px 12px rgba(10, 46, 38, 0.06);
-  --shadow-primary: 0 2px 8px rgba(13, 95, 78, 0.24);
+  /* === Shadows (layered, clean, green-tinted depth) === */
+  --shadow-xs: 0 1px 2px rgba(10, 46, 38, 0.04);
+  --shadow-sm: 0 1px 3px rgba(10, 46, 38, 0.05), 0 1px 2px rgba(10, 46, 38, 0.03);
+  --shadow-md: 0 4px 14px rgba(10, 46, 38, 0.06), 0 2px 4px rgba(10, 46, 38, 0.03);
+  --shadow-lg: 0 12px 32px rgba(10, 46, 38, 0.08), 0 4px 10px rgba(10, 46, 38, 0.04);
+  --shadow-xl: 0 20px 48px rgba(10, 46, 38, 0.12), 0 8px 16px rgba(10, 46, 38, 0.05);
+  --shadow-primary: 0 4px 14px rgba(13, 95, 78, 0.22);
+  --shadow-brass: 0 4px 14px rgba(183, 138, 60, 0.22);
 
   /* === Transitions === */
-  --transition-fast: 0.15s;
-  --transition-base: 0.25s;
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ============================================================
