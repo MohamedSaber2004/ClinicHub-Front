@@ -8303,6 +8303,7 @@ img {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .period-pills-bar {
@@ -8316,6 +8317,8 @@ img {
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-6);
   flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .period-pills {
@@ -8323,6 +8326,8 @@ img {
   align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .period-pill {
@@ -8339,6 +8344,7 @@ img {
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .period-pill:hover {
@@ -8360,10 +8366,12 @@ img {
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .reports-filters-group .form-select {
   min-width: 170px;
+  max-width: 100%;
 }
 
 .stat-subtext {
@@ -8372,18 +8380,23 @@ img {
   gap: var(--space-2);
   font-size: var(--fs-sm);
   margin-top: var(--space-1);
+  flex-wrap: wrap;
 }
 
 .stat-subtext .badge {
   font-size: 11px;
   padding: 2px 8px;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .reports-analytics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: var(--space-5);
   margin-bottom: var(--space-6);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .analytics-card {
@@ -8395,6 +8408,9 @@ img {
   flex-direction: column;
   box-shadow: var(--shadow-xs);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .analytics-card:hover {
@@ -8408,6 +8424,9 @@ img {
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--clr-border);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .analytics-card-title {
@@ -8418,22 +8437,29 @@ img {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
+  word-break: break-word;
 }
 
 .analytics-card-badge {
   font-size: 11px;
   font-weight: var(--fw-semibold);
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* 1. Multi-segment Progress Meter */
 .metric-bar-wrapper {
   margin-top: var(--space-3);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .metric-bar-track {
   display: flex;
   height: 18px;
   width: 100%;
+  max-width: 100%;
   border-radius: var(--radius-pill);
   overflow: hidden;
   background-color: var(--clr-bg);
@@ -8462,6 +8488,8 @@ img {
   flex-direction: column;
   gap: var(--space-3);
   margin-top: var(--space-5);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .metric-legend-item {
@@ -8469,6 +8497,9 @@ img {
   align-items: center;
   justify-content: space-between;
   font-size: var(--fs-sm);
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-width: 0;
 }
 
 .metric-legend-info {
@@ -8476,6 +8507,8 @@ img {
   align-items: center;
   gap: var(--space-2);
   color: var(--clr-text-secondary);
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .metric-legend-dot {
@@ -8501,6 +8534,9 @@ img {
   font-weight: var(--fw-bold);
   color: var(--clr-text);
   font-family: var(--ff-data);
+  white-space: normal;
+  text-align: end;
+  flex-shrink: 0;
 }
 
 /* 2. Pure CSS Hourly Column Chart */
@@ -8509,17 +8545,22 @@ img {
   align-items: flex-end;
   justify-content: space-between;
   height: 170px;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-2) 0;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-2) var(--space-1);
   border-bottom: 2px solid var(--clr-border);
   margin-bottom: var(--space-3);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  scrollbar-width: thin;
 }
 
 .css-bar-column {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
+  flex: 1 0 auto;
+  min-width: 38px;
   height: 100%;
   justify-content: flex-end;
   position: relative;
@@ -9196,29 +9237,70 @@ button:focus:not(:focus-visible),
     white-space: nowrap;
   }
 
+  .reports-header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .reports-header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .reports-filters-group {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
   .reports-filters-group .form-select {
     width: 100%;
     min-width: 0;
+    max-width: 100%;
   }
 
   .reports-analytics-grid {
     grid-template-columns: 1fr;
     gap: var(--space-4);
     margin-bottom: var(--space-4);
+    min-width: 0;
+    max-width: 100%;
   }
 
   .analytics-card {
     padding: var(--space-4);
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   .analytics-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    width: 100%;
+  }
+
+  .analytics-card-title {
+    font-size: var(--fs-md);
     flex-wrap: wrap;
-    row-gap: var(--space-2);
+    word-break: break-word;
   }
 
   .css-bar-chart {
     height: 140px;
     gap: var(--space-2);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    padding-bottom: var(--space-1);
+  }
+
+  .css-bar-column {
+    min-width: 36px;
+    flex: 0 0 auto;
   }
 
   .css-bar-label,
@@ -9236,8 +9318,18 @@ button:focus:not(:focus-visible),
     row-gap: 2px;
   }
 
+  .metric-legend-val {
+    white-space: normal;
+    text-align: end;
+  }
+
   .stat-subtext {
     flex-wrap: wrap;
+  }
+
+  .stat-subtext .badge {
+    white-space: normal;
+    word-break: break-word;
   }
 
   .table-progress-track {
