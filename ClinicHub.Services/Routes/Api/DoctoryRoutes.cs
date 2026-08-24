@@ -42,6 +42,7 @@ namespace ClinicHub.Services.Routes.Api
             Notifications = new NotificationsRoutes(BaseRoute);
             Ratings = new RatingsRoutes(BaseRoute);
             AppointmentPayments = new AppointmentPaymentRoutes(BaseRoute);
+            PlatformSettings = new PlatformSettingRoutes(BaseRoute);
         }
 
         public static StaffDashboardRoutes StaffDashboard { get; private set; } = null!;
@@ -65,6 +66,7 @@ namespace ClinicHub.Services.Routes.Api
         public static NotificationsRoutes Notifications { get; private set; } = null!;
         public static RatingsRoutes Ratings { get; private set; } = null!;
         public static AppointmentPaymentRoutes AppointmentPayments { get; private set; } = null!;
+        public static PlatformSettingRoutes PlatformSettings { get; private set; } = null!;
 
         public class AppointmentPaymentRoutes
         {
@@ -76,6 +78,18 @@ namespace ClinicHub.Services.Routes.Api
 
             public string Appointments => $"{_baseRoute}/appointments";
             public string Stats => $"{_baseRoute}/appointments/stats";
+        }
+
+        public class PlatformSettingRoutes
+        {
+            private readonly string _baseRoute;
+            public PlatformSettingRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/admin/platform-settings";
+            }
+
+            public string Get => _baseRoute;
+            public string Update => _baseRoute;
         }
 
         public class AuthRoutes

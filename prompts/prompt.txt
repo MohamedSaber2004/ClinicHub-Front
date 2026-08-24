@@ -1,1 +1,1 @@
-﻿in supaderadmin dashboard i want to explain to me what is needed from backend as endpoints to show stats with graphs 
+﻿add fees for superadmin for every appointment make and also set in superadmin input for allow to it can change that fees from superadmin

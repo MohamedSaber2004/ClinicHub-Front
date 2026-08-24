@@ -33,8 +33,9 @@ namespace ClinicHub.Controllers
         private readonly IAdminPaymentService _adminPaymentService;
         private readonly IAdService _adService;
         private readonly INotificationService _notificationService;
+        private readonly IPlatformSettingService _platformSettingService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService, INotificationService notificationService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService, INotificationService notificationService, IPlatformSettingService platformSettingService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
@@ -51,6 +52,7 @@ namespace ClinicHub.Controllers
             _adminPaymentService = adminPaymentService;
             _adService = adService;
             _notificationService = notificationService;
+            _platformSettingService = platformSettingService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -957,6 +959,15 @@ namespace ClinicHub.Controllers
                 ViewBag.AdPackages = new List<AdPackageDto>();
             }
 
+            try
+            {
+                ViewBag.PlatformFee = (await _platformSettingService.GetSettingAsync())?.AppointmentFeePercent ?? 0m;
+            }
+            catch (ApiException)
+            {
+                ViewBag.PlatformFee = 0m;
+            }
+
             ViewBag.TypeFilter = type?.ToString();
             ViewBag.StatusFilter = status?.ToString();
             ViewBag.MethodFilter = method?.ToString();
@@ -964,6 +975,33 @@ namespace ClinicHub.Controllers
             ViewBag.ToDateFilter = toDate;
             ViewBag.SearchTerm = searchTerm;
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdatePlatformFee(decimal appointmentFeePercent)
+        {
+            if (appointmentFeePercent < 0 || appointmentFeePercent > 100)
+            {
+                TempData["Error"] = "نسبة رسوم المنصة يجب أن تكون بين 0 و 100.";
+                return RedirectToAction(nameof(Payments));
+            }
+
+            try
+            {
+                var updated = await _platformSettingService.UpdateSettingAsync(appointmentFeePercent);
+                TempData["Success"] = $"تم تحديث نسبة رسوم المنصة إلى {updated.AppointmentFeePercent}%";
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "تعذر تحديث نسبة رسوم المنصة";
+            }
+
+            return RedirectToAction(nameof(Payments));
         }
 
         [Route("Admin/PaymentsDetails/{id:guid}")]

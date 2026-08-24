@@ -105,10 +105,6 @@
         <h4 class="chart-title">تطور الإيرادات - آخر 30 يوماً</h4>
         <div class="chart-canvas-wrap">
             <canvas id="revenueTrendChart"></canvas>
-            <div class="chart-empty" data-for="revenueTrendChart">
-                <i class="bi bi-graph-up"></i>
-                <span>لا توجد إيرادات مسجلة في هذه الفترة</span>
-            </div>
         </div>
     </div>
 
@@ -116,10 +112,6 @@
         <h4 class="chart-title">ملخص الزيارات</h4>
         <div class="chart-canvas-wrap">
             <canvas id="appointmentsSummaryChart"></canvas>
-            <div class="chart-empty" data-for="appointmentsSummaryChart">
-                <i class="bi bi-calendar2-check"></i>
-                <span>لا توجد زيارات في هذه الفترة</span>
-            </div>
         </div>
     </div>
 </div>
@@ -227,12 +219,6 @@
                 return new Chart(el.getContext('2d'), config);
             }
 
-            function toggleEmpty(canvasId, hasData) {
-                document.querySelectorAll('.chart-empty[data-for="' + canvasId + '"]').forEach(function (n) {
-                    n.classList.toggle('visible', !hasData);
-                });
-            }
-
             var revenue = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.RevenueTrendJson as string) ? "[]" : ViewBag.RevenueTrendJson));
             var appts = @(Html.Raw(string.IsNullOrWhiteSpace(ViewBag.AppointmentsSummaryJson as string) ? "[]" : ViewBag.AppointmentsSummaryJson));
 
@@ -253,7 +239,6 @@
                 },
                 options: baseOptions()
             });
-            toggleEmpty('revenueTrendChart', (revenue || []).some(function (r) { return r.revenue > 0; }));
 
             makeChart('appointmentsSummaryChart', {
                 type: 'bar',
@@ -267,7 +252,6 @@
                 },
                 options: baseOptions({ scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(90,107,102,0.10)' } } } })
             });
-            toggleEmpty('appointmentsSummaryChart', (appts || []).length > 0);
         })();
     </script>
 }
