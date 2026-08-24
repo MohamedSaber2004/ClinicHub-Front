@@ -159,22 +159,37 @@
 </section>
 
 <!-- Register-Required Modal (unauthenticated subscribe attempt) -->
-<div class="modal fade" id="registerRequiredModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="registerRequiredModal" tabindex="-1" aria-labelledby="registerRequiredModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content-custom">
+        <div class="modal-content modal-content-custom modal-subscribe-card">
+            <button type="button" class="modal-close-corner" data-bs-dismiss="modal" aria-label="إغلاق">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
             <div class="modal-body-custom text-center">
-                <div class="icon-wrapper icon-wrapper--primary modal-icon-circle">
+                <div class="modal-icon-circle">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                     </svg>
                 </div>
-                <h3 class="modal-heading">يجب عليك التسجيل أولاً</h3>
+                <h3 class="modal-heading" id="registerRequiredModalLabel">إنشاء حساب عيادة للاشتراك</h3>
                 <p class="modal-copy">
-                    لإتمام الاشتراك في الباقة، يرجى إنشاء حساب عيادتك أولاً ثم تسجيل الدخول.
+                    للاشتراك وتفعيل باقة عيادتك، يمكنك إنشاء حساب عيادة جديد أو تسجيل الدخول إذا كنت تمتلك حساباً بالفعل.
                 </p>
-                <div class="d-flex gap-2 justify-content-center flex-wrap">
-                    <a href="@HomeRoutes.Pages.ClinicRegister()" id="registerRequiredModalRegBtn" class="btn btn-primary">إنشاء حساب جديد</a>
-                    <a href="@HomeRoutes.Account.Login()" id="registerRequiredModalLoginBtn" class="btn btn-secondary">تسجيل الدخول</a>
+                <div class="modal-selected-plan-pill" id="modalSelectedPlanPill" hidden>
+                    <span>الباقة المختارة:</span>
+                    <span class="plan-pill-tag" id="modalSelectedPlanName"></span>
+                    <span id="modalSelectedPlanPrice"></span>
+                </div>
+                <div class="modal-action-buttons">
+                    <a href="@HomeRoutes.Pages.ClinicRegister()" id="registerRequiredModalRegBtn" class="btn btn-primary">
+                        <i class="bi bi-building-add me-1"></i> إنشاء حساب جديد
+                    </a>
+                    <a href="@HomeRoutes.Account.Login()" id="registerRequiredModalLoginBtn" class="btn btn-outline-primary">
+                        <i class="bi bi-box-arrow-in-left me-1"></i> تسجيل الدخول
+                    </a>
                 </div>
             </div>
         </div>
@@ -204,17 +219,32 @@
             document.querySelectorAll('.btn-subscribe').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     var isAuthenticated = @(isAuthenticated ? "true" : "false");
+                    var card = this.closest('.plan-card');
                     var planId = this.getAttribute('data-plan-id');
-                    if (!planId) {
-                        var card = this.closest('.plan-card');
-                        var select = card ? card.querySelector('.plan-hidden-id') : null;
+                    if (!planId && card) {
+                        var select = card.querySelector('.plan-hidden-id');
                         planId = select ? select.value : '';
                     }
                     var period = toggle && toggle.checked ? 1 : 0;
+                    var planName = card ? (card.querySelector('.plan-name') ? card.querySelector('.plan-name').textContent.trim() : '') : '';
+                    var priceMonthly = card && card.querySelector('.price-monthly') ? card.querySelector('.price-monthly').textContent.trim() : '';
+                    var priceYearly = card && card.querySelector('.price-yearly') ? card.querySelector('.price-yearly').textContent.trim() : '';
+                    var currentPrice = period === 1 ? (priceYearly || priceMonthly) : priceMonthly;
+                    var periodLabel = period === 1 ? 'سنوياً' : 'شهرياً';
 
                     if (!isAuthenticated) {
                         var regBtn = document.getElementById('registerRequiredModalRegBtn');
                         var loginBtn = document.getElementById('registerRequiredModalLoginBtn');
+                        var pill = document.getElementById('modalSelectedPlanPill');
+                        var planNameEl = document.getElementById('modalSelectedPlanName');
+                        var planPriceEl = document.getElementById('modalSelectedPlanPrice');
+
+                        if (pill && planName) {
+                            planNameEl.textContent = planName;
+                            planPriceEl.textContent = currentPrice ? ('(' + currentPrice + ' ج.م ' + periodLabel + ')') : '';
+                            pill.hidden = false;
+                        }
+
                         if (regBtn && planId) {
                             regBtn.href = '@HomeRoutes.Pages.ClinicRegister()' + '?planId=' + encodeURIComponent(planId) + '&period=' + period;
                         }
@@ -222,8 +252,11 @@
                             var targetSub = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(planId) + '&period=' + period;
                             loginBtn.href = '@HomeRoutes.Account.Login()' + '?returnUrl=' + encodeURIComponent(targetSub);
                         }
-                        var requiredModal = new bootstrap.Modal(document.getElementById('registerRequiredModal'));
-                        requiredModal.show();
+                        var modalEl = document.getElementById('registerRequiredModal');
+                        if (modalEl) {
+                            var requiredModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                            requiredModal.show();
+                        }
                         return;
                     }
 

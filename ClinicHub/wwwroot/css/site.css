@@ -7766,15 +7766,89 @@ img {
 }
 
 /* Register-required modal (Subscriptions) */
-.modal-icon-circle {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 16px;
+.modal-subscribe-card {
+  position: relative;
+  background: var(--clr-surface, #ffffff);
+  border: 1px solid var(--clr-border, #E2E8F0);
+  border-radius: var(--radius-xl, 20px);
+  box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1));
+  overflow: hidden;
 }
 
-.modal-icon-circle svg {
-  width: 26px;
-  height: 26px;
+.modal-close-corner {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  background: none;
+  border: none;
+  padding: 8px;
+  color: var(--text-muted, #64748B);
+  cursor: pointer;
+  border-radius: var(--radius-full, 9999px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.modal-close-corner:hover {
+  background-color: var(--clr-surface-secondary, #F8FAFC);
+  color: var(--clr-text, #0F172A);
+}
+
+.modal-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full, 9999px);
+  margin: 4px auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--clr-primary-light, rgba(13, 95, 78, 0.08));
+  color: var(--clr-primary, #0D5F4E);
+}
+
+.modal-icon-circle svg,
+.modal-icon-circle i {
+  width: 28px;
+  height: 28px;
+}
+
+.modal-selected-plan-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  background: var(--clr-surface-secondary, #F8FAFC);
+  border: 1px solid var(--clr-border, #E2E8F0);
+  padding: 8px 16px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--fs-sm, 13px);
+  color: var(--clr-text, #0F172A);
+  margin-bottom: var(--space-4, 16px);
+}
+
+.modal-selected-plan-pill .plan-pill-tag {
+  color: var(--clr-primary, #0D5F4E);
+  font-weight: 600;
+}
+
+.modal-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+  margin-top: var(--space-3, 12px);
+}
+
+@media (min-width: 576px) {
+  .modal-action-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .modal-action-buttons .btn {
+    flex: 1;
+    min-width: 140px;
+  }
 }
 
 .icon-wrapper-lg {
@@ -7800,8 +7874,8 @@ img {
 
 .modal-heading {
   font-family: var(--ff-display);
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--clr-text);
   margin: 0 0 8px;
 }
@@ -7810,7 +7884,7 @@ img {
   font-size: 14px;
   color: var(--clr-text-secondary);
   line-height: 1.7;
-  margin: 0 0 20px;
+  margin: 0 0 16px;
 }
 
 .auth-wrapper,
