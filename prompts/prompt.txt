@@ -1,1 +1,1 @@
-﻿add fees for superadmin for every appointment make and also set in superadmin input for allow to it can change that fees from superadmin
+﻿fix padding and margins and reponnsive of all pages and enhance ux experience to adapt to disabilities and all types of devices

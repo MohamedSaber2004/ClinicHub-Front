@@ -109,7 +109,7 @@
                     a.target = '_blank';
                     a.className = 'detail-doc-img';
                     a.innerHTML = '<img src="' + doc.url + '" alt="' + doc.label + '" onerror="this.parentElement.classList.add(\'is-broken\'); this.style.display=\'none\'; this.parentElement.querySelector(\'.doc-fallback\').style.display=\'\'" />' +
-                        '<div class="doc-fallback" style="display:none">' +
+                        '<div class="doc-fallback d-none">' +
                         '<svg width="24" height="24" viewBox="0 0 24 24" fill="var(--clr-primary)">' +
                         '<path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/>' +
                         '</svg><span>' + doc.label + '</span></div>';
@@ -117,7 +117,7 @@
                 }
             });
             if (!hasDocs) {
-                docsGrid.innerHTML = '<span class="text-muted" style="font-size: var(--fs-sm);">لا توجد مستندات مرفوعة</span>';
+                docsGrid.innerHTML = '<span class="text-muted fs-sm">لا توجد مستندات مرفوعة</span>';
             }
         }
 

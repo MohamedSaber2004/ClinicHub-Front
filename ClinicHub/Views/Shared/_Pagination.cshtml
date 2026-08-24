@@ -57,13 +57,13 @@
     int windowTo = Math.Min(totalPages, pageNumber + 2);
 }
 
-<nav class="pagination-nav">
+<nav class="pagination-nav" aria-label="التنقل بين الصفحات">
     <ul class="pagination-list">
         @if (hasPrev)
         {
             routeValues["pageNumber"] = pageNumber - 1;
             <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(action, routeValues)">
+                <a class="pagination-link" href="@Url.Action(action, routeValues)" aria-label="الصفحة السابقة">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                     </svg>
@@ -89,7 +89,7 @@
         {
             routeValues["pageNumber"] = i;
             <li class="pagination-item">
-                <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)">@i</a>
+                <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)" aria-label="الصفحة @i من @totalPages" @(i == pageNumber ? "aria-current=\"page\"" : "")>@i</a>
             </li>
         }
 
@@ -110,7 +110,7 @@
         {
             routeValues["pageNumber"] = pageNumber + 1;
             <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(action, routeValues)">
+                <a class="pagination-link" href="@Url.Action(action, routeValues)" aria-label="الصفحة التالية">
                     <span class="pagination-text">التالي</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>

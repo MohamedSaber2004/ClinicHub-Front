@@ -64,12 +64,12 @@
                             <p class="plan-desc">@plan.DescriptionAr</p>
                             <p class="plan-price">
                                 <span class="price-monthly">@plan.PriceMonthly.ToString("N0")</span>
-                                <span class="price-yearly" style="display:none;">@plan.PriceYearly.ToString("N0")</span>
+                                <span class="price-yearly d-none">@plan.PriceYearly.ToString("N0")</span>
                                 <span class="plan-currency">ج.م</span>
                             </p>
                             <p class="plan-period-label">
                                 <span class="period-monthly">شهرياً</span>
-                                <span class="period-yearly" style="display:none;">سنوياً</span>
+                                <span class="period-yearly d-none">سنوياً</span>
                             </p>
                         </div>
                         <div class="plan-body">
@@ -193,10 +193,10 @@
                         var yearlyPrice = card.querySelector('.price-yearly');
                         var monthlyPeriod = card.querySelector('.period-monthly');
                         var yearlyPeriod = card.querySelector('.period-yearly');
-                        if (monthlyPrice) monthlyPrice.style.display = isYearly ? 'none' : '';
-                        if (yearlyPrice) yearlyPrice.style.display = isYearly ? '' : 'none';
-                        if (monthlyPeriod) monthlyPeriod.style.display = isYearly ? 'none' : '';
-                        if (yearlyPeriod) yearlyPeriod.style.display = isYearly ? '' : 'none';
+                        if (monthlyPrice) monthlyPrice.classList.toggle('d-none', isYearly);
+                        if (yearlyPrice) yearlyPrice.classList.toggle('d-none', !isYearly);
+                        if (monthlyPeriod) monthlyPeriod.classList.toggle('d-none', isYearly);
+                        if (yearlyPeriod) yearlyPeriod.classList.toggle('d-none', !isYearly);
                     });
                 });
             }

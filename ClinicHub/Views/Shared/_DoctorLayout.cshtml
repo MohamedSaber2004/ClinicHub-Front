@@ -24,8 +24,9 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    <a class="skip-link" href="#main-content">تخطَّ إلى المحتوى الرئيسي</a>
     <div class="app-container">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar" aria-label="القائمة الجانبية">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <img src="~/logo.png" alt="Doctory" class="brand-logo-img" />
@@ -56,24 +57,24 @@
                         var _profilePic = _attachmentUrlResolver.Resolve(_profile?.ProfilePictureUrl);
                     }
                     <a class="sidebar-item @(IsActive("Doctor", "Index") ? "active" : "")" href="@DoctorRoutes.Pages.Index()">
-                        <i class="bi bi-speedometer2"></i>
+                        <i class="bi bi-speedometer2" aria-hidden="true"></i>
                         <span>نظرة عامة</span>
                     </a>
                     <div class="sidebar-section">إدارة المواعيد</div>
                     <a class="sidebar-item sidebar-item--sub @(IsActive("Doctor", "Appointments") ? "active" : "")" href="@DoctorRoutes.Pages.Appointments()">
-                        <i class="bi bi-calendar3"></i>
+                        <i class="bi bi-calendar3" aria-hidden="true"></i>
                         <span>مواعيدي</span>
                     </a>
                     <a class="sidebar-item sidebar-item--sub @(IsActive("Doctor", "Patients") ? "active" : "")" href="@DoctorRoutes.Pages.Patients()">
-                        <i class="bi bi-people"></i>
+                        <i class="bi bi-people" aria-hidden="true"></i>
                         <span>مرضاي</span>
                     </a>
                     <a class="sidebar-item sidebar-item--sub @(IsActive("Doctor", "Availability") ? "active" : "")" href="@DoctorRoutes.Pages.Availability()">
-                        <i class="bi bi-clock-history"></i>
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
                         <span>أوقات العمل المتاحة</span>
                     </a>
                     <a class="sidebar-item sidebar-item--sub @(IsActive("Doctor", "Ratings") ? "active" : "")" href="@DoctorRoutes.Pages.Ratings()">
-                        <i class="bi bi-star"></i>
+                        <i class="bi bi-star" aria-hidden="true"></i>
                         <span>التقييمات</span>
                     </a>
                 </div>
@@ -96,7 +97,7 @@
                     </div>
                 </a>
                 <a href="#" class="sidebar-item" id="logoutBtn">
-                    <i class="bi bi-box-arrow-left"></i>
+                    <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
                     <span>تسجيل الخروج</span>
                 </a>
             </div>
@@ -104,26 +105,26 @@
 
         <div class="main-content">
             <header class="top-header">
-                <button class="sidebar-toggle-mobile" id="sidebarToggleMobile" title="فتح القائمة" type="button">
-                    <i class="bi bi-list"></i>
+                <button class="sidebar-toggle-mobile" id="sidebarToggleMobile" title="فتح القائمة" type="button" aria-label="فتح القائمة الجانبية" aria-controls="sidebar" aria-expanded="false">
+                    <i class="bi bi-list" aria-hidden="true"></i>
                 </button>
-                <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة">
-                    <i class="bi bi-chevron-double-right"></i>
+                <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة" aria-label="تصغير أو توسيع القائمة الجانبية">
+                    <i class="bi bi-chevron-double-right" aria-hidden="true"></i>
                 </button>
                 <div class="flex-fill"></div>
                 <div class="ch-bell" id="chBell">
-                    <button class="ch-bell-btn" type="button" title="الإشعارات" aria-label="الإشعارات">
-                        <i class="bi bi-bell"></i>
+                    <button class="ch-bell-btn" type="button" title="الإشعارات" aria-label="الإشعارات" aria-expanded="false" aria-haspopup="true">
+                        <i class="bi bi-bell" aria-hidden="true"></i>
                         @if (ViewBag.UnreadNotificationsCount is int unreadCount && unreadCount > 0)
                         {
-                            <span class="ch-bell-badge" id="chBellBadge">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
+                            <span class="ch-bell-badge" id="chBellBadge" aria-live="polite">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
                         }
                         else
                         {
-                            <span class="ch-bell-badge" id="chBellBadge" hidden>0</span>
+                            <span class="ch-bell-badge" id="chBellBadge" hidden aria-live="polite">0</span>
                         }
                     </button>
-                    <div class="ch-bell-dropdown" id="chBellDropdown">
+                    <div class="ch-bell-dropdown" id="chBellDropdown" role="region" aria-label="قائمة الإشعارات">
                         <div class="ch-bell-header">الإشعارات</div>
                         <div class="ch-bell-list" id="chBellList">
                             <div class="ch-bell-empty">لا توجد إشعارات</div>
@@ -131,7 +132,7 @@
                         <a class="ch-bell-footer" href="@DoctorRoutes.Pages.Notifications()">عرض كل الإشعارات</a>
                     </div>
                 </div>
-                <a class="header-user" href="@DoctorRoutes.Pages.Profile()">
+                <a class="header-user" href="@DoctorRoutes.Pages.Profile()" aria-label="الملف الشخصي: @_profileName">
                     <div class="user-info">
                         <span class="user-name">@_profileName</span>
                         <span class="user-role">@_profileRoleLabel</span>
@@ -149,7 +150,7 @@
                 </a>
             </header>
 
-            <main role="main" class="content-body">
+            <main role="main" class="content-body" id="main-content" tabindex="-1">
                 @if (TempData["Error"] != null)
                 {
                     <div class="alert alert-danger">@TempData["Error"]</div>
@@ -280,12 +281,14 @@
         });
 
         $('#sidebarToggleMobile').on('click', function () {
-            $('.sidebar').toggleClass('mobile-open');
+            var open = $('.sidebar').toggleClass('mobile-open').hasClass('mobile-open');
+            $(this).attr('aria-expanded', open ? 'true' : 'false');
         });
 
         $(document).on('click', function (e) {
             if ($(window).width() < 992 && !$(e.target).closest('.sidebar, .sidebar-toggle-mobile').length) {
                 $('.sidebar').removeClass('mobile-open');
+                $('#sidebarToggleMobile').attr('aria-expanded', 'false');
             }
         });
 

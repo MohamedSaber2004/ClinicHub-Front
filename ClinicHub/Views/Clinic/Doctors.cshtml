@@ -512,26 +512,26 @@
                 ? '<span class="badge badge-success">نشط</span>'
                 : '<span class="badge badge-danger">غير نشط</span>';
             var imgHtml = doctor.profilePictureUrl
-                ? '<img src="' + attachmentBaseUrl + '/files/' + doctor.profilePictureUrl.replace(/^files\//, '') + '" alt="صورة الطبيب" class="rounded" style="width: 80px; height: 80px; object-fit: cover; border: 1px solid var(--clr-border);" />'
-                : '<div class="rounded d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: var(--clr-surface-secondary); color: var(--clr-text-secondary); font-size: 28px;"><i class="bi bi-person"></i></div>';
+                ? '<img src="' + attachmentBaseUrl + '/files/' + doctor.profilePictureUrl.replace(/^files\//, '') + '" alt="صورة الطبيب" class="modal-avatar-img" />'
+                : '<div class="modal-avatar-placeholder"><i class="bi bi-person"></i></div>';
             var availHtml = '';
             if (doctor.availabilities && doctor.availabilities.length > 0) {
-                availHtml = '<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">أوقات العمل</span><span class="detail-value">';
+                availHtml = '<div class="detail-item detail-item--full"><span class="detail-label">أوقات العمل</span><span class="detail-value">';
                 doctor.availabilities.forEach(function (a) {
                     var dayName = DAY_NAMES[a.dayOfWeek] || 'اليوم ' + a.dayOfWeek;
-                    availHtml += '<div style="font-size: 13px; margin-bottom: 4px;">' + dayName + ': ' + format12(a.startTime) + ' - ' + format12(a.endTime) + ' (30 دقيقة ثابتة)</div>';
+                    availHtml += '<div class="modal-avail-item">' + dayName + ': ' + format12(a.startTime) + ' - ' + format12(a.endTime) + ' (30 دقيقة ثابتة)</div>';
                 });
                 availHtml += '</span></div>';
             }
-            return '<div style="display: flex; gap: 16px; margin-bottom: 16px;">' + imgHtml
-                + '<div><h5 style="margin: 0 0 4px;">' + escapeHtml(doctor.userName) + '</h5>'
-                + '<span style="color: var(--clr-text-secondary); font-size: 13px;">' + escapeHtml(doctor.userEmail) + '</span></div></div>'
+            return '<div class="modal-doctor-header">' + imgHtml
+                + '<div><h5 class="modal-doctor-title">' + escapeHtml(doctor.userName) + '</h5>'
+                + '<span class="modal-doctor-email">' + escapeHtml(doctor.userEmail) + '</span></div></div>'
                 + '<div class="detail-grid">'
                 + '<div class="detail-item"><span class="detail-label">رقم الهاتف</span><span class="detail-value">' + escapeHtml(doctor.userPhoneNumber || '-') + '</span></div>'
                 + '<div class="detail-item"><span class="detail-label">التخصص</span><span class="detail-value">' + escapeHtml(doctor.specializationName) + '</span></div>'
                 + '<div class="detail-item"><span class="detail-label">سنوات الخبرة</span><span class="detail-value">' + doctor.yearsOfExperience + ' سنة</span></div>'
                 + '<div class="detail-item"><span class="detail-label">الحالة</span><span class="detail-value">' + statusHtml + '</span></div>'
-                + (doctor.bio ? '<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">السيرة الذاتية</span><span class="detail-value">' + escapeHtml(doctor.bio) + '</span></div>' : '')
+                + (doctor.bio ? '<div class="detail-item detail-item--full"><span class="detail-label">السيرة الذاتية</span><span class="detail-value">' + escapeHtml(doctor.bio) + '</span></div>' : '')
                 + '<div class="detail-item"><span class="detail-label">تاريخ الإضافة</span><span class="detail-value">' + formatDate(doctor.createdAt) + '</span></div>'
                 + availHtml
                 + '</div>';

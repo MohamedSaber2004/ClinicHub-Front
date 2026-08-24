@@ -97,7 +97,7 @@
                         <td><span class="badge @u.StatusClass">@u.Status</span></td>
                         <td>
                             <div class="table-actions">
-                                <button class="btn-icon btn-edit-user" title="تعديل"
+                                <button class="btn-icon btn-edit-user" title="تعديل" aria-label="تعديل المستخدم @u.Name">
                                         data-id="@u.Id"
                                         data-name="@u.Name"
                                         data-email="@u.Email"
@@ -107,14 +107,14 @@
                                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                                     </svg>
                                 </button>
-                                <button class="btn-icon btn-change-password" title="تغيير كلمة المرور"
+                                <button class="btn-icon btn-change-password" title="تغيير كلمة المرور" aria-label="تغيير كلمة مرور المستخدم @u.Name">
                                         data-id="@u.Id"
                                         data-name="@u.Name">
                                     <svg viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/>
                                     </svg>
                                 </button>
-                                <button class="btn-icon btn-delete-user" title="حذف"
+                                <button class="btn-icon btn-delete-user" title="حذف" aria-label="حذف المستخدم @u.Name">
                                         data-id="@u.Id"
                                         data-name="@u.Name">
                                     <svg viewBox="0 0 24 24" fill="currentColor">

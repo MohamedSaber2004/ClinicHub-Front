@@ -743,6 +743,7 @@ a {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 /* ============================================================
@@ -1143,3 +1144,104 @@ a {
   font-size: var(--fs-base);
   user-select: none;
 }
+
+/* ============================================================
+   Modal & Detail Component Utilities
+   ============================================================ */
+
+.modal-avatar-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--clr-border);
+  flex-shrink: 0;
+}
+
+.modal-avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  background: var(--clr-surface-subtle);
+  color: var(--clr-text-secondary);
+  font-size: 28px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--clr-border);
+  flex-shrink: 0;
+}
+
+.modal-staff-avatar-img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--clr-border);
+  display: inline-block;
+}
+
+.modal-staff-avatar-initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-full);
+  background: var(--clr-primary);
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: var(--fw-bold);
+}
+
+.modal-doctor-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.modal-doctor-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--clr-text);
+}
+
+.modal-doctor-email {
+  color: var(--clr-text-secondary);
+  font-size: var(--fs-sm);
+  word-break: break-all;
+}
+
+.modal-avail-item {
+  font-size: var(--fs-sm);
+  margin-bottom: var(--space-1);
+  color: var(--clr-text);
+}
+
+.detail-item--full {
+  grid-column: 1 / -1;
+}
+
+/* ============================================================
+   Accessibility (a11y) Base Utilities
+   ============================================================ */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.text-break-word {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+

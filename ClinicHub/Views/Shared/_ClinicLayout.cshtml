@@ -21,9 +21,10 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    <a class="skip-link" href="#main-content">تخطَّ إلى المحتوى الرئيسي</a>
     <div class="app-container">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" aria-label="القائمة الجانبية">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <img src="~/logo.png" alt="Doctory" class="brand-logo-img" />
@@ -195,10 +196,10 @@
         <div class="main-content">
             <!-- Top Header -->
             <header class="top-header">
-                <button class="sidebar-toggle-mobile" id="sidebarToggleMobile" title="فتح القائمة" type="button">
+                <button class="sidebar-toggle-mobile" id="sidebarToggleMobile" title="فتح القائمة" type="button" aria-label="فتح القائمة الجانبية" aria-controls="sidebar" aria-expanded="false">
                     <i class="bi bi-list"></i>
                 </button>
-                <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة">
+                <button class="sidebar-toggle" id="sidebarToggle" title="تصغير/توسيع القائمة" aria-label="تصغير أو توسيع القائمة الجانبية">
                     <i class="bi bi-chevron-double-right"></i>
                 </button>
                 <div class="flex-fill"></div>
@@ -241,7 +242,7 @@
             </header>
 
             <!-- Main Render Area -->
-            <main role="main" class="content-body">
+            <main role="main" class="content-body" id="main-content" tabindex="-1">
                 <partial name="_SubscriptionBanner" />
                 @RenderBody()
             </main>
@@ -368,12 +369,14 @@
         });
 
         $('#sidebarToggleMobile').on('click', function () {
-            $('.sidebar').toggleClass('mobile-open');
+            var open = $('.sidebar').toggleClass('mobile-open').hasClass('mobile-open');
+            $(this).attr('aria-expanded', open ? 'true' : 'false');
         });
 
         $(document).on('click', function (e) {
             if ($(window).width() < 992 && !$(e.target).closest('.sidebar, .sidebar-toggle-mobile').length) {
                 $('.sidebar').removeClass('mobile-open');
+                $('#sidebarToggleMobile').attr('aria-expanded', 'false');
             }
         });
 

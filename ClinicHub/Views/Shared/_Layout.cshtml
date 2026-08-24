@@ -19,14 +19,17 @@
 
 </head>
 <body class="public-body">
+    <a class="skip-link" href="#main-content">تخطَّ إلى المحتوى الرئيسي</a>
     <!-- Public Navigation Header -->
     <header class="public-header">
         <div class="container d-flex justify-content-between align-items-center">
             <div class="public-logo">
-                <img src="~/logo.png" alt="Doctory" class="brand-logo-img brand-logo-img--header" />
-                <span class="logo-text">
-                    Doctory
-                </span>
+                <a href="@HomeRoutes.Pages.Index()" class="public-logo" aria-label="Doctory — الصفحة الرئيسية">
+                    <img src="~/logo.png" alt="Doctory" class="brand-logo-img brand-logo-img--header" />
+                    <span class="logo-text">
+                        Doctory
+                    </span>
+                </a>
             </div>
 
             <nav class="d-none d-md-flex gap-4">
@@ -59,7 +62,7 @@
     </header>
 
     <!-- Page Body -->
-    <main role="main" class="public-main">
+    <main role="main" class="public-main" id="main-content" tabindex="-1">
         @RenderBody()
     </main>
 

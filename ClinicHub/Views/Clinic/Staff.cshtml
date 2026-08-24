@@ -588,8 +588,8 @@
                 ? '<span class="badge badge-success">نشط</span>'
                 : '<span class="badge badge-danger">غير نشط</span>';
             var imageHtml = staff.image
-                ? '<div class="text-center mb-3"><img src="' + attachmentBaseUrl + '/files/' + staff.image.replace(/^files\//, '') + '" alt="' + escapeHtml(staff.fullName) + '" style="width:100px;height:100px;object-fit:cover;border-radius:50%;border:2px solid var(--clr-border);" /></div>'
-                : '<div class="text-center mb-3"><span style="display:inline-flex;align-items:center;justify-content:center;width:100px;height:100px;border-radius:50%;background:var(--clr-primary);color:#fff;font-size:36px;font-weight:700;">' + (staff.fullName ? staff.fullName.charAt(0) : '') + '</span></div>';
+                ? '<div class="text-center mb-3"><img src="' + attachmentBaseUrl + '/files/' + staff.image.replace(/^files\//, '') + '" alt="' + escapeHtml(staff.fullName) + '" class="modal-staff-avatar-img" /></div>'
+                : '<div class="text-center mb-3"><span class="modal-staff-avatar-initial">' + (staff.fullName ? staff.fullName.charAt(0) : '') + '</span></div>';
             return imageHtml
                 + '<div class="detail-grid">'
                 + '<div class="detail-item"><span class="detail-label">الاسم الكامل</span><span class="detail-value">' + escapeHtml(staff.fullName) + '</span></div>'
