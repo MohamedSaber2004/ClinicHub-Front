@@ -2,10 +2,9 @@
     var bellListUrl = Url.Action("NotificationsList");
     var bellCountUrl = Url.Action("NotificationsCount");
 }
-@* Firebase-independent bell wiring. fcm.js only attaches bell events after the
-   Firebase SDK loads; if it fails (offline/CDN blocked) the bell would be dead.
-   This runs immediately and intercepts bell clicks in the capture phase
-   (stopPropagation) so fcm.js's duplicate listener cannot double-toggle. *@
+@* Firebase-independent bell wiring and robust notification navigation.
+   Runs immediately, fetches silently without triggering the loading overlay,
+   and ensures consistent role-based routing across all dashboard layouts. *@
 <script>
     (function () {
         var LIST_URL = "@bellListUrl";
@@ -26,10 +25,20 @@
             "19": "AppointmentAccepted"
         };
 
-        function typeName(v) { return TYPE_NAMES[String(v || "")] || String(v || ""); }
+        function typeName(v) {
+            return TYPE_NAMES[String(v || "")] || String(v || "");
+        }
 
         function rolePath(kind) {
             var role = (localStorage.getItem("role") || "").toLowerCase();
+            var path = window.location.pathname.toLowerCase();
+            if (!role) {
+                if (path.indexOf("/clinic") === 0) role = "clinic";
+                else if (path.indexOf("/doctor") === 0) role = "doctor";
+                else if (path.indexOf("/staff") === 0) role = "staff";
+                else if (path.indexOf("/admin") === 0) role = "admin";
+            }
+
             if (kind === "notifications") {
                 if (role.indexOf("clinic") !== -1) return "/Clinic/Notifications";
                 if (role.indexOf("doctor") !== -1) return "/Doctor/Notifications";
@@ -38,8 +47,8 @@
             }
             if (kind === "clinics") {
                 if (role.indexOf("clinic") !== -1) return "/Clinic/Index";
-                if (role.indexOf("super") !== -1) return "/Admin/Clinics";
-                return null;
+                if (role.indexOf("super") !== -1 || role.indexOf("admin") !== -1) return "/Admin/Clinics";
+                return "/Clinic/Index";
             }
             if (role.indexOf("clinic") !== -1) return "/Clinic/DoctorAppointments";
             if (role.indexOf("doctor") !== -1) return "/Doctor/Appointments";
@@ -47,18 +56,35 @@
             return "/Admin/Index";
         }
 
+        function cacheNavPaths() {
+            if (!("caches" in window)) return;
+            caches.open("ch-nav").then(function (cache) {
+                cache.put(new Request("/__ch_nav_appointments__"), new Response(rolePath("appointments")));
+                cache.put(new Request("/__ch_nav_notifications__"), new Response(rolePath("notifications")));
+                cache.put(new Request("/__ch_nav_clinics__"), new Response(rolePath("clinics") || ""));
+            }).catch(function () {});
+        }
+
         function navigateByType(type) {
-            if (typeof window.chNavigateByType === "function") {
-                window.chNavigateByType(type);
-                return;
-            }
             var name = typeName(type);
             var target = null;
-            if (["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"].indexOf(name) !== -1) target = rolePath("appointments");
-            else if (["ClinicRegistered", "ClinicApproved", "ClinicRejected"].indexOf(name) !== -1) target = rolePath("clinics");
-            else if (["SubscriptionExpiring", "AdExpiring"].indexOf(name) !== -1) target = rolePath("notifications");
-            if (target && window.location.pathname !== target) window.location.href = target;
+            if (["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"].indexOf(name) !== -1) {
+                target = rolePath("appointments");
+            } else if (["ClinicRegistered", "ClinicApproved", "ClinicRejected"].indexOf(name) !== -1) {
+                target = rolePath("clinics");
+            } else if (["SubscriptionExpiring", "AdExpiring", "SupportTicketUpdate"].indexOf(name) !== -1) {
+                target = rolePath("notifications");
+            } else {
+                target = rolePath("notifications");
+            }
+
+            if (target && window.location.pathname !== target) {
+                window.location.href = target;
+            }
         }
+
+        window.chNavigateByType = navigateByType;
+        cacheNavPaths();
 
         function esc(s) {
             var d = document.createElement("div");
@@ -90,8 +116,14 @@
                 : '<div class="ch-bell-empty">لا توجد إشعارات</div>';
         }
 
+        var silentHeaders = {
+            "Accept": "application/json",
+            "X-Silent": "true",
+            "X-Skip-Loader": "true"
+        };
+
         function refreshBadge() {
-            fetch(COUNT_URL, { headers: { "Accept": "application/json" } })
+            fetch(COUNT_URL, { headers: silentHeaders, skipLoader: true, silent: true })
                 .then(function (r) { return r.ok ? r.json() : null; })
                 .then(function (data) {
                     var count = (data && (typeof data.count === "number" ? data.count : data.unreadCount)) || 0;
@@ -106,10 +138,10 @@
             var list = document.getElementById("chBellList");
             if (!list) return;
             list.innerHTML = '<div class="ch-bell-empty">جارٍ التحميل...</div>';
-            fetch(LIST_URL + "?pageNumber=1&pageSize=10", { headers: { "Accept": "application/json" } })
+            fetch(LIST_URL + "?pageNumber=1&pageSize=10", { headers: silentHeaders, skipLoader: true, silent: true })
                 .then(function (r) { return r.ok ? r.json() : null; })
                 .then(function (data) {
-                    renderList(data && data.items ? data.items : []);
+                    renderList(data && data.items ? data.items : (Array.isArray(data) ? data : []));
                     refreshBadge();
                 })
                 .catch(function () { renderList([]); });
@@ -122,8 +154,6 @@
             if (dd.classList.contains("open")) loadList();
         }
 
-        // Capture phase + stopPropagation keeps fcm.js's own bell listener
-        // (when Firebase loads) from firing and double-toggling the dropdown.
         document.addEventListener("click", function (e) {
             if (!e.target || !e.target.closest) return;
             if (!e.target.closest("#chBell")) {

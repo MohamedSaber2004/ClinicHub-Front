@@ -4,19 +4,27 @@
 @{
     var apiBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
     var fb = _firebaseWebOptions.Value;
+    var apiKey = !string.IsNullOrWhiteSpace(fb.ApiKey) ? fb.ApiKey : "AIzaSyBDxnZgDSspKUrcjdao39rfTL7PTgoW1DU";
+    var authDomain = !string.IsNullOrWhiteSpace(fb.AuthDomain) ? fb.AuthDomain : "doctory-1aca1.firebaseapp.com";
+    var projectId = !string.IsNullOrWhiteSpace(fb.ProjectId) ? fb.ProjectId : "doctory-1aca1";
+    var storageBucket = !string.IsNullOrWhiteSpace(fb.StorageBucket) ? fb.StorageBucket : "doctory-1aca1.firebasestorage.app";
+    var messagingSenderId = !string.IsNullOrWhiteSpace(fb.MessagingSenderId) ? fb.MessagingSenderId : "1077893614286";
+    var appId = !string.IsNullOrWhiteSpace(fb.AppId) ? fb.AppId : "1:1077893614286:web:be3f460b60b1dd290c9e9f";
+    var measurementId = !string.IsNullOrWhiteSpace(fb.MeasurementId) ? fb.MeasurementId : "G-FQGVDLQC6Q";
+    var vapidKey = fb.VapidKey ?? "";
 }
 <script>
     window.ClinicHubConfig = {
         apiBaseUrl: '@apiBaseUrl',
-        vapidKey: '@fb.VapidKey',
+        vapidKey: '@vapidKey',
         firebaseConfig: {
-            apiKey: '@fb.ApiKey',
-            authDomain: '@fb.AuthDomain',
-            projectId: '@fb.ProjectId',
-            storageBucket: '@fb.StorageBucket',
-            messagingSenderId: '@fb.MessagingSenderId',
-            appId: '@fb.AppId',
-            measurementId: '@fb.MeasurementId'
+            apiKey: '@apiKey',
+            authDomain: '@authDomain',
+            projectId: '@projectId',
+            storageBucket: '@storageBucket',
+            messagingSenderId: '@messagingSenderId',
+            appId: '@appId',
+            measurementId: '@measurementId'
         }
     };
 </script>

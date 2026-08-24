@@ -1,4 +1,4 @@
-<div id="globalLoadingOverlay" class="loading-overlay">
+<div id="globalLoadingOverlay" class="loading-overlay" aria-hidden="true">
     <div class="loading-spinner-container">
         <div class="loading-orbit">
             <svg class="loading-ring" viewBox="0 0 80 80" aria-hidden="true">
@@ -13,6 +13,170 @@
         <p class="loading-text">جارٍ التحميل...</p>
     </div>
 </div>
+
+<script>
+    (function () {
+        'use strict';
+
+        var activeRequests = 0;
+        var overlayEl = null;
+        var safetyTimer = null;
+        var MAX_LOAD_TIMEOUT = 12000;
+
+        function getOverlay() {
+            if (!overlayEl) {
+                overlayEl = document.getElementById('globalLoadingOverlay');
+            }
+            return overlayEl;
+        }
+
+        function isSilentUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            var lower = url.toLowerCase();
+            return lower.indexOf('notificationscount') !== -1 ||
+                lower.indexOf('notificationslist') !== -1 ||
+                lower.indexOf('registerfcmtoken') !== -1 ||
+                lower.indexOf('fcm-token') !== -1 ||
+                lower.indexOf('refresh-token') !== -1 ||
+                lower.indexOf('refreshtoken') !== -1 ||
+                lower.indexOf('getstats') !== -1 ||
+                lower.indexOf('getqueue') !== -1 ||
+                lower.indexOf('silent=1') !== -1;
+        }
+
+        function isSilentRequest(input, init) {
+            var url = '';
+            if (typeof input === 'string') {
+                url = input;
+            } else if (input && input.url) {
+                url = input.url;
+            }
+
+            if (init) {
+                if (init.skipLoader || init.silent || init.background) return true;
+                if (init.headers) {
+                    var h = init.headers;
+                    if (h['X-Silent'] === 'true' || h['X-Skip-Loader'] === 'true' || h['X-Background'] === 'true') return true;
+                    if (typeof h.get === 'function' && (h.get('X-Silent') === 'true' || h.get('X-Skip-Loader') === 'true')) return true;
+                }
+            }
+
+            return isSilentUrl(url);
+        }
+
+        function showLoader() {
+            var el = getOverlay();
+            if (el) {
+                el.classList.add('loading-active');
+                el.setAttribute('aria-hidden', 'false');
+            }
+            clearTimeout(safetyTimer);
+            safetyTimer = setTimeout(function () {
+                hideLoader(true);
+            }, MAX_LOAD_TIMEOUT);
+        }
+
+        function hideLoader(force) {
+            if (force) {
+                activeRequests = 0;
+            }
+            clearTimeout(safetyTimer);
+            var el = getOverlay();
+            if (el) {
+                el.classList.remove('loading-active');
+                el.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        window.showLoader = showLoader;
+        window.hideLoader = hideLoader;
+
+        window.loadingService = {
+            show: function () {
+                activeRequests++;
+                showLoader();
+            },
+            hide: function (force) {
+                if (force) {
+                    activeRequests = 0;
+                } else {
+                    activeRequests = Math.max(0, activeRequests - 1);
+                }
+                if (activeRequests === 0) {
+                    hideLoader();
+                }
+            },
+            getActiveCount: function () {
+                return activeRequests;
+            },
+            reset: function () {
+                activeRequests = 0;
+                hideLoader(true);
+            }
+        };
+
+        // Wrap fetch to ignore background polling and prevent unwanted loader popups
+        var origFetch = window.fetch;
+        window.fetch = function (input, init) {
+            if (isSilentRequest(input, init)) {
+                return origFetch.call(window, input, init);
+            }
+
+            activeRequests++;
+            showLoader();
+
+            return origFetch.call(window, input, init).then(function (response) {
+                activeRequests = Math.max(0, activeRequests - 1);
+                if (activeRequests === 0) {
+                    hideLoader();
+                }
+                return response;
+            }).catch(function (err) {
+                activeRequests = Math.max(0, activeRequests - 1);
+                if (activeRequests === 0) {
+                    hideLoader();
+                }
+                throw err;
+            });
+        };
+
+        // BFCache and page lifecycle safety (prevents stuck loader when navigating back)
+        window.addEventListener('pageshow', function () {
+            activeRequests = 0;
+            hideLoader(true);
+        });
+
+        window.addEventListener('DOMContentLoaded', function () {
+            activeRequests = 0;
+            hideLoader(true);
+        });
+
+        window.addEventListener('load', function () {
+            activeRequests = 0;
+            hideLoader(true);
+        });
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible' && activeRequests <= 0) {
+                hideLoader(true);
+            }
+        });
+
+        // Form submit protection (checks HTML5 validity before showing loader)
+        document.addEventListener('submit', function (e) {
+            var form = e.target;
+            if (!form || !form.tagName || form.tagName.toLowerCase() !== 'form') return;
+            if (form.getAttribute('data-ajax') === 'true') return;
+            if (form.target === '_blank' || form.hasAttribute('data-no-loader')) return;
+
+            if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+                return;
+            }
+
+            showLoader();
+        }, true);
+    })();
+</script>
 
 
 
