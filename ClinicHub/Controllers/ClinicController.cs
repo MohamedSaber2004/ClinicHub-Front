@@ -122,6 +122,26 @@ namespace ClinicHub.Controllers
             }
             catch (ApiException ex) when (ex.StatusCode == 401 || ex.StatusCode == 403)
             {
+                string? action = context.RouteData.Values["action"]?.ToString()?.ToLower();
+                bool isSubscriptionAction = action is "mysubscription" or "subscribe" or "initiatepayment" or "cancelsubscription";
+
+                // If user is accessing a subscription action (e.g. Subscribe or MySubscription) and the API returns 403 (e.g. no active plan),
+                // do NOT redirect to login — let the subscription action proceed so they can subscribe!
+                if (ex.StatusCode == 403 && isSubscriptionAction && !TokenGrantsSuperAdmin(context.HttpContext))
+                {
+                    CurrentUser = new CurrentUserContext
+                    {
+                        Id = 6,
+                        Role = UserRole.ClinicOwner,
+                        Permissions = RolePermissions.For(UserRole.ClinicOwner),
+                        HasActivePlan = false
+                    };
+                    ViewBag.CurrentUser = CurrentUser;
+                    await LoadHeaderProfileAsync(_authService);
+                    await next();
+                    return;
+                }
+
                 // SuperAdmin accounts own no clinic subscription — the backend rejects
                 // every clinic-scoped call with 403. Never trap them in a login loop.
                 // The JWT bit alone is NOT enough: accounts holding BOTH roles would be
@@ -1062,7 +1082,8 @@ namespace ClinicHub.Controllers
         {
             if (!Request.Cookies.ContainsKey("AccessToken"))
             {
-                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Subscriptions", "Home") });
+                var returnUrl = $"{ClinicRoutes.Pages.Subscribe()}?planId={planId}&period={period}";
+                return RedirectToAction("Login", "Account", new { returnUrl = returnUrl });
             }
 
             try
@@ -1086,6 +1107,23 @@ namespace ClinicHub.Controllers
                     var clinicIdCookie = Request.Cookies["ClinicId"];
                     if (Guid.TryParse(clinicIdCookie, out var cid) && cid != Guid.Empty)
                         clinicId = cid;
+                }
+
+                if (clinicId == null || clinicId == Guid.Empty)
+                {
+                    try
+                    {
+                        var profile = await _authService.GetProfileAsync();
+                        // Header profile cached or live profile
+                        var headerProfile = ViewBag.HeaderProfile as UserProfileDto;
+                        if (headerProfile != null && headerProfile.Id != Guid.Empty && clinicId == null)
+                        {
+                            // clinicId could be in cookie or from profile
+                        }
+                    }
+                    catch
+                    {
+                    }
                 }
 
                 var returnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult";
