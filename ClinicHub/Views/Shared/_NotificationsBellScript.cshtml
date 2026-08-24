@@ -1,0 +1,159 @@
+@{
+    var bellListUrl = Url.Action("NotificationsList");
+    var bellCountUrl = Url.Action("NotificationsCount");
+}
+@* Firebase-independent bell wiring. fcm.js only attaches bell events after the
+   Firebase SDK loads; if it fails (offline/CDN blocked) the bell would be dead.
+   This runs immediately and intercepts bell clicks in the capture phase
+   (stopPropagation) so fcm.js's duplicate listener cannot double-toggle. *@
+<script>
+    (function () {
+        var LIST_URL = "@bellListUrl";
+        var COUNT_URL = "@bellCountUrl";
+
+        var TYPE_NAMES = {
+            "7": "SubscriptionExpiring",
+            "9": "AdExpiring",
+            "10": "AppointmentOutsideAvailability",
+            "11": "AppointmentOutsideWorkingHours",
+            "12": "NewBookingRequest",
+            "13": "ClinicRegistered",
+            "14": "ClinicApproved",
+            "15": "ClinicRejected",
+            "16": "SupportTicketUpdate",
+            "17": "PaymentReceived",
+            "18": "RevenueIncreased",
+            "19": "AppointmentAccepted"
+        };
+
+        function typeName(v) { return TYPE_NAMES[String(v || "")] || String(v || ""); }
+
+        function rolePath(kind) {
+            var role = (localStorage.getItem("role") || "").toLowerCase();
+            if (kind === "notifications") {
+                if (role.indexOf("clinic") !== -1) return "/Clinic/Notifications";
+                if (role.indexOf("doctor") !== -1) return "/Doctor/Notifications";
+                if (role.indexOf("staff") !== -1) return "/Staff/Notifications";
+                return "/Admin/Notifications";
+            }
+            if (kind === "clinics") {
+                if (role.indexOf("clinic") !== -1) return "/Clinic/Index";
+                if (role.indexOf("super") !== -1) return "/Admin/Clinics";
+                return null;
+            }
+            if (role.indexOf("clinic") !== -1) return "/Clinic/DoctorAppointments";
+            if (role.indexOf("doctor") !== -1) return "/Doctor/Appointments";
+            if (role.indexOf("staff") !== -1) return "/Staff/Appointments";
+            return "/Admin/Index";
+        }
+
+        function navigateByType(type) {
+            if (typeof window.chNavigateByType === "function") {
+                window.chNavigateByType(type);
+                return;
+            }
+            var name = typeName(type);
+            var target = null;
+            if (["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"].indexOf(name) !== -1) target = rolePath("appointments");
+            else if (["ClinicRegistered", "ClinicApproved", "ClinicRejected"].indexOf(name) !== -1) target = rolePath("clinics");
+            else if (["SubscriptionExpiring", "AdExpiring"].indexOf(name) !== -1) target = rolePath("notifications");
+            if (target && window.location.pathname !== target) window.location.href = target;
+        }
+
+        function esc(s) {
+            var d = document.createElement("div");
+            d.textContent = s == null ? "" : String(s);
+            return d.innerHTML;
+        }
+
+        function itemHtml(item) {
+            var title = item.titleAr || item.TitleAr || item.title || item.Title || "";
+            var body = item.bodyAr || item.BodyAr || item.body || item.Body || item.message || item.Message || "";
+            var type = item.type !== undefined && item.type !== null ? item.type : "";
+            var date = item.createdAt || item.CreatedAt || item.createdDate || "";
+            if (date) {
+                var d = new Date(date);
+                if (!isNaN(d.getTime())) date = d.toLocaleString("ar", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+            }
+            return '<div class="ch-bell-item" data-type="' + esc(type) + '" role="button" tabindex="0">' +
+                '<div class="ch-bell-item-title">' + esc(title) + '</div>' +
+                (body ? '<div class="ch-bell-item-body">' + esc(body) + '</div>' : "") +
+                (date ? '<div class="ch-bell-item-time">' + esc(date) + '</div>' : "") +
+                '</div>';
+        }
+
+        function renderList(items) {
+            var list = document.getElementById("chBellList");
+            if (!list) return;
+            list.innerHTML = (items && items.length)
+                ? items.slice(0, 10).map(itemHtml).join("")
+                : '<div class="ch-bell-empty">لا توجد إشعارات</div>';
+        }
+
+        function refreshBadge() {
+            fetch(COUNT_URL, { headers: { "Accept": "application/json" } })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    var count = (data && (typeof data.count === "number" ? data.count : data.unreadCount)) || 0;
+                    var badge = document.getElementById("chBellBadge");
+                    if (!badge) return;
+                    badge.textContent = count > 99 ? "99+" : String(count);
+                    badge.hidden = count <= 0;
+                }).catch(function () {});
+        }
+
+        function loadList() {
+            var list = document.getElementById("chBellList");
+            if (!list) return;
+            list.innerHTML = '<div class="ch-bell-empty">جارٍ التحميل...</div>';
+            fetch(LIST_URL + "?pageNumber=1&pageSize=10", { headers: { "Accept": "application/json" } })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    renderList(data && data.items ? data.items : []);
+                    refreshBadge();
+                })
+                .catch(function () { renderList([]); });
+        }
+
+        function toggleDropdown() {
+            var dd = document.getElementById("chBellDropdown");
+            if (!dd) return;
+            dd.classList.toggle("open");
+            if (dd.classList.contains("open")) loadList();
+        }
+
+        // Capture phase + stopPropagation keeps fcm.js's own bell listener
+        // (when Firebase loads) from firing and double-toggling the dropdown.
+        document.addEventListener("click", function (e) {
+            if (!e.target || !e.target.closest) return;
+            if (!e.target.closest("#chBell")) {
+                var dd = document.getElementById("chBellDropdown");
+                if (dd && dd.classList.contains("open")) dd.classList.remove("open");
+                return;
+            }
+            if (e.target.closest(".ch-bell-btn")) {
+                e.stopPropagation();
+                toggleDropdown();
+            }
+        }, true);
+
+        var listBox = document.getElementById("chBellList");
+        if (listBox) {
+            listBox.addEventListener("click", function (e) {
+                var item = e.target && e.target.closest ? e.target.closest(".ch-bell-item") : null;
+                if (item) navigateByType(item.getAttribute("data-type"));
+            });
+            listBox.addEventListener("keydown", function (e) {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                var item = e.target && e.target.closest ? e.target.closest(".ch-bell-item") : null;
+                if (item) {
+                    e.preventDefault();
+                    navigateByType(item.getAttribute("data-type"));
+                }
+            });
+        }
+
+        refreshBadge();
+        setInterval(refreshBadge, 60000);
+    })();
+</script>

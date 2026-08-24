@@ -1,12 +1,37 @@
-@using ClinicHub.Data
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "إيرادات المواعيد - Doctory";
     Layout = "_ClinicLayout";
-    var revenues = ViewBag.Revenues as List<MockAppointmentPayment> ?? new List<MockAppointmentPayment>();
-    var paidTotal = revenues.Where(r => r.Status == "مدفوعة").Sum(r => r.Amount);
-    var pendingTotal = revenues.Where(r => r.Status == "معلقة").Sum(r => r.Amount);
-    var todayTotal = revenues.Where(r => r.Date == "2026-07-29").Sum(r => r.Amount);
-    var monthTotal = revenues.Sum(r => r.Amount);
+
+    var revenues = ViewBag.Revenues as IReadOnlyCollection<AppointmentPaymentDto> ?? new List<AppointmentPaymentDto>();
+    var stats = ViewBag.Stats as AppointmentRevenueStatsDto ?? new AppointmentRevenueStatsDto();
+
+    int? statusFilter = ViewBag.StatusFilter;
+    int? methodFilter = ViewBag.MethodFilter;
+
+    string StatusLabel(int s) => s switch
+    {
+        0 => "معلقة",
+        1 => "مدفوعة",
+        2 => "فاشلة",
+        3 => "مستردة",
+        _ => "غير معروفة"
+    };
+    string StatusClass(int s) => s switch
+    {
+        0 => "badge-warning",
+        1 => "badge-success",
+        2 => "badge-danger",
+        3 => "badge-secondary",
+        _ => "badge-info"
+    };
+    string MethodLabel(int m) => m switch
+    {
+        0 => "نقداً",
+        1 => "محفظة إلكترونية",
+        _ => "غير معروفة"
+    };
+    string MethodClass(int m) => m == 0 ? "badge-primary" : "badge-warning";
 }
 
 <div class="page-header">
@@ -23,7 +48,7 @@
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@todayTotal.ToString("N0") ج.م</span>
+            <span class="stat-value">@stats.TodayRevenue.ToString("N0") ج.م</span>
             <span class="stat-label">إيرادات اليوم</span>
         </div>
         <div class="icon-wrapper icon-wrapper--green">
@@ -34,18 +59,18 @@
     </div>
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@monthTotal.ToString("N0") ج.م</span>
+            <span class="stat-value">@stats.MonthRevenue.ToString("N0") ج.م</span>
             <span class="stat-label">إيرادات الشهر</span>
         </div>
         <div class="icon-wrapper icon-wrapper--primary">
             <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.55-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
             </svg>
         </div>
     </div>
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@paidTotal.ToString("N0") ج.م</span>
+            <span class="stat-value">@stats.PaidTotal.ToString("N0") ج.م</span>
             <span class="stat-label">مدفوعات محصلة</span>
         </div>
         <div class="icon-wrapper icon-wrapper--blue">
@@ -56,7 +81,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@pendingTotal.ToString("N0") ج.م</span>
+            <span class="stat-value">@stats.PendingTotal.ToString("N0") ج.م</span>
             <span class="stat-label">مدفوعات معلقة</span>
         </div>
         <div class="icon-wrapper icon-wrapper--amber">
@@ -67,27 +92,26 @@
     </div>
 </div>
 
-<div class="filter-bar">
-    <select class="form-select" id="statusFilter" onchange="applyRevenueFilter()">
+<form method="get" action="@Url.Action("AppointmentRevenue")" class="filter-bar table-filter-bar">
+    <select class="form-select" name="status" onchange="this.form.submit()">
         <option value="">جميع الحالات</option>
-        <option value="مدفوعة">مدفوعة</option>
-        <option value="معلقة">معلقة</option>
-        <option value="مستردة">مستردة</option>
+        <option value="0" selected="@(statusFilter == 0)">معلقة</option>
+        <option value="1" selected="@(statusFilter == 1)">مدفوعة</option>
+        <option value="3" selected="@(statusFilter == 3)">مستردة</option>
     </select>
-    <select class="form-select" id="methodFilter" onchange="applyRevenueFilter()">
+    <select class="form-select" name="method" onchange="this.form.submit()">
         <option value="">جميع طرق الدفع</option>
-        <option value="نقداً">نقداً</option>
-        <option value="بطاقة">بطاقة</option>
-        <option value="محفظة إلكترونية">محفظة إلكترونية</option>
+        <option value="0" selected="@(methodFilter == 0)">نقداً</option>
+        <option value="1" selected="@(methodFilter == 1)">محفظة إلكترونية</option>
     </select>
-</div>
+    <a href="@Url.Action("AppointmentRevenue")" class="btn btn-outline-secondary btn-sm">مسح</a>
+</form>
 
 <div class="table-card">
     <div class="table-responsive">
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>#</th>
                     <th>المريض</th>
                     <th>الطبيب</th>
                     <th>التاريخ</th>
@@ -98,40 +122,26 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var rev in revenues.OrderByDescending(r => r.Date).ThenByDescending(r => r.Time))
-                {
-                    <tr data-status="@rev.Status" data-method="@rev.Method">
-                        <td class="text-md">@rev.Id</td>
-                        <td class="text-md-medium">@rev.PatientName</td>
-                        <td class="text-md">@rev.DoctorName</td>
-                        <td class="text-md">@rev.Date</td>
-                        <td class="text-md">@rev.Time</td>
-                        <td class="text-md-medium">@rev.Amount.ToString("N0") ج.م</td>
-                        <td><span class="badge @rev.MethodClass">@rev.Method</span></td>
-                        <td><span class="badge @rev.StatusClass">@rev.Status</span></td>
-                    </tr>
-                }
                 @if (revenues.Count == 0)
                 {
                     <tr>
-                        <td colspan="8" class="text-md text-center">لا توجد إيرادات مسجلة</td>
+                        <td colspan="7" class="text-md text-center">لا توجد إيرادات مطابقة للفلاتر المحددة</td>
+                    </tr>
+                }
+                @foreach (var rev in revenues)
+                {
+                    <tr>
+                        <td class="text-md-medium">@rev.PatientName</td>
+                        <td class="text-md">@rev.DoctorName</td>
+                        <td class="text-md">@(rev.AppointmentDate.Year > 2000 ? rev.AppointmentDate.ToString("yyyy-MM-dd") : "—")</td>
+                        <td class="text-md">@rev.StartTime</td>
+                        <td class="text-md-medium">@rev.Amount.ToString("N0") ج.م</td>
+                        <td><span class="badge @MethodClass(rev.Method)">@MethodLabel(rev.Method)</span></td>
+                        <td><span class="badge @StatusClass(rev.Status)">@StatusLabel(rev.Status)</span></td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
+    <partial name="_Pagination" />
 </div>
-
-@section Scripts {
-    <script>
-        function applyRevenueFilter() {
-            var status = document.getElementById('statusFilter').value;
-            var method = document.getElementById('methodFilter').value;
-            document.querySelectorAll('.custom-table tbody tr[data-status]').forEach(function (row) {
-                var matchStatus = !status || row.getAttribute('data-status') === status;
-                var matchMethod = !method || row.getAttribute('data-method') === method;
-                row.style.display = (matchStatus && matchMethod) ? '' : 'none';
-            });
-        }
-    </script>
-}

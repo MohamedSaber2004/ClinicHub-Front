@@ -31,6 +31,7 @@ namespace ClinicHub.Controllers
         private readonly IDoctorDashboardService _doctorDashboardService;
         private readonly INotificationService _notificationService;
         private readonly IRatingsService _ratingsService;
+        private readonly IClinicPaymentService _clinicPaymentService;
 
         public ClinicController(
             ISubscriptionService subscriptionService,
@@ -48,7 +49,8 @@ namespace ClinicHub.Controllers
             IDoctorService doctorService,
             IDoctorDashboardService doctorDashboardService,
             INotificationService notificationService,
-            IRatingsService ratingsService)
+            IRatingsService ratingsService,
+            IClinicPaymentService clinicPaymentService)
         {
             _subscriptionService = subscriptionService;
             _planService = planService;
@@ -66,6 +68,7 @@ namespace ClinicHub.Controllers
             _doctorDashboardService = doctorDashboardService;
             _notificationService = notificationService;
             _ratingsService = ratingsService;
+            _clinicPaymentService = clinicPaymentService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -435,14 +438,67 @@ namespace ClinicHub.Controllers
             };
         }
 
-        public IActionResult AppointmentRevenue()
+        public async Task<IActionResult> AppointmentRevenue(int? status, int? method, int pageNumber = 1, int pageSize = 10)
         {
-            ViewBag.Revenues = MockData.GetAppointmentRevenues();
+            try
+            {
+                var data = await _clinicPaymentService.GetAppointmentPaymentsAsync(status, method, pageNumber, pageSize);
+                ViewBag.Revenues = data.Items;
+                ViewBag.Pagination = data;
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = ex.Message;
+                ViewBag.Revenues = new List<AppointmentPaymentDto>();
+                ViewBag.Pagination = null;
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "حدث خطأ غير متوقع أثناء تحميل إيرادات المواعيد.";
+                ViewBag.Revenues = new List<AppointmentPaymentDto>();
+                ViewBag.Pagination = null;
+            }
+
+            try
+            {
+                ViewBag.Stats = await _clinicPaymentService.GetAppointmentRevenueStatsAsync();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.Stats = new AppointmentRevenueStatsDto();
+                TempData["Error"] = TempData["Error"] ?? ex.Message;
+            }
+            catch (Exception)
+            {
+                ViewBag.Stats = new AppointmentRevenueStatsDto();
+            }
+
+            ViewBag.StatusFilter = status;
+            ViewBag.MethodFilter = method;
             return View();
         }
 
-        public IActionResult MedicalRecords()
+        public async Task<IActionResult> MedicalRecords(string? searchTerm, int pageNumber = 1, int pageSize = 10)
         {
+            try
+            {
+                var data = await _doctorDashboardService.GetPatientsAsync(searchTerm, pageNumber, pageSize);
+                ViewBag.Patients = data.Items;
+                ViewBag.Pagination = data;
+                ViewBag.SearchTerm = searchTerm;
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = ex.Message;
+                ViewBag.Patients = new List<DoctorPatientDto>();
+                ViewBag.Pagination = null;
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"حدث خطأ غير متوقع: {ex.Message}";
+                ViewBag.Patients = new List<DoctorPatientDto>();
+                ViewBag.Pagination = null;
+            }
             return View();
         }
 

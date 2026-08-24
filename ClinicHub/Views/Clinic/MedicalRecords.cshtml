@@ -1,131 +1,71 @@
+@using ClinicHub.Services.ReponseModels
 @{
-    ViewData["Title"] = "السجل الطبي الإلكتروني (EMR) - Doctory";
     Layout = "_ClinicLayout";
+    ViewData["Title"] = "السجل الطبي الإلكتروني (EMR) - Doctory";
+
+    var patients = ViewBag.Patients as IReadOnlyCollection<DoctorPatientDto> ?? new List<DoctorPatientDto>();
+
+    string GenderLabel(int? g) => g == 0 ? "ذكر" : g == 1 ? "أنثى" : "غير محدد";
+    string AgeLabel(int? age) => age.HasValue ? $"{age} سنة" : "غير محدد";
+    string LastVisitLabel(DateTime d) => d.Year > 2000 ? d.ToString("yyyy-MM-dd") : "—";
+    string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
-<div class="page-header">
-    <h2 class="page-title mb-0">السجل الطبي الإلكتروني (EMR)</h2>
-    <button class="btn btn-primary">
-        <i class="bi bi-file-earmark-medical me-1"></i> إنشاء سجل جديد
-    </button>
-</div>
+<h2 class="page-title">
+    <span class="page-title-icon">
+        <i class="bi bi-file-earmark-medical"></i>
+    </span>
+    السجل الطبي الإلكتروني (EMR)
+</h2>
 
-<!-- Search Panel -->
-<div class="table-card p-4 mb-4">
-    <div class="row g-3">
-        <div class="col-md-6">
-            <label class="form-label">بحث عن مريض (بالاسم، الرقم القومي، أو رقم الموبايل)</label>
-            <input type="text" class="form-input form-input-sm w-100" placeholder="أدخل اسم المريض للبحث..." />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">العيادة</label>
-            <select class="form-select form-input-sm w-100">
-                <option value="">جميع العيادات</option>
-                <option>عيادة القلب</option>
-                <option>عيادة الأعصاب</option>
-            </select>
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-secondary w-100">
-                <i class="bi bi-funnel me-1"></i> تصفية النتائج
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- EMR Patients List -->
-<div class="table-card p-5">
+<div class="table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">سجلات المرضى النشطة</h3>
     </div>
-
+    <form method="get" action="@Url.Action("MedicalRecords")" class="filter-bar table-filter-bar">
+        <input type="text" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
+        <button type="submit" class="btn btn-primary btn-sm">بحث</button>
+        <a href="@Url.Action("MedicalRecords")" class="btn btn-outline-secondary btn-sm">مسح</a>
+    </form>
     <div class="table-responsive">
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>رقم السجل</th>
                     <th>المريض</th>
-                    <th>العمر</th>
+                    <th>العمر / الجنس</th>
+                    <th>عدد الزيارات</th>
                     <th>آخر زيارة</th>
-                    <th>التشخيص الأخير</th>
-                    <th>الروشتة الإلكترونية (e-Rx)</th>
-                    <th>الإجراءات</th>
+                    <th>الإجراء</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>#EMR-2041</td>
-                    <td><strong>عزير بن محمد</strong></td>
-                    <td>45 سنة</td>
-                    <td>اليوم، 10:00 ص</td>
-                    <td>ارتفاع طفيف في ضغط الدم</td>
-                    <td><span class="badge badge-success"><i class="bi bi-file-earmark-check me-1"></i> نشطة - 2 دواء</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye me-1"></i> عرض
-                            </button>
-                            <button class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil me-1"></i> تعديل
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>#EMR-1985</td>
-                    <td><strong>حارس عبد الكريم</strong></td>
-                    <td>34 سنة</td>
-                    <td>اليوم، 11:30 ص</td>
-                    <td>صداع نصفي متكرر</td>
-                    <td><span class="badge badge-success"><i class="bi bi-file-earmark-check me-1"></i> نشطة - 1 دواء</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye me-1"></i> عرض
-                            </button>
-                            <button class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil me-1"></i> تعديل
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>#EMR-1892</td>
-                    <td><strong>حمزة الرفاعي</strong></td>
-                    <td>29 سنة</td>
-                    <td>اليوم، 12:15 م</td>
-                    <td>متابعة دورية</td>
-                    <td><span class="badge badge-secondary"><i class="bi bi-file-earmark-x me-1"></i> لا توجد روشتة</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye me-1"></i> عرض
-                            </button>
-                            <button class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil me-1"></i> تعديل
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>#EMR-1754</td>
-                    <td><strong>سارة أحمد</strong></td>
-                    <td>26 سنة</td>
-                    <td>أمس</td>
-                    <td>حساسية جلدية شديدة</td>
-                    <td><span class="badge badge-success"><i class="bi bi-file-earmark-check me-1"></i> نشطة - 3 أدوية</span></td>
-                    <td>
-                        <div class="table-actions">
-                            <button class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye me-1"></i> عرض
-                            </button>
-                            <button class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil me-1"></i> تعديل
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                @if (patients.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="table-empty">لا توجد سجلات مرضى مطابقة للبحث</td>
+                    </tr>
+                }
+                @foreach (var p in patients)
+                {
+                    <tr>
+                        <td>
+                            <div class="table-user">
+                                <span class="table-avatar">@Initial(p.FullName)</span>
+                                <span class="table-user-name">@p.FullName</span>
+                            </div>
+                        </td>
+                        <td>@AgeLabel(p.Age) / @GenderLabel(p.Gender)</td>
+                        <td><span class="badge badge-info">@p.TotalVisits</span></td>
+                        <td>@LastVisitLabel(p.LastVisitDate)</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("DoctorPatientHistory", new { patientId = p.UserId, name = p.FullName })">
+                                <i class="bi bi-clock-history"></i> عرض التاريخ الطبي
+                            </a>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
+    <partial name="_Pagination" />
 </div>
