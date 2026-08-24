@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
+using ClinicHub.Routes;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Enums;
 using ClinicHub.Services.Exceptions;
@@ -312,14 +313,15 @@ namespace ClinicHub.Controllers
             return View();
         }
 
-        public async Task<IActionResult> PatientHistory(Guid patientId, string? name, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> PatientHistory(string patientId, string? name, int pageNumber = 1, int pageSize = 10)
         {
-            ViewBag.PatientId = patientId;
+            var realPatientId = IdProtector.UnprotectGuid(patientId);
+            ViewBag.PatientId = realPatientId;
             ViewBag.PatientName = string.IsNullOrWhiteSpace(name) ? "مريض" : name;
 
             try
             {
-                var data = await _doctorDashboardService.GetPatientHistoryAsync(patientId, pageNumber, pageSize);
+                var data = await _doctorDashboardService.GetPatientHistoryAsync(realPatientId, pageNumber, pageSize);
                 ViewBag.History = data.Items;
                 ViewBag.Pagination = data;
             }

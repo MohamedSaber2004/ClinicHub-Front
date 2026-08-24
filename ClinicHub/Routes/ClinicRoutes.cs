@@ -22,7 +22,8 @@ namespace ClinicHub.Routes
             public static string CancelSubscription() => $"{Base}/CancelSubscription";
             public static string DoctorAppointments() => $"{Base}/DoctorAppointments";
             public static string DoctorPatients() => $"{Base}/DoctorPatients";
-            public static string DoctorPatientHistory(Guid patientId) => $"{Base}/DoctorPatientHistory/{patientId}";
+            public static string DoctorPatientHistory(Guid patientId) => $"{Base}/DoctorPatientHistory/{IdProtector.Protect(patientId)}";
+            public static string DoctorPatientHistory(string token) => $"{Base}/DoctorPatientHistory/{token}";
             public static string DoctorAvailability() => $"{Base}/DoctorAvailability";
             public static string Notifications() => $"{Base}/Notifications";
         }

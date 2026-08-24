@@ -418,13 +418,14 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Clinics/Details/{id}")]
-        public async Task<IActionResult> ClinicDetails(Guid id)
+        public async Task<IActionResult> ClinicDetails(string id)
         {
+            var realId = IdProtector.UnprotectGuid(id);
             ViewBag.GoogleMapsApiKey = _googleMapsOptions.Value.ApiKey;
 
             try
             {
-                var details = await _clinicService.GetClinicDetailsAsync(new GetClinicByIdRequest { Id = id });
+                var details = await _clinicService.GetClinicDetailsAsync(new GetClinicByIdRequest { Id = realId });
                 var clinic = details?.Data;
                 if (clinic != null)
                 {
@@ -441,7 +442,7 @@ namespace ClinicHub.Controllers
             {
                 try
                 {
-                    var fallback = await _clinicService.GetClinicByIdAsync(new GetClinicByIdRequest { Id = id });
+                    var fallback = await _clinicService.GetClinicByIdAsync(new GetClinicByIdRequest { Id = realId });
                     var fallbackClinic = fallback?.Data;
                     if (fallbackClinic != null)
                     {
@@ -637,12 +638,13 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Doctors/Details/{id}")]
-        public async Task<IActionResult> DoctorDetails(Guid id)
+        public async Task<IActionResult> DoctorDetails(string id)
         {
+            var realId = IdProtector.UnprotectGuid(id);
             ViewBag.Doctor = (DoctorDto?)null;
             try
             {
-                ViewBag.Doctor = await _clinicDoctorService.GetDoctorByIdAsync(id);
+                ViewBag.Doctor = await _clinicDoctorService.GetDoctorByIdAsync(realId);
             }
             catch (ApiException ex)
             {
@@ -1013,13 +1015,14 @@ namespace ClinicHub.Controllers
             return RedirectToAction(nameof(Payments));
         }
 
-        [Route("Admin/PaymentsDetails/{id:guid}")]
-        public async Task<IActionResult> PaymentsDetails(Guid id)
+        [Route("Admin/PaymentsDetails/{id}")]
+        public async Task<IActionResult> PaymentsDetails(string id)
         {
+            var realId = IdProtector.UnprotectGuid(id);
             ViewBag.Detail = null;
             try
             {
-                ViewBag.Detail = await _adminPaymentService.GetPaymentDetailAsync(id);
+                ViewBag.Detail = await _adminPaymentService.GetPaymentDetailAsync(realId);
             }
             catch (ApiException ex) when (ex.StatusCode == 404)
             {
@@ -1380,27 +1383,30 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Users/Overview/{id}")]
-        public async Task<IActionResult> UsersOverview(Guid id)
+        public async Task<IActionResult> UsersOverview(string id)
         {
-            ViewBag.User = await LoadUserOverviewAsync(id);
+            var realId = IdProtector.UnprotectGuid(id);
+            ViewBag.User = await LoadUserOverviewAsync(realId);
             return View("Users/Overview");
         }
 
         [Route("Admin/Users/Visits/{id}")]
-        public async Task<IActionResult> UsersVisits(Guid id)
+        public async Task<IActionResult> UsersVisits(string id)
         {
-            var overview = await LoadUserOverviewAsync(id);
-            ViewBag.UserId = id;
+            var realId = IdProtector.UnprotectGuid(id);
+            var overview = await LoadUserOverviewAsync(realId);
+            ViewBag.UserId = realId;
             ViewBag.User = overview;
             ViewBag.Visits = overview.RecentVisits;
             return View("Users/Visits");
         }
 
         [Route("Admin/Users/Requests/{id}")]
-        public async Task<IActionResult> UsersRequests(Guid id)
+        public async Task<IActionResult> UsersRequests(string id)
         {
-            var overview = await LoadUserOverviewAsync(id);
-            ViewBag.UserId = id;
+            var realId = IdProtector.UnprotectGuid(id);
+            var overview = await LoadUserOverviewAsync(realId);
+            ViewBag.UserId = realId;
             ViewBag.User = overview;
             ViewBag.Requests = overview.Requests;
             return View("Users/Requests");
@@ -1508,10 +1514,11 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Admin/Users/Payments/{id}")]
-        public async Task<IActionResult> UsersPayments(Guid id)
+        public async Task<IActionResult> UsersPayments(string id)
         {
-            var overview = await LoadUserOverviewAsync(id);
-            ViewBag.UserId = id;
+            var realId = IdProtector.UnprotectGuid(id);
+            var overview = await LoadUserOverviewAsync(realId);
+            ViewBag.UserId = realId;
             ViewBag.User = overview;
             ViewBag.Payments = overview.Payments;
             return View("Users/Payments");

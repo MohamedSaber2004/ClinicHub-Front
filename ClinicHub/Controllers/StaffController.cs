@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
+using ClinicHub.Routes;
 using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Enums;
 using ClinicHub.Services.Exceptions;
@@ -331,9 +332,10 @@ namespace ClinicHub.Controllers
             return View();
         }
 
-        public IActionResult DoctorSchedule(int doctorId)
+        public IActionResult DoctorSchedule(string doctorId)
         {
-            ViewBag.DoctorId = doctorId;
+            var realDoctorId = IdProtector.UnprotectInt(doctorId);
+            ViewBag.DoctorId = realDoctorId;
             return View();
         }
 

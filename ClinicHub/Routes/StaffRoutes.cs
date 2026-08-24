@@ -10,7 +10,9 @@ namespace ClinicHub.Routes
             public static string Appointments() => $"{Base}/Appointments";
             public static string Queue() => $"{Base}/Queue";
             public static string RegisterPatient() => $"{Base}/RegisterPatient";
-            public static string DoctorSchedule(int doctorId) => $"{Base}/DoctorSchedule/{doctorId}";
+            public static string DoctorSchedule(int doctorId) => $"{Base}/DoctorSchedule/{IdProtector.Protect(doctorId)}";
+            public static string DoctorSchedule(Guid doctorId) => $"{Base}/DoctorSchedule/{IdProtector.Protect(doctorId)}";
+            public static string DoctorSchedule(string token) => $"{Base}/DoctorSchedule/{token}";
             public static string Profile() => $"{Base}/Profile";
             public static string Notifications() => $"{Base}/Notifications";
         }

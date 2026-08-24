@@ -317,14 +317,15 @@ namespace ClinicHub.Controllers
             return View();
         }
 
-        public async Task<IActionResult> DoctorPatientHistory(Guid patientId, string? name, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> DoctorPatientHistory(string patientId, string? name, int pageNumber = 1, int pageSize = 10)
         {
-            ViewBag.PatientId = patientId;
+            var realPatientId = IdProtector.UnprotectGuid(patientId);
+            ViewBag.PatientId = realPatientId;
             ViewBag.PatientName = string.IsNullOrWhiteSpace(name) ? "مريض" : name;
 
             try
             {
-                var data = await _doctorDashboardService.GetPatientHistoryAsync(patientId, pageNumber, pageSize);
+                var data = await _doctorDashboardService.GetPatientHistoryAsync(realPatientId, pageNumber, pageSize);
                 ViewBag.History = data.Items;
                 ViewBag.Pagination = data;
             }
