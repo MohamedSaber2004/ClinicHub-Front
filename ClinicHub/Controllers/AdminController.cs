@@ -738,7 +738,7 @@ namespace ClinicHub.Controllers
         {
             try
             {
-                ViewBag.Plans = await _planService.GetAllAsync();
+                ViewBag.Plans = await _adminSubscriptionService.GetAllPlansAsync();
             }
             catch (ApiException ex)
             {
@@ -746,6 +746,30 @@ namespace ClinicHub.Controllers
                 ViewBag.Plans = new List<PlanDto>();
             }
             return View("Subscriptions");
+        }
+
+        [HttpPost]
+        [Route("Admin/Subscriptions/UpdatePlan")]
+        public async Task<IActionResult> UpdatePlan([FromBody] PlanDto plan)
+        {
+            try
+            {
+                if (plan == null || plan.Id == Guid.Empty)
+                    return Json(new { success = false, message = "بيانات الباقة غير صالحة" });
+
+                var updated = await _adminSubscriptionService.UpdatePlanAsync(plan.Id, plan);
+                return Json(new { success = true, message = "تم حفظ تعديلات الباقة بنجاح", data = updated });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
 
         [Route("Admin/PendingClinics")]

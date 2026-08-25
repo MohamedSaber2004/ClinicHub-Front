@@ -38,7 +38,7 @@
         </div>
 
         <div class="subscription-plans" id="planCards">
-            @if (plans.Count == 0)
+            @if (plans.Where(p => p.IsActive).Count() == 0)
             {
                 <div class="plans-empty">
                     <p>لا توجد باقات متاحة حالياً</p>
@@ -46,7 +46,7 @@
             }
             else
             {
-                foreach (var plan in plans.OrderBy(p => p.SortOrder))
+                foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
                 {
                     var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
                     var isTop = plan.SortOrder >= maxSort;

@@ -1,1 +1,2 @@
-﻿fix padding and margins and reponnsive of all pages and enhance ux experience to adapt to disabilities and all types of devices
+﻿i want to allow from superadmin dashboard allow to it from dashboard to hide and view any plans that viewed in home in subscription plans view and also can
+  allow to control on price of plans and that is the backend project e://clinichub if need to update here any thing make it then integrate with frontend
