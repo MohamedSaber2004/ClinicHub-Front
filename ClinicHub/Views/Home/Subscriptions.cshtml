@@ -280,6 +280,21 @@
 @section Scripts {
     <script>
         (function() {
+            // Fix: make wallet/credit cards actually toggle visual selected state
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(function(radio){
+                radio.addEventListener('change', function(){
+                    document.querySelectorAll('#paymentMethodModal .payment-method-card').forEach(function(c){ c.classList.remove('selected'); });
+                    this.closest('.payment-method-card')?.classList.add('selected');
+                });
+            });
+            document.querySelectorAll('#paymentMethodModal .payment-method-card').forEach(function(card){
+                card.addEventListener('click', function(e){
+                    if(e.target.closest('input')) return;
+                    var r = this.querySelector('input[type="radio"]');
+                    if(r && !r.checked){ r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
+                });
+            });
+
             var toggle = document.getElementById('periodToggle');
             if (toggle) {
                 toggle.addEventListener('change', function() {
@@ -366,47 +381,36 @@
                         pmModal.show();
                     }
 
-                    // Handle confirm payment method
+                    // Handle confirm payment method (single handler, no duplicate listeners)
                     var confirmBtn = document.getElementById('confirmPaymentMethodBtn');
-                    if (confirmBtn) {
-                        var clickHandler = async function() {
-                            confirmBtn.disabled = true;
-                            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جارٍ التحويل للدفع...';
+                    if (confirmBtn && !confirmBtn.dataset.bound) {
+                        confirmBtn.dataset.bound = '1';
+                        confirmBtn.addEventListener('click', async function() {
+                            // capture current planId/period from last clicked subscribe button
+                            var activePlanId = confirmBtn.dataset.planId;
+                            var activePeriod = parseInt(confirmBtn.dataset.period || '0');
+                            if(!activePlanId){ activePlanId = planId; activePeriod = period; }
+                            this.disabled = true;
+                            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جارٍ التحويل للدفع...';
                             var selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'PaymobWallet';
-
                             try {
                                 var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                                 var response = await fetch('/Clinic/InitiatePayment', {
                                     method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'RequestVerificationToken': csrfToken
-                                    },
-                                    body: JSON.stringify({
-                                        planId: planId,
-                                        period: period,
-                                        paymentMethod: selectedMethod
-                                    })
+                                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': csrfToken },
+                                    body: JSON.stringify({ planId: activePlanId, period: activePeriod, paymentMethod: selectedMethod })
                                 });
-
                                 var result = await response.json();
-                                if (result && result.success && result.targetUrl) {
-                                    window.location.href = result.targetUrl;
-                                } else if (result && result.message) {
-                                    alert(result.message);
-                                    confirmBtn.disabled = false;
-                                    confirmBtn.innerHTML = '<i class="bi bi-lock-fill me-1"></i> متابعة للدفع';
-                                } else {
-                                    window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(planId) + '&period=' + period + '&paymentMethod=' + encodeURIComponent(selectedMethod);
-                                }
+                                if (result && result.success && result.targetUrl) { window.location.href = result.targetUrl; }
+                                else if (result && result.message) { alert(result.message); this.disabled = false; this.innerHTML = '<i class="bi bi-lock-fill me-1"></i> متابعة للدفع'; }
+                                else { window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(activePlanId) + '&period=' + activePeriod + '&paymentMethod=' + encodeURIComponent(selectedMethod); }
                             } catch (err) {
-                                window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(planId) + '&period=' + period + '&paymentMethod=' + encodeURIComponent(selectedMethod);
+                                window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(activePlanId) + '&period=' + activePeriod + '&paymentMethod=' + encodeURIComponent(selectedMethod);
                             }
-                        };
-
-                        confirmBtn.onclick = clickHandler;
-                        confirmBtn.addEventListener('click', clickHandler);
+                        });
                     }
+                    // store current selection for the single handler
+                    if(confirmBtn){ confirmBtn.dataset.planId = planId; confirmBtn.dataset.period = period; }
                 });
             });
         })();

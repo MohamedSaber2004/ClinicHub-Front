@@ -303,8 +303,23 @@
     </div>
 </div>
 
-@section Scripts {
+    @section Scripts {
     <script>
+        // Fix: wallet/credit toggle visual feedback
+        document.querySelectorAll('input[name="adPaymentMethod"]').forEach(function(radio){
+            radio.addEventListener('change', function(){
+                document.querySelectorAll('#paymentMethodAdModal .payment-method-card').forEach(function(c){ c.classList.remove('selected'); });
+                this.closest('.payment-method-card')?.classList.add('selected');
+            });
+        });
+        document.querySelectorAll('#paymentMethodAdModal .payment-method-card').forEach(function(card){
+            card.addEventListener('click', function(e){
+                if(e.target.closest('input')) return;
+                var r = this.querySelector('input[type="radio"]');
+                if(r && !r.checked){ r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
+            });
+        });
+
         var MAX_DURATION_MULTIPLES = 12;
 
         function fillDurationOptions(opt) {
@@ -479,6 +494,9 @@
             }
 
             var buyBtn = document.getElementById('buySubmitBtn');
+            var adConfirmBtn = document.getElementById('adConfirmPaymentMethodBtn');
+            // Store pending ad order data between modals
+            var pendingAdOrder = null;
             if (buyBtn) {
                 buyBtn.addEventListener('click', function () {
                     var packageSelect = document.getElementById('buyPackage');
@@ -491,38 +509,60 @@
                     var baseDays = parseInt(opt.getAttribute('data-duration'));
                     if (duration % baseDays !== 0) { showErrorModal('المدة يجب أن تكون مضاعفاً صحيحاً لمدة الباقة'); return; }
 
+                    pendingAdOrder = { packageId: packageId, duration: duration };
+                    // Show payment method selection before creating order
+                    var pmModalEl = document.getElementById('paymentMethodAdModal');
+                    if(pmModalEl){
+                        var pmModal = bootstrap.Modal.getInstance(pmModalEl) || new bootstrap.Modal(pmModalEl);
+                        // hide buy modal first if open
+                        var buyModalEl = document.getElementById('buyAdModal');
+                        var buyModal = bootstrap.Modal.getInstance(buyModalEl);
+                        if(buyModal) buyModal.hide();
+                        pmModal.show();
+                    }
+                });
+            }
+            if(adConfirmBtn){
+                adConfirmBtn.addEventListener('click', function(){
+                    if(!pendingAdOrder){ showErrorModal('يرجى اختيار الباقة والمدة أولاً'); return; }
                     var selectedMethod = document.querySelector('input[name="adPaymentMethod"]:checked')?.value || 'PaymobWallet';
-
-                    buyBtn.disabled = true;
-                    buyBtn.textContent = 'جارٍ إنشاء الطلب...';
-
+                    adConfirmBtn.disabled = true;
+                    adConfirmBtn.textContent = 'جارٍ إنشاء الطلب...';
+                    // also disable buyBtn for feedback
+                    if(buyBtn){ buyBtn.disabled = true; buyBtn.textContent = 'جارٍ إنشاء الطلب...'; }
                     fetch('/Clinic/CreateAdOrder', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            adPackageId: packageId,
-                            durationDays: duration,
+                            adPackageId: pendingAdOrder.packageId,
+                            durationDays: pendingAdOrder.duration,
                             logoImageUrl: adLogoUrl || null,
                             paymentMethod: selectedMethod
                         })
                     })
                     .then(function (r) { return r.json(); })
                     .then(function (result) {
+                        // hide payment modal
+                        var pmModalEl = document.getElementById('paymentMethodAdModal');
+                        var pmModal = bootstrap.Modal.getInstance(pmModalEl);
+                        if(pmModal) pmModal.hide();
                         if (result.success && result.data && result.data.paymobRedirectUrl) {
                             showSuccessModal('تم إنشاء الطلب بنجاح، أكمل الدفع في نافذة Paymob ثم اضغط "تحديث الحالة" لتأكيد التفعيل.');
                             window.open(result.data.paymobRedirectUrl, '_blank');
                         } else if (result.success) {
                             showSuccessModal(result.message || 'تم إنشاء الطلب بنجاح');
                         } else {
-                            buyBtn.disabled = false;
-                            buyBtn.textContent = 'إتمام الطلب والدفع';
                             showErrorModal(result.message || 'حدث خطأ أثناء إنشاء الطلب');
                         }
                     })
                     .catch(function () {
-                        buyBtn.disabled = false;
-                        buyBtn.textContent = 'إتمام الطلب والدفع';
                         showErrorModal('عذراً، حدث خطأ أثناء إنشاء الطلب');
+                    })
+                    .finally(function(){
+                        adConfirmBtn.disabled = false;
+                        adConfirmBtn.textContent = 'متابعة للدفع';
+                        if(buyBtn){ buyBtn.disabled = false; buyBtn.textContent = 'إتمام الطلب والدفع'; }
+                        pendingAdOrder = null;
                     });
                 });
             }
