@@ -1,1 +1,43 @@
-﻿
+﻿Commit 05661ecf created locally in repository E:\ClinicHub-Frontend
+Pushing master
+Enumerating objects: 80, done.
+Delta compression using up to 4 threads
+Total 42 (delta 31), reused 0 (delta 0), pack-reused 0 (from 0)
+Remote: Resolving deltas:   0% (0/31)        
+Remote: Resolving deltas:   3% (1/31)        
+Remote: Resolving deltas:   6% (2/31)        
+Remote: Resolving deltas:   9% (3/31)        
+Remote: Resolving deltas:  12% (4/31)        
+Remote: Resolving deltas:  16% (5/31)        
+Remote: Resolving deltas:  19% (6/31)        
+Remote: Resolving deltas:  22% (7/31)        
+Remote: Resolving deltas:  25% (8/31)        
+Remote: Resolving deltas:  29% (9/31)        
+Remote: Resolving deltas:  32% (10/31)        
+Remote: Resolving deltas:  35% (11/31)        
+Remote: Resolving deltas:  38% (12/31)        
+Remote: Resolving deltas:  41% (13/31)        
+Remote: Resolving deltas:  45% (14/31)        
+Remote: Resolving deltas:  48% (15/31)        
+Remote: Resolving deltas:  51% (16/31)        
+Remote: Resolving deltas:  54% (17/31)        
+Remote: Resolving deltas:  58% (18/31)        
+Remote: Resolving deltas:  61% (19/31)        
+Remote: Resolving deltas:  64% (20/31)        
+Remote: Resolving deltas:  67% (21/31)        
+Remote: Resolving deltas:  70% (22/31)        
+Remote: Resolving deltas:  74% (23/31)        
+Remote: Resolving deltas:  77% (24/31)        
+Remote: Resolving deltas:  80% (25/31)        
+Remote: Resolving deltas:  83% (26/31)        
+Remote: Resolving deltas:  87% (27/31)        
+Remote: Resolving deltas:  90% (28/31)        
+Remote: Resolving deltas:  93% (29/31)        
+Remote: Resolving deltas:  96% (30/31)        
+Remote: Resolving deltas: 100% (31/31)        
+Remote: Resolving deltas: 100% (31/31), completed with 31 local objects.        
+To https://github.com/MohamedSaber2004/ClinicHub-Front.git
+   180beca..05661ec  master -> master
+Commit dc32c1ae created locally in repository E:\ClinicHub-Frontend
+Git failed with a fatal error.
+unable to access 'https://github.com/MohamedSaber2004/ClinicHub-Front.git/': Could not resolve host: github.com
