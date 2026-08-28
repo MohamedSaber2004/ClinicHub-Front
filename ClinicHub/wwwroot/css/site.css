@@ -9771,4 +9771,25 @@ button:focus:not(:focus-visible),
   .payment-method-desc { font-size: 12px; }
 }
 
+/* AdsSubscriptions — UX enhancements: search toolbar + per-table filters + sortable */
+.ads-subs-toolbar { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); flex-wrap:wrap; margin-bottom:var(--space-4); padding:var(--space-3) var(--space-4); background:var(--clr-surface); border:1px solid var(--clr-border); border-radius:var(--radius-lg); box-shadow:var(--shadow-xs); }
+.ads-search-wrap { position:relative; flex:1; min-width:240px; max-width:520px; display:flex; align-items:center; }
+.ads-search-wrap .ads-search-icon { position:absolute; right:12px; color:var(--clr-text-muted); pointer-events:none; }
+.ads-global-input { width:100%; padding-right:36px !important; padding-left:36px !important; }
+.ads-search-clear { position:absolute; left:8px; background:var(--clr-bg); border:1px solid var(--clr-border); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.ads-toolbar-meta { display:flex; align-items:center; gap:var(--space-2); white-space:nowrap; }
+.ads-table-search { min-width:200px; }
+.ads-table-search .form-input-sm { height:32px; font-size:13px; }
+.table-card[data-table] thead th { user-select:none; transition: color .15s; }
+.table-card[data-table] thead th:hover { color:var(--clr-primary); }
+.table-card[data-table] thead th[data-sort-dir="asc"]::after { content:" ▲"; font-size:10px; }
+.table-card[data-table] thead th[data-sort-dir="desc"]::after { content:" ▼"; font-size:10px; }
+.ads-no-results td { background: var(--clr-bg); }
+@media (max-width: 768px) {
+  .ads-subs-toolbar { flex-direction:column; align-items:stretch; }
+  .ads-search-wrap { max-width:100%; }
+  .ads-table-search { width:100%; min-width:0; }
+  .ads-table-search .form-input-sm { width:100%; }
+}
+
 

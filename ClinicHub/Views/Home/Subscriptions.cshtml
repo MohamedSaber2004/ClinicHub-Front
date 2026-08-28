@@ -28,6 +28,10 @@
 
 <section class="subscription-section">
     <div class="container">
+        <div class="ads-search-wrap" style="max-width:420px;margin:0 auto 16px">
+            <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="planSearch" class="form-input ads-global-input" placeholder="بحث في الباقات — الاسم، السعر، المميزات..." autocomplete="off" />
+        </div>
         <div class="pricing-toggle">
             <span class="toggle-label">شهرياً</span>
             <label class="form-toggle">
@@ -413,6 +417,17 @@
                     if(confirmBtn){ confirmBtn.dataset.planId = planId; confirmBtn.dataset.period = period; }
                 });
             });
+            // local search for plans
+            var planSearch = document.getElementById('planSearch');
+            if(planSearch){
+                planSearch.addEventListener('input', function(){
+                    var q = this.value.toLowerCase().trim();
+                    document.querySelectorAll('#planCards .plan-card').forEach(function(card){
+                        var txt = card.textContent.toLowerCase();
+                        card.style.display = !q || txt.indexOf(q)!==-1 ? '' : 'none';
+                    });
+                });
+            }
         })();
     </script>
 }

@@ -38,6 +38,11 @@
         </span>
         إدارة الإعلانات
     </h2>
+    <div class="ads-search-wrap" style="margin-top:12px;max-width:400px">
+        <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="adsLocalSearch" class="form-input ads-global-input" placeholder="بحث سريع في الإعلانات..." autocomplete="off" />
+        <button type="button" id="adsLocalClear" class="ads-search-clear d-none" aria-label="مسح"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
     <div class="page-header-actions">
         <button type="button" class="btn btn-primary" id="addPackageBtn" data-bs-toggle="modal" data-bs-target="#packageModal">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -689,6 +694,21 @@
                         showErrorModal('عذراً، حدث خطأ أثناء تحديث الإعدادات');
                     });
                 });
+            }
+            // local search for ads tables
+            var searchInput = document.getElementById('adsLocalSearch');
+            var clearBtn = document.getElementById('adsLocalClear');
+            if(searchInput){
+                searchInput.addEventListener('input', function(){
+                    var q = this.value.toLowerCase().trim();
+                    if(clearBtn) clearBtn.classList.toggle('d-none', !q);
+                    document.querySelectorAll('.custom-table tbody tr').forEach(function(tr){
+                        if(tr.querySelector('td[colspan]')) return;
+                        var txt = tr.textContent.toLowerCase();
+                        tr.style.display = !q || txt.indexOf(q)!==-1 ? '' : 'none';
+                    });
+                });
+                if(clearBtn) clearBtn.addEventListener('click', function(){ searchInput.value=''; searchInput.dispatchEvent(new Event('input')); searchInput.focus(); });
             }
         });
     </script>

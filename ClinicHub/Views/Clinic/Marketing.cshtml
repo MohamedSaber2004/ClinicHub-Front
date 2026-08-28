@@ -131,7 +131,11 @@
             </span>
             إعلاناتي
         </h3>
-        <div class="table-card-actions">
+        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="ads-search-wrap" style="min-width:180px;flex:1;max-width:280px">
+                <svg class="ads-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" id="marketingAdsSearch" class="form-input form-input-sm" placeholder="بحث في إعلاناتي..." style="padding-right:32px" />
+            </div>
             <button type="button" class="btn btn-secondary btn-sm" id="refreshAdsBtn" onclick="refreshAds()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
@@ -563,6 +567,18 @@
                         adConfirmBtn.textContent = 'متابعة للدفع';
                         if(buyBtn){ buyBtn.disabled = false; buyBtn.textContent = 'إتمام الطلب والدفع'; }
                         pendingAdOrder = null;
+                    });
+                });
+            }
+            // local search for my ads
+            var mSearch = document.getElementById('marketingAdsSearch');
+            if(mSearch){
+                mSearch.addEventListener('input', function(){
+                    var q = this.value.toLowerCase().trim();
+                    document.querySelectorAll('#adsTableBody tr').forEach(function(tr){
+                        if(tr.querySelector('td[colspan]')) return;
+                        var txt = tr.textContent.toLowerCase();
+                        tr.style.display = !q || txt.indexOf(q)!==-1 ? '' : 'none';
                     });
                 });
             }

@@ -18,16 +18,34 @@
     <p class="text-muted">الإعلانات مستقلة الآن عن باقات الاشتراك — أي عيادة نشطة يمكنها شراء إعلانات دون اشتراك متقدم.</p>
 </div>
 
+<!-- Global quick search -->
+<div class="ads-subs-toolbar">
+    <div class="ads-search-wrap">
+        <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="adsGlobalSearch" class="form-input ads-global-input" placeholder="بحث سريع في كل الجداول — اسم الباقة، العيادة، السعر..." autocomplete="off" />
+        <button type="button" id="adsSearchClear" class="ads-search-clear d-none" aria-label="مسح البحث"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="ads-toolbar-meta">
+        <span class="badge badge-info" id="adsGlobalCount">@(plans.Count + packages.Count + clinicAdSettings.Count + subscriptions.Count) عنصر</span>
+        <span class="text-muted" style="font-size:12px">الضغط <kbd>Ctrl</kbd>+<kbd>K</kbd> للتركيز</span>
+    </div>
+</div>
+
 @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
 {
     <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
 }
 
 <!-- Plans (2 only) -->
-<div class="table-card">
+<div class="table-card" data-table="plans">
     <div class="table-card-header">
-        <h3 class="table-card-title">الباقات (نموذج باقتين)</h3>
-        <a href="@AdminRoutes.Pages.Subscriptions()" class="btn btn-sm btn-secondary">إدارة الباقات</a>
+        <h3 class="table-card-title">الباقات (نموذج باقتين) <span class="badge badge-secondary table-count" data-count-for="plans">@plans.Count</span></h3>
+        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="ads-table-search">
+                <input type="text" class="form-input form-input-sm ads-table-filter" data-target="plans" placeholder="بحث في الباقات..." />
+            </div>
+            <a href="@AdminRoutes.Pages.Subscriptions()" class="btn btn-sm btn-secondary">إدارة الباقات</a>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="custom-table">
@@ -66,10 +84,15 @@
 </div>
 
 <!-- Ad Packages -->
-<div class="table-card">
+<div class="table-card" data-table="packages">
     <div class="table-card-header">
-        <h3 class="table-card-title">باقات الإعلانات</h3>
-        <a href="@AdminRoutes.Pages.Ads()" class="btn btn-sm btn-primary">إدارة الإعلانات</a>
+        <h3 class="table-card-title">باقات الإعلانات <span class="badge badge-secondary table-count" data-count-for="packages">@packages.Count</span></h3>
+        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="ads-table-search">
+                <input type="text" class="form-input form-input-sm ads-table-filter" data-target="packages" placeholder="بحث في الباقات الإعلانية..." />
+            </div>
+            <a href="@AdminRoutes.Pages.Ads()" class="btn btn-sm btn-primary">إدارة الإعلانات</a>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="custom-table">
@@ -104,9 +127,14 @@
 </div>
 
 <!-- Clinic Ad Settings -->
-<div class="table-card">
+<div class="table-card" data-table="clinics">
     <div class="table-card-header">
-        <h3 class="table-card-title">حدود الإعلانات لكل عيادة</h3>
+        <h3 class="table-card-title">حدود الإعلانات لكل عيادة <span class="badge badge-secondary table-count" data-count-for="clinics">@clinicAdSettings.Count</span></h3>
+        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="ads-table-search">
+                <input type="text" class="form-input form-input-sm ads-table-filter" data-target="clinics" placeholder="بحث باسم العيادة..." />
+            </div>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="custom-table">
@@ -141,10 +169,15 @@
 </div>
 
 <!-- Recent Subscriptions -->
-<div class="table-card">
+<div class="table-card" data-table="subs">
     <div class="table-card-header">
-        <h3 class="table-card-title">أحدث الاشتراكات</h3>
-        <a href="@AdminRoutes.Pages.SubscriptionManagement()" class="btn btn-sm btn-secondary">إدارة الاشتراكات</a>
+        <h3 class="table-card-title">أحدث الاشتراكات <span class="badge badge-secondary table-count" data-count-for="subs">@subscriptions.Count</span></h3>
+        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div class="ads-table-search">
+                <input type="text" class="form-input form-input-sm ads-table-filter" data-target="subs" placeholder="بحث باسم العيادة أو الباقة..." />
+            </div>
+            <a href="@AdminRoutes.Pages.SubscriptionManagement()" class="btn btn-sm btn-secondary">إدارة الاشتراكات</a>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="custom-table">
@@ -178,3 +211,96 @@
     </div>
 </div>
 </div>
+
+@section Scripts {
+<script>
+(function(){
+    var globalInput = document.getElementById('adsGlobalSearch');
+    var clearBtn = document.getElementById('adsSearchClear');
+    var perTableInputs = document.querySelectorAll('.ads-table-filter');
+    function normalize(s){ return (s||'').toString().toLowerCase().trim(); }
+    function filterTable(tableKey, query){
+        var card = document.querySelector('.table-card[data-table="'+tableKey+'"]');
+        if(!card) return;
+        var rows = card.querySelectorAll('tbody tr');
+        var q = normalize(query);
+        var visible = 0;
+        rows.forEach(function(tr){
+            if(tr.children.length===1 && tr.querySelector('td[colspan]')){ tr.style.display=''; return; }
+            var text = normalize(tr.textContent);
+            var show = !q || text.indexOf(q) !== -1;
+            tr.style.display = show ? '' : 'none';
+            if(show) visible++;
+        });
+        // update per-table count badge
+        var badge = card.querySelector('.table-count[data-count-for="'+tableKey+'"]');
+        if(badge){ badge.textContent = visible + ' / ' + rows.length; badge.classList.toggle('badge-info', !!q && visible>0); badge.classList.toggle('badge-secondary', !q || visible===0); }
+        // show no-results row if needed
+        var tbody = card.querySelector('tbody');
+        var noRow = tbody.querySelector('.ads-no-results');
+        if(q && visible===0){
+            if(!noRow){
+                noRow = document.createElement('tr'); noRow.className='ads-no-results';
+                noRow.innerHTML = '<td colspan="6" class="text-center text-muted" style="padding:16px">لا توجد نتائج لـ "'+query.replace(/</g,'&lt;')+'" — <a href="#" class="ads-clear-link">مسح البحث</a></td>';
+                tbody.appendChild(noRow);
+                noRow.querySelector('.ads-clear-link')?.addEventListener('click', function(e){ e.preventDefault(); if(globalInput){ globalInput.value=''; globalInput.dispatchEvent(new Event('input')); } perTableInputs.forEach(function(i){ i.value=''; i.dispatchEvent(new Event('input')); }); });
+            } else { noRow.style.display=''; noRow.querySelector('td').innerHTML = 'لا توجد نتائج لـ "'+query.replace(/</g,'&lt;')+'" — <a href="#" class="ads-clear-link">مسح البحث</a>'; }
+        } else if(noRow){ noRow.style.display='none'; }
+        // global counter
+        updateGlobalCount();
+    }
+    function updateGlobalCount(){
+        var totalVisible = 0, totalRows=0;
+        document.querySelectorAll('.table-card[data-table]').forEach(function(card){
+            var rows = card.querySelectorAll('tbody tr:not(.ads-no-results)');
+            rows.forEach(function(tr){
+                if(tr.style.display !== 'none' && !(tr.children.length===1 && tr.querySelector('td[colspan]'))) totalVisible++;
+                if(!(tr.children.length===1 && tr.querySelector('td[colspan]'))) totalRows++;
+            });
+        });
+        var gc = document.getElementById('adsGlobalCount');
+        if(gc){ gc.textContent = totalVisible + ' / ' + totalRows + ' عنصر'; }
+    }
+    // per-table inputs
+    perTableInputs.forEach(function(inp){
+        inp.addEventListener('input', function(){ filterTable(this.dataset.target, this.value); });
+    });
+    // global input filters all
+    if(globalInput){
+        globalInput.addEventListener('input', function(){
+            var q = this.value;
+            if(clearBtn) clearBtn.classList.toggle('d-none', !q);
+            ['plans','packages','clinics','subs'].forEach(function(k){ filterTable(k,q); var per = document.querySelector('.ads-table-filter[data-target="'+k+'"]'); if(per) per.value = q; });
+        });
+        if(clearBtn){
+            clearBtn.addEventListener('click', function(){ globalInput.value=''; globalInput.dispatchEvent(new Event('input')); globalInput.focus(); });
+        }
+        document.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); globalInput.focus(); globalInput.select(); }});
+    }
+    // sortable headers (click to sort)
+    document.querySelectorAll('.table-card[data-table] thead th').forEach(function(th){
+        th.style.cursor='pointer'; th.title='اضغط للترتيب';
+        th.addEventListener('click', function(){
+            var table = this.closest('table');
+            var tbody = table.querySelector('tbody');
+            var idx = Array.prototype.indexOf.call(this.parentNode.children, this);
+            var rows = Array.from(tbody.querySelectorAll('tr:not(.ads-no-results)')).filter(function(r){ return !(r.children.length===1 && r.querySelector('td[colspan]')); });
+            var asc = this.dataset.sortDir !== 'asc';
+            rows.sort(function(a,b){
+                var va = (a.children[idx]?.textContent||'').trim().toLowerCase();
+                var vb = (b.children[idx]?.textContent||'').trim().toLowerCase();
+                var na = parseFloat(va.replace(/[^0-9.-]/g,'')), nb = parseFloat(vb.replace(/[^0-9.-]/g,''));
+                if(!isNaN(na) && !isNaN(nb) && va.match(/[0-9]/) && vb.match(/[0-9]/)) return asc ? na-nb : nb-na;
+                return asc ? va.localeCompare(vb, 'ar') : vb.localeCompare(va, 'ar');
+            });
+            rows.forEach(function(r){ tbody.appendChild(r); });
+            // move no-results to end
+            var nr = tbody.querySelector('.ads-no-results'); if(nr) tbody.appendChild(nr);
+            table.querySelectorAll('thead th').forEach(function(h){ h.removeAttribute('data-sort-dir'); h.style.color=''; });
+            this.dataset.sortDir = asc ? 'asc' : 'desc';
+            this.style.color = 'var(--clr-primary)';
+        });
+    });
+})();
+</script>
+}
