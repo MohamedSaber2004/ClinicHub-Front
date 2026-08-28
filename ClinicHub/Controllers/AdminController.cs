@@ -114,6 +114,7 @@ namespace ClinicHub.Controllers
                 return;
             }
 
+#pragma warning disable CS0618 // MarketingTools obsolete (ads independent) — admin keeps all features for compat
             CurrentUser = new CurrentUserContext
             {
                 Id = 1,
@@ -125,6 +126,7 @@ namespace ClinicHub.Controllers
                                PlanFeature.ManageDoctors,
                 HasActivePlan = true
             };
+#pragma warning restore CS0618
 
             ViewBag.CurrentUser = CurrentUser;
             if (profileLoaded) ViewBag.HeaderProfile = profile;

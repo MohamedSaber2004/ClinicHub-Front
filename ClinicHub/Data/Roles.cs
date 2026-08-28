@@ -60,6 +60,7 @@ namespace ClinicHub.Data
         ManagePatientRecords = 1L << 1,
         BasicReports = 1L << 2,
         AdvancedReports = 1L << 3,
+        [Obsolete("Ads is now independent from subscription plans. Kept for backward compatibility.")]
         MarketingTools = 1L << 4,
         PrioritySupport = 1L << 5,
         OnlineBooking = 1L << 6,
@@ -69,6 +70,7 @@ namespace ClinicHub.Data
 
     public static class PlanFeatureMap
     {
+#pragma warning disable CS0618 // Ads independent — mapping kept for legacy data that may still contain marketing_tools
         private static readonly Dictionary<string, PlanFeature> FeatureKeyMap = new()
         {
             ["appointments"] = PlanFeature.ManageAppointments,
@@ -81,6 +83,7 @@ namespace ClinicHub.Data
             ["staff_management"] = PlanFeature.ManageStaff,
             ["doctor_management"] = PlanFeature.ManageDoctors,
         };
+#pragma warning restore CS0618
 
         public static PlanFeature FromFeatureStrings(List<string> features)
         {

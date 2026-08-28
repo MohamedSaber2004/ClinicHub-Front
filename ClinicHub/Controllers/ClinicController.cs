@@ -107,9 +107,10 @@ namespace ClinicHub.Controllers
                 if (isExpired)
                 {
                     string? action = context.RouteData.Values["action"]?.ToString()?.ToLower();
+                    // ADS IS INDEPENDENT: marketing / ad-payment pages must remain accessible even without active subscription
                     bool isSubscriptionAction = action is "mysubscription" or "subscribe" or "initiatepayment" or "cancelsubscription";
-
-                    if (!isSubscriptionAction)
+                    bool isAdsAction = action is "marketing" or "createadorder" or "getmyadsjson" or "adpaymentresult";
+                    if (!isSubscriptionAction && !isAdsAction)
                     {
                         Response.StatusCode = 403;
                         context.Result = IsAjaxRequest
@@ -124,10 +125,11 @@ namespace ClinicHub.Controllers
             {
                 string? action = context.RouteData.Values["action"]?.ToString()?.ToLower();
                 bool isSubscriptionAction = action is "mysubscription" or "subscribe" or "initiatepayment" or "cancelsubscription";
+                bool isAdsAction = action is "marketing" or "createadorder" or "getmyadsjson" or "adpaymentresult";
 
-                // If user is accessing a subscription action (e.g. Subscribe or MySubscription) and the API returns 403 (e.g. no active plan),
-                // do NOT redirect to login — let the subscription action proceed so they can subscribe!
-                if (ex.StatusCode == 403 && isSubscriptionAction && !TokenGrantsSuperAdmin(context.HttpContext))
+                // If user is accessing a subscription/ads action and the API returns 403 (e.g. no active plan),
+                // do NOT redirect to login — let the action proceed so they can subscribe or buy ads (ads is independent).
+                if (ex.StatusCode == 403 && (isSubscriptionAction || isAdsAction) && !TokenGrantsSuperAdmin(context.HttpContext))
                 {
                     CurrentUser = new CurrentUserContext
                     {
@@ -204,8 +206,8 @@ namespace ClinicHub.Controllers
 
                 string? action = context.RouteData.Values["action"]?.ToString()?.ToLower();
                 bool isSubscriptionAction = action is "mysubscription" or "subscribe" or "initiatepayment" or "cancelsubscription";
-
-                if (!isSubscriptionAction)
+                bool isAdsAction = action is "marketing" or "createadorder" or "getmyadsjson" or "adpaymentresult";
+                if (!isSubscriptionAction && !isAdsAction)
                 {
                     Response.StatusCode = 403;
                     context.Result = IsAjaxRequest

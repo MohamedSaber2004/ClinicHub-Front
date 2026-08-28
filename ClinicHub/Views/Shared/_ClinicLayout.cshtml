@@ -51,7 +51,8 @@
                                 ClinicId = _user.ClinicId,
                                 Role = _clinicRole,
                                 Permissions = RolePermissions.For(_clinicRole),
-                                PlanFeatures = PlanFeature.ManageAppointments | PlanFeature.ManagePatientRecords | PlanFeature.ManageStaff | PlanFeature.ManageDoctors | PlanFeature.MarketingTools | PlanFeature.PrioritySupport,
+                                // Ads is independent — no MarketingTools needed. Keep core features only.
+                                PlanFeatures = PlanFeature.ManageAppointments | PlanFeature.ManagePatientRecords | PlanFeature.ManageStaff | PlanFeature.ManageDoctors | PlanFeature.PrioritySupport,
                                 PlanName = _user.PlanName ?? "الباقة الاحترافية",
                                 MaxDoctors = _user.MaxDoctors,
                                 MaxStaff = _user.MaxStaff,
@@ -90,7 +91,8 @@
                         bool canShowStaff = _user?.Has(Permission.ManageClinicStaff) == true && _user?.HasFeature(PlanFeature.ManageStaff) == true;
                         bool canShowDoctors = _user?.Has(Permission.ManageClinicDoctors) == true && _user?.HasFeature(PlanFeature.ManageDoctors) == true;
                         bool canShowReports = _user?.HasFeature(PlanFeature.AdvancedReports) == true && _user?.HasActivePlan == true;
-                        bool canShowMarketing = _user?.HasActivePlan == true;
+                        // Ads is independent from subscription plans — show for any authenticated clinic user
+                        bool canShowMarketing = _user != null && (_user.Role == UserRole.ClinicOwner || _user.Role == UserRole.ClinicManager);
                     }
                     @if (canShowMedicalRecords || canShowStaff || canShowDoctors || canShowReports || canShowMarketing)
                     {

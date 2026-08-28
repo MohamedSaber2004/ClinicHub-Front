@@ -25,7 +25,7 @@
         var typeClass = d.Type switch { 0 => "badge-info", 1 => "badge-primary", 2 => "badge-warning", _ => "badge-info" };
         var statusText = d.Status switch { 0 => "معلق", 1 => "ناجح", 2 => "فاشل", 3 => "مسترد", _ => "غير معروف" };
         var statusClass = d.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", _ => "badge-info" };
-        var methodText = d.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة إلكترونية", _ => "غير معروف" };
+        var methodText = d.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة إلكترونية", 2 => "Paymob - بطاقة ائتمانية", _ => "غير معروف" };
         var payerTypeText = d.PayerType == "Clinic" ? "عيادة" : "مريض";
     }
 

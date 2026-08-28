@@ -147,6 +147,7 @@
         <option value="" selected="@(string.IsNullOrEmpty(methodFilter))">جميع طرق الدفع</option>
         <option value="0" selected="@(methodFilter == "0")">نقدي</option>
         <option value="1" selected="@(methodFilter == "1")">Paymob - محفظة إلكترونية</option>
+        <option value="2" selected="@(methodFilter == "2")">Paymob - بطاقة ائتمانية</option>
     </select>
     <select name="status" class="form-select">
         <option value="" selected="@(string.IsNullOrEmpty(statusFilter))">جميع الحالات</option>
@@ -200,7 +201,7 @@
                         var typeClass = p.Type switch { 0 => "badge-info", 1 => "badge-primary", 2 => "badge-warning", _ => "badge-info" };
                         var statusText = p.Status switch { 0 => "معلق", 1 => "ناجح", 2 => "فاشل", 3 => "مسترد", _ => "غير معروف" };
                         var statusClass = p.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", _ => "badge-info" };
-                        var methodText = p.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة", _ => "غير معروف" };
+                        var methodText = p.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة", 2 => "Paymob - بطاقة", _ => "غير معروف" };
                         <tr>
                             <td class="text-md">@p.Code</td>
                             <td class="text-md-medium">
@@ -275,6 +276,7 @@
                             <select id="manualMethod" class="form-select">
                                 <option value="0">نقدي</option>
                                 <option value="1">Paymob - محفظة إلكترونية</option>
+                                <option value="2">Paymob - بطاقة ائتمانية</option>
                             </select>
                         </div>
                     </div>

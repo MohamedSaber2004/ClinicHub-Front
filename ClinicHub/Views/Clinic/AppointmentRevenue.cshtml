@@ -29,9 +29,10 @@
     {
         0 => "نقداً",
         1 => "محفظة إلكترونية",
+        2 => "بطاقة ائتمانية",
         _ => "غير معروفة"
     };
-    string MethodClass(int m) => m == 0 ? "badge-primary" : "badge-warning";
+    string MethodClass(int m) => m switch { 0 => "badge-primary", 1 => "badge-warning", 2 => "badge-info", _ => "badge-secondary" };
 }
 
 <div class="page-header">
@@ -103,6 +104,7 @@
         <option value="">جميع طرق الدفع</option>
         <option value="0" selected="@(methodFilter == 0)">نقداً</option>
         <option value="1" selected="@(methodFilter == 1)">محفظة إلكترونية</option>
+        <option value="2" selected="@(methodFilter == 2)">بطاقة ائتمانية</option>
     </select>
     <a href="@Url.Action("AppointmentRevenue")" class="btn btn-outline-secondary btn-sm">مسح</a>
 </form>
