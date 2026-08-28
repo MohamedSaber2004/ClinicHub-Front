@@ -304,7 +304,9 @@
                                     <option value="">اختر الباقة</option>
                                     @foreach (var pkg in packages)
                                     {
-                                        <option value="@pkg.Id" data-duration="@pkg.DurationDays" data-price="@pkg.Price">@(pkg.NameAr ?? pkg.Name) (@pkg.DurationDays يوم - @pkg.Price ج.م)</option>
+                                        <option value="@pkg.Id" data-duration="@pkg.DurationDays" data-price="@pkg.Price" data-max-ads="@pkg.MaxAds">
+                                            @(pkg.NameAr ?? pkg.Name) (@pkg.DurationDays يوم - @pkg.Price ج.م@(pkg.MaxAds > 0 ? $" - حتى {pkg.MaxAds} صور/شعارات" : ""))
+                                        </option>
                                     }
                                 </select>
                             </div>
@@ -325,7 +327,7 @@
                     </div>
                     <div class="form-group">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label mb-0">شعارات وصور الإعلان <span class="text-muted">(يمكنك إضافة أكثر من صورة/شعار)</span></label>
+                            <label class="form-label mb-0">شعارات وصور الإعلان <span class="text-muted">(حسب الحد المسموح في الباقة)</span></label>
                             <span class="badge badge-info" id="adLogoCountBadge">0 / 5 صور</span>
                         </div>
                         <div class="ad-multi-logo-container">
@@ -343,7 +345,7 @@
                             </div>
                         </div>
                         <div id="adLogoStatus" class="form-hint mt-1"></div>
-                        <p class="form-hint">الشعارات والصور ستظهر داخل إعلانك في تطبيق المرضى. يمكنك رفع حتى 5 صور للعيادة والخدمات.</p>
+                        <p class="form-hint" id="adLogoLimitHint">الشعارات والصور ستظهر داخل إعلانك في تطبيق المرضى وفقاً للحد الأقصى للباقة المحددة.</p>
                     </div>
                     <p class="form-hint">يتم الدفع عبر بوابة Paymob، ويظهر إعلانك فور اكتمال الدفع.</p>
                 }
@@ -373,6 +375,7 @@
         });
 
         var MAX_DURATION_MULTIPLES = 12;
+        var currentPackageMaxLogos = 5;
 
         function fillDurationOptions(opt) {
             var durationSelect = document.getElementById('buyDuration');
@@ -395,6 +398,27 @@
             updateBuyPrice();
         }
 
+        function updatePackageLogoLimit() {
+            var select = document.getElementById('buyPackage');
+            var opt = select ? select.options[select.selectedIndex] : null;
+            if (opt && opt.value) {
+                var maxAds = parseInt(opt.getAttribute('data-max-ads') || '0');
+                currentPackageMaxLogos = maxAds > 0 ? maxAds : 5;
+            } else {
+                currentPackageMaxLogos = 5;
+            }
+
+            var hintEl = document.getElementById('adLogoLimitHint');
+            if (hintEl) {
+                hintEl.textContent = 'تسمح هذه الباقة برفع حتى ' + currentPackageMaxLogos + ' صور/شعارات كحد أقصى تظهر للمرضى في تطبيق Doctory.';
+            }
+
+            if (uploadedAdLogos.length > currentPackageMaxLogos) {
+                uploadedAdLogos = uploadedAdLogos.slice(0, currentPackageMaxLogos);
+            }
+            renderAdLogosGrid();
+        }
+
         function selectPackageAndOpenModal(packageId) {
             var select = document.getElementById('buyPackage');
             if (select) {
@@ -411,6 +435,7 @@
         function onBuyPackageChange() {
             var select = document.getElementById('buyPackage');
             fillDurationOptions(select.options[select.selectedIndex]);
+            updatePackageLogoLimit();
         }
 
         function updateBuyPrice() {
@@ -431,7 +456,6 @@
         var STATUS_CLASS = ['badge-warning', 'badge-success', 'badge-info', 'badge-danger'];
         var attachmentBaseUrl = '@attachmentBaseUrl';
         var uploadedAdLogos = [];
-        var MAX_AD_LOGOS = 5;
 
         function getStatusText(s) { return STATUS_TEXT[s] || 'غير معروف'; }
         function getStatusClass(s) { return STATUS_CLASS[s] || 'badge-info'; }
@@ -469,7 +493,7 @@
             if (!grid) return;
 
             grid.innerHTML = '';
-            if (countBadge) countBadge.textContent = uploadedAdLogos.length + ' / ' + MAX_AD_LOGOS + ' صور';
+            if (countBadge) countBadge.textContent = uploadedAdLogos.length + ' / ' + currentPackageMaxLogos + ' صور';
 
             uploadedAdLogos.forEach(function(url, idx) {
                 var card = document.createElement('div');
@@ -482,7 +506,7 @@
             });
 
             if (uploadBox) {
-                uploadBox.style.display = uploadedAdLogos.length >= MAX_AD_LOGOS ? 'none' : 'block';
+                uploadBox.style.display = uploadedAdLogos.length >= currentPackageMaxLogos ? 'none' : 'block';
             }
         }
 
@@ -500,14 +524,14 @@
             var files = Array.from(input.files);
             var statusEl = document.getElementById('adLogoStatus');
 
-            if (uploadedAdLogos.length + files.length > MAX_AD_LOGOS) {
-                var availableSlots = MAX_AD_LOGOS - uploadedAdLogos.length;
+            if (uploadedAdLogos.length + files.length > currentPackageMaxLogos) {
+                var availableSlots = currentPackageMaxLogos - uploadedAdLogos.length;
                 if (availableSlots <= 0) {
-                    showErrorModal('لقد بلغت الحد الأقصى للشعارات والصور المسموح بها (' + MAX_AD_LOGOS + ' صور)');
+                    showErrorModal('لقد بلغت الحد الأقصى للشعارات والصور المسموح بها في هذه الباقة (' + currentPackageMaxLogos + ' صور)');
                     input.value = '';
                     return;
                 }
-                showErrorModal('يمكنك إضافة ' + availableSlots + ' صور فقط كحد أقصى');
+                showErrorModal('هذه الباقة تسمح بإضافة ' + availableSlots + ' صور إضافية فقط كحد أقصى (الإجمالي ' + currentPackageMaxLogos + ' صور)');
                 files = files.slice(0, availableSlots);
             }
 
