@@ -1133,6 +1133,7 @@ namespace ClinicHub.Controllers
         {
             ViewBag.Ads = new List<AdDto>();
             ViewBag.Packages = new List<AdPackageDto>();
+            ViewBag.ClinicAdSettings = new List<ClinicAdSettingsDto>();
 
             try
             {
@@ -1148,6 +1149,15 @@ namespace ClinicHub.Controllers
             try
             {
                 ViewBag.Packages = await _adService.GetAllPackagesAsync() ?? new List<AdPackageDto>();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage ??= ex.Message;
+            }
+
+            try
+            {
+                ViewBag.ClinicAdSettings = await _adService.GetClinicAdSettingsAsync() ?? new List<ClinicAdSettingsDto>();
             }
             catch (ApiException ex)
             {
@@ -1704,6 +1714,43 @@ namespace ClinicHub.Controllers
                     types.Add((UserType)val);
             }
             return types.Count > 0 ? types : null;
+        }
+
+        [Route("Admin/AdsSubscriptions")]
+        public async Task<IActionResult> AdsSubscriptions()
+        {
+            ViewBag.ClinicAdSettings = new List<ClinicAdSettingsDto>();
+
+            try
+            {
+                ViewBag.ClinicAdSettings = await _adService.GetClinicAdSettingsAsync() ?? new List<ClinicAdSettingsDto>();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateClinicAdSettings(Guid clinicId, [FromBody] UpdateClinicAdSettingsRequest request)
+        {
+            try
+            {
+                var result = await _adService.UpdateClinicAdSettingsAsync(clinicId, request);
+                return Json(new { success = true, message = "تم تحديث الإعدادات بنجاح", data = result });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
     }
 }

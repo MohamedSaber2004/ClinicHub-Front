@@ -182,5 +182,35 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
             }
         }
+
+        public async Task<List<ClinicAdSettingsDto>> GetClinicAdSettingsAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(DoctoryRoutes.AdminAds.ClinicAdSettings);
+                return await _deserializerService.DeserializeApiResponse<List<ClinicAdSettingsDto>>(response, "حدث خطأ في جلب إعدادات الإعلانات");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<ClinicAdSettingsDto> UpdateClinicAdSettingsAsync(Guid clinicId, UpdateClinicAdSettingsRequest request)
+        {
+            try
+            {
+                var json = JsonConvert.SerializeObject(request, _jsonSettings);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync(DoctoryRoutes.AdminAds.ClinicAdSettingsById(clinicId), content);
+                return await _deserializerService.DeserializeApiResponse<ClinicAdSettingsDto>(response, "حدث خطأ في تحديث إعدادات الإعلانات");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
     }
 }

@@ -7,5 +7,6 @@ namespace ClinicHub.Services.RequestModels
         public int DurationDays { get; set; }
         public string? ReturnUrl { get; set; }
         public string? LogoImageUrl { get; set; }
+        public string? PaymentMethod { get; set; }
     }
 }

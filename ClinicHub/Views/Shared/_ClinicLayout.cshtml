@@ -90,7 +90,7 @@
                         bool canShowStaff = _user?.Has(Permission.ManageClinicStaff) == true && _user?.HasFeature(PlanFeature.ManageStaff) == true;
                         bool canShowDoctors = _user?.Has(Permission.ManageClinicDoctors) == true && _user?.HasFeature(PlanFeature.ManageDoctors) == true;
                         bool canShowReports = _user?.HasFeature(PlanFeature.AdvancedReports) == true && _user?.HasActivePlan == true;
-                        bool canShowMarketing = _user?.HasFeature(PlanFeature.MarketingTools) == true && _user?.HasActivePlan == true;
+                        bool canShowMarketing = _user?.HasActivePlan == true;
                     }
                     @if (canShowMedicalRecords || canShowStaff || canShowDoctors || canShowReports || canShowMarketing)
                     {

@@ -9,7 +9,6 @@
     var ads = ViewBag.Ads as IReadOnlyCollection<AdDto> ?? new List<AdDto>();
     var packages = ViewBag.Packages as IReadOnlyCollection<AdPackageDto> ?? new List<AdPackageDto>();
     var currentUser = ViewBag.CurrentUser as CurrentUserContext;
-    var canBuy = currentUser != null && currentUser.HasFeature(PlanFeature.MarketingTools) && currentUser.HasActivePlan;
 
     string GetStatusText(int status) => status switch
     {
@@ -39,38 +38,19 @@
         </span>
         الخدمات الإعلانية
     </h2>
-    @if (canBuy)
-    {
-        <div class="page-header-actions">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buyAdModal">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                </svg>
-                شراء إعلان جديد
-            </button>
-        </div>
-    }
+    <div class="page-header-actions">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buyAdModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            شراء إعلان جديد
+        </button>
+    </div>
 </div>
 
 @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
 {
     <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
-}
-
-@if (!canBuy)
-{
-    <div class="detail-card upsell-card">
-        <div class="upsell-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"/>
-            </svg>
-        </div>
-        <div class="upsell-body">
-            <h4 class="upsell-title">الخدمات الإعلانية متاحة في الباقات المتقدمة</h4>
-            <p class="upsell-text">قم بترقية اشتراكك للاستفادة من إعلاناتك في التطبيق وزيادة وصول العيادة للعملاء.</p>
-            <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary">ترقية الباقة</a>
-        </div>
-    </div>
 }
 
 @if (packages.Count > 0)
@@ -202,77 +182,126 @@
     </div>
 </div>
 
-@if (canBuy)
-{
-    <!-- Buy Ad Modal -->
-    <div class="modal fade" id="buyAdModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content modal-content-custom">
-                <div class="modal-header-custom">
-                    <h5 class="modal-title">شراء إعلان جديد</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
-                </div>
-                <div class="modal-body-custom">
-                    @if (packages.Count == 0)
-                    {
-                        <div class="empty-state"><p>لا توجد باقات متاحة حالياً. حاول لاحقاً.</p></div>
-                    }
-                    else
-                    {
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">الباقة</label>
-                                    <select id="buyPackage" class="form-select" onchange="onBuyPackageChange()">
-                                        <option value="">اختر الباقة</option>
-                                        @foreach (var pkg in packages)
-                                        {
-                                            <option value="@pkg.Id" data-duration="@pkg.DurationDays" data-price="@pkg.Price">@(pkg.NameAr ?? pkg.Name) (@pkg.DurationDays يوم)</option>
-                                        }
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">المدة (أيام)</label>
-                                    <select id="buyDuration" class="form-select" onchange="updateBuyPrice()" disabled>
-                                        <option value="">اختر المدة</option>
-                                    </select>
-                                    <p class="form-hint">المدة تكون مضاعفاً صحيحاً لمدة الباقة.</p>
-                                </div>
-                            </div>
+<!-- Buy Ad Modal -->
+<!-- Payment Method Selection Modal (Ads) -->
+<div class="modal fade" id="paymentMethodAdModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">اختر طريقة الدفع</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <div class="payment-methods-grid">
+                    <label class="payment-method-card selected" id="adMethodWalletCard">
+                        <input type="radio" name="adPaymentMethod" value="PaymobWallet" checked>
+                        <div class="payment-method-icon payment-method-icon--wallet">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 019-9"/>
+                            </svg>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">السعر المقدر</label>
-                            <input type="text" id="buyPrice" class="form-input" readonly placeholder="0.00 ج.م" />
+                        <div class="payment-method-info">
+                            <p class="payment-method-title">محفظة Paymob</p>
+                            <p class="payment-method-desc">الدفع عبر المحفظة الإلكترونية</p>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">شعار الإعلان <span class="text-muted">(اختياري)</span></label>
-                            <div class="ad-logo-upload">
-                                <label class="btn btn-secondary btn-sm" for="adLogoInput">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                                    </svg>
-                                    اختيار شعار
-                                </label>
-                                <input type="file" id="adLogoInput" class="d-none" accept="image/*" onchange="onAdLogoChange()" />
-                                <img id="adLogoPreview" class="ad-logo-preview d-none" alt="شعار الإعلان" />
-                                <button type="button" class="btn btn-sm btn-danger d-none" id="adLogoRemoveBtn" onclick="onAdLogoRemove()">إزالة</button>
-                                <span id="adLogoStatus" class="form-hint"></span>
-                            </div>
-                            <p class="form-hint">الشعار سيظهر داخل إعلانك في تطبيق المرضى. إذا لم ترفع شعاراً سيظهر اسم العيادة بدلاً منه.</p>
+                        <span class="payment-method-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+                        </span>
+                    </label>
+
+                    <label class="payment-method-card" id="adMethodCardCard">
+                        <input type="radio" name="adPaymentMethod" value="PaymobCreditCard">
+                        <div class="payment-method-icon payment-method-icon--card">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
                         </div>
-                        <p class="form-hint">يتم الدفع عبر بوابة Paymob، ويظهر إعلانك فور اكتمال الدفع.</p>
-                    }
+                        <div class="payment-method-info">
+                            <p class="payment-method-title">بطاقة ائتمانية</p>
+                            <p class="payment-method-desc">الدفع ببطاقة بنكية عبر Paymob</p>
+                        </div>
+                        <span class="payment-method-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+                        </span>
+                    </label>
                 </div>
-                <div class="modal-footer-custom">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-primary" id="buySubmitBtn">إتمام الطلب والدفع</button>
-                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="adConfirmPaymentMethodBtn">متابعة للدفع</button>
             </div>
         </div>
     </div>
-}
+</div>
+
+<div class="modal fade" id="buyAdModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">شراء إعلان جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                @if (packages.Count == 0)
+                {
+                    <div class="empty-state"><p>لا توجد باقات متاحة حالياً. حاول لاحقاً.</p></div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">الباقة</label>
+                                <select id="buyPackage" class="form-select" onchange="onBuyPackageChange()">
+                                    <option value="">اختر الباقة</option>
+                                    @foreach (var pkg in packages)
+                                    {
+                                        <option value="@pkg.Id" data-duration="@pkg.DurationDays" data-price="@pkg.Price">@(pkg.NameAr ?? pkg.Name) (@pkg.DurationDays يوم)</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">المدة (أيام)</label>
+                                <select id="buyDuration" class="form-select" onchange="updateBuyPrice()" disabled>
+                                    <option value="">اختر المدة</option>
+                                </select>
+                                <p class="form-hint">المدة تكون مضاعفاً صحيحاً لمدة الباقة.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">السعر المقدر</label>
+                        <input type="text" id="buyPrice" class="form-input" readonly placeholder="0.00 ج.م" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">شعار الإعلان <span class="text-muted">(اختياري)</span></label>
+                        <div class="ad-logo-upload">
+                            <label class="btn btn-secondary btn-sm" for="adLogoInput">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                                </svg>
+                                اختيار شعار
+                            </label>
+                            <input type="file" id="adLogoInput" class="d-none" accept="image/*" onchange="onAdLogoChange()" />
+                            <img id="adLogoPreview" class="ad-logo-preview d-none" alt="شعار الإعلان" />
+                            <button type="button" class="btn btn-sm btn-danger d-none" id="adLogoRemoveBtn" onclick="onAdLogoRemove()">إزالة</button>
+                            <span id="adLogoStatus" class="form-hint"></span>
+                        </div>
+                        <p class="form-hint">الشعار سيظهر داخل إعلانك في تطبيق المرضى. إذا لم ترفع شعاراً سيظهر اسم العيادة بدلاً منه.</p>
+                    </div>
+                    <p class="form-hint">يتم الدفع عبر بوابة Paymob، ويظهر إعلانك فور اكتمال الدفع.</p>
+                }
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="buySubmitBtn">إتمام الطلب والدفع</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
@@ -462,8 +491,10 @@
                     var baseDays = parseInt(opt.getAttribute('data-duration'));
                     if (duration % baseDays !== 0) { showErrorModal('المدة يجب أن تكون مضاعفاً صحيحاً لمدة الباقة'); return; }
 
+                    var selectedMethod = document.querySelector('input[name="adPaymentMethod"]:checked')?.value || 'PaymobWallet';
+
                     buyBtn.disabled = true;
-                    buyBtn.textContent = 'جاري إنشاء الطلب...';
+                    buyBtn.textContent = 'جارٍ إنشاء الطلب...';
 
                     fetch('/Clinic/CreateAdOrder', {
                         method: 'POST',
@@ -471,7 +502,8 @@
                         body: JSON.stringify({
                             adPackageId: packageId,
                             durationDays: duration,
-                            logoImageUrl: adLogoUrl || null
+                            logoImageUrl: adLogoUrl || null,
+                            paymentMethod: selectedMethod
                         })
                     })
                     .then(function (r) { return r.json(); })

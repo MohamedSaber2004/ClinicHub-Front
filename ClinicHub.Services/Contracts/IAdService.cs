@@ -15,5 +15,8 @@ namespace ClinicHub.Services.Contracts
         Task<AdPackageDto> CreatePackageAsync(UpsertAdPackageRequest request);
         Task<AdPackageDto> UpdatePackageAsync(Guid id, UpsertAdPackageRequest request);
         Task<bool> DeletePackageAsync(Guid id);
+
+        Task<List<ClinicAdSettingsDto>> GetClinicAdSettingsAsync();
+        Task<ClinicAdSettingsDto> UpdateClinicAdSettingsAsync(Guid clinicId, UpdateClinicAdSettingsRequest request);
     }
 }

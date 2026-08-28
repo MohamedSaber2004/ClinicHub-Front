@@ -6,5 +6,6 @@ namespace ClinicHub.Services.RequestModels
         public int Period { get; set; }
         public string? ReturnUrl { get; set; }
         public Guid? ClinicId { get; set; }
+        public string? PaymentMethod { get; set; }
     }
 }

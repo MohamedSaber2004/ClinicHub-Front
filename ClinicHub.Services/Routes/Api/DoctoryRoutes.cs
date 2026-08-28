@@ -422,6 +422,8 @@ namespace ClinicHub.Services.Routes.Api
             public string Package(Guid id) => $"{_baseRoute}/packages/{id}";
             public string Orders => $"{_baseRoute}/orders";
             public string Deactivate(Guid id) => $"{_baseRoute}/{id}/deactivate";
+            public string ClinicAdSettings => $"{_baseRoute}/clinic-settings";
+            public string ClinicAdSettingsById(Guid clinicId) => $"{_baseRoute}/clinic-settings/{clinicId}";
         }
 
         public class AdsRoutes

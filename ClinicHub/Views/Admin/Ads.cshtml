@@ -7,6 +7,7 @@
     var attachmentBaseUrl = _doctoryOptions.Value.BaseUrl.TrimEnd('/');
     var ads = ViewBag.Ads as IReadOnlyCollection<AdDto> ?? new List<AdDto>();
     var packages = ViewBag.Packages as IReadOnlyCollection<AdPackageDto> ?? new List<AdPackageDto>();
+    var clinicAdSettings = ViewBag.ClinicAdSettings as IReadOnlyCollection<ClinicAdSettingsDto> ?? new List<ClinicAdSettingsDto>();
     var statusFilter = ViewBag.StatusFilter as string;
 
     string GetStatusText(int status) => status switch
@@ -55,6 +56,7 @@
 <ul class="nav nav-tabs mb-3" id="adsTabs" role="tablist">
     <li class="nav-item"><button class="nav-link active" id="ads-tab" data-bs-toggle="tab" data-bs-target="#adsPane" type="button" role="tab">الإعلانات</button></li>
     <li class="nav-item"><button class="nav-link" id="packages-tab" data-bs-toggle="tab" data-bs-target="#packagesPane" type="button" role="tab">باقات الإعلانات</button></li>
+    <li class="nav-item"><button class="nav-link" id="clinic-settings-tab" data-bs-toggle="tab" data-bs-target="#clinicSettingsPane" type="button" role="tab">إعدادات الإعلانات للعيادات</button></li>
 </ul>
 
 <div class="tab-content">
@@ -158,6 +160,8 @@
                             <th>الوصف</th>
                             <th>السعر</th>
                             <th>المدة</th>
+                            <th>الحد الأقصى للإعلانات</th>
+                            <th>المشاهدات</th>
                             <th>الحالة</th>
                             <th>الإجراءات</th>
                         </tr>
@@ -166,7 +170,7 @@
                         @if (packages.Count == 0)
                         {
                             <tr>
-                                <td colspan="6">
+                                <td colspan="8">
                                     <div class="empty-state">
                                         <p>لا توجد باقات إعلانية. أضف باقة جديدة لبدء بيع الإعلانات.</p>
                                     </div>
@@ -182,6 +186,8 @@
                                     <td class="text-md">@(pkg.DescriptionAr ?? pkg.Description)</td>
                                     <td class="text-md">@pkg.Price.ToString("N2") ج.م</td>
                                     <td class="text-md">@pkg.DurationDays يوم</td>
+                                    <td class="text-md">@(pkg.MaxAds > 0 ? pkg.MaxAds.ToString() : "غير محدود")</td>
+                                    <td class="text-md">@(pkg.MaxImpressions > 0 ? pkg.MaxImpressions.ToString("N0") : "غير محدود")</td>
                                     <td>
                                         @if (pkg.IsActive)
                                         {
@@ -193,13 +199,70 @@
                                         }
                                     </td>
                                     <td class="table-actions">
-                                        <button type="button" class="btn btn-sm @(pkg.IsActive ? "btn-danger" : "btn-success")" title="@(pkg.IsActive ? "تعطيل الباقة" : "تفعيل الباقة")" onclick="togglePackage('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower())">@(pkg.IsActive ? "تعطيل" : "تفعيل")</button>
-                                        <button type="button" class="btn-icon" title="تعديل" aria-label="تعديل الباقة @pkg.NameAr" onclick="openPackageModal('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower())">
+                                        <button type="button" class="btn btn-sm @(pkg.IsActive ? "btn-danger" : "btn-success")" title="@(pkg.IsActive ? "تعطيل الباقة" : "تفعيل الباقة")" onclick="togglePackage('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower(), @pkg.MaxAds, @pkg.MaxImpressions)">@(pkg.IsActive ? "تعطيل" : "تفعيل")</button>
+                                        <button type="button" class="btn-icon" title="تعديل" aria-label="تعديل الباقة @pkg.NameAr" onclick="openPackageModal('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower(), @pkg.MaxAds, @pkg.MaxImpressions)">
                                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                                         </button>
                                         <button type="button" class="btn-icon" title="حذف" aria-label="حذف الباقة @pkg.NameAr" onclick="deletePackage('@pkg.Id')">
                                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                                         </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clinic Ad Settings Tab -->
+    <div class="tab-pane fade" id="clinicSettingsPane" role="tabpanel">
+        <div class="table-card">
+            <div class="table-card-header">
+                <h3 class="table-card-title">
+                    <span class="subtitle-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </span>
+                    إعدادات الإعلانات للعيادات
+                </h3>
+            </div>
+            <p class="ad-preview-hint">تحكم في الحد الأقصى للإعلانات وعدد المشاهدات لكل عيادة مشتركة في خدمات الإعلانات.</p>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>العيادة</th>
+                            <th>الحد الأقصى للإعلانات</th>
+                            <th>عدد المشاهدات المسموح بها</th>
+                            <th>الإعلانات النشطة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (clinicAdSettings.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <p>لا توجد عيادات مشتركة في خدمات الإعلانات حالياً.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var clinic in clinicAdSettings)
+                            {
+                                <tr>
+                                    <td class="text-md-medium">@clinic.ClinicName</td>
+                                    <td class="text-md">@(clinic.MaxAds > 0 ? clinic.MaxAds.ToString() : "غير محدود")</td>
+                                    <td class="text-md">@(clinic.MaxImpressions > 0 ? clinic.MaxImpressions.ToString("N0") : "غير محدود")</td>
+                                    <td class="text-md">@clinic.ActiveAdsCount</td>
+                                    <td class="table-actions">
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="editClinicAdSettings('@clinic.ClinicId', '@(clinic.ClinicName.Replace("'", "\\'"))', @clinic.MaxAds, @clinic.MaxImpressions)">تعديل</button>
                                     </td>
                                 </tr>
                             }
@@ -317,6 +380,22 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الحد الأقصى للإعلانات</label>
+                            <input type="number" id="packageMaxAds" class="form-input" min="0" placeholder="0 = غير محدود" />
+                            <p class="form-hint">عدد الإعلانات النشطة المسموح بها لمن يشتري هذه الباقة.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">عدد المشاهدات المسموح بها</label>
+                            <input type="number" id="packageMaxImpressions" class="form-input" min="0" placeholder="0 = غير محدود" />
+                            <p class="form-hint">عدد مرات مشاهدة الإعلانات في تطبيق المرضى.</p>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-toggle">
                         <input type="checkbox" id="packageActive" checked />
@@ -328,6 +407,36 @@
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 <button type="button" class="btn btn-primary" id="packageSubmitBtn">حفظ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Clinic Ad Settings Modal -->
+<div class="modal fade" id="editClinicAdSettingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">تعديل إعدادات الإعلانات للعيادة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <input type="hidden" id="editClinicId" value="" />
+                <p class="form-hint">العيادة: <strong id="editClinicName"></strong></p>
+                <div class="form-group">
+                    <label class="form-label">الحد الأقصى للإعلانات</label>
+                    <input type="number" id="editMaxAds" class="form-input" min="0" placeholder="0 = غير محدود" />
+                    <p class="form-hint">عدد الإعلانات النشطة المسموح بها للعيادة. اترك 0 لعدم التحديد.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">عدد المشاهدات المسموح بها</label>
+                    <input type="number" id="editMaxImpressions" class="form-input" min="0" placeholder="0 = غير محدود" />
+                    <p class="form-hint">عدد مرات مشاهدة إعلانات العيادة في تطبيق المرضى. اترك 0 لعدم التحديد.</p>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="editClinicAdSettingsSubmitBtn">حفظ</button>
             </div>
         </div>
     </div>
@@ -364,7 +473,7 @@
             modal.show();
         }
 
-        function togglePackage(id, name, nameAr, description, descriptionAr, price, duration, isActive) {
+        function togglePackage(id, name, nameAr, description, descriptionAr, price, duration, isActive, maxAds, maxImpressions) {
             var action = isActive ? 'تعطيل' : 'تفعيل';
             showConfirmModal('هل تريد ' + action + ' باقة "' + nameAr + '"؟', function () {
                 fetch('/Admin/UpdateAdPackage?id=' + id, {
@@ -377,7 +486,9 @@
                         descriptionAr: descriptionAr,
                         price: parseFloat(price),
                         durationDays: parseInt(duration),
-                        isActive: !isActive
+                        isActive: !isActive,
+                        maxAds: maxAds || 0,
+                        maxImpressions: maxImpressions || 0
                     })
                 })
                 .then(function (r) { return r.json(); })
@@ -419,7 +530,7 @@
             });
         }
 
-        function openPackageModal(id, name, nameAr, description, descriptionAr, price, duration, isActive) {
+        function openPackageModal(id, name, nameAr, description, descriptionAr, price, duration, isActive, maxAds, maxImpressions) {
             document.getElementById('packageModalTitle').textContent = id ? 'تعديل باقة إعلانية' : 'إضافة باقة إعلانية';
             document.getElementById('packageId').value = id || '';
             document.getElementById('packageName').value = name;
@@ -429,6 +540,8 @@
             document.getElementById('packagePrice').value = price;
             document.getElementById('packageDuration').value = duration;
             document.getElementById('packageActive').checked = isActive;
+            document.getElementById('packageMaxAds').value = maxAds || '';
+            document.getElementById('packageMaxImpressions').value = maxImpressions || '';
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -465,7 +578,7 @@
             }
 
             document.getElementById('addPackageBtn').addEventListener('click', function () {
-                openPackageModal('', '', '', '', '', '', '', true);
+                openPackageModal('', '', '', '', '', '', '', true, 0, 0);
             });
 
             document.getElementById('packageSubmitBtn').addEventListener('click', function () {
@@ -493,7 +606,9 @@
                         descriptionAr: descriptionAr,
                         price: price,
                         durationDays: duration,
-                        isActive: isActive
+                        isActive: isActive,
+                        maxAds: parseInt(document.getElementById('packageMaxAds').value) || 0,
+                        maxImpressions: parseInt(document.getElementById('packageMaxImpressions').value) || 0
                     })
                 })
                 .then(function (r) { return r.json(); })
@@ -526,5 +641,55 @@
                 .catch(function () { showErrorModal('عذراً، حدث خطأ أثناء حذف الباقة'); });
             });
         }
+
+        function editClinicAdSettings(clinicId, clinicName, maxAds, maxImpressions) {
+            document.getElementById('editClinicId').value = clinicId;
+            document.getElementById('editClinicName').textContent = clinicName;
+            document.getElementById('editMaxAds').value = maxAds || '';
+            document.getElementById('editMaxImpressions').value = maxImpressions || '';
+            var modal = new bootstrap.Modal(document.getElementById('editClinicAdSettingsModal'));
+            modal.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var editSubmitBtn = document.getElementById('editClinicAdSettingsSubmitBtn');
+            if (editSubmitBtn) {
+                editSubmitBtn.addEventListener('click', function () {
+                    var clinicId = document.getElementById('editClinicId').value;
+                    var maxAds = parseInt(document.getElementById('editMaxAds').value) || 0;
+                    var maxImpressions = parseInt(document.getElementById('editMaxImpressions').value) || 0;
+
+                    if (!clinicId) { showErrorModal('معرف العيادة غير متوفر'); return; }
+
+                    editSubmitBtn.disabled = true;
+                    editSubmitBtn.textContent = 'جاري الحفظ...';
+
+                    fetch('/Admin/UpdateClinicAdSettings?clinicId=' + clinicId, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            maxAds: maxAds,
+                            maxImpressions: maxImpressions
+                        })
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (result) {
+                        if (result.success) {
+                            showSuccessModal(result.message || 'تم تحديث الإعدادات بنجاح');
+                            setTimeout(function () { location.reload(); }, 1500);
+                        } else {
+                            editSubmitBtn.disabled = false;
+                            editSubmitBtn.textContent = 'حفظ';
+                            showErrorModal(result.message || 'حدث خطأ أثناء تحديث الإعدادات');
+                        }
+                    })
+                    .catch(function () {
+                        editSubmitBtn.disabled = false;
+                        editSubmitBtn.textContent = 'حفظ';
+                        showErrorModal('عذراً، حدث خطأ أثناء تحديث الإعدادات');
+                    });
+                });
+            }
+        });
     </script>
 }

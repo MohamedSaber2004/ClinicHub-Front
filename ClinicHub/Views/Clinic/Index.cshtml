@@ -27,12 +27,6 @@
             <span class="plan-info-label">الموظفين</span>
             <span class="plan-info-value">@(_user.MaxStaff.HasValue ? $"الحد الأقصى: {_user.MaxStaff}" : "غير محدود")</span>
         </div>
-        @if (_user.HasFeature(PlanFeature.MarketingTools))
-        {
-            <div class="plan-info-item">
-                <span class="badge badge-success">أدوات تسويقية</span>
-            </div>
-        }
         @if (_user.HasFeature(PlanFeature.PrioritySupport))
         {
             <div class="plan-info-item">
