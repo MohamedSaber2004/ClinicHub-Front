@@ -27,12 +27,6 @@
         3 => "badge-danger",
         _ => "badge-info"
     };
-
-#pragma warning disable CS0618
-    var hasAdsFeature = currentUser?.HasFeature(PlanFeature.MarketingTools) == true && currentUser?.HasActivePlan == true;
-#pragma warning restore CS0618
-    var hasExistingAds = ads.Any(a => a.Status == 1 || a.Status == 0);
-    var isEligible = hasAdsFeature || hasExistingAds;
 }
 
 <div class="page-header">
@@ -42,45 +36,17 @@
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
             </svg>
         </span>
-        الخدمات الإعلانية
+        الخدمات الإعلانية والترويج
     </h2>
     <div class="page-header-actions">
-        @if (isEligible)
-        {
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buyAdModal">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                </svg>
-                شراء إعلان جديد
-            </button>
-        }
-        else
-        {
-            <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                </svg>
-                ترقية الباقة لتفعيل الإعلانات
-            </a>
-        }
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buyAdModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            شراء وتفعيل إعلان
+        </button>
     </div>
 </div>
-
-@if (!isEligible)
-{
-    <div class="upsell-card mb-4">
-        <div class="upsell-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-            </svg>
-        </div>
-        <div class="upsell-body">
-            <h4 class="upsell-title">ميزة الإعلانات تتطلب باقة اشتراك تدعم الميزات الترويجية</h4>
-            <p class="upsell-text">باقتك الحالية لا تتضمن ميزة نشر الإعلانات. اشترك أو قم بترقية باقتك للبدء في نشر إعلانات لعيادتك فوراً والظهور للمرضى في تطبيق Doctory.</p>
-            <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary btn-sm">ترقية الباقة الآن</a>
-        </div>
-    </div>
-}
 
 @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
 {
@@ -95,7 +61,14 @@
             <div class="package-mini-card">
                 <div class="package-mini-name">@(pkg.NameAr ?? pkg.Name)</div>
                 <div class="package-mini-desc">@(pkg.DescriptionAr ?? pkg.Description)</div>
-                <div class="package-mini-price">@pkg.Price.ToString("N2") ج.م / @pkg.DurationDays يوم</div>
+                <div class="package-mini-price">@pkg.Price.ToString("N0") ج.م / @pkg.DurationDays يوم</div>
+                <div class="package-mini-meta text-muted small mt-2">
+                    <div><i class="bi bi-megaphone me-1"></i>@(pkg.MaxAds > 0 ? $"حتى {pkg.MaxAds} إعلانات نشطة" : "إعلانات غير محدودة")</div>
+                    <div><i class="bi bi-eye me-1"></i>@(pkg.MaxImpressions > 0 ? $"{pkg.MaxImpressions:N0} مشاهدة مؤكدة" : "مشاهدات غير محدودة")</div>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-3" onclick="selectPackageAndOpenModal('@pkg.Id')">
+                    شراء هذه الباقة
+                </button>
             </div>
         }
     </div>
@@ -154,7 +127,6 @@
     </div>
 </div>
 
-<!-- My Ads -->
 <div class="table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">
@@ -220,7 +192,6 @@
     </div>
 </div>
 
-<!-- Buy Ad Modal -->
 <!-- Payment Method Selection Modal (Ads) -->
 <div class="modal fade" id="paymentMethodAdModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -273,11 +244,12 @@
     </div>
 </div>
 
+<!-- Buy Ad Modal -->
 <div class="modal fade" id="buyAdModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content modal-content-custom">
             <div class="modal-header-custom">
-                <h5 class="modal-title">شراء إعلان جديد</h5>
+                <h5 class="modal-title">شراء وتفعيل إعلان جديد</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body-custom">
@@ -290,12 +262,12 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">الباقة</label>
+                                <label class="form-label">الباقة الإعلانية</label>
                                 <select id="buyPackage" class="form-select" onchange="onBuyPackageChange()">
                                     <option value="">اختر الباقة</option>
                                     @foreach (var pkg in packages)
                                     {
-                                        <option value="@pkg.Id" data-duration="@pkg.DurationDays" data-price="@pkg.Price">@(pkg.NameAr ?? pkg.Name) (@pkg.DurationDays يوم)</option>
+                                        <option value="@pkg.Id" data-duration="@pkg.DurationDays" data-price="@pkg.Price">@(pkg.NameAr ?? pkg.Name) (@pkg.DurationDays يوم - @pkg.Price ج.م)</option>
                                     }
                                 </select>
                             </div>
@@ -311,7 +283,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">السعر المقدر</label>
+                        <label class="form-label">السعر الإجمالي</label>
                         <input type="text" id="buyPrice" class="form-input" readonly placeholder="0.00 ج.م" />
                     </div>
                     <div class="form-group">
@@ -341,9 +313,8 @@
     </div>
 </div>
 
-    @section Scripts {
+@section Scripts {
     <script>
-        // Fix: wallet/credit toggle visual feedback
         document.querySelectorAll('input[name="adPaymentMethod"]').forEach(function(radio){
             radio.addEventListener('change', function(){
                 document.querySelectorAll('#paymentMethodAdModal .payment-method-card').forEach(function(c){ c.classList.remove('selected'); });
@@ -379,6 +350,19 @@
             }
             durationSelect.disabled = false;
             updateBuyPrice();
+        }
+
+        function selectPackageAndOpenModal(packageId) {
+            var select = document.getElementById('buyPackage');
+            if (select) {
+                select.value = packageId;
+                onBuyPackageChange();
+            }
+            var modalEl = document.getElementById('buyAdModal');
+            if (modalEl) {
+                var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.show();
+            }
         }
 
         function onBuyPackageChange() {
@@ -418,156 +402,151 @@
             return '<div class="ad-preview-visual"><span class="ad-preview-initial">' + initial + '</span></div>';
         }
 
-        function renderAds(ads) {
-            ads = ads || [];
-            var activeAds = ads.filter(function (a) { return a.status === 1; });
-
-            var preview = document.getElementById('adsPreviewContainer');
-            if (preview) {
-                if (activeAds.length === 0) {
-                    preview.innerHTML = '<div class="ad-preview-empty"><p>لا توجد إعلانات نشطة حالياً. بمجرد شراء إعلان وتأكيد الدفع سيظهر هنا وفي تطبيق المرضى.</p></div>';
-                } else {
-                    var html = '<div class="ad-preview-grid">';
-                    activeAds.forEach(function (ad) {
-                        html += '<div class="ad-preview-item">'
-                            + renderAdVisual(ad)
-                            + '<div class="ad-preview-body">'
-                            + '<span class="ad-preview-name">' + (ad.clinicName || '') + '</span>'
-                            + '<span class="ad-preview-meta">' + (ad.packageNameAr || '') + '</span>'
-                            + '<span class="ad-preview-period">' + formatDate(ad.startDate) + ' → ' + formatDate(ad.endDate) + '</span>'
-                            + '</div>'
-                            + '<span class="badge badge-success">نشط</span>'
-                            + '</div>';
-                    });
-                    html += '</div>';
-                    preview.innerHTML = html;
-                }
-            }
-
-            var tbody = document.getElementById('adsTableBody');
-            if (tbody) {
-                if (ads.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>لا توجد إعلانات بعد. ابدأ بشراء إعلانك الأول لظهور عيادتك في التطبيق.</p></div></td></tr>';
-                } else {
-                    var rows = '';
-                    ads.forEach(function (ad) {
-                        rows += '<tr>'
-                            + '<td class="text-md-medium">' + (ad.packageNameAr || '') + '</td>'
-                            + '<td class="text-md">' + ad.durationDays + ' يوم</td>'
-                            + '<td class="text-md">' + Number(ad.amount || 0).toFixed(2) + ' ج.م</td>'
-                            + '<td class="text-md">' + formatDate(ad.startDate) + '</td>'
-                            + '<td class="text-md">' + formatDate(ad.endDate) + '</td>'
-                            + '<td><span class="badge ' + getStatusClass(ad.status) + '">' + getStatusText(ad.status) + '</span></td>'
-                            + '</tr>';
-                    });
-                    tbody.innerHTML = rows;
-                }
-            }
-        }
-
         function onAdLogoChange() {
             var input = document.getElementById('adLogoInput');
-            var file = input.files && input.files[0];
-            if (!file) return;
-            var status = document.getElementById('adLogoStatus');
+            if (!input.files || input.files.length === 0) return;
+            var file = input.files[0];
+            var statusEl = document.getElementById('adLogoStatus');
+            statusEl.textContent = 'جارٍ رفع الشعار...';
             var formData = new FormData();
             formData.append('file', file);
-            status.textContent = 'جاري رفع الشعار...';
-            fetch('/Home/UploadAttachment?place=5', { method: 'POST', body: formData })
+
+            fetch('/Clinic/UploadAttachment', {
+                method: 'POST',
+                body: formData
+            })
             .then(function (r) { return r.json(); })
             .then(function (result) {
-                if (result.success && result.url) {
-                    adLogoUrl = result.url;
+                if (result.success && result.data) {
+                    adLogoUrl = result.data.url;
                     var preview = document.getElementById('adLogoPreview');
-                    preview.src = attachmentBaseUrl + '/files/' + result.url;
+                    preview.src = attachmentBaseUrl + '/files/' + adLogoUrl;
                     preview.classList.remove('d-none');
                     document.getElementById('adLogoRemoveBtn').classList.remove('d-none');
-                    status.textContent = 'تم رفع الشعار بنجاح.';
+                    statusEl.textContent = 'تم رفع الشعار بنجاح';
                 } else {
-                    status.textContent = result.error || 'فشل رفع الشعار';
+                    statusEl.textContent = result.message || 'فشل رفع الشعار';
                 }
             })
-            .catch(function () { status.textContent = 'حدث خطأ أثناء رفع الشعار'; });
+            .catch(function () {
+                statusEl.textContent = 'عذراً، حدث خطأ أثناء رفع الشعار';
+            });
         }
 
         function onAdLogoRemove() {
             adLogoUrl = '';
             document.getElementById('adLogoInput').value = '';
-            document.getElementById('adLogoPreview').classList.add('d-none');
+            var preview = document.getElementById('adLogoPreview');
+            preview.src = '';
+            preview.classList.add('d-none');
             document.getElementById('adLogoRemoveBtn').classList.add('d-none');
             document.getElementById('adLogoStatus').textContent = '';
         }
 
         function refreshAds() {
             var btn = document.getElementById('refreshAdsBtn');
-            if (btn) btn.disabled = true;
-            fetch('/Clinic/GetMyAdsJson', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (result) {
-                if (!result.success || !result.data) {
-                    showErrorModal(result.message || 'حدث خطأ أثناء تحديث الحالة');
-                    return;
-                }
-                renderAds(result.data);
-                showSuccessModal('تم تحديث حالة إعلاناتك.');
-            })
-            .catch(function () {
-                showErrorModal('عذراً، حدث خطأ أثناء تحديث الحالة');
-            })
-            .finally(function () {
-                if (btn) btn.disabled = false;
-            });
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>جارٍ التحديث...';
+
+            fetch('/Clinic/GetMyAdsJson')
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg> تحديث الحالة';
+                    if (!result.success) {
+                        showErrorModal(result.message || 'تعذر تحديث البيانات');
+                        return;
+                    }
+                    var adsList = result.data || [];
+                    renderAdsTable(adsList);
+                    renderAdsPreview(adsList);
+                    showSuccessModal('تم تحديث قائمة الإعلانات بنجاح');
+                })
+                .catch(function () {
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg> تحديث الحالة';
+                    showErrorModal('عذراً، حدث خطأ أثناء تحديث البيانات');
+                });
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            var durationSelect = document.getElementById('buyDuration');
-            if (durationSelect) {
-                var packageSelect = document.getElementById('buyPackage');
-                if (packageSelect.options.length > 1) {
-                    fillDurationOptions(packageSelect.options[packageSelect.selectedIndex]);
-                }
+        function renderAdsTable(adsList) {
+            var tbody = document.getElementById('adsTableBody');
+            if (!tbody) return;
+            if (adsList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>لا توجد إعلانات بعد. ابدأ بشراء إعلانك الأول لظهور عيادتك في التطبيق.</p></div></td></tr>';
+                return;
             }
+            var html = '';
+            for (var i = 0; i < adsList.length; i++) {
+                var ad = adsList[i];
+                html += '<tr>' +
+                    '<td class="text-md-medium">' + (ad.packageNameAr || '') + '</td>' +
+                    '<td class="text-md">' + ad.durationDays + ' يوم</td>' +
+                    '<td class="text-md">' + parseFloat(ad.amount).toFixed(2) + ' ج.م</td>' +
+                    '<td class="text-md">' + formatDate(ad.startDate) + '</td>' +
+                    '<td class="text-md">' + formatDate(ad.endDate) + '</td>' +
+                    '<td><span class="badge ' + getStatusClass(ad.status) + '">' + getStatusText(ad.status) + '</span></td>' +
+                    '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
 
+        function renderAdsPreview(adsList) {
+            var container = document.getElementById('adsPreviewContainer');
+            if (!container) return;
+            var active = adsList.filter(function (a) { return a.status === 1; });
+            if (active.length === 0) {
+                container.innerHTML = '<div class="ad-preview-empty"><p>لا توجد إعلانات نشطة حالياً. بمجرد شراء إعلان وتأكيد الدفع سيظهر هنا وفي تطبيق المرضى.</p></div>';
+                return;
+            }
+            var html = '<div class="ad-preview-grid">';
+            for (var i = 0; i < active.length; i++) {
+                var ad = active[i];
+                html += '<div class="ad-preview-item">' +
+                    renderAdVisual(ad) +
+                    '<div class="ad-preview-body">' +
+                    '<span class="ad-preview-name">' + (ad.clinicName || '') + '</span>' +
+                    '<span class="ad-preview-meta">' + (ad.packageNameAr || '') + '</span>' +
+                    '<span class="ad-preview-period">' + formatDate(ad.startDate) + ' → ' + formatDate(ad.endDate) + '</span>' +
+                    '</div>' +
+                    '<span class="badge badge-success">نشط</span>' +
+                    '</div>';
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        var pendingAdOrder = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
             var buyBtn = document.getElementById('buySubmitBtn');
-            var adConfirmBtn = document.getElementById('adConfirmPaymentMethodBtn');
-            // Store pending ad order data between modals
-            var pendingAdOrder = null;
             if (buyBtn) {
                 buyBtn.addEventListener('click', function () {
-                    var packageSelect = document.getElementById('buyPackage');
-                    var opt = packageSelect.options[packageSelect.selectedIndex];
-                    var packageId = opt ? opt.value : '';
+                    var pkgId = document.getElementById('buyPackage').value;
                     var duration = parseInt(document.getElementById('buyDuration').value);
+                    if (!pkgId) { showErrorModal('يرجى اختيار باقة الإعلان'); return; }
+                    if (!duration || duration <= 0) { showErrorModal('يرجى اختيار مدة صحيحة'); return; }
 
-                    if (!packageId) { showErrorModal('يرجى اختيار الباقة'); return; }
-                    if (!duration || duration <= 0) { showErrorModal('يرجى اختيار المدة بالأيام'); return; }
-                    var baseDays = parseInt(opt.getAttribute('data-duration'));
-                    if (duration % baseDays !== 0) { showErrorModal('المدة يجب أن تكون مضاعفاً صحيحاً لمدة الباقة'); return; }
+                    pendingAdOrder = { packageId: pkgId, duration: duration };
 
-                    pendingAdOrder = { packageId: packageId, duration: duration };
-                    // Show payment method selection before creating order
-                    var pmModalEl = document.getElementById('paymentMethodAdModal');
-                    if(pmModalEl){
-                        var pmModal = bootstrap.Modal.getInstance(pmModalEl) || new bootstrap.Modal(pmModalEl);
-                        // hide buy modal first if open
-                        var buyModalEl = document.getElementById('buyAdModal');
-                        var buyModal = bootstrap.Modal.getInstance(buyModalEl);
-                        if(buyModal) buyModal.hide();
-                        pmModal.show();
-                    }
+                    var buyModalEl = document.getElementById('buyAdModal');
+                    var buyModal = bootstrap.Modal.getInstance(buyModalEl);
+                    if (buyModal) buyModal.hide();
+
+                    var pmModal = new bootstrap.Modal(document.getElementById('paymentMethodAdModal'));
+                    pmModal.show();
                 });
             }
-            if(adConfirmBtn){
-                adConfirmBtn.addEventListener('click', function(){
-                    if(!pendingAdOrder){ showErrorModal('يرجى اختيار الباقة والمدة أولاً'); return; }
+
+            var adConfirmBtn = document.getElementById('adConfirmPaymentMethodBtn');
+            if (adConfirmBtn) {
+                adConfirmBtn.addEventListener('click', function () {
+                    if (!pendingAdOrder) return;
                     var selectedMethod = document.querySelector('input[name="adPaymentMethod"]:checked')?.value || 'PaymobWallet';
                     adConfirmBtn.disabled = true;
-                    adConfirmBtn.textContent = 'جارٍ إنشاء الطلب...';
-                    // also disable buyBtn for feedback
-                    if(buyBtn){ buyBtn.disabled = true; buyBtn.textContent = 'جارٍ إنشاء الطلب...'; }
+                    adConfirmBtn.textContent = 'جارٍ التحويل للدفع...';
+
+                    if (buyBtn) { buyBtn.disabled = true; buyBtn.textContent = 'جارٍ إنشاء الطلب...'; }
                     fetch('/Clinic/CreateAdOrder', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -580,10 +559,9 @@
                     })
                     .then(function (r) { return r.json(); })
                     .then(function (result) {
-                        // hide payment modal
                         var pmModalEl = document.getElementById('paymentMethodAdModal');
                         var pmModal = bootstrap.Modal.getInstance(pmModalEl);
-                        if(pmModal) pmModal.hide();
+                        if (pmModal) pmModal.hide();
                         if (result.success && result.data && result.data.paymobRedirectUrl) {
                             showSuccessModal('تم إنشاء الطلب بنجاح، أكمل الدفع في نافذة Paymob ثم اضغط "تحديث الحالة" لتأكيد التفعيل.');
                             window.open(result.data.paymobRedirectUrl, '_blank');
@@ -599,20 +577,20 @@
                     .finally(function(){
                         adConfirmBtn.disabled = false;
                         adConfirmBtn.textContent = 'متابعة للدفع';
-                        if(buyBtn){ buyBtn.disabled = false; buyBtn.textContent = 'إتمام الطلب والدفع'; }
+                        if (buyBtn) { buyBtn.disabled = false; buyBtn.textContent = 'إتمام الطلب والدفع'; }
                         pendingAdOrder = null;
                     });
                 });
             }
-            // local search for my ads
+
             var mSearch = document.getElementById('marketingAdsSearch');
-            if(mSearch){
+            if (mSearch) {
                 mSearch.addEventListener('input', function(){
                     var q = this.value.toLowerCase().trim();
                     document.querySelectorAll('#adsTableBody tr').forEach(function(tr){
-                        if(tr.querySelector('td[colspan]')) return;
+                        if (tr.querySelector('td[colspan]')) return;
                         var txt = tr.textContent.toLowerCase();
-                        tr.style.display = !q || txt.indexOf(q)!==-1 ? '' : 'none';
+                        tr.style.display = !q || txt.indexOf(q) !== -1 ? '' : 'none';
                     });
                 });
             }
