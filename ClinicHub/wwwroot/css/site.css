@@ -1472,6 +1472,112 @@ body {
     font-size: var(--fs-md);
 }
 
+/* Ad Multi-Logo Upload */
+.ad-multi-logo-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: flex-start;
+    margin-top: var(--space-2);
+}
+
+.ad-logo-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.ad-logo-card {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--clr-border);
+    overflow: hidden;
+    background-color: var(--clr-surface-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.ad-logo-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ad-logo-card-del {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 22px;
+    height: 22px;
+    background-color: var(--clr-danger);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.ad-logo-card-del:hover {
+    transform: scale(1.1);
+}
+
+.ad-logo-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border: 2px dashed var(--clr-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    background-color: var(--clr-surface);
+    color: var(--clr-text-secondary);
+    transition: all 0.2s ease-in-out;
+    padding: var(--space-1);
+    text-align: center;
+}
+
+.ad-logo-dropzone:hover {
+    border-color: var(--clr-primary);
+    color: var(--clr-primary);
+    background-color: var(--clr-surface-secondary);
+}
+
+.ad-logo-dropzone svg {
+    margin-bottom: 4px;
+}
+
+.dropzone-text {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.ad-preview-visuals-row {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.ad-preview-visual-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    border: 1px solid var(--clr-border);
+}
+
 @media (max-width: 768px) {
     .upsell-card {
         flex-direction: column;

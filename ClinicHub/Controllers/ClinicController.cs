@@ -1024,6 +1024,35 @@ namespace ClinicHub.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> UploadAttachment(IFormFile file, int place = 5)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, error = "الملف مطلوب" });
+
+                var isImage = file.ContentType != null && file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+                var mediaType = isImage ? Services.Enums.MediaType.Image : Services.Enums.MediaType.File;
+
+                var uploadRequest = new Services.RequestModels.UploadAttachmentRequest(file, place, mediaType);
+                var fileName = await _attachmentService.UploadAttachmentAsync(uploadRequest);
+                if (string.IsNullOrWhiteSpace(fileName))
+                {
+                    return Json(new { success = false, error = "فشل رفع الملف أو لم يتم استرجاع اسم الملف بنجاح" });
+                }
+                return Json(new { success = true, fileName, url = fileName, data = new { url = fileName } });
+            }
+            catch (ApiException ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = "حدث خطأ أثناء رفع الملف: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
         public async Task<IActionResult> GetMyAdsJson()
         {
             var clinicId = CurrentUser?.ClinicId ?? Guid.Empty;

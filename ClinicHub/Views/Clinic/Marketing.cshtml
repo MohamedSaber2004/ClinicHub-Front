@@ -27,6 +27,12 @@
         3 => "badge-danger",
         _ => "badge-info"
     };
+
+    List<string> GetImagesList(string? imgUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imgUrl)) return new List<string>();
+        return imgUrl.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+    }
 }
 
 <div class="page-header">
@@ -85,7 +91,7 @@
             </span>
             معاينة الإعلان في تطبيق المرضى
         </h3>
-        <p class="ad-preview-hint">هكذا يظهر إعلانك للمرضى في تطبيق الجوال (كصورة أو شارة). الإعلانات النشطة فقط تظهر للجميع.</p>
+        <p class="ad-preview-hint">هكذا يظهر إعلانك للمرضى في تطبيق الجوال (بالشعارات والصور المرفوعة). الإعلانات النشطة فقط تظهر للجميع.</p>
     </div>
 
     @{
@@ -103,11 +109,21 @@
         <div class="ad-preview-grid">
             @foreach (var ad in activeAds)
             {
+                var adImgs = GetImagesList(ad.ImageUrl);
                 <div class="ad-preview-item">
                     <div class="ad-preview-visual">
-                        @if (!string.IsNullOrWhiteSpace(ad.ImageUrl))
+                        @if (adImgs.Count > 0)
                         {
-                            <img class="ad-preview-img" src="@(attachmentBaseUrl)/files/@ad.ImageUrl" alt="@ad.ClinicName" loading="lazy" decoding="async" />
+                            <div class="ad-preview-visuals-row">
+                                @foreach (var img in adImgs.Take(3))
+                                {
+                                    <img class="ad-preview-visual-thumb" src="@(attachmentBaseUrl)/files/@img" alt="@ad.ClinicName" loading="lazy" decoding="async" />
+                                }
+                                @if (adImgs.Count > 3)
+                                {
+                                    <span class="badge badge-primary">+@(adImgs.Count - 3)</span>
+                                }
+                            </div>
                         }
                         else
                         {
@@ -116,7 +132,7 @@
                     </div>
                     <div class="ad-preview-body">
                         <span class="ad-preview-name">@ad.ClinicName</span>
-                        <span class="ad-preview-meta">@ad.PackageNameAr</span>
+                        <span class="ad-preview-meta">@ad.PackageNameAr @(adImgs.Count > 1 ? $"({adImgs.Count} صور)" : "")</span>
                         <span class="ad-preview-period">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-") → @(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")</span>
                     </div>
                     <span class="badge badge-success">نشط</span>
@@ -155,6 +171,7 @@
             <thead>
                 <tr>
                     <th>الباقة</th>
+                    <th>الصور والشعارات</th>
                     <th>المدة</th>
                     <th>المبلغ</th>
                     <th>بداية</th>
@@ -166,7 +183,7 @@
                 @if (ads.Count == 0)
                 {
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="empty-state">
                                 <p>لا توجد إعلانات بعد. ابدأ بشراء إعلانك الأول لظهور عيادتك في التطبيق.</p>
                             </div>
@@ -177,8 +194,28 @@
                 {
                     foreach (var ad in ads)
                     {
+                        var adImgs = GetImagesList(ad.ImageUrl);
                         <tr>
                             <td class="text-md-medium">@ad.PackageNameAr</td>
+                            <td>
+                                @if (adImgs.Count > 0)
+                                {
+                                    <div class="ad-preview-visuals-row">
+                                        @foreach (var img in adImgs.Take(2))
+                                        {
+                                            <img class="ad-preview-visual-thumb" src="@(attachmentBaseUrl)/files/@img" alt="@ad.ClinicName" loading="lazy" decoding="async" />
+                                        }
+                                        @if (adImgs.Count > 2)
+                                        {
+                                            <span class="badge badge-info">+@(adImgs.Count - 2)</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">الاسم فقط</span>
+                                }
+                            </td>
                             <td class="text-md">@ad.DurationDays يوم</td>
                             <td class="text-md">@ad.Amount.ToString("N2") ج.م</td>
                             <td class="text-md">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-")</td>
@@ -287,20 +324,26 @@
                         <input type="text" id="buyPrice" class="form-input" readonly placeholder="0.00 ج.م" />
                     </div>
                     <div class="form-group">
-                        <label class="form-label">شعار الإعلان <span class="text-muted">(اختياري)</span></label>
-                        <div class="ad-logo-upload">
-                            <label class="btn btn-secondary btn-sm" for="adLogoInput">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-                                </svg>
-                                اختيار شعار
-                            </label>
-                            <input type="file" id="adLogoInput" class="d-none" accept="image/*" onchange="onAdLogoChange()" />
-                            <img id="adLogoPreview" class="ad-logo-preview d-none" alt="شعار الإعلان" />
-                            <button type="button" class="btn btn-sm btn-danger d-none" id="adLogoRemoveBtn" onclick="onAdLogoRemove()">إزالة</button>
-                            <span id="adLogoStatus" class="form-hint"></span>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">شعارات وصور الإعلان <span class="text-muted">(يمكنك إضافة أكثر من صورة/شعار)</span></label>
+                            <span class="badge badge-info" id="adLogoCountBadge">0 / 5 صور</span>
                         </div>
-                        <p class="form-hint">الشعار سيظهر داخل إعلانك في تطبيق المرضى. إذا لم ترفع شعاراً سيظهر اسم العيادة بدلاً منه.</p>
+                        <div class="ad-multi-logo-container">
+                            <div class="ad-logo-grid" id="adLogoGrid"></div>
+                            <div class="ad-logo-upload-box" id="adLogoUploadBox">
+                                <label class="ad-logo-dropzone" for="adLogoInput">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    <span class="dropzone-text">+ إضافة شعار / صورة</span>
+                                </label>
+                                <input type="file" id="adLogoInput" class="d-none" accept="image/*" multiple onchange="onAdLogosSelected(this)" />
+                            </div>
+                        </div>
+                        <div id="adLogoStatus" class="form-hint mt-1"></div>
+                        <p class="form-hint">الشعارات والصور ستظهر داخل إعلانك في تطبيق المرضى. يمكنك رفع حتى 5 صور للعيادة والخدمات.</p>
                     </div>
                     <p class="form-hint">يتم الدفع عبر بوابة Paymob، ويظهر إعلانك فور اكتمال الدفع.</p>
                 }
@@ -387,60 +430,115 @@
         var STATUS_TEXT = ['معلق الدفع', 'نشط', 'منتهي', 'معطل'];
         var STATUS_CLASS = ['badge-warning', 'badge-success', 'badge-info', 'badge-danger'];
         var attachmentBaseUrl = '@attachmentBaseUrl';
-        var adLogoUrl = '';
+        var uploadedAdLogos = [];
+        var MAX_AD_LOGOS = 5;
 
         function getStatusText(s) { return STATUS_TEXT[s] || 'غير معروف'; }
         function getStatusClass(s) { return STATUS_CLASS[s] || 'badge-info'; }
 
         function formatDate(v) { return v ? v.substring(0, 10) : '-'; }
 
+        function getAdImages(imageUrl) {
+            if (!imageUrl) return [];
+            return imageUrl.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+        }
+
         function renderAdVisual(ad) {
-            if (ad.imageUrl) {
-                return '<div class="ad-preview-visual"><img class="ad-preview-img" src="' + attachmentBaseUrl + '/files/' + ad.imageUrl + '" alt="' + (ad.clinicName || '') + '" /></div>';
+            var imgs = getAdImages(ad.imageUrl);
+            if (imgs.length > 1) {
+                var html = '<div class="ad-preview-visuals-row">';
+                for (var i = 0; i < Math.min(imgs.length, 3); i++) {
+                    html += '<img class="ad-preview-visual-thumb" src="' + attachmentBaseUrl + '/files/' + imgs[i] + '" alt="' + (ad.clinicName || '') + '" />';
+                }
+                if (imgs.length > 3) {
+                    html += '<span class="badge badge-primary">+' + (imgs.length - 3) + '</span>';
+                }
+                html += '</div>';
+                return html;
+            } else if (imgs.length === 1) {
+                return '<div class="ad-preview-visual"><img class="ad-preview-img" src="' + attachmentBaseUrl + '/files/' + imgs[0] + '" alt="' + (ad.clinicName || '') + '" /></div>';
             }
             var initial = (ad.clinicName || 'ع').substring(0, 1);
             return '<div class="ad-preview-visual"><span class="ad-preview-initial">' + initial + '</span></div>';
         }
 
-        function onAdLogoChange() {
-            var input = document.getElementById('adLogoInput');
-            if (!input.files || input.files.length === 0) return;
-            var file = input.files[0];
-            var statusEl = document.getElementById('adLogoStatus');
-            statusEl.textContent = 'جارٍ رفع الشعار...';
-            var formData = new FormData();
-            formData.append('file', file);
+        function renderAdLogosGrid() {
+            var grid = document.getElementById('adLogoGrid');
+            var countBadge = document.getElementById('adLogoCountBadge');
+            var uploadBox = document.getElementById('adLogoUploadBox');
+            if (!grid) return;
 
-            fetch('/Clinic/UploadAttachment', {
-                method: 'POST',
-                body: formData
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (result) {
-                if (result.success && result.data) {
-                    adLogoUrl = result.data.url;
-                    var preview = document.getElementById('adLogoPreview');
-                    preview.src = attachmentBaseUrl + '/files/' + adLogoUrl;
-                    preview.classList.remove('d-none');
-                    document.getElementById('adLogoRemoveBtn').classList.remove('d-none');
-                    statusEl.textContent = 'تم رفع الشعار بنجاح';
-                } else {
-                    statusEl.textContent = result.message || 'فشل رفع الشعار';
-                }
-            })
-            .catch(function () {
-                statusEl.textContent = 'عذراً، حدث خطأ أثناء رفع الشعار';
+            grid.innerHTML = '';
+            if (countBadge) countBadge.textContent = uploadedAdLogos.length + ' / ' + MAX_AD_LOGOS + ' صور';
+
+            uploadedAdLogos.forEach(function(url, idx) {
+                var card = document.createElement('div');
+                card.className = 'ad-logo-card';
+                card.innerHTML = '<img src="' + attachmentBaseUrl + '/files/' + url + '" class="ad-logo-card-img" alt="شعار ' + (idx + 1) + '" />' +
+                    '<button type="button" class="ad-logo-card-del" title="حذف الشعار" onclick="removeAdLogo(' + idx + ')">' +
+                    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
+                    '</button>';
+                grid.appendChild(card);
             });
+
+            if (uploadBox) {
+                uploadBox.style.display = uploadedAdLogos.length >= MAX_AD_LOGOS ? 'none' : 'block';
+            }
         }
 
-        function onAdLogoRemove() {
-            adLogoUrl = '';
-            document.getElementById('adLogoInput').value = '';
-            var preview = document.getElementById('adLogoPreview');
-            preview.src = '';
-            preview.classList.add('d-none');
-            document.getElementById('adLogoRemoveBtn').classList.add('d-none');
-            document.getElementById('adLogoStatus').textContent = '';
+        function removeAdLogo(index) {
+            if (index >= 0 && index < uploadedAdLogos.length) {
+                uploadedAdLogos.splice(index, 1);
+                renderAdLogosGrid();
+                var statusEl = document.getElementById('adLogoStatus');
+                if (statusEl) statusEl.textContent = '';
+            }
+        }
+
+        function onAdLogosSelected(input) {
+            if (!input.files || input.files.length === 0) return;
+            var files = Array.from(input.files);
+            var statusEl = document.getElementById('adLogoStatus');
+
+            if (uploadedAdLogos.length + files.length > MAX_AD_LOGOS) {
+                var availableSlots = MAX_AD_LOGOS - uploadedAdLogos.length;
+                if (availableSlots <= 0) {
+                    showErrorModal('لقد بلغت الحد الأقصى للشعارات والصور المسموح بها (' + MAX_AD_LOGOS + ' صور)');
+                    input.value = '';
+                    return;
+                }
+                showErrorModal('يمكنك إضافة ' + availableSlots + ' صور فقط كحد أقصى');
+                files = files.slice(0, availableSlots);
+            }
+
+            statusEl.textContent = 'جارٍ رفع ' + files.length + ' شعار/صورة...';
+            var uploadPromises = files.map(function(file) {
+                var formData = new FormData();
+                formData.append('file', file);
+                return fetch('/Clinic/UploadAttachment', {
+                    method: 'POST',
+                    body: formData
+                }).then(function(r) { return r.json(); });
+            });
+
+            Promise.all(uploadPromises)
+                .then(function(results) {
+                    var successCount = 0;
+                    results.forEach(function(res) {
+                        if (res.success && (res.url || (res.data && res.data.url))) {
+                            var finalUrl = res.url || (res.data && res.data.url);
+                            uploadedAdLogos.push(finalUrl);
+                            successCount++;
+                        }
+                    });
+                    input.value = '';
+                    renderAdLogosGrid();
+                    statusEl.textContent = 'تم رفع ' + successCount + ' صورة/شعار بنجاح';
+                })
+                .catch(function() {
+                    input.value = '';
+                    statusEl.textContent = 'عذراً، حدث خطأ أثناء رفع بعض الصور';
+                });
         }
 
         function refreshAds() {
@@ -473,14 +571,28 @@
             var tbody = document.getElementById('adsTableBody');
             if (!tbody) return;
             if (adsList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>لا توجد إعلانات بعد. ابدأ بشراء إعلانك الأول لظهور عيادتك في التطبيق.</p></div></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>لا توجد إعلانات بعد. ابدأ بشراء إعلانك الأول لظهور عيادتك في التطبيق.</p></div></td></tr>';
                 return;
             }
             var html = '';
             for (var i = 0; i < adsList.length; i++) {
                 var ad = adsList[i];
+                var adImgs = getAdImages(ad.imageUrl);
+                var imgsHtml = '<span class="text-muted">الاسم فقط</span>';
+                if (adImgs.length > 0) {
+                    imgsHtml = '<div class="ad-preview-visuals-row">';
+                    for (var j = 0; j < Math.min(adImgs.length, 2); j++) {
+                        imgsHtml += '<img class="ad-preview-visual-thumb" src="' + attachmentBaseUrl + '/files/' + adImgs[j] + '" alt="' + (ad.clinicName || '') + '" />';
+                    }
+                    if (adImgs.length > 2) {
+                        imgsHtml += '<span class="badge badge-info">+' + (adImgs.length - 2) + '</span>';
+                    }
+                    imgsHtml += '</div>';
+                }
+
                 html += '<tr>' +
                     '<td class="text-md-medium">' + (ad.packageNameAr || '') + '</td>' +
+                    '<td>' + imgsHtml + '</td>' +
                     '<td class="text-md">' + ad.durationDays + ' يوم</td>' +
                     '<td class="text-md">' + parseFloat(ad.amount).toFixed(2) + ' ج.م</td>' +
                     '<td class="text-md">' + formatDate(ad.startDate) + '</td>' +
@@ -502,11 +614,12 @@
             var html = '<div class="ad-preview-grid">';
             for (var i = 0; i < active.length; i++) {
                 var ad = active[i];
+                var imgs = getAdImages(ad.imageUrl);
                 html += '<div class="ad-preview-item">' +
                     renderAdVisual(ad) +
                     '<div class="ad-preview-body">' +
                     '<span class="ad-preview-name">' + (ad.clinicName || '') + '</span>' +
-                    '<span class="ad-preview-meta">' + (ad.packageNameAr || '') + '</span>' +
+                    '<span class="ad-preview-meta">' + (ad.packageNameAr || '') + (imgs.length > 1 ? ' (' + imgs.length + ' صور/شعارات)' : '') + '</span>' +
                     '<span class="ad-preview-period">' + formatDate(ad.startDate) + ' → ' + formatDate(ad.endDate) + '</span>' +
                     '</div>' +
                     '<span class="badge badge-success">نشط</span>' +
@@ -519,6 +632,8 @@
         var pendingAdOrder = null;
 
         document.addEventListener('DOMContentLoaded', function () {
+            renderAdLogosGrid();
+
             var buyBtn = document.getElementById('buySubmitBtn');
             if (buyBtn) {
                 buyBtn.addEventListener('click', function () {
@@ -553,7 +668,7 @@
                         body: JSON.stringify({
                             adPackageId: pendingAdOrder.packageId,
                             durationDays: pendingAdOrder.duration,
-                            logoImageUrl: adLogoUrl || null,
+                            logoImageUrl: uploadedAdLogos.length > 0 ? uploadedAdLogos.join(',') : null,
                             paymentMethod: selectedMethod
                         })
                     })
