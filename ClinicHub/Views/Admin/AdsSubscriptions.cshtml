@@ -1,0 +1,178 @@
+@using ClinicHub.Services.ReponseModels
+@{
+    ViewData["Title"] = "إدارة الإعلانات والاشتراكات";
+    Layout = "_AdminLayout";
+    var plans = ViewBag.Plans as List<PlanDto> ?? new List<PlanDto>();
+    var packages = ViewBag.Packages as List<AdPackageDto> ?? new List<AdPackageDto>();
+    var clinicAdSettings = ViewBag.ClinicAdSettings as List<ClinicAdSettingsDto> ?? new List<ClinicAdSettingsDto>();
+    var subscriptions = ViewBag.Subscriptions as List<SubscriptionDto> ?? new List<SubscriptionDto>();
+}
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        </span>
+        إدارة الإعلانات والاشتراكات
+    </h2>
+    <p class="text-muted">الإعلانات مستقلة الآن عن باقات الاشتراك — أي عيادة نشطة يمكنها شراء إعلانات دون اشتراك متقدم.</p>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<!-- Plans (2 only) -->
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">الباقات (نموذج باقتين)</h3>
+        <a href="@AdminRoutes.Pages.Subscriptions()" class="btn btn-sm btn-secondary">إدارة الباقات</a>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>الباقة</th>
+                    <th>السعر شهري</th>
+                    <th>سنوي</th>
+                    <th>الأطباء</th>
+                    <th>الموظفين</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (plans.Count == 0)
+            {
+                <tr><td colspan="6" class="text-center text-muted">لا توجد باقات</td></tr>
+            }
+            else
+            {
+                foreach (var p in plans.OrderBy(x => x.SortOrder))
+                {
+                    <tr>
+                        <td class="text-md-medium">@(p.NameAr ?? p.Name)</td>
+                        <td class="text-md">@p.PriceMonthly.ToString("N0") ج.م</td>
+                        <td class="text-md">@p.PriceYearly.ToString("N0") ج.م</td>
+                        <td class="text-md">@(p.MaxDoctors?.ToString() ?? "غير محدود")</td>
+                        <td class="text-md">@(p.MaxStaff?.ToString() ?? "غير محدود")</td>
+                        <td><span class="badge @(p.IsActive ? "badge-success" : "badge-secondary")">@(p.IsActive ? "نشطة" : "معطلة")</span></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Ad Packages -->
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">باقات الإعلانات</h3>
+        <a href="@AdminRoutes.Pages.Ads()" class="btn btn-sm btn-primary">إدارة الإعلانات</a>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>الباقة</th>
+                    <th>المدة</th>
+                    <th>السعر</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (packages.Count == 0)
+            {
+                <tr><td colspan="4" class="text-center text-muted">لا توجد باقات إعلانية</td></tr>
+            }
+            else
+            {
+                foreach (var pkg in packages)
+                {
+                    <tr>
+                        <td class="text-md-medium">@(pkg.NameAr ?? pkg.Name)</td>
+                        <td class="text-md">@pkg.DurationDays يوم</td>
+                        <td class="text-md">@pkg.Price.ToString("N2") ج.م</td>
+                        <td><span class="badge @(pkg.IsActive ? "badge-success" : "badge-secondary")">@(pkg.IsActive ? "نشطة" : "معطلة")</span></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Clinic Ad Settings -->
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">حدود الإعلانات لكل عيادة</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>العيادة</th>
+                    <th>الحد الأقصى للإعلانات</th>
+                    <th>الانطباعات</th>
+                    <th>النشطة حالياً</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (clinicAdSettings.Count == 0)
+            {
+                <tr><td colspan="4" class="text-center text-muted">لا توجد إعدادات — كل العيادات تستخدم الافتراضي (0 = غير محدود)</td></tr>
+            }
+            else
+            {
+                foreach (var c in clinicAdSettings)
+                {
+                    <tr>
+                        <td class="text-md-medium">@c.ClinicName</td>
+                        <td class="text-md">@(c.MaxAds > 0 ? c.MaxAds.ToString() : "غير محدود")</td>
+                        <td class="text-md">@(c.MaxImpressions > 0 ? c.MaxImpressions.ToString() : "غير محدود")</td>
+                        <td><span class="badge badge-info">@c.ActiveAdsCount</span></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Subscriptions -->
+<div class="table-card">
+    <div class="table-card-header">
+        <h3 class="table-card-title">أحدث الاشتراكات</h3>
+        <a href="@AdminRoutes.Pages.SubscriptionManagement()" class="btn btn-sm btn-secondary">إدارة الاشتراكات</a>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>العيادة</th>
+                    <th>الباقة</th>
+                    <th>الفترة</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (subscriptions.Count == 0)
+            {
+                <tr><td colspan="4" class="text-center text-muted">لا توجد اشتراكات حديثة</td></tr>
+            }
+            else
+            {
+                foreach (var s in subscriptions)
+                {
+                    <tr>
+                        <td class="text-md">@s.ClinicName</td>
+                        <td class="text-md">@s.PlanName</td>
+                        <td class="text-md">@(s.Period == 1 ? "سنوي" : "شهري")</td>
+                        <td><span class="badge @(s.IsActive ? "badge-success" : "badge-secondary")">@(s.IsActive ? "نشط" : "منتهي")</span></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

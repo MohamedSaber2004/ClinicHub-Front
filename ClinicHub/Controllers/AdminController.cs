@@ -1170,6 +1170,25 @@ namespace ClinicHub.Controllers
             return View();
         }
 
+        [Route("Admin/AdsSubscriptions")]
+        public async Task<IActionResult> AdsSubscriptions()
+        {
+            ViewBag.Plans = new List<PlanDto>();
+            ViewBag.Packages = new List<AdPackageDto>();
+            ViewBag.ClinicAdSettings = new List<ClinicAdSettingsDto>();
+            ViewBag.Subscriptions = new List<SubscriptionDto>();
+            try { ViewBag.Plans = await _adminSubscriptionService.GetAllPlansAsync() ?? new List<PlanDto>(); } catch (ApiException ex) { ViewBag.ErrorMessage = ex.Message; }
+            try { ViewBag.Packages = await _adService.GetAllPackagesAsync() ?? new List<AdPackageDto>(); } catch (ApiException ex) { ViewBag.ErrorMessage ??= ex.Message; }
+            try { ViewBag.ClinicAdSettings = await _adService.GetClinicAdSettingsAsync() ?? new List<ClinicAdSettingsDto>(); } catch (ApiException ex) { ViewBag.ErrorMessage ??= ex.Message; }
+            try
+            {
+                var subs = await _adminSubscriptionService.GetSubscriptionsAsync(new GetPaginatedSubscriptionsRequest { PageNumber = 1, PageSize = 5 });
+                ViewBag.Subscriptions = subs.Items ?? new List<SubscriptionDto>();
+            }
+            catch (ApiException ex) { ViewBag.ErrorMessage ??= ex.Message; }
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> DeactivateAd(Guid id, [FromBody] JsonElement body)
         {
@@ -1716,23 +1735,6 @@ namespace ClinicHub.Controllers
                     types.Add((UserType)val);
             }
             return types.Count > 0 ? types : null;
-        }
-
-        [Route("Admin/AdsSubscriptions")]
-        public async Task<IActionResult> AdsSubscriptions()
-        {
-            ViewBag.ClinicAdSettings = new List<ClinicAdSettingsDto>();
-
-            try
-            {
-                ViewBag.ClinicAdSettings = await _adService.GetClinicAdSettingsAsync() ?? new List<ClinicAdSettingsDto>();
-            }
-            catch (ApiException ex)
-            {
-                ViewBag.ErrorMessage = ex.Message;
-            }
-
-            return View();
         }
 
         [HttpPost]
