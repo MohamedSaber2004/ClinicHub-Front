@@ -1,5 +1,8 @@
+@using ClinicHub.Services.ReponseModels
 @{
     ViewData["Title"] = "الرئيسية - Doctory";
+    var adPackages = ViewBag.AdPackages as List<AdPackageDto> ?? new();
+    var activeAdPackages = adPackages.Where(p => p.IsActive).ToList();
 }
 
 <!-- Hero Section -->
@@ -100,7 +103,7 @@
                 <div class="service-card">
                     <div class="icon-wrapper icon-wrapper--green">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
                         </svg>
                     </div>
                     <h4 class="service-card-title">إدارة قوائم الانتظار</h4>
@@ -123,6 +126,70 @@
         </div>
     </div>
 </section>
+
+@if (activeAdPackages.Count > 0)
+{
+    <!-- Ad Plans Section on Landing Page -->
+    <section id="ads-plans" class="subscription-section">
+        <div class="container">
+            <div class="section-head text-center">
+                <span class="hero-eyebrow">الترويج والإعلانات</span>
+                <h2 class="section-head-title">باقات الإعلانات المتاحة للعيادات</h2>
+                <p class="section-head-lead">روّج لعيادتك واظهر كأول الخيارات للمرضى في تطبيق Doctory للجوال لزيادة عدد الحجوزات</p>
+            </div>
+
+            <div class="subscription-plans">
+                @foreach (var pkg in activeAdPackages)
+                {
+                    <div class="plan-card plan-premium">
+                        <span class="plan-badge">باقة إعلانية</span>
+                        <div class="plan-header">
+                            <h3 class="plan-name">@(pkg.NameAr ?? pkg.Name)</h3>
+                            <p class="plan-desc">@(pkg.DescriptionAr ?? pkg.Description)</p>
+                            <p class="plan-price">
+                                <span>@pkg.Price.ToString("N0")</span>
+                                <span class="plan-currency">ج.م</span>
+                            </p>
+                            <p class="plan-period-label">
+                                <span>لمدة @pkg.DurationDays يوم</span>
+                            </p>
+                        </div>
+                        <div class="plan-body">
+                            <div class="plan-limits">
+                                <span>@(pkg.MaxAds > 0 ? $"حتى {pkg.MaxAds} إعلانات نشطة" : "إعلانات غير محدودة")</span>
+                                <span>@(pkg.MaxImpressions > 0 ? $"{pkg.MaxImpressions:N0} مشاهدة مؤكدة" : "مشاهدات غير محدودة")</span>
+                            </div>
+                            <ul class="plan-features">
+                                <li>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/></svg>
+                                    <span>ظهور مميز وشارة عيادة معتمدة في تطبيق المرضى</span>
+                                </li>
+                                <li>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/></svg>
+                                    <span>استهداف المرضى حسب التخصص والموقع الجغرافي</span>
+                                </li>
+                                <li>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/></svg>
+                                    <span>تقارير مشاهدات تفاعلية وتفعيل فوري</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="plan-footer">
+                            <a href="@HomeRoutes.Pages.AdsPlans()" class="btn btn-primary btn-lg plan-cta-full">تفاصيل الباقة والاشتراك</a>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="@HomeRoutes.Pages.AdsPlans()" class="btn btn-outline-primary">
+                    عرض جميع باقات وتفاصيل الإعلانات
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ms-1"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </a>
+            </div>
+        </div>
+    </section>
+}
 
 <!-- About Section -->
 <section id="about" class="about-section">

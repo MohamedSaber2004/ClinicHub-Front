@@ -18,8 +18,9 @@ public class HomeController : BaseController
     private readonly ISpecializationService _specializationService;
     private readonly IAttachmentService _attachmentService;
     private readonly IOptions<GoogleMapsOptions> _googleMapsOptions;
+    private readonly IAdService _adService;
 
-    public HomeController(ILogger<HomeController> logger, IPlanService planService, ISubscriptionService subscriptionService, ISpecializationService specializationService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions)
+    public HomeController(ILogger<HomeController> logger, IPlanService planService, ISubscriptionService subscriptionService, ISpecializationService specializationService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IAdService adService)
     {
         _logger = logger;
         _planService = planService;
@@ -27,10 +28,20 @@ public class HomeController : BaseController
         _specializationService = specializationService;
         _attachmentService = attachmentService;
         _googleMapsOptions = googleMapsOptions;
+        _adService = adService;
     }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            ViewBag.AdPackages = new List<Services.ReponseModels.AdPackageDto>();
+            try
+            {
+                ViewBag.AdPackages = await _adService.GetPackagesAsync() ?? new List<Services.ReponseModels.AdPackageDto>();
+            }
+            catch (Exception)
+            {
+                ViewBag.AdPackages = new List<Services.ReponseModels.AdPackageDto>();
+            }
             return View();
         }
 
@@ -46,6 +57,9 @@ public class HomeController : BaseController
 
         public async Task<IActionResult> Subscriptions()
         {
+            ViewBag.Plans = new List<Services.ReponseModels.PlanDto>();
+            ViewBag.AdPackages = new List<Services.ReponseModels.AdPackageDto>();
+
             try
             {
                 ViewBag.Plans = await _planService.GetAllAsync();
@@ -57,11 +71,40 @@ public class HomeController : BaseController
             }
             catch (Exception ex)
             {
-                // Transient failures against the remote API must degrade gracefully,
-                // not blow up into the global "service unavailable" page.
                 _logger.LogError(ex, "Failed to load plans on Subscriptions page");
                 ViewBag.ErrorMessage = "تعذر تحميل الباقات حالياً، يرجى المحاولة بعد قليل.";
                 ViewBag.Plans = new List<Services.ReponseModels.PlanDto>();
+            }
+
+            try
+            {
+                ViewBag.AdPackages = await _adService.GetPackagesAsync() ?? new List<Services.ReponseModels.AdPackageDto>();
+            }
+            catch (Exception)
+            {
+                ViewBag.AdPackages = new List<Services.ReponseModels.AdPackageDto>();
+            }
+
+            return View();
+        }
+
+        public async Task<IActionResult> AdsPlans()
+        {
+            ViewBag.AdPackages = new List<Services.ReponseModels.AdPackageDto>();
+            try
+            {
+                ViewBag.AdPackages = await _adService.GetPackagesAsync() ?? new List<Services.ReponseModels.AdPackageDto>();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+                ViewBag.AdPackages = new List<Services.ReponseModels.AdPackageDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load ad packages on AdsPlans page");
+                ViewBag.ErrorMessage = "تعذر تحميل باقات الإعلانات حالياً، يرجى المحاولة بعد قليل.";
+                ViewBag.AdPackages = new List<Services.ReponseModels.AdPackageDto>();
             }
             return View();
         }

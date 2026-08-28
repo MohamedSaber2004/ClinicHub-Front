@@ -7,22 +7,22 @@
     var isAuthenticated = Context.Request.Cookies["AccessToken"] != null;
     var featureLabels = new Dictionary<string, string>
     {
-        ["appointments"] = "إدارة المواعيد",
-        ["patient_records"] = "السجلات الطبية",
-        ["basic_reports"] = "تقارير أساسية",
-        ["advanced_reports"] = "تقارير متقدمة",
-        ["marketing_tools"] = "أدوات تسويقية",
-        ["priority_support"] = "دعم ذو أولوية",
-        ["online_booking"] = "الحجز والدفع أونلاين",
-        ["staff_management"] = "إدارة الموظفين",
-        ["doctor_management"] = "إدارة الأطباء",
+        ["appointments"] = "إدارة المواعيد والحجوزات",
+        ["patient_records"] = "السجلات والملفات الطبية",
+        ["basic_reports"] = "تقارير تشغيلية أساسية",
+        ["advanced_reports"] = "تقارير مالية وإحصائية متقدمة",
+        ["marketing_tools"] = "ميزة نشر الإعلانات والترويج بالتطبيق",
+        ["priority_support"] = "دعم فني ذو أولوية 24/7",
+        ["online_booking"] = "الحجز والدفع الإلكتروني أونلاين",
+        ["staff_management"] = "إدارة طاقم العمل والموظفين",
+        ["doctor_management"] = "إدارة الأطباء والجداول",
     };
 }
 
 <section class="subscription-hero">
     <div class="container text-center">
-        <h1 class="text-h1">اختر الباقة المناسبة لعيادتك</h1>
-        <p class="subscription-hero-desc">اشترك الآن واستفد من جميع الميزات الحصرية لإدارة عيادتك بكفاءة</p>
+        <h1 class="text-h1">اختر باقة الاشتراك المناسبة لعيادتك</h1>
+        <p class="subscription-hero-desc">اشترك الآن في الباقة التي تناسب حجم عيادتك، واستفد من ميزات الإدارة والتشغيل والترويج الإعلاني</p>
     </div>
 </section>
 
@@ -30,8 +30,9 @@
     <div class="container">
         <div class="ads-search-wrap" style="max-width:420px;margin:0 auto 16px">
             <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="planSearch" class="form-input ads-global-input" placeholder="بحث في الباقات — الاسم، السعر، المميزات..." autocomplete="off" />
+            <input type="text" id="planSearch" class="form-input ads-global-input" placeholder="بحث في الباقات والمميزات..." autocomplete="off" />
         </div>
+
         <div class="pricing-toggle">
             <span class="toggle-label">شهرياً</span>
             <label class="form-toggle">
@@ -55,8 +56,9 @@
                     var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
                     var isTop = plan.SortOrder >= maxSort;
                     var planClass = isTop ? "plan-premium" : "plan-free";
-                    var badge = isTop ? "الأفضل" : "";
                     var featureList = JsonSerializer.Deserialize<List<string>>(plan.Features) ?? new();
+                    var includesAds = featureList.Contains("marketing_tools");
+                    var badge = isTop ? "الأفضل والأشمل" : (includesAds ? "تشمل ميزة الإعلانات" : "");
 
                     <div class="plan-card @planClass">
                         @if (!string.IsNullOrEmpty(badge))
@@ -94,7 +96,7 @@
                             </ul>
                         </div>
                         <div class="plan-footer">
-                            <button type="button" class="btn btn-primary btn-lg plan-cta-full btn-subscribe" data-plan-id="@plan.Id">اشترك الآن</button>
+                            <button type="button" class="btn btn-primary btn-lg plan-cta-full btn-subscribe" data-plan-id="@plan.Id">اشترك في الباقة</button>
                         </div>
                     </div>
                 }
@@ -105,8 +107,8 @@
 
 <section class="subscription-benefits">
     <div class="container">
-        <h2 class="text-h2 text-center">مزايا الاشتراك السنوي</h2>
-        <p class="benefits-subtitle">كل ما تحتاجه لإدارة عيادتك بكفاءة واحترافية</p>
+        <h2 class="text-h2 text-center">مزايا الاشتراكات</h2>
+        <p class="benefits-subtitle">كل ما تحتاجه لإدارة عيادتك بكفاءة واحترافية والوصول إلى المزيد من المرضى</p>
         <div class="benefits-grid">
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary">
@@ -120,35 +122,35 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/></svg>
                 </div>
                 <h4 class="benefit-title">إدارة الأطباء والمواعيد</h4>
-                <p class="benefit-desc">أدر جداول الأطباء والمواعيد بسهولة مع إشعارات تلقائية</p>
+                <p class="benefit-desc">أدر جداول الأطباء والمواعيد بسهولة مع إشعارات تلقائية للمرضى</p>
+            </div>
+            <div class="benefit-card">
+                <div class="icon-wrapper icon-wrapper--primary icon-wrapper--amber">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="m4.93 4.93 4.24 4.24" stroke="currentColor" stroke-width="2"/><path d="m14.83 9.17 4.24-4.24" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+                </div>
+                <h4 class="benefit-title">ميزة الإعلانات والترويج</h4>
+                <p class="benefit-desc">الظهور في تطبيق المرضى بشعار مميز وشارة عيادة معتمدة لزيادة الحجوزات</p>
             </div>
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary icon-wrapper--blue">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/></svg>
                 </div>
-                <h4 class="benefit-title">تقارير وإحصائيات</h4>
-                <p class="benefit-desc">تقارير مفصلة عن أداء عيادتك والإيرادات ونسبة الحجوزات</p>
-            </div>
-            <div class="benefit-card">
-                <div class="icon-wrapper icon-wrapper--primary icon-wrapper--amber">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="currentColor"/></svg>
-                </div>
-                <h4 class="benefit-title">السجلات الطبية</h4>
-                <p class="benefit-desc">إدارة السجلات الطبية للمرضى إلكترونياً مع وصول سريع للبيانات</p>
+                <h4 class="benefit-title">تقارير وإحصائيات فورية</h4>
+                <p class="benefit-desc">تقارير مفصلة عن أداء عيادتك والإيرادات ونسبة الحجوزات اليومية والشهرية</p>
             </div>
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary icon-wrapper--green">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="currentColor"/></svg>
                 </div>
-                <h4 class="benefit-title">دعم فني على مدار الساعة</h4>
-                <p class="benefit-desc">فريق الدعم الفني متاح لك 24/7 لحل أي مشكلة أو استفسار</p>
+                <h4 class="benefit-title">دعم فني مستمر</h4>
+                <p class="benefit-desc">فريق الدعم الفني متاح لمساعدتك في إعداد حسابك وتهيئة الأطباء والخدمات</p>
             </div>
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary icon-wrapper--blue">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" fill="currentColor"/></svg>
                 </div>
                 <h4 class="benefit-title">إشعارات ذكية</h4>
-                <p class="benefit-desc">إشعارات تلقائية للمرضى عبر SMS والبريد الإلكتروني لتذكيرهم بالمواعيد</p>
+                <p class="benefit-desc">إشعارات وتنبيهات فورية للمرضى والعيادة لتنظيم سير العمل بدون تأخير</p>
             </div>
         </div>
     </div>
@@ -157,7 +159,7 @@
 <section class="subscription-cta-section">
     <div class="container text-center">
         <h2 class="text-h2">انضم إلى منصة Doctory</h2>
-        <p class="subscription-cta-desc">أدرج عيادتك اليوم وابدأ في إدارة أعمالك بكفاءة</p>
+        <p class="subscription-cta-desc">أدرج عيادتك اليوم، اختر باقتك، وابدأ في إدارة أعمالك باحترافية</p>
         <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary btn-lg">ابدأ الآن</a>
     </div>
 </section>
@@ -284,7 +286,6 @@
 @section Scripts {
     <script>
         (function() {
-            // Fix: make wallet/credit cards actually toggle visual selected state
             document.querySelectorAll('input[name="paymentMethod"]').forEach(function(radio){
                 radio.addEventListener('change', function(){
                     document.querySelectorAll('#paymentMethodModal .payment-method-card').forEach(function(c){ c.classList.remove('selected'); });
@@ -303,7 +304,7 @@
             if (toggle) {
                 toggle.addEventListener('change', function() {
                     var isYearly = this.checked;
-                    document.querySelectorAll('.plan-card').forEach(function(card) {
+                    document.querySelectorAll('#planCards .plan-card').forEach(function(card) {
                         var monthlyPrice = card.querySelector('.price-monthly');
                         var yearlyPrice = card.querySelector('.price-yearly');
                         var monthlyPeriod = card.querySelector('.period-monthly');
@@ -357,12 +358,8 @@
                             }));
                         } catch (e) {}
 
-                        if (regBtn) {
-                            regBtn.href = '@HomeRoutes.Pages.ClinicRegister()';
-                        }
-                        if (loginBtn) {
-                            loginBtn.href = '@HomeRoutes.Account.Login()' + '?returnUrl=' + encodeURIComponent('@ClinicRoutes.Pages.MySubscription()');
-                        }
+                        if (regBtn) regBtn.href = '@HomeRoutes.Pages.ClinicRegister()';
+                        if (loginBtn) loginBtn.href = '@HomeRoutes.Account.Login()' + '?returnUrl=' + encodeURIComponent('@ClinicRoutes.Pages.MySubscription()');
 
                         var modalEl = document.getElementById('registerRequiredModal');
                         if (modalEl) {
@@ -372,7 +369,6 @@
                         return;
                     }
 
-                    // Show payment method selection modal first
                     var planIdDisplay = planName || 'الباقة المختارة';
                     var subtitleEl = document.getElementById('paymentMethodModalSubtitle');
                     if (subtitleEl) {
@@ -385,15 +381,12 @@
                         pmModal.show();
                     }
 
-                    // Handle confirm payment method (single handler, no duplicate listeners)
                     var confirmBtn = document.getElementById('confirmPaymentMethodBtn');
                     if (confirmBtn && !confirmBtn.dataset.bound) {
                         confirmBtn.dataset.bound = '1';
                         confirmBtn.addEventListener('click', async function() {
-                            // capture current planId/period from last clicked subscribe button
-                            var activePlanId = confirmBtn.dataset.planId;
-                            var activePeriod = parseInt(confirmBtn.dataset.period || '0');
-                            if(!activePlanId){ activePlanId = planId; activePeriod = period; }
+                            var activePlanId = confirmBtn.dataset.planId || planId;
+                            var activePeriod = parseInt(confirmBtn.dataset.period || period);
                             this.disabled = true;
                             this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>جارٍ التحويل للدفع...';
                             var selectedMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'PaymobWallet';
@@ -413,18 +406,18 @@
                             }
                         });
                     }
-                    // store current selection for the single handler
-                    if(confirmBtn){ confirmBtn.dataset.planId = planId; confirmBtn.dataset.period = period; }
+                    if (confirmBtn) { confirmBtn.dataset.planId = planId; confirmBtn.dataset.period = period; }
                 });
             });
-            // local search for plans
+
+            // Local search for plans
             var planSearch = document.getElementById('planSearch');
-            if(planSearch){
-                planSearch.addEventListener('input', function(){
+            if (planSearch) {
+                planSearch.addEventListener('input', function() {
                     var q = this.value.toLowerCase().trim();
-                    document.querySelectorAll('#planCards .plan-card').forEach(function(card){
+                    document.querySelectorAll('#planCards .plan-card').forEach(function(card) {
                         var txt = card.textContent.toLowerCase();
-                        card.style.display = !q || txt.indexOf(q)!==-1 ? '' : 'none';
+                        card.style.display = !q || txt.indexOf(q) !== -1 ? '' : 'none';
                     });
                 });
             }

@@ -8,6 +8,7 @@
     var ads = ViewBag.Ads as IReadOnlyCollection<AdDto> ?? new List<AdDto>();
     var packages = ViewBag.Packages as IReadOnlyCollection<AdPackageDto> ?? new List<AdPackageDto>();
     var clinicAdSettings = ViewBag.ClinicAdSettings as IReadOnlyCollection<ClinicAdSettingsDto> ?? new List<ClinicAdSettingsDto>();
+    var clinics = ViewBag.Clinics as IReadOnlyCollection<ClinicLookupDto> ?? new List<ClinicLookupDto>();
     var statusFilter = ViewBag.StatusFilter as string;
 
     string GetStatusText(int status) => status switch
@@ -36,14 +37,20 @@
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
             </svg>
         </span>
-        إدارة الإعلانات
+        إدارة الإعلانات والاشتراكات الإعلانية
     </h2>
     <div class="ads-search-wrap" style="margin-top:12px;max-width:400px">
         <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" id="adsLocalSearch" class="form-input ads-global-input" placeholder="بحث سريع في الإعلانات..." autocomplete="off" />
+        <input type="text" id="adsLocalSearch" class="form-input ads-global-input" placeholder="بحث سريع في الإعلانات والباقات..." autocomplete="off" />
         <button type="button" id="adsLocalClear" class="ads-search-clear d-none" aria-label="مسح"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary" id="addManualSubBtn" data-bs-toggle="modal" data-bs-target="#manualAdSubModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            </svg>
+            إضافة اشتراك إعلاني لعيادة
+        </button>
         <button type="button" class="btn btn-primary" id="addPackageBtn" data-bs-toggle="modal" data-bs-target="#packageModal">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
@@ -59,9 +66,9 @@
 }
 
 <ul class="nav nav-tabs mb-3" id="adsTabs" role="tablist">
-    <li class="nav-item"><button class="nav-link active" id="ads-tab" data-bs-toggle="tab" data-bs-target="#adsPane" type="button" role="tab">الإعلانات</button></li>
+    <li class="nav-item"><button class="nav-link active" id="ads-tab" data-bs-toggle="tab" data-bs-target="#adsPane" type="button" role="tab">الإعلانات والاشتراكات</button></li>
     <li class="nav-item"><button class="nav-link" id="packages-tab" data-bs-toggle="tab" data-bs-target="#packagesPane" type="button" role="tab">باقات الإعلانات</button></li>
-    <li class="nav-item"><button class="nav-link" id="clinic-settings-tab" data-bs-toggle="tab" data-bs-target="#clinicSettingsPane" type="button" role="tab">إعدادات الإعلانات للعيادات</button></li>
+    <li class="nav-item"><button class="nav-link" id="clinic-settings-tab" data-bs-toggle="tab" data-bs-target="#clinicSettingsPane" type="button" role="tab">حدود وإعدادات العيادات</button></li>
 </ul>
 
 <div class="tab-content">
@@ -79,7 +86,7 @@
             <a href="@AdminRoutes.Pages.Ads()" class="btn btn-secondary">مسح</a>
         </form>
 
-        <p class="ad-preview-hint">المرضى يشاهدون الإعلانات النشطة كصور أو شارات في تطبيق الجوال. يمكنك معاينة شكل كل إعلان عبر زر العين.</p>
+        <p class="ad-preview-hint">المرضى يشاهدون الإعلانات النشطة كصور أو شارات في تطبيق الجوال. يمكنك معاينة شكل كل إعلان عبر زر العين، أو إضافة اشتراك يدوي لأي عيادة.</p>
 
         <div class="table-card">
             <div class="table-responsive">
@@ -126,7 +133,7 @@
                                         }
                                         @if (ad.Status == 0)
                                         {
-                                            <button type="button" class="btn btn-sm btn-success" onclick="recordCashPayment('@ad.Id', '@ad.ClinicId', '@ad.Amount.ToString("F2")')">تسجيل دفعة نقدية</button>
+                                            <button type="button" class="btn btn-sm btn-success" onclick="recordCashPayment('@ad.Id', '@ad.ClinicId', '@ad.Amount.ToString("F2")')">تسجيل دفعة نقدية وتفعيل</button>
                                         }
                                         @if (ad.Status == 0 || ad.Status == 1)
                                         {
@@ -154,7 +161,7 @@
                             <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
                         </svg>
                     </span>
-                    الباقات
+                    باقات الإعلانات والأسعار
                 </h3>
             </div>
             <div class="table-responsive">
@@ -166,7 +173,7 @@
                             <th>السعر</th>
                             <th>المدة</th>
                             <th>الحد الأقصى للإعلانات</th>
-                            <th>المشاهدات</th>
+                            <th>عدد المشاهدات</th>
                             <th>الحالة</th>
                             <th>الإجراءات</th>
                         </tr>
@@ -191,21 +198,21 @@
                                     <td class="text-md">@(pkg.DescriptionAr ?? pkg.Description)</td>
                                     <td class="text-md">@pkg.Price.ToString("N2") ج.م</td>
                                     <td class="text-md">@pkg.DurationDays يوم</td>
-                                    <td class="text-md">@(pkg.MaxAds > 0 ? pkg.MaxAds.ToString() : "غير محدود")</td>
-                                    <td class="text-md">@(pkg.MaxImpressions > 0 ? pkg.MaxImpressions.ToString("N0") : "غير محدود")</td>
+                                    <td class="text-md">@(pkg.MaxAds > 0 ? pkg.MaxAds.ToString() + " إعلانات" : "غير محدود")</td>
+                                    <td class="text-md">@(pkg.MaxImpressions > 0 ? pkg.MaxImpressions.ToString("N0") + " مشاهدة" : "غير محدود")</td>
                                     <td>
                                         @if (pkg.IsActive)
                                         {
-                                            <span class="badge badge-success">نشطة</span>
+                                            <span class="badge badge-success">نشطة (تظهر في الموقع)</span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-danger">موقوفة</span>
+                                            <span class="badge badge-danger">موقوفة (مخفية)</span>
                                         }
                                     </td>
                                     <td class="table-actions">
                                         <button type="button" class="btn btn-sm @(pkg.IsActive ? "btn-danger" : "btn-success")" title="@(pkg.IsActive ? "تعطيل الباقة" : "تفعيل الباقة")" onclick="togglePackage('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower(), @pkg.MaxAds, @pkg.MaxImpressions)">@(pkg.IsActive ? "تعطيل" : "تفعيل")</button>
-                                        <button type="button" class="btn-icon" title="تعديل" aria-label="تعديل الباقة @pkg.NameAr" onclick="openPackageModal('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower(), @pkg.MaxAds, @pkg.MaxImpressions)">
+                                        <button type="button" class="btn-icon" title="تعديل الباقة والأسعار والحدود" aria-label="تعديل الباقة @pkg.NameAr" onclick="openPackageModal('@pkg.Id', '@pkg.Name', '@pkg.NameAr', '@pkg.Description', '@pkg.DescriptionAr', '@pkg.Price.ToString("F2")', '@pkg.DurationDays', @pkg.IsActive.ToString().ToLower(), @pkg.MaxAds, @pkg.MaxImpressions)">
                                             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                                         </button>
                                         <button type="button" class="btn-icon" title="حذف" aria-label="حذف الباقة @pkg.NameAr" onclick="deletePackage('@pkg.Id')">
@@ -231,18 +238,18 @@
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                         </svg>
                     </span>
-                    إعدادات الإعلانات للعيادات
+                    حدود وإعدادات الإعلانات لكل عيادة
                 </h3>
             </div>
-            <p class="ad-preview-hint">تحكم في الحد الأقصى للإعلانات وعدد المشاهدات لكل عيادة مشتركة في خدمات الإعلانات.</p>
+            <p class="ad-preview-hint">تحكم في الحد الأقصى لعدد الإعلانات وعدد المشاهدات المسموح بها لكل عيادة بشكل مخصص ومرن.</p>
             <div class="table-responsive">
                 <table class="custom-table">
                     <thead>
                         <tr>
                             <th>العيادة</th>
-                            <th>الحد الأقصى للإعلانات</th>
+                            <th>الحد الأقصى للإعلانات المسموح بها</th>
                             <th>عدد المشاهدات المسموح بها</th>
-                            <th>الإعلانات النشطة</th>
+                            <th>الإعلانات النشطة حالياً</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
@@ -252,7 +259,7 @@
                             <tr>
                                 <td colspan="5">
                                     <div class="empty-state">
-                                        <p>لا توجد عيادات مشتركة في خدمات الإعلانات حالياً.</p>
+                                        <p>لا توجد إعدادات مخصصة — كل العيادات تستخدم الافتراضي أو حدود الباقات المشتركة بها.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -263,17 +270,121 @@
                             {
                                 <tr>
                                     <td class="text-md-medium">@clinic.ClinicName</td>
-                                    <td class="text-md">@(clinic.MaxAds > 0 ? clinic.MaxAds.ToString() : "غير محدود")</td>
-                                    <td class="text-md">@(clinic.MaxImpressions > 0 ? clinic.MaxImpressions.ToString("N0") : "غير محدود")</td>
-                                    <td class="text-md">@clinic.ActiveAdsCount</td>
+                                    <td class="text-md">@(clinic.MaxAds > 0 ? clinic.MaxAds.ToString() + " إعلانات" : "غير محدود")</td>
+                                    <td class="text-md">@(clinic.MaxImpressions > 0 ? clinic.MaxImpressions.ToString("N0") + " مشاهدة" : "غير محدود")</td>
+                                    <td class="text-md"><span class="badge badge-info">@clinic.ActiveAdsCount إعلان نشط</span></td>
                                     <td class="table-actions">
-                                        <button type="button" class="btn btn-sm btn-primary" onclick="editClinicAdSettings('@clinic.ClinicId', '@(clinic.ClinicName.Replace("'", "\\'"))', @clinic.MaxAds, @clinic.MaxImpressions)">تعديل</button>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="editClinicAdSettings('@clinic.ClinicId', '@(clinic.ClinicName.Replace("'", "\\'"))', @clinic.MaxAds, @clinic.MaxImpressions)">تعديل الحدود</button>
                                     </td>
                                 </tr>
                             }
                         }
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manual Ad Subscription for Clinic Modal -->
+<div class="modal fade" id="manualAdSubModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إضافة اشتراك إعلاني لعيادة (يدوياً وبمرونة كاملة)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="form-hint mb-3">يمكنك كمسؤول النظام منح أو بيع اشتراك إعلاني لأي عيادة وتحديد المدة والسعر والحدود بحرية كاملة.</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">العيادة المستفيدة <span class="text-danger">*</span></label>
+                            <select id="manualSubClinic" class="form-select" required>
+                                <option value="">اختر العيادة</option>
+                                @foreach (var c in clinics)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">قالب الباقة (اختياري للتعبئة السريعة)</label>
+                            <select id="manualSubPackageSelect" class="form-select" onchange="onManualPackageTemplateChange()">
+                                <option value="">تخصيص يدوي حر</option>
+                                @foreach (var p in packages)
+                                {
+                                    <option value="@p.Id" data-price="@p.Price" data-duration="@p.DurationDays" data-maxads="@p.MaxAds" data-maximpressions="@p.MaxImpressions">@(p.NameAr ?? p.Name) (@p.DurationDays يوم - @p.Price ج.م)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المدة (أيام) <span class="text-danger">*</span></label>
+                            <input type="number" id="manualSubDuration" class="form-input" min="1" value="30" placeholder="مثال: 30 أو 60 أو 90" required />
+                            <p class="form-hint">عدد أيام صلاحية الاشتراك الإعلاني.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المبلغ المطلوب (ج.م)</label>
+                            <input type="number" id="manualSubPrice" class="form-input" min="0" step="0.01" value="0.00" placeholder="0.00" />
+                            <p class="form-hint">اترك 0 للمنح الإداري المجاني، أو أدخل السعر المتفق عليه.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الحد الأقصى للإعلانات المسموح بها</label>
+                            <input type="number" id="manualSubMaxAds" class="form-input" min="0" value="1" placeholder="0 = غير محدود" />
+                            <p class="form-hint">عدد الإعلانات النشطة المسموح للعيادة بنشرها بالتزامن.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">عدد المشاهدات المسموح بها</label>
+                            <input type="number" id="manualSubMaxImpressions" class="form-input" min="0" value="5000" placeholder="0 = غير محدود" />
+                            <p class="form-hint">عدد مرات ظهور الإعلانات للمرضى بالتطبيق.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">طريقة السداد / نوع المعاملة</label>
+                            <select id="manualSubMethod" class="form-select">
+                                <option value="0">سداد نقدي (Cash)</option>
+                                <option value="1">محفظة إلكترونية (Paymob Wallet)</option>
+                                <option value="2">بطاقة بنكية (Paymob Card)</option>
+                                <option value="3">منح إداري مجاني / ترويجي</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">تاريخ البدء</label>
+                            <input type="date" id="manualSubStartDate" class="form-input" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ملاحظات / سبب المنح <span class="text-muted">(اختياري)</span></label>
+                    <textarea id="manualSubNotes" class="form-textarea" rows="2" placeholder="مثال: اشتراك إعلاني لفرع المهندسين لمدة 30 يوم..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="manualSubSubmitBtn">حفظ وتفعيل الاشتراك الإعلاني</button>
             </div>
         </div>
     </div>
@@ -333,7 +444,7 @@
     </div>
 </div>
 
-<!-- Package Modal -->
+<!-- Package Modal (Create / Edit Ad Package) -->
 <div class="modal fade" id="packageModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content modal-content-custom">
@@ -346,49 +457,49 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الاسم (إنجليزي)</label>
-                            <input type="text" id="packageName" class="form-input" />
+                            <label class="form-label">اسم الباقة (عربي) <span class="text-danger">*</span></label>
+                            <input type="text" id="packageNameAr" class="form-input" placeholder="مثال: باقة الظهور المميز" required />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الاسم (عربي)</label>
-                            <input type="text" id="packageNameAr" class="form-input" />
+                            <label class="form-label">الاسم (إنجليزي)</label>
+                            <input type="text" id="packageName" class="form-input" placeholder="e.g. Featured Ad Package" />
                         </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">الوصف (إنجليزي)</label>
-                            <input type="text" id="packageDescription" class="form-input" />
-                        </div>
-                    </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">الوصف (عربي)</label>
-                            <input type="text" id="packageDescriptionAr" class="form-input" />
+                            <input type="text" id="packageDescriptionAr" class="form-input" placeholder="مثال: ظهور أعلى قائمة البحث وشارة مميزة" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الوصف (إنجليزي)</label>
+                            <input type="text" id="packageDescription" class="form-input" placeholder="e.g. Top search position and badge" />
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">السعر (ج.م)</label>
-                            <input type="number" id="packagePrice" class="form-input" min="0" step="0.01" />
+                            <label class="form-label">السعر (ج.م) <span class="text-danger">*</span></label>
+                            <input type="number" id="packagePrice" class="form-input" min="0" step="0.01" placeholder="مثال: 750.00" required />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">المدة (أيام)</label>
-                            <input type="number" id="packageDuration" class="form-input" min="1" />
+                            <label class="form-label">المدة (أيام) <span class="text-danger">*</span></label>
+                            <input type="number" id="packageDuration" class="form-input" min="1" placeholder="مثال: 30" required />
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الحد الأقصى للإعلانات</label>
+                            <label class="form-label">الحد الأقصى للإعلانات المسموح بها</label>
                             <input type="number" id="packageMaxAds" class="form-input" min="0" placeholder="0 = غير محدود" />
                             <p class="form-hint">عدد الإعلانات النشطة المسموح بها لمن يشتري هذه الباقة.</p>
                         </div>
@@ -405,13 +516,13 @@
                     <label class="form-toggle">
                         <input type="checkbox" id="packageActive" checked />
                         <span class="toggle-track"></span>
-                        <span class="toggle-label">الباقة نشطة</span>
+                        <span class="toggle-label">الباقة نشطة وظاهرة في صفحة الاشتراكات للعيادات</span>
                     </label>
                 </div>
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary" id="packageSubmitBtn">حفظ</button>
+                <button type="button" class="btn btn-primary" id="packageSubmitBtn">حفظ الباقة</button>
             </div>
         </div>
     </div>
@@ -422,14 +533,14 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-content-custom">
             <div class="modal-header-custom">
-                <h5 class="modal-title">تعديل إعدادات الإعلانات للعيادة</h5>
+                <h5 class="modal-title">تعديل حدود وإعدادات الإعلانات للعيادة</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body-custom">
                 <input type="hidden" id="editClinicId" value="" />
                 <p class="form-hint">العيادة: <strong id="editClinicName"></strong></p>
                 <div class="form-group">
-                    <label class="form-label">الحد الأقصى للإعلانات</label>
+                    <label class="form-label">الحد الأقصى للإعلانات المسموح بها</label>
                     <input type="number" id="editMaxAds" class="form-input" min="0" placeholder="0 = غير محدود" />
                     <p class="form-hint">عدد الإعلانات النشطة المسموح بها للعيادة. اترك 0 لعدم التحديد.</p>
                 </div>
@@ -441,7 +552,7 @@
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary" id="editClinicAdSettingsSubmitBtn">حفظ</button>
+                <button type="button" class="btn btn-primary" id="editClinicAdSettingsSubmitBtn">حفظ الحدود</button>
             </div>
         </div>
     </div>
@@ -500,7 +611,7 @@
                 .then(function (result) {
                     if (result.success) {
                         showSuccessModal(result.message || 'تم ' + action + ' الباقة بنجاح');
-                        setTimeout(function () { location.reload(); }, 1500);
+                        setTimeout(function () { location.reload(); }, 1200);
                     } else {
                         showErrorModal(result.message || 'حدث خطأ أثناء ' + action + ' الباقة');
                     }
@@ -510,7 +621,7 @@
         }
 
         function recordCashPayment(adId, clinicId, amount) {
-            showConfirmModal('هل تريد تسجيل دفعة نقدية لهذا الإعلان؟ سيتم تفعيله فوراً.', function () {
+            showConfirmModal('هل تريد تسجيل دفعة نقدية وتفعيل هذا الإعلان فوراً؟', function () {
                 fetch('/Admin/CreateManualPayment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -525,8 +636,8 @@
                 .then(function (r) { return r.json(); })
                 .then(function (result) {
                     if (result.success) {
-                        showSuccessModal(result.message || 'تم تسجيل الدفعة بنجاح');
-                        setTimeout(function () { location.reload(); }, 1500);
+                        showSuccessModal(result.message || 'تم تسجيل الدفعة وتفعيل الإعلان بنجاح');
+                        setTimeout(function () { location.reload(); }, 1200);
                     } else {
                         showErrorModal(result.message || 'حدث خطأ أثناء تسجيل الدفعة');
                     }
@@ -536,20 +647,39 @@
         }
 
         function openPackageModal(id, name, nameAr, description, descriptionAr, price, duration, isActive, maxAds, maxImpressions) {
-            document.getElementById('packageModalTitle').textContent = id ? 'تعديل باقة إعلانية' : 'إضافة باقة إعلانية';
+            document.getElementById('packageModalTitle').textContent = id ? 'تعديل باقة إعلانية وأسعارها' : 'إضافة باقة إعلانية جديدة';
             document.getElementById('packageId').value = id || '';
-            document.getElementById('packageName').value = name;
-            document.getElementById('packageNameAr').value = nameAr;
-            document.getElementById('packageDescription').value = description;
-            document.getElementById('packageDescriptionAr').value = descriptionAr;
-            document.getElementById('packagePrice').value = price;
-            document.getElementById('packageDuration').value = duration;
-            document.getElementById('packageActive').checked = isActive;
+            document.getElementById('packageName').value = name || '';
+            document.getElementById('packageNameAr').value = nameAr || '';
+            document.getElementById('packageDescription').value = description || '';
+            document.getElementById('packageDescriptionAr').value = descriptionAr || '';
+            document.getElementById('packagePrice').value = price || '';
+            document.getElementById('packageDuration').value = duration || '30';
+            document.getElementById('packageActive').checked = isActive !== undefined ? isActive : true;
             document.getElementById('packageMaxAds').value = maxAds || '';
             document.getElementById('packageMaxImpressions').value = maxImpressions || '';
+            var modal = bootstrap.Modal.getInstance(document.getElementById('packageModal')) || new bootstrap.Modal(document.getElementById('packageModal'));
+            modal.show();
+        }
+
+        function onManualPackageTemplateChange() {
+            var select = document.getElementById('manualSubPackageSelect');
+            var opt = select.options[select.selectedIndex];
+            if (opt && opt.value) {
+                document.getElementById('manualSubPrice').value = parseFloat(opt.getAttribute('data-price') || 0).toFixed(2);
+                document.getElementById('manualSubDuration').value = opt.getAttribute('data-duration') || '30';
+                document.getElementById('manualSubMaxAds').value = opt.getAttribute('data-maxads') || '1';
+                document.getElementById('manualSubMaxImpressions').value = opt.getAttribute('data-maximpressions') || '5000';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+            // Set default start date to today
+            var d = new Date();
+            var todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            var startDateInput = document.getElementById('manualSubStartDate');
+            if (startDateInput) startDateInput.value = todayStr;
+
             var deactivateBtn = document.getElementById('deactivateSubmitBtn');
             if (deactivateBtn) {
                 deactivateBtn.addEventListener('click', function () {
@@ -567,7 +697,7 @@
                     .then(function (result) {
                         if (result.success) {
                             showSuccessModal(result.message || 'تم إلغاء الإعلان بنجاح');
-                            setTimeout(function () { location.reload(); }, 1500);
+                            setTimeout(function () { location.reload(); }, 1200);
                         } else {
                             deactivateBtn.disabled = false;
                             deactivateBtn.textContent = 'تأكيد الإلغاء';
@@ -583,22 +713,25 @@
             }
 
             document.getElementById('addPackageBtn').addEventListener('click', function () {
-                openPackageModal('', '', '', '', '', '', '', true, 0, 0);
+                openPackageModal('', '', '', '', '', '', '30', true, 1, 5000);
             });
 
+            // Package save handler
             document.getElementById('packageSubmitBtn').addEventListener('click', function () {
                 var id = document.getElementById('packageId').value;
-                var name = document.getElementById('packageName').value.trim();
                 var nameAr = document.getElementById('packageNameAr').value.trim();
-                var description = document.getElementById('packageDescription').value.trim();
+                var name = document.getElementById('packageName').value.trim() || nameAr;
                 var descriptionAr = document.getElementById('packageDescriptionAr').value.trim();
+                var description = document.getElementById('packageDescription').value.trim() || descriptionAr;
                 var price = parseFloat(document.getElementById('packagePrice').value);
                 var duration = parseInt(document.getElementById('packageDuration').value);
                 var isActive = document.getElementById('packageActive').checked;
+                var maxAds = parseInt(document.getElementById('packageMaxAds').value) || 0;
+                var maxImpressions = parseInt(document.getElementById('packageMaxImpressions').value) || 0;
 
-                if (!name || !nameAr) { showErrorModal('يرجى إدخال اسم الباقة'); return; }
-                if (!price || price <= 0) { showErrorModal('يرجى إدخال سعر صحيح'); return; }
-                if (!duration || duration <= 0) { showErrorModal('يرجى إدخال مدة صحيحة'); return; }
+                if (!nameAr) { showErrorModal('يرجى إدخال اسم الباقة بالعربية'); return; }
+                if (isNaN(price) || price < 0) { showErrorModal('يرجى إدخال سعر صحيح'); return; }
+                if (!duration || duration <= 0) { showErrorModal('يرجى إدخال مدة صحيحة بالأيام'); return; }
 
                 var url = id ? '/Admin/UpdateAdPackage?id=' + id : '/Admin/CreateAdPackage';
                 fetch(url, {
@@ -612,21 +745,81 @@
                         price: price,
                         durationDays: duration,
                         isActive: isActive,
-                        maxAds: parseInt(document.getElementById('packageMaxAds').value) || 0,
-                        maxImpressions: parseInt(document.getElementById('packageMaxImpressions').value) || 0
+                        maxAds: maxAds,
+                        maxImpressions: maxImpressions
                     })
                 })
                 .then(function (r) { return r.json(); })
                 .then(function (result) {
                     if (result.success) {
-                        showSuccessModal(result.message || 'تم الحفظ بنجاح');
-                        setTimeout(function () { location.reload(); }, 1500);
+                        showSuccessModal(result.message || 'تم حفظ الباقة بنجاح');
+                        setTimeout(function () { location.reload(); }, 1200);
                     } else {
                         showErrorModal(result.message || 'حدث خطأ أثناء الحفظ');
                     }
                 })
                 .catch(function () { showErrorModal('عذراً، حدث خطأ أثناء الحفظ'); });
             });
+
+            // Manual Ad Subscription submit handler
+            var manualSubBtn = document.getElementById('manualSubSubmitBtn');
+            if (manualSubBtn) {
+                manualSubBtn.addEventListener('click', function () {
+                    var clinicId = document.getElementById('manualSubClinic').value;
+                    var packageId = document.getElementById('manualSubPackageSelect').value || null;
+                    var durationDays = parseInt(document.getElementById('manualSubDuration').value) || 30;
+                    var price = parseFloat(document.getElementById('manualSubPrice').value) || 0;
+                    var maxAds = parseInt(document.getElementById('manualSubMaxAds').value) || 0;
+                    var maxImpressions = parseInt(document.getElementById('manualSubMaxImpressions').value) || 0;
+                    var method = parseInt(document.getElementById('manualSubMethod').value) || 0;
+                    var startDate = document.getElementById('manualSubStartDate').value;
+                    var notes = document.getElementById('manualSubNotes').value.trim();
+
+                    if (!clinicId) {
+                        showErrorModal('يرجى اختيار العيادة المستفيدة');
+                        return;
+                    }
+                    if (durationDays <= 0) {
+                        showErrorModal('يرجى تحديد مدة صحيحة بالأيام');
+                        return;
+                    }
+
+                    manualSubBtn.disabled = true;
+                    manualSubBtn.textContent = 'جارٍ الحفظ والتفعيل...';
+
+                    fetch('/Admin/CreateManualAdSubscription', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            clinicId: clinicId,
+                            adPackageId: packageId,
+                            durationDays: durationDays,
+                            amount: price,
+                            maxAds: maxAds,
+                            maxImpressions: maxImpressions,
+                            paymentMethod: method,
+                            startDate: startDate,
+                            notes: notes
+                        })
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (result) {
+                        if (result.success) {
+                            showSuccessModal(result.message || 'تم إنشاء وتفعيل الاشتراك الإعلاني للعيادة بنجاح');
+                            setTimeout(function () { location.reload(); }, 1200);
+                        } else {
+                            manualSubBtn.disabled = false;
+                            manualSubBtn.textContent = 'حفظ وتفعيل الاشتراك الإعلاني';
+                            showErrorModal(result.message || 'حدث خطأ أثناء حفظ الاشتراك الإعلاني');
+                        }
+                    })
+                    .catch(function () {
+                        manualSubBtn.disabled = false;
+                        manualSubBtn.textContent = 'حفظ وتفعيل الاشتراك الإعلاني';
+                        showErrorModal('عذراً، حدث خطأ أثناء حفظ الاشتراك الإعلاني');
+                    });
+                });
+            }
         });
 
         function deletePackage(id) {
@@ -638,7 +831,7 @@
                 .then(function (result) {
                     if (result.success) {
                         showSuccessModal(result.message || 'تم حذف الباقة بنجاح');
-                        setTimeout(function () { location.reload(); }, 1500);
+                        setTimeout(function () { location.reload(); }, 1200);
                     } else {
                         showErrorModal(result.message || 'حدث خطأ أثناء حذف الباقة');
                     }
@@ -681,34 +874,41 @@
                     .then(function (result) {
                         if (result.success) {
                             showSuccessModal(result.message || 'تم تحديث الإعدادات بنجاح');
-                            setTimeout(function () { location.reload(); }, 1500);
+                            setTimeout(function () { location.reload(); }, 1200);
                         } else {
                             editSubmitBtn.disabled = false;
-                            editSubmitBtn.textContent = 'حفظ';
+                            editSubmitBtn.textContent = 'حفظ الحدود';
                             showErrorModal(result.message || 'حدث خطأ أثناء تحديث الإعدادات');
                         }
                     })
                     .catch(function () {
                         editSubmitBtn.disabled = false;
-                        editSubmitBtn.textContent = 'حفظ';
+                        editSubmitBtn.textContent = 'حفظ الحدود';
                         showErrorModal('عذراً، حدث خطأ أثناء تحديث الإعدادات');
                     });
                 });
             }
-            // local search for ads tables
+
+            // Local search for ads and packages tables
             var searchInput = document.getElementById('adsLocalSearch');
             var clearBtn = document.getElementById('adsLocalClear');
-            if(searchInput){
-                searchInput.addEventListener('input', function(){
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
                     var q = this.value.toLowerCase().trim();
-                    if(clearBtn) clearBtn.classList.toggle('d-none', !q);
-                    document.querySelectorAll('.custom-table tbody tr').forEach(function(tr){
-                        if(tr.querySelector('td[colspan]')) return;
+                    if (clearBtn) clearBtn.classList.toggle('d-none', !q);
+                    document.querySelectorAll('.custom-table tbody tr').forEach(function (tr) {
+                        if (tr.querySelector('td[colspan]')) return;
                         var txt = tr.textContent.toLowerCase();
-                        tr.style.display = !q || txt.indexOf(q)!==-1 ? '' : 'none';
+                        tr.style.display = !q || txt.indexOf(q) !== -1 ? '' : 'none';
                     });
                 });
-                if(clearBtn) clearBtn.addEventListener('click', function(){ searchInput.value=''; searchInput.dispatchEvent(new Event('input')); searchInput.focus(); });
+                if (clearBtn) {
+                    clearBtn.addEventListener('click', function () {
+                        searchInput.value = '';
+                        searchInput.dispatchEvent(new Event('input'));
+                        searchInput.focus();
+                    });
+                }
             }
         });
     </script>

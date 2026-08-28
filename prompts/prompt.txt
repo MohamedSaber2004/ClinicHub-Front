@@ -1,1 +1,1 @@
-﻿https://doctory.runasp.net/Admin/AdsSubscriptions
+﻿i don't want all clinics can have the ads feature clinics can subscribed in ads feature update superadmin dashboard and landing page logic to can add one subcripbtion plan in landing page and from superadmin can change values such as the number of days of the price or the number of ads allowed for clinic and number of views allowed for clinic and also can from superadmin add subscripbtion for clinic in ads manuall with any value needed make is flexiblity found

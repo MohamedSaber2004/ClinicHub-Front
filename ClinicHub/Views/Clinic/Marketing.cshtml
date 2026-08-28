@@ -27,6 +27,12 @@
         3 => "badge-danger",
         _ => "badge-info"
     };
+
+#pragma warning disable CS0618
+    var hasAdsFeature = currentUser?.HasFeature(PlanFeature.MarketingTools) == true && currentUser?.HasActivePlan == true;
+#pragma warning restore CS0618
+    var hasExistingAds = ads.Any(a => a.Status == 1 || a.Status == 0);
+    var isEligible = hasAdsFeature || hasExistingAds;
 }
 
 <div class="page-header">
@@ -39,14 +45,42 @@
         الخدمات الإعلانية
     </h2>
     <div class="page-header-actions">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buyAdModal">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-            </svg>
-            شراء إعلان جديد
-        </button>
+        @if (isEligible)
+        {
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buyAdModal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                شراء إعلان جديد
+            </button>
+        }
+        else
+        {
+            <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+                ترقية الباقة لتفعيل الإعلانات
+            </a>
+        }
     </div>
 </div>
+
+@if (!isEligible)
+{
+    <div class="upsell-card mb-4">
+        <div class="upsell-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+        </div>
+        <div class="upsell-body">
+            <h4 class="upsell-title">ميزة الإعلانات تتطلب باقة اشتراك تدعم الميزات الترويجية</h4>
+            <p class="upsell-text">باقتك الحالية لا تتضمن ميزة نشر الإعلانات. اشترك أو قم بترقية باقتك للبدء في نشر إعلانات لعيادتك فوراً والظهور للمرضى في تطبيق Doctory.</p>
+            <a href="@ClinicRoutes.Pages.MySubscription()" class="btn btn-primary btn-sm">ترقية الباقة الآن</a>
+        </div>
+    </div>
+}
 
 @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
 {

@@ -6,6 +6,7 @@
     var packages = ViewBag.Packages as List<AdPackageDto> ?? new List<AdPackageDto>();
     var clinicAdSettings = ViewBag.ClinicAdSettings as List<ClinicAdSettingsDto> ?? new List<ClinicAdSettingsDto>();
     var subscriptions = ViewBag.Subscriptions as List<SubscriptionDto> ?? new List<SubscriptionDto>();
+    var clinics = ViewBag.Clinics as IReadOnlyCollection<ClinicLookupDto> ?? new List<ClinicLookupDto>();
 }
 <div class="admin-ads-subs-page">
 <div class="page-header">
@@ -13,9 +14,17 @@
         <span class="page-title-icon">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
         </span>
-        إدارة الإعلانات والاشتراكات
+        نظرة عامة على الاشتراكات والإعلانات
     </h2>
-    <p class="text-muted">الإعلانات مستقلة الآن عن باقات الاشتراك — أي عيادة نشطة يمكنها شراء إعلانات دون اشتراك متقدم.</p>
+    <div class="page-header-actions">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#manualAdSubModal">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            </svg>
+            إضافة اشتراك إعلاني يدوي
+        </button>
+        <a href="@AdminRoutes.Pages.Ads()" class="btn btn-primary btn-sm">إدارة الإعلانات والباقات</a>
+    </div>
 </div>
 
 <!-- Global quick search -->
@@ -36,15 +45,15 @@
     <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
 }
 
-<!-- Plans (2 only) -->
+<!-- Plans -->
 <div class="table-card" data-table="plans">
     <div class="table-card-header">
-        <h3 class="table-card-title">الباقات (نموذج باقتين) <span class="badge badge-secondary table-count" data-count-for="plans">@plans.Count</span></h3>
+        <h3 class="table-card-title">باقات تشغيل العيادات <span class="badge badge-secondary table-count" data-count-for="plans">@plans.Count</span></h3>
         <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <div class="ads-table-search">
                 <input type="text" class="form-input form-input-sm ads-table-filter" data-target="plans" placeholder="بحث في الباقات..." />
             </div>
-            <a href="@AdminRoutes.Pages.Subscriptions()" class="btn btn-sm btn-secondary">إدارة الباقات</a>
+            <a href="@AdminRoutes.Pages.Subscriptions()" class="btn btn-sm btn-secondary">إدارة وتعديل الباقات</a>
         </div>
     </div>
     <div class="table-responsive">
@@ -74,7 +83,7 @@
                         <td class="text-md">@p.PriceYearly.ToString("N0") ج.م</td>
                         <td class="text-md">@(p.MaxDoctors?.ToString() ?? "غير محدود")</td>
                         <td class="text-md">@(p.MaxStaff?.ToString() ?? "غير محدود")</td>
-                        <td><span class="badge @(p.IsActive ? "badge-success" : "badge-secondary")">@(p.IsActive ? "نشطة" : "معطلة")</span></td>
+                        <td><span class="badge @(p.IsActive ? "badge-success" : "badge-secondary")">@(p.IsActive ? "نشطة (في الموقع)" : "معطلة")</span></td>
                     </tr>
                 }
             }
@@ -86,12 +95,12 @@
 <!-- Ad Packages -->
 <div class="table-card" data-table="packages">
     <div class="table-card-header">
-        <h3 class="table-card-title">باقات الإعلانات <span class="badge badge-secondary table-count" data-count-for="packages">@packages.Count</span></h3>
+        <h3 class="table-card-title">باقات الإعلانات والترويج <span class="badge badge-secondary table-count" data-count-for="packages">@packages.Count</span></h3>
         <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <div class="ads-table-search">
                 <input type="text" class="form-input form-input-sm ads-table-filter" data-target="packages" placeholder="بحث في الباقات الإعلانية..." />
             </div>
-            <a href="@AdminRoutes.Pages.Ads()" class="btn btn-sm btn-primary">إدارة الإعلانات</a>
+            <a href="@AdminRoutes.Pages.Ads()" class="btn btn-sm btn-primary">إدارة الإعلانات الكاملة</a>
         </div>
     </div>
     <div class="table-responsive">
@@ -101,13 +110,15 @@
                     <th>الباقة</th>
                     <th>المدة</th>
                     <th>السعر</th>
+                    <th>الحد الأقصى للإعلانات</th>
+                    <th>عدد المشاهدات</th>
                     <th>الحالة</th>
                 </tr>
             </thead>
             <tbody>
             @if (packages.Count == 0)
             {
-                <tr><td colspan="4" class="text-center text-muted">لا توجد باقات إعلانية</td></tr>
+                <tr><td colspan="6" class="text-center text-muted">لا توجد باقات إعلانية</td></tr>
             }
             else
             {
@@ -117,6 +128,8 @@
                         <td class="text-md-medium">@(pkg.NameAr ?? pkg.Name)</td>
                         <td class="text-md">@pkg.DurationDays يوم</td>
                         <td class="text-md">@pkg.Price.ToString("N2") ج.م</td>
+                        <td class="text-md">@(pkg.MaxAds > 0 ? pkg.MaxAds.ToString() : "غير محدود")</td>
+                        <td class="text-md">@(pkg.MaxImpressions > 0 ? pkg.MaxImpressions.ToString("N0") : "غير محدود")</td>
                         <td><span class="badge @(pkg.IsActive ? "badge-success" : "badge-secondary")">@(pkg.IsActive ? "نشطة" : "معطلة")</span></td>
                     </tr>
                 }
@@ -129,11 +142,12 @@
 <!-- Clinic Ad Settings -->
 <div class="table-card" data-table="clinics">
     <div class="table-card-header">
-        <h3 class="table-card-title">حدود الإعلانات لكل عيادة <span class="badge badge-secondary table-count" data-count-for="clinics">@clinicAdSettings.Count</span></h3>
+        <h3 class="table-card-title">حدود وإعدادات الإعلانات لكل عيادة <span class="badge badge-secondary table-count" data-count-for="clinics">@clinicAdSettings.Count</span></h3>
         <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <div class="ads-table-search">
                 <input type="text" class="form-input form-input-sm ads-table-filter" data-target="clinics" placeholder="بحث باسم العيادة..." />
             </div>
+            <a href="@AdminRoutes.Pages.Ads()" class="btn btn-sm btn-secondary">تعديل الحدود في صفحة الإعلانات</a>
         </div>
     </div>
     <div class="table-responsive">
@@ -142,14 +156,14 @@
                 <tr>
                     <th>العيادة</th>
                     <th>الحد الأقصى للإعلانات</th>
-                    <th>الانطباعات</th>
+                    <th>عدد المشاهدات المسموح بها</th>
                     <th>النشطة حالياً</th>
                 </tr>
             </thead>
             <tbody>
             @if (clinicAdSettings.Count == 0)
             {
-                <tr><td colspan="4" class="text-center text-muted">لا توجد إعدادات — كل العيادات تستخدم الافتراضي (0 = غير محدود)</td></tr>
+                <tr><td colspan="4" class="text-center text-muted">لا توجد إعدادات مخصصة — كل العيادات تستخدم الافتراضي</td></tr>
             }
             else
             {
@@ -158,8 +172,8 @@
                     <tr>
                         <td class="text-md-medium">@c.ClinicName</td>
                         <td class="text-md">@(c.MaxAds > 0 ? c.MaxAds.ToString() : "غير محدود")</td>
-                        <td class="text-md">@(c.MaxImpressions > 0 ? c.MaxImpressions.ToString() : "غير محدود")</td>
-                        <td><span class="badge badge-info">@c.ActiveAdsCount</span></td>
+                        <td class="text-md">@(c.MaxImpressions > 0 ? c.MaxImpressions.ToString("N0") : "غير محدود")</td>
+                        <td><span class="badge badge-info">@c.ActiveAdsCount إعلان</span></td>
                     </tr>
                 }
             }
@@ -212,9 +226,177 @@
 </div>
 </div>
 
+<!-- Manual Ad Subscription Modal -->
+<div class="modal fade" id="manualAdSubModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إضافة اشتراك إعلاني لعيادة يدوياً</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="form-hint mb-3">يمكنك منح أو تفعيل اشتراك إعلاني مخصص لأي عيادة بالمدة والسعر والحدود المطلوبة.</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">العيادة المستفيدة <span class="text-danger">*</span></label>
+                            <select id="quickSubClinic" class="form-select" required>
+                                <option value="">اختر العيادة</option>
+                                @foreach (var c in clinics)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">قالب الباقة (اختياري)</label>
+                            <select id="quickSubPackageSelect" class="form-select" onchange="onQuickPackageTemplateChange()">
+                                <option value="">تخصيص يدوي حر</option>
+                                @foreach (var p in packages)
+                                {
+                                    <option value="@p.Id" data-price="@p.Price" data-duration="@p.DurationDays" data-maxads="@p.MaxAds" data-maximpressions="@p.MaxImpressions">@(p.NameAr ?? p.Name) (@p.DurationDays يوم - @p.Price ج.م)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المدة (أيام) <span class="text-danger">*</span></label>
+                            <input type="number" id="quickSubDuration" class="form-input" min="1" value="30" required />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">المبلغ المطلوب (ج.م)</label>
+                            <input type="number" id="quickSubPrice" class="form-input" min="0" step="0.01" value="0.00" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">الحد الأقصى للإعلانات</label>
+                            <input type="number" id="quickSubMaxAds" class="form-input" min="0" value="1" placeholder="0 = غير محدود" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">عدد المشاهدات المسموح بها</label>
+                            <input type="number" id="quickSubMaxImpressions" class="form-input" min="0" value="5000" placeholder="0 = غير محدود" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">طريقة السداد</label>
+                            <select id="quickSubMethod" class="form-select">
+                                <option value="0">سداد نقدي (Cash)</option>
+                                <option value="1">محفظة إلكترونية (Paymob)</option>
+                                <option value="3">منح إداري مجاني</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">تاريخ البدء</label>
+                            <input type="date" id="quickSubStartDate" class="form-input" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ملاحظات <span class="text-muted">(اختياري)</span></label>
+                    <textarea id="quickSubNotes" class="form-textarea" rows="2" placeholder="ملاحظات الاشتراك..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="quickSubSubmitBtn">حفظ وتفعيل الاشتراك</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <script>
+function onQuickPackageTemplateChange() {
+    var select = document.getElementById('quickSubPackageSelect');
+    var opt = select.options[select.selectedIndex];
+    if (opt && opt.value) {
+        document.getElementById('quickSubPrice').value = parseFloat(opt.getAttribute('data-price') || 0).toFixed(2);
+        document.getElementById('quickSubDuration').value = opt.getAttribute('data-duration') || '30';
+        document.getElementById('quickSubMaxAds').value = opt.getAttribute('data-maxads') || '1';
+        document.getElementById('quickSubMaxImpressions').value = opt.getAttribute('data-maximpressions') || '5000';
+    }
+}
+
 (function(){
+    var d = new Date();
+    var todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    var startDateInput = document.getElementById('quickSubStartDate');
+    if (startDateInput) startDateInput.value = todayStr;
+
+    var quickSubBtn = document.getElementById('quickSubSubmitBtn');
+    if (quickSubBtn) {
+        quickSubBtn.addEventListener('click', function () {
+            var clinicId = document.getElementById('quickSubClinic').value;
+            var packageId = document.getElementById('quickSubPackageSelect').value || null;
+            var durationDays = parseInt(document.getElementById('quickSubDuration').value) || 30;
+            var price = parseFloat(document.getElementById('quickSubPrice').value) || 0;
+            var maxAds = parseInt(document.getElementById('quickSubMaxAds').value) || 0;
+            var maxImpressions = parseInt(document.getElementById('quickSubMaxImpressions').value) || 0;
+            var method = parseInt(document.getElementById('quickSubMethod').value) || 0;
+            var startDate = document.getElementById('quickSubStartDate').value;
+            var notes = document.getElementById('quickSubNotes').value.trim();
+
+            if (!clinicId) { showErrorModal('يرجى اختيار العيادة المستفيدة'); return; }
+            if (durationDays <= 0) { showErrorModal('يرجى تحديد مدة صحيحة بالأيام'); return; }
+
+            quickSubBtn.disabled = true;
+            quickSubBtn.textContent = 'جارٍ الحفظ والتفعيل...';
+
+            fetch('/Admin/CreateManualAdSubscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    clinicId: clinicId,
+                    adPackageId: packageId,
+                    durationDays: durationDays,
+                    amount: price,
+                    maxAds: maxAds,
+                    maxImpressions: maxImpressions,
+                    paymentMethod: method,
+                    startDate: startDate,
+                    notes: notes
+                })
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (result) {
+                if (result.success) {
+                    showSuccessModal(result.message || 'تم إنشاء وتفعيل الاشتراك الإعلاني بنجاح');
+                    setTimeout(function () { location.reload(); }, 1200);
+                } else {
+                    quickSubBtn.disabled = false;
+                    quickSubBtn.textContent = 'حفظ وتفعيل الاشتراك';
+                    showErrorModal(result.message || 'حدث خطأ أثناء حفظ الاشتراك الإعلاني');
+                }
+            })
+            .catch(function () {
+                quickSubBtn.disabled = false;
+                quickSubBtn.textContent = 'حفظ وتفعيل الاشتراك';
+                showErrorModal('عذراً، حدث خطأ أثناء حفظ الاشتراك الإعلاني');
+            });
+        });
+    }
+
     var globalInput = document.getElementById('adsGlobalSearch');
     var clearBtn = document.getElementById('adsSearchClear');
     var perTableInputs = document.querySelectorAll('.ads-table-filter');
@@ -232,21 +414,8 @@
             tr.style.display = show ? '' : 'none';
             if(show) visible++;
         });
-        // update per-table count badge
         var badge = card.querySelector('.table-count[data-count-for="'+tableKey+'"]');
         if(badge){ badge.textContent = visible + ' / ' + rows.length; badge.classList.toggle('badge-info', !!q && visible>0); badge.classList.toggle('badge-secondary', !q || visible===0); }
-        // show no-results row if needed
-        var tbody = card.querySelector('tbody');
-        var noRow = tbody.querySelector('.ads-no-results');
-        if(q && visible===0){
-            if(!noRow){
-                noRow = document.createElement('tr'); noRow.className='ads-no-results';
-                noRow.innerHTML = '<td colspan="6" class="text-center text-muted" style="padding:16px">لا توجد نتائج لـ "'+query.replace(/</g,'&lt;')+'" — <a href="#" class="ads-clear-link">مسح البحث</a></td>';
-                tbody.appendChild(noRow);
-                noRow.querySelector('.ads-clear-link')?.addEventListener('click', function(e){ e.preventDefault(); if(globalInput){ globalInput.value=''; globalInput.dispatchEvent(new Event('input')); } perTableInputs.forEach(function(i){ i.value=''; i.dispatchEvent(new Event('input')); }); });
-            } else { noRow.style.display=''; noRow.querySelector('td').innerHTML = 'لا توجد نتائج لـ "'+query.replace(/</g,'&lt;')+'" — <a href="#" class="ads-clear-link">مسح البحث</a>'; }
-        } else if(noRow){ noRow.style.display='none'; }
-        // global counter
         updateGlobalCount();
     }
     function updateGlobalCount(){
@@ -261,11 +430,9 @@
         var gc = document.getElementById('adsGlobalCount');
         if(gc){ gc.textContent = totalVisible + ' / ' + totalRows + ' عنصر'; }
     }
-    // per-table inputs
     perTableInputs.forEach(function(inp){
         inp.addEventListener('input', function(){ filterTable(this.dataset.target, this.value); });
     });
-    // global input filters all
     if(globalInput){
         globalInput.addEventListener('input', function(){
             var q = this.value;
@@ -277,30 +444,6 @@
         }
         document.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); globalInput.focus(); globalInput.select(); }});
     }
-    // sortable headers (click to sort)
-    document.querySelectorAll('.table-card[data-table] thead th').forEach(function(th){
-        th.style.cursor='pointer'; th.title='اضغط للترتيب';
-        th.addEventListener('click', function(){
-            var table = this.closest('table');
-            var tbody = table.querySelector('tbody');
-            var idx = Array.prototype.indexOf.call(this.parentNode.children, this);
-            var rows = Array.from(tbody.querySelectorAll('tr:not(.ads-no-results)')).filter(function(r){ return !(r.children.length===1 && r.querySelector('td[colspan]')); });
-            var asc = this.dataset.sortDir !== 'asc';
-            rows.sort(function(a,b){
-                var va = (a.children[idx]?.textContent||'').trim().toLowerCase();
-                var vb = (b.children[idx]?.textContent||'').trim().toLowerCase();
-                var na = parseFloat(va.replace(/[^0-9.-]/g,'')), nb = parseFloat(vb.replace(/[^0-9.-]/g,''));
-                if(!isNaN(na) && !isNaN(nb) && va.match(/[0-9]/) && vb.match(/[0-9]/)) return asc ? na-nb : nb-na;
-                return asc ? va.localeCompare(vb, 'ar') : vb.localeCompare(va, 'ar');
-            });
-            rows.forEach(function(r){ tbody.appendChild(r); });
-            // move no-results to end
-            var nr = tbody.querySelector('.ads-no-results'); if(nr) tbody.appendChild(nr);
-            table.querySelectorAll('thead th').forEach(function(h){ h.removeAttribute('data-sort-dir'); h.style.color=''; });
-            this.dataset.sortDir = asc ? 'asc' : 'desc';
-            this.style.color = 'var(--clr-primary)';
-        });
-    });
 })();
 </script>
 }

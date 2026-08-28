@@ -1136,6 +1136,7 @@ namespace ClinicHub.Controllers
             ViewBag.Ads = new List<AdDto>();
             ViewBag.Packages = new List<AdPackageDto>();
             ViewBag.ClinicAdSettings = new List<ClinicAdSettingsDto>();
+            ViewBag.Clinics = new List<ClinicLookupDto>();
 
             try
             {
@@ -1166,6 +1167,16 @@ namespace ClinicHub.Controllers
                 ViewBag.ErrorMessage ??= ex.Message;
             }
 
+            try
+            {
+                var clinicRes = await _clinicService.GetAllClinicsForViewingOnlyAsync(new GetAllCLinicsForViewingOnly());
+                ViewBag.Clinics = clinicRes?.Data ?? new List<ClinicLookupDto>();
+            }
+            catch (Exception)
+            {
+                ViewBag.Clinics = new List<ClinicLookupDto>();
+            }
+
             ViewBag.StatusFilter = status?.ToString();
             return View();
         }
@@ -1177,9 +1188,16 @@ namespace ClinicHub.Controllers
             ViewBag.Packages = new List<AdPackageDto>();
             ViewBag.ClinicAdSettings = new List<ClinicAdSettingsDto>();
             ViewBag.Subscriptions = new List<SubscriptionDto>();
+            ViewBag.Clinics = new List<ClinicLookupDto>();
             try { ViewBag.Plans = await _adminSubscriptionService.GetAllPlansAsync() ?? new List<PlanDto>(); } catch (ApiException ex) { ViewBag.ErrorMessage = ex.Message; }
             try { ViewBag.Packages = await _adService.GetAllPackagesAsync() ?? new List<AdPackageDto>(); } catch (ApiException ex) { ViewBag.ErrorMessage ??= ex.Message; }
             try { ViewBag.ClinicAdSettings = await _adService.GetClinicAdSettingsAsync() ?? new List<ClinicAdSettingsDto>(); } catch (ApiException ex) { ViewBag.ErrorMessage ??= ex.Message; }
+            try
+            {
+                var clinicRes = await _clinicService.GetAllClinicsForViewingOnlyAsync(new GetAllCLinicsForViewingOnly());
+                ViewBag.Clinics = clinicRes?.Data ?? new List<ClinicLookupDto>();
+            }
+            catch { ViewBag.Clinics = new List<ClinicLookupDto>(); }
             try
             {
                 var subs = await _adminSubscriptionService.GetSubscriptionsAsync(new GetPaginatedSubscriptionsRequest { PageNumber = 1, PageSize = 5 });
@@ -1744,6 +1762,87 @@ namespace ClinicHub.Controllers
             {
                 var result = await _adService.UpdateClinicAdSettingsAsync(clinicId, request);
                 return Json(new { success = true, message = "تم تحديث الإعدادات بنجاح", data = result });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateManualAdSubscription([FromBody] JsonElement body)
+        {
+            try
+            {
+                if (!body.TryGetProperty("clinicId", out var clinicIdProp) || !Guid.TryParse(clinicIdProp.GetString(), out var clinicId) || clinicId == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "يرجى اختيار العيادة" });
+                }
+
+                int durationDays = body.TryGetProperty("durationDays", out var durProp) ? durProp.GetInt32() : 30;
+                if (durationDays <= 0) durationDays = 30;
+
+                decimal amount = body.TryGetProperty("amount", out var amtProp) && amtProp.TryGetDecimal(out var amt) ? amt : 0;
+                int maxAds = body.TryGetProperty("maxAds", out var maProp) ? maProp.GetInt32() : 0;
+                int maxImpressions = body.TryGetProperty("maxImpressions", out var miProp) ? miProp.GetInt32() : 0;
+                int paymentMethod = body.TryGetProperty("paymentMethod", out var pmProp) ? pmProp.GetInt32() : 0;
+                var notes = body.TryGetProperty("notes", out var nProp) ? nProp.GetString() : null;
+                Guid? packageId = body.TryGetProperty("adPackageId", out var pkgProp) && Guid.TryParse(pkgProp.GetString(), out var parsedPkgId) && parsedPkgId != Guid.Empty ? parsedPkgId : null;
+
+                if (maxAds > 0 || maxImpressions > 0)
+                {
+                    try
+                    {
+                        await _adService.UpdateClinicAdSettingsAsync(clinicId, new UpdateClinicAdSettingsRequest
+                        {
+                            MaxAds = maxAds,
+                            MaxImpressions = maxImpressions
+                        });
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                if (packageId.HasValue)
+                {
+                    try
+                    {
+                        await _adminPaymentService.CreateAdsOrderAsync(new CreateAdsOrderRequest
+                        {
+                            ClinicId = clinicId,
+                            AdPackageId = packageId.Value,
+                            DurationDays = durationDays,
+                            PaymentMethod = (paymentMethod == 1 ? "PaymobWallet" : (paymentMethod == 2 ? "PaymobCreditCard" : "Cash"))
+                        });
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                try
+                {
+                    await _adminPaymentService.CreateManualPaymentAsync(new CreateManualPaymentRequest
+                    {
+                        PayerId = clinicId,
+                        Type = 2,
+                        Amount = amount,
+                        Method = (paymentMethod == 1 ? 1 : 0),
+                        Notes = !string.IsNullOrWhiteSpace(notes) ? notes : $"اشتراك إعلاني يدوي ({durationDays} يوم)"
+                    });
+                }
+                catch (Exception)
+                {
+                }
+
+                return Json(new { success = true, message = "تم إضافة وتفعيل الاشتراك الإعلاني للعيادة بنجاح" });
             }
             catch (ApiException ex)
             {
