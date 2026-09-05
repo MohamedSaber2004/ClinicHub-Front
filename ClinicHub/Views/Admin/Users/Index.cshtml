@@ -1,18 +1,26 @@
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Routes
 @{
     ViewData["Title"] = "المستخدمين";
     Layout = "_AdminLayout";
     var users = ViewBag.Users as List<UserListItemDto> ?? new();
     var statusFilter = ViewBag.StatusFilter as string;
-    var isActiveSelected = statusFilter == "نشط";
-    var isInactiveSelected = statusFilter == "غير نشط";
     var userTypesFilter = ViewBag.UserTypesFilter as string;
+    var searchTerm = ViewBag.SearchTerm as string;
+    var hasFilters = !string.IsNullOrWhiteSpace(searchTerm) || !string.IsNullOrWhiteSpace(statusFilter) || !string.IsNullOrWhiteSpace(userTypesFilter);
 }
 
 <div class="page-header">
-    <h2 class="page-title">إدارة المستخدمين والمرضى</h2>
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+            </svg>
+        </span>
+        إدارة المستخدمين والمرضى
+    </h2>
     <button type="button" class="btn btn-primary" id="addUserBtn" title="إضافة مستخدم">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
         إضافة مستخدم
@@ -21,20 +29,25 @@
 
 <!-- Filter Bar -->
 <form method="get" action="/Admin/Users" class="filter-bar">
-    <input type="text" id="filterSearch" name="searchTerm" class="form-input" placeholder="بحث عن مستخدم..." value="@ViewBag.SearchTerm" />
+    <input type="text" id="filterSearch" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو البريد أو الهاتف..." value="@searchTerm" />
     <select id="filterUserTypes" name="userTypes" class="form-select" onchange="this.form.submit()">
         <option value="">جميع الأدوار</option>
-        <option value="2" selected="@(userTypesFilter == "2")">مدير النظام</option>
-        <option value="16" selected="@(userTypesFilter == "16")">مدير عيادة</option>
-        <option value="4" selected="@(userTypesFilter == "4")">طبيب</option>
-        <option value="8" selected="@(userTypesFilter == "8")">موظف</option>
-        <option value="1" selected="@(userTypesFilter == "1")">مريض</option>
+        <option value="2" selected="@(userTypesFilter == "2" ? true : null)">مدير النظام</option>
+        <option value="16" selected="@(userTypesFilter == "16" ? true : null)">مدير عيادة</option>
+        <option value="4" selected="@(userTypesFilter == "4" ? true : null)">طبيب</option>
+        <option value="8" selected="@(userTypesFilter == "8" ? true : null)">موظف</option>
+        <option value="1" selected="@(userTypesFilter == "1" ? true : null)">مريض</option>
     </select>
     <select id="filterStatus" name="status" class="form-select" onchange="this.form.submit()">
         <option value="">جميع الحالات</option>
-        <option value="نشط" selected="@isActiveSelected">نشط</option>
-        <option value="غير نشط" selected="@isInactiveSelected">غير نشط</option>
+        <option value="نشط" selected="@(statusFilter == "نشط" ? true : null)">نشط</option>
+        <option value="غير نشط" selected="@(statusFilter == "غير نشط" ? true : null)">غير نشط</option>
     </select>
+    <button type="submit" class="btn btn-secondary btn-sm">بحث</button>
+    @if (hasFilters)
+    {
+        <a href="/Admin/Users" class="btn btn-secondary btn-sm">مسح الفلاتر</a>
+    }
 </form>
 
 <!-- Users Table -->
@@ -97,32 +110,44 @@
                         <td><span class="badge @u.StatusClass">@u.Status</span></td>
                         <td>
                             <div class="table-actions">
-                                <button class="btn-icon btn-edit-user" title="تعديل" aria-label="تعديل المستخدم @u.Name">
+                                <a class="btn-icon" title="عرض التفاصيل" aria-label="عرض تفاصيل المستخدم @u.Name"
+                                   href="@AdminRoutes.Pages.UsersOverview(u.Id)">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                    </svg>
+                                </a>
+                                <button type="button" class="btn-icon btn-edit-user" title="تعديل" aria-label="تعديل المستخدم @u.Name"
                                         data-id="@u.Id"
                                         data-name="@u.Name"
                                         data-email="@u.Email"
                                         data-phone="@u.Phone"
                                         data-active="@(u.StatusClass == "badge-success" ? "true" : "false")">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                                     </svg>
                                 </button>
-                                <button class="btn-icon btn-change-password" title="تغيير كلمة المرور" aria-label="تغيير كلمة مرور المستخدم @u.Name">
+                                <button type="button" class="btn-icon btn-change-password" title="تغيير كلمة المرور" aria-label="تغيير كلمة مرور المستخدم @u.Name"
                                         data-id="@u.Id"
                                         data-name="@u.Name">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                         <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/>
                                     </svg>
                                 </button>
-                                <button class="btn-icon btn-delete-user" title="حذف" aria-label="حذف المستخدم @u.Name">
+                                <button type="button" class="btn-icon btn-delete-user" title="حذف" aria-label="حذف المستخدم @u.Name"
                                         data-id="@u.Id"
                                         data-name="@u.Name">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                                     </svg>
                                 </button>
                             </div>
                         </td>
+                    </tr>
+                }
+                @if (users.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted table-empty">لا يوجد مستخدمون مطابقون لمعايير البحث.</td>
                     </tr>
                 }
             </tbody>
@@ -141,21 +166,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
                 </div>
                 <div class="modal-body-custom">
+                    <div class="create-user-grid">
                     <div class="form-group">
                         <label class="form-label" for="createFullName">الاسم الكامل</label>
                         <input type="text" id="createFullName" name="FullName" class="form-input" placeholder="مثال: محمد عمر" required />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="createEmail">البريد الإلكتروني</label>
-                        <input type="email" id="createEmail" name="Email" class="form-input" placeholder="example@gmail.com" required />
+                        <input type="email" id="createEmail" name="Email" class="form-input" placeholder="example@gmail.com" required dir="ltr" />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="createPhone">رقم الهاتف</label>
-                        <input type="text" id="createPhone" name="PhoneNumber" class="form-input" placeholder="010 12345678" required />
+                        <input type="text" id="createPhone" name="PhoneNumber" class="form-input" placeholder="010 12345678" required dir="ltr" />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="createPassword">كلمة المرور</label>
-                        <input type="password" id="createPassword" name="Password" class="form-input" placeholder="********" required />
+                        <input type="password" id="createPassword" name="Password" class="form-input" placeholder="********" required minlength="6" />
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="createBirthDate">تاريخ الميلاد</label>
@@ -171,8 +197,13 @@
                     <div class="form-group">
                         <label class="form-label" for="createRole">الدور</label>
                             <select id="createRole" name="Role" class="form-select" required>
-                                <option value="1">مستخدم</option>
+                                <option value="1">مريض</option>
+                                <option value="4">طبيب</option>
+                                <option value="8">موظف</option>
+                                <option value="16">مدير عيادة</option>
+                                <option value="2">مدير النظام</option>
                             </select>
+                    </div>
                     </div>
                     <div class="form-group form-group-hidden" id="clinicGroup">
                         <label class="form-label" for="createClinic">العيادة</label>
@@ -212,7 +243,7 @@
                         <label class="form-label">أوقات العمل (اختياري)</label>
                         <div id="adminAvailabilityContainer">
                             <div class="availability-row" data-index="0">
-                                <select class="availability-day form-select auth-form-control">
+                                <select class="availability-day form-select" aria-label="اليوم">
                                     <option value="">اليوم</option>
                                     <option value="0">الأحد</option>
                                     <option value="1">الإثنين</option>
@@ -222,44 +253,44 @@
                                     <option value="5">الجمعة</option>
                                     <option value="6">السبت</option>
                                 </select>
-                                <select class="availability-from-hour form-select auth-form-control">
+                                <select class="availability-from-hour form-select" aria-label="ساعة البدء">
                                     <option value="">—</option>
                                     @for (var i = 1; i <= 12; i++)
                                     {
-                                        <option value="@i" selected="@(i == 9)">@i</option>
+                                        <option value="@i" selected="@(i == 9 ? true : null)">@i</option>
                                     }
                                 </select>
-                                <select class="availability-from-minute form-select auth-form-control">
+                                <select class="availability-from-minute form-select" aria-label="دقيقة البدء">
                                     @for (var i = 0; i <= 59; i++)
                                     {
                                         var mm = i.ToString("00");
-                                        <option value="@mm" selected="@(i == 0)">@mm</option>
+                                        <option value="@mm" selected="@(i == 0 ? true : null)">@mm</option>
                                     }
                                 </select>
-                                <select class="availability-from-period form-select auth-form-control">
+                                <select class="availability-from-period form-select" aria-label="فترة البدء">
                                     <option value="AM" selected>صباحاً</option>
                                     <option value="PM">مساءً</option>
                                 </select>
                                 <span class="availability-sep">إلى</span>
-                                <select class="availability-to-hour form-select auth-form-control">
+                                <select class="availability-to-hour form-select" aria-label="ساعة الانتهاء">
                                     <option value="">—</option>
                                     @for (var i = 1; i <= 12; i++)
                                     {
-                                        <option value="@i" selected="@(i == 5)">@i</option>
+                                        <option value="@i" selected="@(i == 5 ? true : null)">@i</option>
                                     }
                                 </select>
-                                <select class="availability-to-minute form-select auth-form-control">
+                                <select class="availability-to-minute form-select" aria-label="دقيقة الانتهاء">
                                     @for (var i = 0; i <= 59; i++)
                                     {
                                         var mm = i.ToString("00");
-                                        <option value="@mm" selected="@(i == 0)">@mm</option>
+                                        <option value="@mm" selected="@(i == 0 ? true : null)">@mm</option>
                                     }
                                 </select>
-                                <select class="availability-to-period form-select auth-form-control">
+                                <select class="availability-to-period form-select" aria-label="فترة الانتهاء">
                                     <option value="AM">صباحاً</option>
                                     <option value="PM" selected>مساءً</option>
                                 </select>
-                                <button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>
+                                <button type="button" class="availability-remove-btn" title="حذف" aria-label="حذف اليوم"><i class="bi bi-x-circle" aria-hidden="true"></i></button>
                             </div>
                         </div>
                         <button type="button" id="addAdminAvailabilityBtn" class="btn btn-sm add-availability-btn">
@@ -376,71 +407,8 @@
 @section Scripts {
     <script>
         (function() {
-            var createModal = new bootstrap.Modal(document.getElementById('createUserModal'));
-
-            document.getElementById('addUserBtn').addEventListener('click', function() {
-                document.getElementById('createUserForm').reset();
-                createModal.show();
-            });
-
-            var deleteForm = document.getElementById('deleteUserForm');
-            var deleteIdInput = document.getElementById('deleteUserId');
-            var deleteNameEl = document.getElementById('deleteUserName');
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-
-            document.querySelectorAll('.btn-delete-user').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    deleteIdInput.value = btn.getAttribute('data-id');
-                    deleteNameEl.textContent = btn.getAttribute('data-name');
-                    deleteModal.show();
-                });
-            });
-
-            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-                deleteForm.submit();
-            });
-
-            var changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-            var changePasswordUserId = document.getElementById('changePasswordUserId');
-            var changePasswordUserName = document.getElementById('changePasswordUserName');
-
-            document.querySelectorAll('.btn-change-password').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    changePasswordUserId.value = btn.getAttribute('data-id');
-                    changePasswordUserName.textContent = btn.getAttribute('data-name');
-                    document.getElementById('changePasswordForm').reset();
-                    changePasswordModal.show();
-                });
-            });
-
-            document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-                var pwd = document.getElementById('newPassword').value;
-                var confirm = document.getElementById('confirmPassword').value;
-                if (pwd !== confirm) {
-                    e.preventDefault();
-                    alert('كلمة المرور غير متطابقة');
-                }
-            });
-
-            var editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
-            var editUserId = document.getElementById('editUserId');
-            var editUserName = document.getElementById('editUserName');
-            var editUserPhone = document.getElementById('editUserPhone');
-            var editUserStatus = document.getElementById('editUserStatus');
-
-            document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    editUserId.value = btn.getAttribute('data-id');
-                    editUserName.value = btn.getAttribute('data-name');
-                    editUserPhone.value = btn.getAttribute('data-phone');
-                    editUserStatus.value = btn.getAttribute('data-active');
-                    editUserModal.show();
-                });
-            });
-
-        })();
-
             var ADMIN_DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            var FIXED_SLOT_MINUTES = 30;
 
             function parse12(timeStr) {
                 if (!timeStr) return null;
@@ -454,29 +422,33 @@
                 return { hour: hour12, minute: m, period: period };
             }
 
-            function timeSelectsHtml(prefix, timeStr) {
+            function timeSelectsHtml(prefix, timeStr, prefixLabel) {
                 var t = parse12(timeStr);
                 var hourOptions = '<option value="">—</option>';
                 for (var i = 1; i <= 12; i++) {
                     hourOptions += '<option value="' + i + '"' + (t && t.hour === i ? ' selected' : '') + '>' + i + '</option>';
                 }
                 var minuteOptions = '';
-                for (var i = 0; i <= 59; i++) {
-                    var mm = (i < 10 ? '0' : '') + i;
+                for (var j = 0; j <= 59; j++) {
+                    var mm = (j < 10 ? '0' : '') + j;
                     minuteOptions += '<option value="' + mm + '"' + (t && t.minute === mm ? ' selected' : '') + '>' + mm + '</option>';
                 }
-                return '<select class="availability-' + prefix + '-hour form-select auth-form-control">' + hourOptions + '</select>' +
-                    '<select class="availability-' + prefix + '-minute form-select auth-form-control">' + minuteOptions + '</select>' +
-                    '<select class="availability-' + prefix + '-period form-select auth-form-control">' +
-                        '<option value="AM"' + (t && t.period === 'AM' ? ' selected' : '') + '>صباحاً</option>' +
+                return '<select class="availability-' + prefix + '-hour form-select" aria-label="' + prefixLabel + ' الساعة">' + hourOptions + '</select>' +
+                    '<select class="availability-' + prefix + '-minute form-select" aria-label="' + prefixLabel + ' الدقيقة">' + minuteOptions + '</select>' +
+                    '<select class="availability-' + prefix + '-period form-select" aria-label="' + prefixLabel + ' الفترة">' +
+                        '<option value="AM"' + (!t || t.period === 'AM' ? ' selected' : '') + '>صباحاً</option>' +
                         '<option value="PM"' + (t && t.period === 'PM' ? ' selected' : '') + '>مساءً</option>' +
                     '</select>';
             }
 
             function readTime(row, prefix) {
-                var h = parseInt(row.querySelector('.availability-' + prefix + '-hour').value, 10);
-                var m = row.querySelector('.availability-' + prefix + '-minute').value;
-                var p = row.querySelector('.availability-' + prefix + '-period').value;
+                var hourEl = row.querySelector('.availability-' + prefix + '-hour');
+                var minEl = row.querySelector('.availability-' + prefix + '-minute');
+                var perEl = row.querySelector('.availability-' + prefix + '-period');
+                if (!hourEl || !minEl || !perEl || !hourEl.value) return null;
+                var h = parseInt(hourEl.value, 10);
+                var m = minEl.value || '00';
+                var p = perEl.value || 'AM';
                 if (isNaN(h)) return null;
                 var h24 = h % 12;
                 if (p === 'PM') h24 += 12;
@@ -484,8 +456,14 @@
                 return (h24 < 10 ? '0' + h24 : h24) + ':' + m;
             }
 
-            function addAdminAvailabilityRow(day, fromTime, toTime, slotMin) {
+            function bindRemoveButton(row) {
+                var btn = row.querySelector('.availability-remove-btn');
+                if (btn) btn.addEventListener('click', function () { row.remove(); });
+            }
+
+            function addAdminAvailabilityRow(day, fromTime, toTime) {
                 var container = document.getElementById('adminAvailabilityContainer');
+                if (!container) return;
                 var index = container.children.length;
                 var dayOpts = '<option value="">اليوم</option>' + ADMIN_DAY_NAMES.map(function (n, i) {
                     return '<option value="' + i + '"' + (day === i ? ' selected' : '') + '>' + n + '</option>';
@@ -494,20 +472,24 @@
                 row.className = 'availability-row';
                 row.setAttribute('data-index', index);
                 row.innerHTML =
-                    '<select class="availability-day form-select auth-form-control">' + dayOpts + '</select>' +
-                    timeSelectsHtml('from', fromTime || '09:00') +
+                    '<select class="availability-day form-select" aria-label="اليوم">' + dayOpts + '</select>' +
+                    timeSelectsHtml('from', fromTime || '09:00', 'وقت البدء') +
                     '<span class="availability-sep">إلى</span>' +
-                    timeSelectsHtml('to', toTime || '17:00') +
-                    '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>';
-                row.querySelector('.availability-remove-btn').addEventListener('click', function () { row.remove(); });
+                    timeSelectsHtml('to', toTime || '17:00', 'وقت الانتهاء') +
+                    '<button type="button" class="availability-remove-btn" title="حذف" aria-label="حذف اليوم"><i class="bi bi-x-circle" aria-hidden="true"></i></button>';
+                bindRemoveButton(row);
                 container.appendChild(row);
             }
 
             function serializeAdminAvailabilities() {
+                var hidden = document.getElementById('createAvailabilitiesJson');
+                if (!hidden) return;
                 var rows = document.querySelectorAll('#adminAvailabilityContainer .availability-row');
                 var availabilities = [];
                 rows.forEach(function (row) {
-                    var day = parseInt(row.querySelector('.availability-day').value);
+                    var dayEl = row.querySelector('.availability-day');
+                    if (!dayEl || dayEl.value === '') return;
+                    var day = parseInt(dayEl.value, 10);
                     var fromTime = readTime(row, 'from');
                     var toTime = readTime(row, 'to');
                     if (!isNaN(day) && day >= 0 && fromTime && toTime) {
@@ -515,47 +497,140 @@
                             dayOfWeek: day,
                             startTime: fromTime + ':00',
                             endTime: toTime + ':00',
-                            slotDurationMinutes: 30
+                            slotDurationMinutes: FIXED_SLOT_MINUTES
                         });
                     }
                 });
-                document.getElementById('createAvailabilitiesJson').value = JSON.stringify(availabilities);
+                hidden.value = JSON.stringify(availabilities);
             }
 
-            document.getElementById('createRole').addEventListener('change', function() {
-                var clinicGroup = document.getElementById('clinicGroup');
-                var doctorFields = document.getElementById('doctorFields');
-                var bioGroup = document.getElementById('bioGroup');
-                var experienceGroup = document.getElementById('experienceGroup');
-                var availabilitiesGroup = document.getElementById('availabilitiesGroup');
-                var val = parseInt(this.value);
+            function toggleRoleGroups() {
+                var roleEl = document.getElementById('createRole');
+                if (!roleEl) return;
+                var val = parseInt(roleEl.value, 10);
                 var showClinic = val === 4 || val === 8 || val === 16;
                 var showDoctorFields = val === 4 || val === 16;
-                clinicGroup.style.display = showClinic ? '' : 'none';
-                doctorFields.style.display = showDoctorFields ? '' : 'none';
-                bioGroup.style.display = showDoctorFields ? '' : 'none';
-                experienceGroup.style.display = showDoctorFields ? '' : 'none';
-                availabilitiesGroup.style.display = showDoctorFields ? '' : 'none';
+                var groups = {
+                    clinicGroup: showClinic,
+                    doctorFields: showDoctorFields,
+                    bioGroup: showDoctorFields,
+                    experienceGroup: showDoctorFields,
+                    availabilitiesGroup: showDoctorFields
+                };
+                Object.keys(groups).forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) el.classList.toggle('form-group-hidden', !groups[id]);
+                });
+            }
+
+            var createModalEl = document.getElementById('createUserModal');
+            var createModal = createModalEl ? new bootstrap.Modal(createModalEl) : null;
+            var addUserBtn = document.getElementById('addUserBtn');
+            if (addUserBtn && createModal) {
+                addUserBtn.addEventListener('click', function() {
+                    var form = document.getElementById('createUserForm');
+                    if (form) form.reset();
+                    var container = document.getElementById('adminAvailabilityContainer');
+                    if (container) {
+                        container.innerHTML = '';
+                        addAdminAvailabilityRow();
+                    }
+                    var hidden = document.getElementById('createAvailabilitiesJson');
+                    if (hidden) hidden.value = '';
+                    toggleRoleGroups();
+                    createModal.show();
+                });
+            }
+
+            var deleteForm = document.getElementById('deleteUserForm');
+            var deleteIdInput = document.getElementById('deleteUserId');
+            var deleteNameEl = document.getElementById('deleteUserName');
+            var deleteModalEl = document.getElementById('deleteConfirmModal');
+            var deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
+
+            document.querySelectorAll('.btn-delete-user').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    if (deleteIdInput) deleteIdInput.value = btn.getAttribute('data-id') || '';
+                    if (deleteNameEl) deleteNameEl.textContent = btn.getAttribute('data-name') || '';
+                    if (deleteModal) deleteModal.show();
+                });
             });
 
-            document.getElementById('createUserForm').addEventListener('submit', function () {
-                serializeAdminAvailabilities();
+            var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', function() {
+                    if (deleteForm) deleteForm.submit();
+                });
+            }
+
+            var changePasswordModalEl = document.getElementById('changePasswordModal');
+            var changePasswordModal = changePasswordModalEl ? new bootstrap.Modal(changePasswordModalEl) : null;
+            var changePasswordUserId = document.getElementById('changePasswordUserId');
+            var changePasswordUserName = document.getElementById('changePasswordUserName');
+
+            document.querySelectorAll('.btn-change-password').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    if (changePasswordUserId) changePasswordUserId.value = btn.getAttribute('data-id') || '';
+                    if (changePasswordUserName) changePasswordUserName.textContent = btn.getAttribute('data-name') || '';
+                    var pwdForm = document.getElementById('changePasswordForm');
+                    if (pwdForm) pwdForm.reset();
+                    if (changePasswordModal) changePasswordModal.show();
+                });
             });
 
-            document.getElementById('addAdminAvailabilityBtn').addEventListener('click', function () {
-                addAdminAvailabilityRow();
+            var changePasswordForm = document.getElementById('changePasswordForm');
+            if (changePasswordForm) {
+                changePasswordForm.addEventListener('submit', function(e) {
+                    var pwd = document.getElementById('newPassword');
+                    var confirm = document.getElementById('confirmPassword');
+                    if (pwd && confirm && pwd.value !== confirm.value) {
+                        e.preventDefault();
+                        if (typeof showErrorModal === 'function') showErrorModal('كلمة المرور غير متطابقة');
+                    }
+                });
+            }
+
+            var editModalEl = document.getElementById('editUserModal');
+            var editUserModal = editModalEl ? new bootstrap.Modal(editModalEl) : null;
+            var editUserId = document.getElementById('editUserId');
+            var editUserName = document.getElementById('editUserName');
+            var editUserPhone = document.getElementById('editUserPhone');
+            var editUserStatus = document.getElementById('editUserStatus');
+
+            document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    if (editUserId) editUserId.value = btn.getAttribute('data-id') || '';
+                    if (editUserName) editUserName.value = btn.getAttribute('data-name') || '';
+                    if (editUserPhone) editUserPhone.value = btn.getAttribute('data-phone') || '';
+                    if (editUserStatus) editUserStatus.value = btn.getAttribute('data-active') || 'true';
+                    if (editUserModal) editUserModal.show();
+                });
             });
 
-            document.getElementById('addUserBtn').addEventListener('click', function () {
-                var container = document.getElementById('adminAvailabilityContainer');
-                container.innerHTML = '';
-                addAdminAvailabilityRow();
-                document.getElementById('createAvailabilitiesJson').value = '';
+            document.querySelectorAll('#adminAvailabilityContainer .availability-remove-btn').forEach(function(btn) {
+                btn.addEventListener('click', function () {
+                    var row = btn.closest('.availability-row');
+                    if (row) row.remove();
+                });
             });
 
-        var successMsg = '@(TempData["SuccessMessage"] ?? "")';
-        if (successMsg) { showSuccessModal(successMsg); }
-        var errorMsg = '@(TempData["ErrorMessage"] ?? "")';
-        if (errorMsg) { showErrorModal(errorMsg); }
+            var createRole = document.getElementById('createRole');
+            if (createRole) createRole.addEventListener('change', toggleRoleGroups);
+            toggleRoleGroups();
+
+            var createForm = document.getElementById('createUserForm');
+            if (createForm) {
+                createForm.addEventListener('submit', function () {
+                    serializeAdminAvailabilities();
+                });
+            }
+
+            var addAvailabilityBtn = document.getElementById('addAdminAvailabilityBtn');
+            if (addAvailabilityBtn) {
+                addAvailabilityBtn.addEventListener('click', function () {
+                    addAdminAvailabilityRow();
+                });
+            }
+        })();
     </script>
 }

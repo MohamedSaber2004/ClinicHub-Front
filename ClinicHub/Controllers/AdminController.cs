@@ -1369,10 +1369,11 @@ namespace ClinicHub.Controllers
 
         private static string GetInitials(string fullName)
         {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
             var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 0) return "";
             var first = parts[0][0].ToString();
-            var second = parts.Length > 1 && parts[1].Length > 1 ? parts[1][1].ToString() : "";
+            var second = parts.Length > 1 && parts[1].Length > 0 ? parts[1][0].ToString() : "";
             return first + second;
         }
 

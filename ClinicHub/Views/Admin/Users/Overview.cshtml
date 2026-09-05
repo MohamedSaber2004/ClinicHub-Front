@@ -114,15 +114,15 @@
         <!-- Change Password -->
         <div class="detail-card">
             <h3 class="detail-card-title">تغيير كلمة المرور</h3>
-            <form method="post" action="/Admin/Users/ChangePassword">
+            <form method="post" action="/Admin/Users/ChangePassword" id="overviewChangePasswordForm">
                 <input type="hidden" name="id" value="@u.Id" />
                 <div class="form-group">
                     <label class="form-label" for="overviewNewPassword">كلمة المرور الجديدة</label>
-                    <input type="password" id="overviewNewPassword" name="newPassword" class="form-input" placeholder="********" required minlength="6" />
+                    <input type="password" id="overviewNewPassword" name="newPassword" class="form-input" placeholder="********" required minlength="6" autocomplete="new-password" />
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="overviewConfirmPassword">تأكيد كلمة المرور</label>
-                    <input type="password" id="overviewConfirmPassword" name="confirmPassword" class="form-input" placeholder="********" required minlength="6" />
+                    <input type="password" id="overviewConfirmPassword" name="confirmPassword" class="form-input" placeholder="********" required minlength="6" autocomplete="new-password" />
                 </div>
                 <button type="submit" class="btn btn-primary">تحديث كلمة المرور</button>
             </form>
@@ -132,9 +132,18 @@
 
 @section Scripts {
     <script>
-        var successMsg = '@(TempData["SuccessMessage"] ?? "")';
-        if (successMsg) { showSuccessModal(successMsg); }
-        var errorMsg = '@(TempData["ErrorMessage"] ?? "")';
-        if (errorMsg) { showErrorModal(errorMsg); }
+        (function() {
+            var pwdForm = document.getElementById('overviewChangePasswordForm');
+            if (pwdForm) {
+                pwdForm.addEventListener('submit', function (e) {
+                    var pwd = document.getElementById('overviewNewPassword');
+                    var confirm = document.getElementById('overviewConfirmPassword');
+                    if (pwd && confirm && pwd.value !== confirm.value) {
+                        e.preventDefault();
+                        if (typeof showErrorModal === 'function') showErrorModal('كلمة المرور غير متطابقة');
+                    }
+                });
+            }
+        })();
     </script>
 }
