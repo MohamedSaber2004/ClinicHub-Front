@@ -36,7 +36,7 @@
         </li>
     </ul>
     <div class="verification-role-filter">
-        <button class="filter-role-btn" data-role="all">الكل</button>
+        <button class="filter-role-btn active" data-role="all">الكل</button>
         <button class="filter-role-btn" data-role="@((int)UserType.Doctor)">الأطباء</button>
         <button class="filter-role-btn" data-role="@((int)UserType.ClinicOwner)">العيادات</button>
     </div>
@@ -64,7 +64,7 @@
                     <div class="list-body">
                         @foreach (var req in requests)
                         {
-                            <div class="verification-card" data-request-id="@req.Id.ToString()" data-role="@((int)req.RequestedRole)">
+                            <div class="verification-card" data-request-id="@req.Id.ToString()" data-user-id="@req.UserId.ToString()" data-role="@((int)req.RequestedRole)">
                                 <div class="vc-header">
                                 <div class="vc-avatar">
                                     @if (!string.IsNullOrEmpty(req.DoctorImage))
@@ -193,7 +193,19 @@
                                     <span class="detail-label">الحالة</span>
                                     <span class="detail-value" id="detailStatus"></span>
                                 </div>
+                                <div class="detail-item d-none" id="detailReviewedAtContainer">
+                                    <span class="detail-label">تاريخ المراجعة</span>
+                                    <span class="detail-value" id="detailReviewedAt"></span>
+                                </div>
+                                <div class="detail-item d-none" id="detailReviewedByContainer">
+                                    <span class="detail-label">تمت المراجعة بواسطة</span>
+                                    <span class="detail-value" id="detailReviewedBy"></span>
+                                </div>
                             </div>
+                        </div>
+                        <div class="detail-section d-none" id="detailNotesSection">
+                            <h5 class="section-title">ملاحظات / سبب الرفض</h5>
+                            <div class="alert alert-danger mb-0" id="detailNotes"></div>
                         </div>
                         <div class="detail-section">
                             <h5 class="section-title">المستندات المرفوعة</h5>

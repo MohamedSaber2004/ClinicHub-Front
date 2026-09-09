@@ -1,0 +1,252 @@
+@*
+    Global API Skeleton Bar Loading Component
+    Replaces full-page loading spinner overlays.
+    Activates strictly and exclusively when asynchronous API calls (fetch / XMLHttpRequest / $.ajax) are active.
+    Never loads on normal link clicks, page navigation, or form submissions.
+*@
+
+<div id="globalApiSkeletonBar" class="api-skeleton-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="جاري تحميل البيانات..." aria-hidden="true">
+    <div class="api-skeleton-bar__track">
+        <div class="api-skeleton-bar__progress" id="globalApiSkeletonProgress">
+            <div class="api-skeleton-bar__shimmer"></div>
+        </div>
+        <div class="api-skeleton-bar__glow" id="globalApiSkeletonGlow"></div>
+    </div>
+</div>
+
+@* Legacy element anchor to prevent null reference errors in legacy scripts *@
+<div id="globalLoadingOverlay" class="d-none" aria-hidden="true"></div>
+
+<script>
+    (function () {
+        'use strict';
+
+        var activeApiCount = 0;
+        var barEl = null;
+        var progressEl = null;
+        var showDebounceTimer = null;
+        var safetyTimeoutTimer = null;
+        var progressInterval = null;
+        var currentProgress = 0;
+        var MAX_API_TIMEOUT = 15000;
+
+        function getElements() {
+            if (!barEl) {
+                barEl = document.getElementById('globalApiSkeletonBar');
+                if (barEl) {
+                    progressEl = document.getElementById('globalApiSkeletonProgress');
+                }
+            }
+            return barEl;
+        }
+
+        // Determine if a URL / request should be treated as an API call
+        function isApiRequest(url, init) {
+            if (!url || typeof url !== 'string') return false;
+
+            // Ignore static assets
+            if (/\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|map)(\?.*)?$/i.test(url)) {
+                return false;
+            }
+
+            // Ignore silent / background polling endpoints
+            var lower = url.toLowerCase();
+            if (lower.indexOf('notificationscount') !== -1 ||
+                lower.indexOf('notificationslist') !== -1 ||
+                lower.indexOf('registerfcmtoken') !== -1 ||
+                lower.indexOf('fcm-token') !== -1 ||
+                lower.indexOf('refresh-token') !== -1 ||
+                lower.indexOf('refreshtoken') !== -1 ||
+                lower.indexOf('getstats') !== -1 ||
+                lower.indexOf('getqueue') !== -1 ||
+                lower.indexOf('silent=1') !== -1 ||
+                lower.indexOf('silent=true') !== -1) {
+                return false;
+            }
+
+            // Check init options & headers
+            if (init) {
+                if (init.skipLoader || init.silent || init.background) return false;
+                if (init.headers) {
+                    var h = init.headers;
+                    if (h['X-Silent'] === 'true' || h['X-Skip-Loader'] === 'true' || h['X-Background'] === 'true') return false;
+                    if (typeof h.get === 'function' && (h.get('X-Silent') === 'true' || h.get('X-Skip-Loader') === 'true' || h.get('X-Background') === 'true')) return false;
+                }
+            }
+
+            return true;
+        }
+
+        function setBarProgress(pct) {
+            currentProgress = pct;
+            if (progressEl) {
+                progressEl.style.width = pct + '%';
+            }
+            if (barEl) {
+                barEl.setAttribute('aria-valuenow', Math.round(pct));
+            }
+        }
+
+        function renderActive() {
+            var el = getElements();
+            if (!el) return;
+
+            el.classList.remove('is-finishing');
+            el.classList.add('is-loading', 'is-indeterminate');
+            el.setAttribute('aria-hidden', 'false');
+
+            // Simulate progressive advancement: 25% -> 85%
+            setBarProgress(25);
+            clearInterval(progressInterval);
+            progressInterval = setInterval(function () {
+                if (currentProgress < 85) {
+                    var increment = Math.max(1, (85 - currentProgress) * 0.15);
+                    setBarProgress(currentProgress + increment);
+                }
+            }, 180);
+
+            // Safety timeout to prevent getting stuck
+            clearTimeout(safetyTimeoutTimer);
+            safetyTimeoutTimer = setTimeout(function () {
+                finishAndHide(true);
+            }, MAX_API_TIMEOUT);
+
+            try {
+                document.dispatchEvent(new CustomEvent('api-loading-start', { detail: { count: activeApiCount } }));
+            } catch (e) {}
+        }
+
+        function startApiLoading() {
+            activeApiCount++;
+            if (activeApiCount === 1) {
+                // 40ms debounce to prevent flicker on instant cached responses
+                clearTimeout(showDebounceTimer);
+                showDebounceTimer = setTimeout(function () {
+                    renderActive();
+                }, 40);
+            }
+        }
+
+        function finishAndHide(force) {
+            clearTimeout(showDebounceTimer);
+            clearTimeout(safetyTimeoutTimer);
+            clearInterval(progressInterval);
+
+            if (force) {
+                activeApiCount = 0;
+            } else {
+                activeApiCount = Math.max(0, activeApiCount - 1);
+            }
+
+            if (activeApiCount > 0) return;
+
+            var el = getElements();
+            if (!el || !el.classList.contains('is-loading')) {
+                return;
+            }
+
+            // Complete the bar to 100% then fade out smoothly
+            setBarProgress(100);
+            el.classList.remove('is-indeterminate');
+            el.classList.add('is-finishing');
+
+            setTimeout(function () {
+                el.classList.remove('is-loading', 'is-finishing');
+                el.setAttribute('aria-hidden', 'true');
+                setBarProgress(0);
+                try {
+                    document.dispatchEvent(new CustomEvent('api-loading-end', { detail: { count: 0 } }));
+                } catch (e) {}
+            }, 240);
+        }
+
+        // Public API
+        window.apiSkeletonBar = {
+            show: startApiLoading,
+            hide: function (force) { finishAndHide(force); },
+            reset: function () { finishAndHide(true); },
+            getActiveCount: function () { return activeApiCount; }
+        };
+
+        // Backward compatibility for scripts calling loadingService / showLoader
+        window.showLoader = startApiLoading;
+        window.hideLoader = function (force) { finishAndHide(force); };
+        window.loadingService = {
+            show: startApiLoading,
+            hide: function (force) { finishAndHide(force); },
+            getActiveCount: function () { return activeApiCount; },
+            reset: function () { finishAndHide(true); }
+        };
+
+        // Intercept window.fetch
+        var origFetch = window.fetch;
+        if (typeof origFetch === 'function') {
+            window.fetch = function (input, init) {
+                var url = '';
+                if (typeof input === 'string') {
+                    url = input;
+                } else if (input && input.url) {
+                    url = input.url;
+                }
+
+                if (!isApiRequest(url, init)) {
+                    return origFetch.apply(window, arguments);
+                }
+
+                startApiLoading();
+
+                return origFetch.apply(window, arguments).then(function (response) {
+                    finishAndHide(false);
+                    return response;
+                }).catch(function (err) {
+                    finishAndHide(false);
+                    throw err;
+                });
+            };
+        }
+
+        // Intercept XMLHttpRequest (covers jQuery $.ajax, $.get, $.post, axios, etc.)
+        var origXhrOpen = XMLHttpRequest.prototype.open;
+        var origXhrSend = XMLHttpRequest.prototype.send;
+
+        XMLHttpRequest.prototype.open = function (method, url) {
+            this.__apiUrl = url;
+            return origXhrOpen.apply(this, arguments);
+        };
+
+        XMLHttpRequest.prototype.send = function () {
+            var xhr = this;
+            var isApi = isApiRequest(xhr.__apiUrl);
+
+            if (isApi) {
+                startApiLoading();
+                var onDone = function () {
+                    xhr.removeEventListener('loadend', onDone);
+                    finishAndHide(false);
+                };
+                xhr.addEventListener('loadend', onDone);
+            }
+
+            return origXhrSend.apply(xhr, arguments);
+        };
+
+        // Page lifecycle safety (reset on bfcache, navigation, or visibility change)
+        window.addEventListener('pageshow', function () {
+            finishAndHide(true);
+        });
+
+        window.addEventListener('DOMContentLoaded', function () {
+            finishAndHide(true);
+        });
+
+        window.addEventListener('load', function () {
+            finishAndHide(true);
+        });
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible' && activeApiCount <= 0) {
+                finishAndHide(true);
+            }
+        });
+    })();
+</script>

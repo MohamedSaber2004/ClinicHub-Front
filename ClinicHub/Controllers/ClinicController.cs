@@ -486,6 +486,136 @@ namespace ClinicHub.Controllers
             };
         }
 
+        public async Task<IActionResult> ClinicAvailability()
+        {
+            ViewBag.WorkingDays = new List<int> { 6, 0, 1, 2, 3, 4 };
+            ViewBag.WorkingHoursStart = "09:00";
+            ViewBag.WorkingHoursEnd = "21:00";
+            ViewBag.WorkingHoursText = "السبت - الخميس: 9:00 ص - 9:00 م | الجمعة: عطلة";
+            ViewBag.ClinicName = "العيادة";
+
+            try
+            {
+                if (CurrentUser?.ClinicId != null)
+                {
+                    var clinicRes = await _clinicService.GetClinicByIdAsync(new GetClinicByIdRequest { Id = CurrentUser.ClinicId.Value });
+                    if (clinicRes?.Data != null)
+                    {
+                        var clinic = clinicRes.Data;
+                        ViewBag.Clinic = clinic;
+                        ViewBag.ClinicName = !string.IsNullOrWhiteSpace(clinic.NameAr) ? clinic.NameAr : clinic.Name;
+
+                        if (!string.IsNullOrWhiteSpace(clinic.WorkingHours))
+                            ViewBag.WorkingHoursText = clinic.WorkingHours;
+
+                        if (clinic.WorkingDays != null && clinic.WorkingDays.Count > 0)
+                        {
+                            var parsedDays = new List<int>();
+                            foreach (var wd in clinic.WorkingDays)
+                            {
+                                if (int.TryParse(wd.DayOfWeek, out var dayNum) && dayNum >= 0 && dayNum <= 6)
+                                    parsedDays.Add(dayNum);
+                                else if (Enum.TryParse<DayOfWeek>(wd.DayOfWeek, true, out var dow))
+                                    parsedDays.Add((int)dow);
+                            }
+                            if (parsedDays.Count > 0)
+                                ViewBag.WorkingDays = parsedDays.Distinct().ToList();
+
+                            var firstWd = clinic.WorkingDays.FirstOrDefault();
+                            if (firstWd != null && firstWd.StartTime != default)
+                                ViewBag.WorkingHoursStart = firstWd.StartTime.ToString("HH:mm");
+                            if (firstWd != null && firstWd.EndTime != default)
+                                ViewBag.WorkingHoursEnd = firstWd.EndTime.ToString("HH:mm");
+                        }
+                    }
+                }
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+            catch (Exception)
+            {
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveClinicAvailability([FromBody] JsonElement body)
+        {
+            try
+            {
+                if (CurrentUser?.ClinicId == null)
+                    return Json(new { success = false, message = "لم يتم العثور على العيادة الخاصة بالمستخدم" });
+
+                var clinicId = CurrentUser.ClinicId.Value;
+                var clinicRes = await _clinicService.GetClinicByIdAsync(new GetClinicByIdRequest { Id = clinicId });
+                var clinic = clinicRes?.Data;
+                if (clinic == null)
+                    return Json(new { success = false, message = "فشل في العثور على بيانات العيادة" });
+
+                var startStr = body.TryGetProperty("workingHoursStart", out var sEl) ? sEl.GetString() : null;
+                var endStr = body.TryGetProperty("workingHoursEnd", out var eEl) ? eEl.GetString() : null;
+                var hoursText = body.TryGetProperty("workingHours", out var hEl) ? hEl.GetString() : null;
+
+                TimeOnly? startTime = null;
+                if (!string.IsNullOrWhiteSpace(startStr) && TimeOnly.TryParse(startStr, out var st))
+                    startTime = st;
+
+                TimeOnly? endTime = null;
+                if (!string.IsNullOrWhiteSpace(endStr) && TimeOnly.TryParse(endStr, out var et))
+                    endTime = et;
+
+                var workingDays = new List<DayOfWeek>();
+                if (body.TryGetProperty("workingDays", out var daysEl) && daysEl.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in daysEl.EnumerateArray())
+                    {
+                        if (item.ValueKind == JsonValueKind.Number && Enum.IsDefined(typeof(DayOfWeek), item.GetInt32()))
+                            workingDays.Add((DayOfWeek)item.GetInt32());
+                        else if (item.ValueKind == JsonValueKind.String && Enum.TryParse<DayOfWeek>(item.GetString(), true, out var dow))
+                            workingDays.Add(dow);
+                    }
+                }
+
+                var updateRequest = new UpdateClinicRequest
+                {
+                    Id = clinicId,
+                    Name = clinic.Name,
+                    NameAr = clinic.NameAr,
+                    Description = clinic.Description,
+                    ArDescription = clinic.ArDescription,
+                    Address = clinic.Address,
+                    AddressAr = clinic.AddressAr,
+                    Phone = clinic.Phone,
+                    Email = clinic.Email ?? string.Empty,
+                    Website = clinic.Website,
+                    Logo = clinic.Logo,
+                    SpecializationId = clinic.SpecializationId,
+                    WorkingHours = hoursText ?? clinic.WorkingHours,
+                    WorkingHoursStart = startTime,
+                    WorkingHoursEnd = endTime,
+                    WorkingDays = workingDays.Count > 0 ? workingDays : null,
+                    Latitude = clinic.Lat,
+                    Longitude = clinic.Lng
+                };
+
+                var updateRes = await _clinicService.UpdateClinicAsync(updateRequest);
+                return Json(new { success = true, message = "تم حفظ أوقات عمل العيادة بنجاح", data = updateRes.Data });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
         public async Task<IActionResult> AppointmentRevenue(int? status, int? method, int pageNumber = 1, int pageSize = 10)
         {
             try
@@ -1263,6 +1393,19 @@ namespace ClinicHub.Controllers
             catch (ApiException)
             {
                 ViewBag.Specializations = new List<SpecializationDto>();
+            }
+
+            try
+            {
+                if (CurrentUser?.ClinicId != null)
+                {
+                    var clinicRes = await _clinicService.GetClinicByIdAsync(new GetClinicByIdRequest { Id = CurrentUser.ClinicId.Value });
+                    ViewBag.ClinicManagement = clinicRes?.Data;
+                }
+            }
+            catch (Exception)
+            {
+                ViewBag.ClinicManagement = null;
             }
 
             // مدة الموعد ثابتة على 30 دقيقة لجميع الأطباء والأيام — لا تُدار من أوقات العمل

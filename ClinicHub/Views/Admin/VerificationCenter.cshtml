@@ -48,21 +48,69 @@
         var verificationRequests = [];
         var selectedRequestId = null;
         var activeRoleFilter = 'all';
+        var actionModal = null;
 
         // ---- reading helpers ----
         function readRequestsData() {
             var el = document.getElementById('verificationRequestsJson');
-            verificationRequests = el ? JSON.parse(el.textContent) : [];
+            if (!el || !el.textContent) {
+                verificationRequests = [];
+                return;
+            }
+            try {
+                verificationRequests = JSON.parse(el.textContent);
+            } catch (e) {
+                console.error('Failed to parse verification requests:', e);
+                verificationRequests = [];
+            }
+        }
+
+        function findRequestById(id, userId) {
+            if (!verificationRequests || !verificationRequests.length) return null;
+            var normId = id ? String(id).trim().toLowerCase() : null;
+            var normUserId = userId ? String(userId).trim().toLowerCase() : null;
+            return verificationRequests.find(function(r) {
+                if (!r) return false;
+                var rId = (r.id !== undefined && r.id !== null) ? String(r.id).trim().toLowerCase() :
+                          ((r.Id !== undefined && r.Id !== null) ? String(r.Id).trim().toLowerCase() : null);
+                var rUserId = (r.userId !== undefined && r.userId !== null) ? String(r.userId).trim().toLowerCase() :
+                              ((r.UserId !== undefined && r.UserId !== null) ? String(r.UserId).trim().toLowerCase() : null);
+
+                if (normId && rId && rId === normId) return true;
+                if (normUserId && rUserId && rUserId === normUserId) return true;
+                if (normId && rUserId && rUserId === normId) return true;
+                if (normUserId && rId && rId === normUserId) return true;
+                return false;
+            });
         }
 
         function getRoleName(role) {
-            var names = { 0: 'لا يوجد', 1: 'مستخدم', 2: 'مدير عام', 3: 'موظف', 4: 'طبيب', 16: 'مدير عيادة' };
-            return names[role] || role.toString();
+            var names = {
+                0: 'لا يوجد',
+                1: 'مستخدم',
+                2: 'مدير عام',
+                3: 'موظف',
+                4: 'طبيب',
+                8: 'موظف',
+                16: 'مدير عيادة',
+                'None': 'لا يوجد',
+                'User': 'مستخدم',
+                'SuperAdmin': 'مدير عام',
+                'Doctor': 'طبيب',
+                'Staff': 'موظف',
+                'ClinicOwner': 'مدير عيادة',
+                'FreelanceDoctor': 'طبيب حر'
+            };
+            if (role !== undefined && role !== null && names[role] !== undefined) {
+                return names[role];
+            }
+            return (role !== undefined && role !== null) ? role.toString() : 'غير محدد';
         }
 
         function formatDate(d) {
-            if (!d) return '';
+            if (!d) return '—';
             var dt = new Date(d);
+            if (isNaN(dt.getTime())) return String(d);
             var y = dt.getFullYear();
             var m = String(dt.getMonth() + 1).padStart(2, '0');
             var day = String(dt.getDate()).padStart(2, '0');
@@ -70,54 +118,154 @@
         }
 
         function getStatusHtml(status) {
-            if (status === 0) return '<span class="badge badge-warning">قيد الانتظار</span>';
-            if (status === 1) return '<span class="badge badge-success">مقبول</span>';
-            if (status === 2) return '<span class="badge badge-danger">مرفوض</span>';
-            return '';
+            var s = (typeof status === 'string') ? status.toLowerCase() : status;
+            if (s === 0 || s === 'pending') return '<span class="badge badge-warning">قيد الانتظار</span>';
+            if (s === 1 || s === 'approved') return '<span class="badge badge-success">مقبول</span>';
+            if (s === 2 || s === 'rejected') return '<span class="badge badge-danger">مرفوض</span>';
+            return '<span class="badge badge-secondary">—</span>';
         }
 
         // ---- detail pane ----
         function showDetail(req) {
-            selectedRequestId = req.id;
+            if (!req) return;
+            selectedRequestId = req.id || req.Id || req.userId || req.UserId;
             var emptyEl = document.getElementById('detailEmpty');
             var contentEl = document.getElementById('detailContent');
             if (!emptyEl || !contentEl) return;
-            emptyEl.style.display = 'none';
-            contentEl.style.display = '';
-            document.getElementById('detailId').textContent = '#' + req.id.substring(0, 8);
-            document.getElementById('detailName').textContent = req.userFullName;
-            document.getElementById('detailRole').textContent = getRoleName(req.requestedRole);
-            document.getElementById('detailPhone').textContent = req.userPhoneNumber;
-            document.getElementById('detailEmail').textContent = req.userEmail;
-            document.getElementById('detailDate').textContent = formatDate(req.requestedAt);
-            document.getElementById('detailStatus').innerHTML = getStatusHtml(req.status);
 
+            // Remove d-none to display detail pane, hide empty placeholder
+            emptyEl.classList.add('d-none');
+            emptyEl.style.display = 'none';
+            contentEl.classList.remove('d-none');
+            contentEl.style.display = '';
+
+            var idStr = req.id ? String(req.id) : (req.userId ? String(req.userId) : '');
+            var detailIdEl = document.getElementById('detailId');
+            if (detailIdEl) {
+                detailIdEl.textContent = idStr ? ('#' + idStr.substring(0, 8)) : '';
+            }
+
+            var detailNameEl = document.getElementById('detailName');
+            if (detailNameEl) {
+                detailNameEl.textContent = req.userFullName || req.UserFullName || '—';
+            }
+
+            var roleVal = req.requestedRole !== undefined ? req.requestedRole : req.RequestedRole;
+            var detailRoleEl = document.getElementById('detailRole');
+            if (detailRoleEl) {
+                detailRoleEl.textContent = getRoleName(roleVal);
+            }
+
+            var detailPhoneEl = document.getElementById('detailPhone');
+            if (detailPhoneEl) {
+                detailPhoneEl.textContent = req.userPhoneNumber || req.UserPhoneNumber || '—';
+            }
+
+            var detailEmailEl = document.getElementById('detailEmail');
+            if (detailEmailEl) {
+                detailEmailEl.textContent = req.userEmail || req.UserEmail || '—';
+            }
+
+            var detailDateEl = document.getElementById('detailDate');
+            if (detailDateEl) {
+                detailDateEl.textContent = formatDate(req.requestedAt || req.RequestedAt);
+            }
+
+            var statusVal = req.status !== undefined ? req.status : req.Status;
+            var detailStatusEl = document.getElementById('detailStatus');
+            if (detailStatusEl) {
+                detailStatusEl.innerHTML = getStatusHtml(statusVal);
+            }
+
+            // Update accept / reject buttons state
+            var isPending = statusVal === 0 || (typeof statusVal === 'string' && statusVal.toLowerCase() === 'pending');
+            var acceptBtn = document.getElementById('acceptRequestBtn');
+            var rejectBtn = document.getElementById('rejectRequestBtn');
+            if (acceptBtn) {
+                acceptBtn.disabled = !isPending;
+            }
+            if (rejectBtn) {
+                rejectBtn.disabled = !isPending;
+            }
+
+            // Documents
             var docsGrid = document.getElementById('detailDocuments');
-            docsGrid.innerHTML = '';
-            var docItems = [
-                { label: 'بطاقة مزاولة المهنة', url: req.professionalPracticeCardImage },
-                { label: 'البطاقة الضريبية', url: req.taxCardImage },
-                { label: 'بطاقة النقابة', url: req.unionIdCardImage },
-                { label: 'صورة الطبيب', url: req.doctorImage }
-            ];
-            var hasDocs = false;
-            docItems.forEach(function(doc) {
-                if (doc.url) {
-                    hasDocs = true;
-                    var a = document.createElement('a');
-                    a.href = doc.url;
-                    a.target = '_blank';
-                    a.className = 'detail-doc-img';
-                    a.innerHTML = '<img src="' + doc.url + '" alt="' + doc.label + '" onerror="this.parentElement.classList.add(\'is-broken\'); this.style.display=\'none\'; this.parentElement.querySelector(\'.doc-fallback\').style.display=\'\'" />' +
-                        '<div class="doc-fallback d-none">' +
-                        '<svg width="24" height="24" viewBox="0 0 24 24" fill="var(--clr-primary)">' +
-                        '<path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/>' +
-                        '</svg><span>' + doc.label + '</span></div>';
-                    docsGrid.appendChild(a);
+            if (docsGrid) {
+                docsGrid.innerHTML = '';
+                var docItems = [
+                    { label: 'بطاقة مزاولة المهنة', url: req.professionalPracticeCardImage || req.ProfessionalPracticeCardImage },
+                    { label: 'البطاقة الضريبية', url: req.taxCardImage || req.TaxCardImage },
+                    { label: 'بطاقة النقابة', url: req.unionIdCardImage || req.UnionIdCardImage },
+                    { label: 'صورة الطبيب', url: req.doctorImage || req.DoctorImage }
+                ];
+                var hasDocs = false;
+                docItems.forEach(function(doc) {
+                    if (doc.url) {
+                        hasDocs = true;
+                        var a = document.createElement('a');
+                        a.href = doc.url;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        a.className = 'detail-doc-img';
+                        a.title = doc.label;
+                        a.innerHTML = '<img src="' + doc.url + '" alt="' + doc.label + '" onerror="this.classList.add(\'d-none\'); this.parentElement.classList.add(\'is-broken\'); var fb = this.parentElement.querySelector(\'.doc-fallback\'); if(fb) fb.classList.remove(\'d-none\');" />' +
+                            '<div class="doc-fallback d-none">' +
+                            '<svg width="24" height="24" viewBox="0 0 24 24" fill="var(--clr-primary)">' +
+                            '<path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/>' +
+                            '</svg><span>' + doc.label + '</span></div>' +
+                            '<span class="detail-doc-label">' + doc.label + '</span>';
+                        docsGrid.appendChild(a);
+                    }
+                });
+                if (!hasDocs) {
+                    docsGrid.innerHTML = '<span class="text-muted fs-sm">لا توجد مستندات مرفوعة</span>';
                 }
-            });
-            if (!hasDocs) {
-                docsGrid.innerHTML = '<span class="text-muted fs-sm">لا توجد مستندات مرفوعة</span>';
+            }
+
+            // Review info if present
+            var revAtCont = document.getElementById('detailReviewedAtContainer');
+            var revAtEl = document.getElementById('detailReviewedAt');
+            var revAt = req.reviewedAt || req.ReviewedAt;
+            if (revAtCont && revAtEl) {
+                if (revAt) {
+                    revAtEl.textContent = formatDate(revAt);
+                    revAtCont.classList.remove('d-none');
+                } else {
+                    revAtCont.classList.add('d-none');
+                }
+            }
+
+            var revByCont = document.getElementById('detailReviewedByContainer');
+            var revByEl = document.getElementById('detailReviewedBy');
+            var revBy = req.reviewedByFullName || req.ReviewedByFullName;
+            if (revByCont && revByEl) {
+                if (revBy) {
+                    revByEl.textContent = revBy;
+                    revByCont.classList.remove('d-none');
+                } else {
+                    revByCont.classList.add('d-none');
+                }
+            }
+
+            // Notes section
+            var notesSec = document.getElementById('detailNotesSection');
+            var notesEl = document.getElementById('detailNotes');
+            var notes = req.notes || req.Notes;
+            if (notesSec && notesEl) {
+                if (notes) {
+                    notesEl.textContent = notes;
+                    notesSec.classList.remove('d-none');
+                } else {
+                    notesSec.classList.add('d-none');
+                }
+            }
+
+            // Smooth scroll to detail on smaller screens
+            if (window.innerWidth <= 992) {
+                var detailContainer = document.getElementById('verificationDetail');
+                if (detailContainer) {
+                    detailContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             }
         }
 
@@ -126,8 +274,10 @@
             var emptyEl = document.getElementById('detailEmpty');
             var contentEl = document.getElementById('detailContent');
             if (!emptyEl || !contentEl) return;
-            emptyEl.style.display = '';
+            contentEl.classList.add('d-none');
             contentEl.style.display = 'none';
+            emptyEl.classList.remove('d-none');
+            emptyEl.style.display = '';
         }
 
         // ---- filtering ----
@@ -140,19 +290,40 @@
             var targetRole = getRoleValue(activeRoleFilter);
             var cards = document.querySelectorAll('.verification-card');
             var firstVisible = null;
+            var currentSelectedVisible = null;
+
             cards.forEach(function(card) {
                 var id = card.getAttribute('data-request-id');
-                var req = verificationRequests.find(function(r) { return r.id === id; });
-                var match = !targetRole || (req && req.requestedRole === targetRole);
+                var userId = card.getAttribute('data-user-id');
+                var req = findRequestById(id, userId);
+                var roleAttr = card.getAttribute('data-role');
+                var cardRole = roleAttr ? parseInt(roleAttr, 10) : null;
+                var reqRole = req ? (req.requestedRole !== undefined ? req.requestedRole : req.RequestedRole) : cardRole;
+
+                var match = (targetRole === null) || (reqRole === targetRole);
                 card.style.display = match ? '' : 'none';
-                if (match && !firstVisible) firstVisible = card;
+
+                if (match) {
+                    if (!firstVisible) firstVisible = card;
+                    if (selectedRequestId && ((id && String(id).toLowerCase() === String(selectedRequestId).toLowerCase()) ||
+                                              (userId && String(userId).toLowerCase() === String(selectedRequestId).toLowerCase()))) {
+                        currentSelectedVisible = card;
+                    }
+                }
             });
-            if (firstVisible) {
+
+            var targetCard = currentSelectedVisible || firstVisible;
+            if (targetCard) {
                 cards.forEach(function(c) { c.classList.remove('active'); });
-                firstVisible.classList.add('active');
-                var id = firstVisible.getAttribute('data-request-id');
-                var req = verificationRequests.find(function(r) { return r.id === id; });
-                if (req) showDetail(req);
+                targetCard.classList.add('active');
+                var targetId = targetCard.getAttribute('data-request-id');
+                var targetUserId = targetCard.getAttribute('data-user-id');
+                var req = findRequestById(targetId, targetUserId);
+                if (req) {
+                    showDetail(req);
+                } else {
+                    clearDetail();
+                }
             } else {
                 clearDetail();
             }
@@ -188,7 +359,6 @@
         // ---- event wiring ----
         function bindEvents() {
             var filterBtns = document.querySelectorAll('.filter-role-btn');
-
             filterBtns.forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     filterBtns.forEach(function(b) { b.classList.remove('active'); });
@@ -201,7 +371,8 @@
             document.querySelectorAll('.verification-card').forEach(function(card) {
                 card.addEventListener('click', function() {
                     var id = this.getAttribute('data-request-id');
-                    var req = verificationRequests.find(function(r) { return r.id === id; });
+                    var userId = this.getAttribute('data-user-id');
+                    var req = findRequestById(id, userId);
                     if (req) {
                         document.querySelectorAll('.verification-card').forEach(function(c) { c.classList.remove('active'); });
                         this.classList.add('active');
@@ -218,36 +389,59 @@
             });
         }
 
+        function getActionModal() {
+            if (!actionModal) {
+                var modalEl = document.getElementById('verificationActionModal');
+                if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+                    actionModal = new bootstrap.Modal(modalEl);
+                }
+            }
+            return actionModal;
+        }
+
         function openActionModal(type) {
             if (!selectedRequestId) return;
-            document.getElementById('doctorActionType').value = type;
+            var typeInput = document.getElementById('doctorActionType');
+            if (typeInput) typeInput.value = type;
             var reasonGroup = document.getElementById('doctorActionReasonGroup');
+            var titleEl = document.getElementById('doctorActionModalTitle');
+            var msgEl = document.getElementById('doctorActionConfirmMsg');
+
             if (type === 'accept') {
-                document.getElementById('doctorActionModalTitle').textContent = 'قبول طلب التحقق';
-                document.getElementById('doctorActionConfirmMsg').innerHTML = '<div class="alert alert-success">سيتم قبول الطلب وتفعيل حساب الطبيب.</div>';
+                if (titleEl) titleEl.textContent = 'قبول طلب التحقق';
+                if (msgEl) msgEl.innerHTML = '<div class="alert alert-success">سيتم قبول الطلب وتفعيل حساب الطبيب.</div>';
                 if (reasonGroup) reasonGroup.style.display = 'none';
             } else {
-                document.getElementById('doctorActionModalTitle').textContent = 'رفض طلب التحقق';
-                document.getElementById('doctorActionConfirmMsg').innerHTML = '<div class="alert alert-danger">سيتم رفض الطلب مع إرسال سبب الرفض للطبيب.</div>';
+                if (titleEl) titleEl.textContent = 'رفض طلب التحقق';
+                if (msgEl) msgEl.innerHTML = '<div class="alert alert-danger">سيتم رفض الطلب مع إرسال سبب الرفض للطبيب.</div>';
                 if (reasonGroup) reasonGroup.style.display = '';
             }
-            actionModal.show();
+
+            var m = getActionModal();
+            if (m) m.show();
         }
 
         function bindDetailButtons() {
             var acceptBtn = document.getElementById('acceptRequestBtn');
             var rejectBtn = document.getElementById('rejectRequestBtn');
-            if (acceptBtn) acceptBtn.addEventListener('click', function() { openActionModal('accept'); });
-            if (rejectBtn) rejectBtn.addEventListener('click', function() { openActionModal('reject'); });
+            if (acceptBtn) {
+                acceptBtn.onclick = function() { openActionModal('accept'); };
+            }
+            if (rejectBtn) {
+                rejectBtn.onclick = function() { openActionModal('reject'); };
+            }
         }
 
         function updateCardInPlace(req) {
-            var card = document.querySelector('.verification-card[data-request-id="' + req.id + '"]');
+            var reqId = req.id || req.Id;
+            var userId = req.userId || req.UserId;
+            var card = document.querySelector('.verification-card[data-request-id="' + reqId + '"]') ||
+                       document.querySelector('.verification-card[data-user-id="' + userId + '"]');
             if (card) {
                 var badge = card.querySelector('.vc-status .badge');
                 if (badge) badge.outerHTML = getStatusHtml(req.status);
             }
-            if (selectedRequestId === req.id) {
+            if (selectedRequestId === reqId || selectedRequestId === userId) {
                 var detailStatus = document.getElementById('detailStatus');
                 if (detailStatus) detailStatus.innerHTML = getStatusHtml(req.status);
                 var acceptBtn = document.getElementById('acceptRequestBtn');
@@ -263,8 +457,14 @@
             confirmBtn.addEventListener('click', function() {
                 var type = document.getElementById('doctorActionType').value;
                 var reason = document.getElementById('doctorActionReason').value;
-                var req = verificationRequests.find(function(r) { return r.id === selectedRequestId; });
+                var req = findRequestById(selectedRequestId);
                 if (!req) return;
+
+                var targetUserId = req.userId || req.UserId || req.id || req.Id;
+                if (!targetUserId) {
+                    showErrorModal('لم يتم العثور على معرّف المستخدم للطلب.');
+                    return;
+                }
 
                 confirmBtn.disabled = true;
                 var originalHtml = confirmBtn.innerHTML;
@@ -273,19 +473,22 @@
                 function finish() {
                     confirmBtn.disabled = false;
                     confirmBtn.innerHTML = originalHtml;
-                    if (actionModal) actionModal.hide();
-                    document.getElementById('doctorActionReason').value = '';
+                    var m = getActionModal();
+                    if (m) m.hide();
+                    var reasonEl = document.getElementById('doctorActionReason');
+                    if (reasonEl) reasonEl.value = '';
                 }
 
                 var url = type === 'accept'
-                    ? '/Admin/AcceptVerification?userId=' + encodeURIComponent(req.userId)
-                    : '/Admin/RejectVerification?userId=' + encodeURIComponent(req.userId) + '&notes=' + encodeURIComponent(reason || '');
+                    ? '/Admin/AcceptVerification?userId=' + encodeURIComponent(targetUserId)
+                    : '/Admin/RejectVerification?userId=' + encodeURIComponent(targetUserId) + '&notes=' + encodeURIComponent(reason || '');
 
                 fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
                         if (data.success) {
                             req.status = type === 'accept' ? 1 : 2;
+                            if (req.Status !== undefined) req.Status = req.status;
                             finish();
                             showSuccessModal(data.message || (type === 'accept' ? 'تم قبول طلب التحقق بنجاح' : 'تم رفض طلب التحقق بنجاح'));
                             updateCardInPlace(req);
@@ -301,10 +504,8 @@
             });
         }
 
-        var actionModal = null;
-
         document.addEventListener('DOMContentLoaded', function() {
-            actionModal = new bootstrap.Modal(document.getElementById('verificationActionModal'));
+            getActionModal();
             readRequestsData();
             bindDetailButtons();
             bindConfirmButton();

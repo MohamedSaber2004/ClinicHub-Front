@@ -147,6 +147,34 @@
         </div>
     </div>
 
+    <!-- Clinic Availability & Working Hours Section -->
+    @{
+        var clinicMgmt = ViewBag.ClinicManagement as ClinicManagmentDto;
+        var workingHoursDisplay = !string.IsNullOrWhiteSpace(clinicMgmt?.WorkingHours) ? clinicMgmt.WorkingHours : "السبت - الخميس: 09:00 ص - 09:00 م | الجمعة: عطلة";
+        var activeDaysList = clinicMgmt?.WorkingDays?.Select(d => d.DayOfWeek).ToList() ?? new List<string> { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday" };
+    }
+    <div class="detail-card settings-card">
+        <div class="detail-section-header">
+            <h5>أوقات وأيام عمل العيادة</h5>
+            <a href="/Clinic/ClinicAvailability" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-calendar-week"></i> إدارة الجدول التفصيلي
+            </a>
+        </div>
+        <p class="form-hint">مواعيد العمل الرسمية للعيادة المعتمدة لاستقبال المرضى وحجز المواعيد.</p>
+        
+        <div class="settings-availability-preview">
+            <div class="settings-availability-info">
+                <span class="settings-availability-title"><i class="bi bi-clock-history text-primary"></i> أوقات الدوام الحالية:</span>
+                <span class="settings-availability-val">@workingHoursDisplay</span>
+            </div>
+            <div class="settings-availability-actions mt-3">
+                <a href="/Clinic/ClinicAvailability" class="btn btn-sm btn-primary">
+                    <i class="bi bi-pencil-square"></i> تعديل مواعيد وأيام العمل
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Status + Save -->
     <div class="detail-card settings-card">
         <div class="detail-section-header"><h5>الحالة</h5></div>

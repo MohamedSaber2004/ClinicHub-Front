@@ -1,0 +1,737 @@
+@using ClinicHub.Services.ReponseModels
+@{
+    ViewData["Title"] = "أوقات عمل العيادة - Doctory";
+    Layout = "_ClinicLayout";
+
+    var clinic = ViewBag.Clinic as ClinicManagmentDto;
+    var workingDays = ViewBag.WorkingDays as List<int> ?? new List<int> { 6, 0, 1, 2, 3, 4 };
+    var startHours = ViewBag.WorkingHoursStart as string ?? "09:00";
+    var endHours = ViewBag.WorkingHoursEnd as string ?? "21:00";
+    var hoursText = ViewBag.WorkingHoursText as string ?? "السبت - الخميس: 9:00 ص - 9:00 م | الجمعة: عطلة";
+    var clinicName = ViewBag.ClinicName as string ?? "العيادة";
+    var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
+
+    var daysDef = new (int id, string name, string shortName)[]
+    {
+        (6, "السبت", "سبت"),
+        (0, "الأحد", "أحد"),
+        (1, "الإثنين", "إثنين"),
+        (2, "الثلاثاء", "ثلاثاء"),
+        (3, "الأربعاء", "أربعاء"),
+        (4, "الخميس", "خميس"),
+        (5, "الجمعة", "جمعة")
+    };
+
+    string FormatTime12Razor(string timeStr)
+    {
+        if (string.IsNullOrEmpty(timeStr)) return "—";
+        var parts = timeStr.Split(':');
+        if (parts.Length < 2) return timeStr;
+        if (!int.TryParse(parts[0], out var h)) return timeStr;
+        var m = parts[1];
+        var isAm = h < 12;
+        var period = isAm ? "ص" : "م";
+        var desc = isAm ? "صباحاً" : "مساءً";
+        var h12 = h % 12;
+        if (h12 == 0) h12 = 12;
+        return $"{h12}:{m} {period} ({desc})";
+    }
+
+    bool IsAmRazor(string timeStr)
+    {
+        if (string.IsNullOrEmpty(timeStr)) return true;
+        var parts = timeStr.Split(':');
+        if (int.TryParse(parts[0], out var h))
+        {
+            return h < 12;
+        }
+        return true;
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h2 class="page-title mb-1">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            أوقات عمل العيادة
+        </h2>
+        <p class="text-muted mb-0">إدارة مواعيد وأيام عمل @clinicName وجدول الفتح والإغلاق الأسبوعي</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge badge-success" id="clinicOpenStatusBadge">مفتوح الآن</span>
+        <span class="text-muted text-sm" id="clinicLiveClock"></span>
+    </div>
+</div>
+
+@if (hasError)
+{
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
+    </div>
+}
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value" id="statActiveDays">@workingDays.Count أيام</span>
+            <span class="stat-label">أيام العمل الأسبوعية</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--green">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value" id="statDailyHours">—</span>
+            <span class="stat-label">فترة الدوام القياسية</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--blue">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value" id="statTotalWeeklyHours">—</span>
+            <span class="stat-label">إجمالي الساعات الأسبوعية</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <span class="stat-value">30 دقيقة</span>
+            <span class="stat-label">مدة الموعد (ثابتة)</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--amber">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Main Availability Editor -->
+<div class="detail-card">
+    <div class="detail-section-header flex-wrap gap-2">
+        <div>
+            <h5>الجدول الأسبوعي لمواعيد العيادة</h5>
+            <p class="form-hint mb-0">حدد أيام عمل العيادة وساعات الفتح والإغلاق لكل يوم من أيام الأسبوع.</p>
+        </div>
+        <div class="schedule-quick-actions">
+            <button type="button" class="btn btn-sm btn-outline-primary" id="presetSatThuBtn">
+                <i class="bi bi-calendar-check"></i> السبت - الخميس
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="presetAllDaysBtn">
+                <i class="bi bi-calendar-week"></i> طوال الأسبوع
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="presetFullShiftBtn" title="دوام كامل: من 9:00 ص حتى 9:00 م">
+                <i class="bi bi-clock"></i> دوام كامل (9 ص - 9 م)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="presetMorningShiftBtn" title="دوام صباحي: من 8:00 ص حتى 2:00 م">
+                <i class="bi bi-sun"></i> صباحي (8 ص - 2 م)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="presetEveningShiftBtn" title="دوام مسائي: من 4:00 م حتى 10:00 م">
+                <i class="bi bi-moon-stars"></i> مسائي (4 م - 10 م)
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="applyTimesToAllBtn">
+                <i class="bi bi-arrow-down-square"></i> تطبيق توقيت السبت على الكل
+            </button>
+        </div>
+    </div>
+
+    <!-- AM / PM Distinction Legend & Tips -->
+    <div class="schedule-legend-bar mb-3">
+        <div class="legend-periods">
+            <span class="legend-period-item legend-period--am">
+                <span class="period-pill period-pill--am"><i class="bi bi-sun-fill"></i> ص</span>
+                <span class="period-title">صباحاً (AM):</span>
+                <span class="period-desc">من 12:00 منتصف الليل حتى 11:59 ظهراً</span>
+            </span>
+            <span class="legend-period-item legend-period--pm">
+                <span class="period-pill period-pill--pm"><i class="bi bi-moon-stars-fill"></i> م</span>
+                <span class="period-title">مساءً (PM):</span>
+                <span class="period-desc">من 12:00 ظهراً حتى 11:59 مساءً</span>
+            </span>
+        </div>
+        <div class="legend-tip">
+            <i class="bi bi-info-circle text-primary"></i>
+            <span>اضغط مباشرة على زري <strong>ص</strong> أو <strong>م</strong> للتحويل الفوري بين الصباح والمساء، أو أدخل الوقت وسيتعرف النظام عليه تلقائياً.</span>
+        </div>
+    </div>
+
+    <!-- Weekly Table of Days -->
+    <div class="clinic-schedule-table-wrapper">
+        <div class="clinic-schedule-list" id="clinicScheduleList">
+            @foreach (var day in daysDef)
+            {
+                var isDayActive = workingDays.Contains(day.id);
+                var isStartAm = IsAmRazor(startHours);
+                var isEndAm = IsAmRazor(endHours);
+                <div class="clinic-schedule-row @(isDayActive ? "is-active" : "is-off")" data-day-id="@day.id" id="scheduleRow_@day.id">
+                    <div class="schedule-col-day">
+                        <label class="form-toggle mb-0">
+                            <input type="checkbox" class="day-active-toggle" data-day-id="@day.id" @(isDayActive ? "checked" : "") />
+                            <span class="toggle-track"></span>
+                        </label>
+                        <div class="schedule-day-label">
+                            <span class="schedule-day-name">@day.name</span>
+                            <span class="badge @(isDayActive ? "badge-success" : "badge-secondary") day-status-badge">
+                                @(isDayActive ? "يوم عمل" : "عطلة أسبوعية")
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-col-times @(isDayActive ? "" : "is-disabled")">
+                        <div class="schedule-time-group" data-time-type="start">
+                            <div class="schedule-time-header">
+                                <label class="schedule-time-sublabel" for="startTime_@day.id">من الساعة (البدء)</label>
+                                <span class="schedule-period-badge @(isStartAm ? "badge-am" : "badge-pm")" id="startPeriodBadge_@day.id">
+                                    <i class="bi @(isStartAm ? "bi-sun-fill" : "bi-moon-stars-fill")"></i>
+                                    <span>@(isStartAm ? "صباحاً" : "مساءً")</span>
+                                </span>
+                            </div>
+                            <div class="schedule-time-picker-box">
+                                <input type="time" class="form-input schedule-time-input day-start-time" id="startTime_@day.id" data-day-id="@day.id" value="@startHours" @(isDayActive ? "" : "disabled") />
+                                <div class="time-period-switcher" role="group" aria-label="تحديد صباحاً أو مساءً">
+                                    <button type="button" class="time-period-btn period-btn--am @(isStartAm ? "is-active" : "")" data-day-id="@day.id" data-type="start" data-period="am" title="صباحاً (ص / AM)" @(isDayActive ? "" : "disabled")>
+                                        <i class="bi bi-sun-fill"></i> ص
+                                    </button>
+                                    <button type="button" class="time-period-btn period-btn--pm @(!isStartAm ? "is-active" : "")" data-day-id="@day.id" data-type="start" data-period="pm" title="مساءً (م / PM)" @(isDayActive ? "" : "disabled")>
+                                        <i class="bi bi-moon-stars-fill"></i> م
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="schedule-time-preview" id="startPreview_@day.id">
+                                <span class="preview-12h">@FormatTime12Razor(startHours)</span>
+                            </div>
+                        </div>
+
+                        <div class="schedule-time-separator-wrap">
+                            <span class="schedule-time-separator">إلى</span>
+                            <i class="bi bi-arrow-left schedule-time-arrow"></i>
+                        </div>
+
+                        <div class="schedule-time-group" data-time-type="end">
+                            <div class="schedule-time-header">
+                                <label class="schedule-time-sublabel" for="endTime_@day.id">إلى الساعة (الإغلاق)</label>
+                                <span class="schedule-period-badge @(isEndAm ? "badge-am" : "badge-pm")" id="endPeriodBadge_@day.id">
+                                    <i class="bi @(isEndAm ? "bi-sun-fill" : "bi-moon-stars-fill")"></i>
+                                    <span>@(isEndAm ? "صباحاً" : "مساءً")</span>
+                                </span>
+                            </div>
+                            <div class="schedule-time-picker-box">
+                                <input type="time" class="form-input schedule-time-input day-end-time" id="endTime_@day.id" data-day-id="@day.id" value="@endHours" @(isDayActive ? "" : "disabled") />
+                                <div class="time-period-switcher" role="group" aria-label="تحديد صباحاً أو مساءً">
+                                    <button type="button" class="time-period-btn period-btn--am @(isEndAm ? "is-active" : "")" data-day-id="@day.id" data-type="end" data-period="am" title="صباحاً (ص / AM)" @(isDayActive ? "" : "disabled")>
+                                        <i class="bi bi-sun-fill"></i> ص
+                                    </button>
+                                    <button type="button" class="time-period-btn period-btn--pm @(!isEndAm ? "is-active" : "")" data-day-id="@day.id" data-type="end" data-period="pm" title="مساءً (م / PM)" @(isDayActive ? "" : "disabled")>
+                                        <i class="bi bi-moon-stars-fill"></i> م
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="schedule-time-preview" id="endPreview_@day.id">
+                                <span class="preview-12h">@FormatTime12Razor(endHours)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="schedule-col-duration">
+                        <span class="badge badge-info day-hours-badge">12 ساعة</span>
+                    </div>
+
+                    <div class="schedule-col-actions">
+                        <button type="button" class="btn btn-sm schedule-copy-btn" title="نسخ هذا التوقيت إلى باقي الأيام" data-day-id="@day.id">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- General Working Hours Summary -->
+    <div class="schedule-summary-section mt-4">
+        <div class="detail-section-header">
+            <h6>النص التعريفي لأوقات العمل (يظهر للمرضى في صفحة العيادة)</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="autoGenerateSummaryBtn">
+                <i class="bi bi-magic"></i> توليد تلقائي من الجدول
+            </button>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-8">
+                <div class="form-group mb-0">
+                    <input type="text" class="form-input" id="workingHoursSummaryInput" value="@hoursText" placeholder="مثال: السبت - الخميس: 9:00 ص - 9:00 م | الجمعة: عطلة" />
+                    <p class="form-hint mb-0">هذا النص يظهر في بطاقة العيادة وقائمة البحث للمرضى لتوضيح أوقات العمل العامة.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="schedule-live-preview-box">
+                    <span class="preview-title"><i class="bi bi-eye"></i> معاينة العرض للمريض:</span>
+                    <span class="preview-text" id="summaryPreviewText">@hoursText</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Row -->
+    <div class="schedule-actions-row mt-4 pt-3">
+        <button type="button" class="btn btn-primary" id="saveClinicAvailabilityBtn">
+            <i class="bi bi-check2"></i> حفظ أوقات عمل العيادة
+        </button>
+        <button type="button" class="btn btn-secondary" id="resetClinicAvailabilityBtn">
+            إعادة تعيين
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var DAYS_DEF = [
+                { id: 6, name: 'السبت' },
+                { id: 0, name: 'الأحد' },
+                { id: 1, name: 'الإثنين' },
+                { id: 2, name: 'الثلاثاء' },
+                { id: 3, name: 'الأربعاء' },
+                { id: 4, name: 'الخميس' },
+                { id: 5, name: 'الجمعة' }
+            ];
+
+            function parseTimeToMinutes(t) {
+                if (!t) return 0;
+                var parts = t.split(':');
+                var h = parseInt(parts[0], 10) || 0;
+                var m = parseInt(parts[1], 10) || 0;
+                return h * 60 + m;
+            }
+
+            function formatDurationText(minutes) {
+                if (minutes <= 0) return '0 ساعة';
+                var hours = Math.floor(minutes / 60);
+                var mins = minutes % 60;
+                if (mins === 0) return hours + ' ساعة';
+                return hours + ' س و ' + mins + ' د';
+            }
+
+            function formatTime12(t) {
+                if (!t) return '';
+                var parts = t.split(':');
+                var h = parseInt(parts[0], 10) || 0;
+                var m = parts[1] || '00';
+                var period = h >= 12 ? 'م' : 'ص';
+                var h12 = h % 12;
+                if (h12 === 0) h12 = 12;
+                return h12 + ':' + m + ' ' + period;
+            }
+
+            function recalculateStats() {
+                var activeDaysCount = 0;
+                var totalMinutesWeek = 0;
+                var firstStart = null;
+                var firstEnd = null;
+
+                DAYS_DEF.forEach(function(day) {
+                    var row = document.getElementById('scheduleRow_' + day.id);
+                    if (!row) return;
+                    var toggle = row.querySelector('.day-active-toggle');
+                    var startInput = row.querySelector('.day-start-time');
+                    var endInput = row.querySelector('.day-end-time');
+                    var hoursBadge = row.querySelector('.day-hours-badge');
+                    var statusBadge = row.querySelector('.day-status-badge');
+                    var timesCol = row.querySelector('.schedule-col-times');
+
+                    if (toggle && toggle.checked) {
+                        activeDaysCount++;
+                        row.classList.add('is-active');
+                        row.classList.remove('is-off');
+                        if (timesCol) timesCol.classList.remove('is-disabled');
+                        if (startInput) startInput.disabled = false;
+                        if (endInput) endInput.disabled = false;
+                        if (statusBadge) {
+                            statusBadge.className = 'badge badge-success day-status-badge';
+                            statusBadge.textContent = 'يوم عمل';
+                        }
+
+                        var sMin = parseTimeToMinutes(startInput ? startInput.value : '09:00');
+                        var eMin = parseTimeToMinutes(endInput ? endInput.value : '21:00');
+                        var diff = eMin > sMin ? (eMin - sMin) : (1440 - sMin + eMin);
+                        totalMinutesWeek += diff;
+
+                        if (hoursBadge) {
+                            hoursBadge.className = 'badge badge-info day-hours-badge';
+                            hoursBadge.textContent = formatDurationText(diff);
+                        }
+
+                        if (!firstStart && startInput) firstStart = startInput.value;
+                        if (!firstEnd && endInput) firstEnd = endInput.value;
+                    } else {
+                        row.classList.remove('is-active');
+                        row.classList.add('is-off');
+                        if (timesCol) timesCol.classList.add('is-disabled');
+                        if (startInput) startInput.disabled = true;
+                        if (endInput) endInput.disabled = true;
+                        if (statusBadge) {
+                            statusBadge.className = 'badge badge-secondary day-status-badge';
+                            statusBadge.textContent = 'عطلة أسبوعية';
+                        }
+                        if (hoursBadge) {
+                            hoursBadge.className = 'badge badge-secondary day-hours-badge';
+                            hoursBadge.textContent = 'عطلة';
+                        }
+                    }
+                });
+
+                var statActiveDaysEl = document.getElementById('statActiveDays');
+                if (statActiveDaysEl) {
+                    statActiveDaysEl.textContent = activeDaysCount + ' أيام / أسبوع';
+                }
+
+                var statDailyHoursEl = document.getElementById('statDailyHours');
+                if (statDailyHoursEl) {
+                    if (firstStart && firstEnd) {
+                        statDailyHoursEl.textContent = formatTime12(firstStart) + ' - ' + formatTime12(firstEnd);
+                    } else {
+                        statDailyHoursEl.textContent = 'مغلق';
+                    }
+                }
+
+                var statTotalWeeklyHoursEl = document.getElementById('statTotalWeeklyHours');
+                if (statTotalWeeklyHoursEl) {
+                    statTotalWeeklyHoursEl.textContent = (totalMinutesWeek / 60).toFixed(1) + ' ساعة';
+                }
+
+                updateLiveStatusBadge();
+            }
+
+            function updateLiveStatusBadge() {
+                var now = new Date();
+                var currentDay = now.getDay();
+                var currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+                var statusBadge = document.getElementById('clinicOpenStatusBadge');
+                var liveClock = document.getElementById('clinicLiveClock');
+                if (liveClock) {
+                    var hours = now.getHours();
+                    var mins = String(now.getMinutes()).padStart(2, '0');
+                    var period = hours >= 12 ? 'م' : 'ص';
+                    var h12 = hours % 12 || 12;
+                    liveClock.textContent = 'الوقت الآن: ' + h12 + ':' + mins + ' ' + period;
+                }
+
+                var todayRow = document.getElementById('scheduleRow_' + currentDay);
+                if (!todayRow) return;
+
+                var toggle = todayRow.querySelector('.day-active-toggle');
+                var startInput = todayRow.querySelector('.day-start-time');
+                var endInput = todayRow.querySelector('.day-end-time');
+
+                var isOpen = false;
+                if (toggle && toggle.checked && startInput && endInput) {
+                    var sMin = parseTimeToMinutes(startInput.value);
+                    var eMin = parseTimeToMinutes(endInput.value);
+                    if (eMin > sMin) {
+                        isOpen = (currentMinutes >= sMin && currentMinutes < eMin);
+                    } else {
+                        isOpen = (currentMinutes >= sMin || currentMinutes < eMin);
+                    }
+                }
+
+                if (statusBadge) {
+                    if (isOpen) {
+                        statusBadge.className = 'badge badge-success';
+                        statusBadge.textContent = 'مفتوح الآن';
+                    } else {
+                        statusBadge.className = 'badge badge-danger';
+                        statusBadge.textContent = 'مغلق الآن';
+                    }
+                }
+            }
+
+            function generateAutoSummary() {
+                var activeDays = [];
+                var inactiveDays = [];
+                var commonStart = null;
+                var commonEnd = null;
+                var isUniform = true;
+
+                DAYS_DEF.forEach(function(day) {
+                    var row = document.getElementById('scheduleRow_' + day.id);
+                    if (!row) return;
+                    var toggle = row.querySelector('.day-active-toggle');
+                    var startInput = row.querySelector('.day-start-time');
+                    var endInput = row.querySelector('.day-end-time');
+
+                    if (toggle && toggle.checked) {
+                        activeDays.push(day);
+                        var s = startInput ? startInput.value : '';
+                        var e = endInput ? endInput.value : '';
+                        if (!commonStart && !commonEnd) {
+                            commonStart = s;
+                            commonEnd = e;
+                        } else if (commonStart !== s || commonEnd !== e) {
+                            isUniform = false;
+                        }
+                    } else {
+                        inactiveDays.push(day);
+                    }
+                });
+
+                if (activeDays.length === 0) {
+                    return 'العيادة مغلقة مؤقتاً';
+                }
+
+                var summary = '';
+                if (activeDays.length === 7) {
+                    summary = 'طوال أيام الأسبوع';
+                } else if (activeDays.length === 6 && inactiveDays.length === 1) {
+                    summary = 'السبت - الخميس';
+                } else {
+                    summary = activeDays.map(function(d) { return d.name; }).join('، ');
+                }
+
+                if (commonStart && commonEnd && isUniform) {
+                    summary += ': من ' + formatTime12(commonStart) + ' حتى ' + formatTime12(commonEnd);
+                } else {
+                    summary += ' (حسب الجدول اليومي)';
+                }
+
+                if (inactiveDays.length > 0 && activeDays.length < 7) {
+                    summary += ' | ' + inactiveDays.map(function(d) { return d.name; }).join(' و ') + ': عطلة';
+                }
+
+                return summary;
+            }
+
+            // Bind event handlers
+            document.querySelectorAll('.day-active-toggle').forEach(function(t) {
+                t.addEventListener('change', function() {
+                    recalculateStats();
+                });
+            });
+
+            document.querySelectorAll('.schedule-time-input').forEach(function(input) {
+                input.addEventListener('change', function() {
+                    recalculateStats();
+                });
+            });
+
+            // Copy to other days button
+            document.querySelectorAll('.schedule-copy-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var dayId = this.getAttribute('data-day-id');
+                    var row = document.getElementById('scheduleRow_' + dayId);
+                    if (!row) return;
+                    var startVal = row.querySelector('.day-start-time').value;
+                    var endVal = row.querySelector('.day-end-time').value;
+
+                    document.querySelectorAll('.clinic-schedule-row').forEach(function(otherRow) {
+                        var otherId = otherRow.getAttribute('data-day-id');
+                        if (otherId !== dayId) {
+                            var otherStart = otherRow.querySelector('.day-start-time');
+                            var otherEnd = otherRow.querySelector('.day-end-time');
+                            if (otherStart) otherStart.value = startVal;
+                            if (otherEnd) otherEnd.value = endVal;
+                        }
+                    });
+
+                    recalculateStats();
+                    if (window.showInfoToast) window.showInfoToast('تم نسخ التوقيت إلى جميع الأيام');
+                });
+            });
+
+            // Presets
+            var presetSatThu = document.getElementById('presetSatThuBtn');
+            if (presetSatThu) {
+                presetSatThu.addEventListener('click', function() {
+                    DAYS_DEF.forEach(function(day) {
+                        var row = document.getElementById('scheduleRow_' + day.id);
+                        if (!row) return;
+                        var toggle = row.querySelector('.day-active-toggle');
+                        if (toggle) {
+                            toggle.checked = (day.id !== 5);
+                        }
+                    });
+                    recalculateStats();
+                });
+            }
+
+            var presetAllDays = document.getElementById('presetAllDaysBtn');
+            if (presetAllDays) {
+                presetAllDays.addEventListener('click', function() {
+                    DAYS_DEF.forEach(function(day) {
+                        var row = document.getElementById('scheduleRow_' + day.id);
+                        if (!row) return;
+                        var toggle = row.querySelector('.day-active-toggle');
+                        if (toggle) toggle.checked = true;
+                    });
+                    recalculateStats();
+                });
+            }
+
+            var applyTimesAll = document.getElementById('applyTimesToAllBtn');
+            if (applyTimesAll) {
+                applyTimesAll.addEventListener('click', function() {
+                    var satRow = document.getElementById('scheduleRow_6');
+                    if (!satRow) return;
+                    var sVal = satRow.querySelector('.day-start-time').value;
+                    var eVal = satRow.querySelector('.day-end-time').value;
+
+                    document.querySelectorAll('.day-start-time').forEach(function(i) { i.value = sVal; });
+                    document.querySelectorAll('.day-end-time').forEach(function(i) { i.value = eVal; });
+                    recalculateStats();
+                    if (window.showInfoToast) window.showInfoToast('تم تطبيق مواعيد السبت على جميع الأيام');
+                });
+            }
+
+            // Summary auto-generate
+            var autoGenBtn = document.getElementById('autoGenerateSummaryBtn');
+            var summaryInput = document.getElementById('workingHoursSummaryInput');
+            var previewText = document.getElementById('summaryPreviewText');
+
+            if (autoGenBtn && summaryInput) {
+                autoGenBtn.addEventListener('click', function() {
+                    var gen = generateAutoSummary();
+                    summaryInput.value = gen;
+                    if (previewText) previewText.textContent = gen;
+                    if (window.showInfoToast) window.showInfoToast('تم توليد النص التعريفي بنجاح');
+                });
+            }
+
+            if (summaryInput && previewText) {
+                summaryInput.addEventListener('input', function() {
+                    previewText.textContent = this.value || '—';
+                });
+            }
+
+            // Save Availability
+            var saveBtn = document.getElementById('saveClinicAvailabilityBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    var activeDayIds = [];
+                    var primaryStart = null;
+                    var primaryEnd = null;
+
+                    DAYS_DEF.forEach(function(day) {
+                        var row = document.getElementById('scheduleRow_' + day.id);
+                        if (!row) return;
+                        var toggle = row.querySelector('.day-active-toggle');
+                        var startInput = row.querySelector('.day-start-time');
+                        var endInput = row.querySelector('.day-end-time');
+
+                        if (toggle && toggle.checked) {
+                            activeDayIds.push(day.id);
+                            if (!primaryStart && startInput) primaryStart = startInput.value;
+                            if (!primaryEnd && endInput) primaryEnd = endInput.value;
+                        }
+                    });
+
+                    var summaryVal = summaryInput ? summaryInput.value.trim() : '';
+                    if (!summaryVal) {
+                        summaryVal = generateAutoSummary();
+                    }
+
+                    saveBtn.disabled = true;
+                    var originalHtml = saveBtn.innerHTML;
+                    saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> جارٍ الحفظ...';
+
+                    var payload = {
+                        workingHoursStart: (primaryStart ? primaryStart + ':00' : '09:00:00'),
+                        workingHoursEnd: (primaryEnd ? primaryEnd + ':00' : '21:00:00'),
+                        workingDays: activeDayIds,
+                        workingHours: summaryVal
+                    };
+
+                    var token = localStorage.getItem('accessToken') || '';
+                    if (!token) {
+                        var match = document.cookie.match(new RegExp('(^|;\\s*)([aA]ccess[tT]oken)=([^;]+)'));
+                        if (match) {
+                            token = decodeURIComponent(match[3]);
+                        }
+                    }
+
+                    var reqHeaders = {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    };
+                    if (token) {
+                        reqHeaders['Authorization'] = 'Bearer ' + token;
+                    }
+
+                    fetch('/Clinic/SaveClinicAvailability', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: reqHeaders,
+                        body: JSON.stringify(payload)
+                    })
+                    .then(function(r) {
+                        if (r.status === 401) {
+                            throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً.');
+                        }
+                        if (r.status === 403) {
+                            throw new Error('غير مصرح لك بتعديل بيانات العيادة أو انتهى اشتراكك.');
+                        }
+                        return r.json();
+                    })
+                    .then(function(res) {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalHtml;
+                        if (res.success) {
+                            if (window.showSuccessModal) {
+                                window.showSuccessModal(res.message || 'تم حفظ أوقات عمل العيادة بنجاح');
+                            } else if (window.showSuccessToast) {
+                                window.showSuccessToast(res.message || 'تم حفظ أوقات عمل العيادة بنجاح');
+                            } else {
+                                alert(res.message || 'تم حفظ أوقات عمل العيادة بنجاح');
+                            }
+                        } else {
+                            if (window.showErrorModal) {
+                                window.showErrorModal(res.message || 'فشل في حفظ أوقات العمل');
+                            } else {
+                                alert(res.message || 'فشل في حفظ أوقات العمل');
+                            }
+                        }
+                    })
+                    .catch(function(err) {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalHtml;
+                        var msg = err && err.message ? err.message : 'عذراً، حدث خطأ غير متوقع أثناء الحفظ.';
+                        if (window.showErrorModal) {
+                            window.showErrorModal(msg);
+                        } else {
+                            alert(msg);
+                        }
+                    });
+                });
+            }
+
+            // Reset
+            var resetBtn = document.getElementById('resetClinicAvailabilityBtn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    window.location.reload();
+                });
+            }
+
+            // Initial calculate
+            recalculateStats();
+            setInterval(updateLiveStatusBadge, 30000);
+        })();
+    </script>
+}
