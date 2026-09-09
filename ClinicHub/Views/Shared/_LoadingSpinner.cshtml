@@ -1,5 +1,485 @@
 @*
-    Backward compatibility wrapper:
-    Delegates to _SkeletonBarLoading which handles the global skeleton loading bar for active API calls.
+    Global Skeleton Loading Spinner Component
+    Combines an orbital shimmering spinner with animated skeleton placeholder bars and glassmorphism backdrop.
+    Loads dynamically on active APIs, MVC page navigations, form submissions, and programmatic showLoader() / loadingService calls.
 *@
-<partial name="_SkeletonBarLoading" />
+
+<div id="globalLoadingOverlay" class="skeleton-loading-overlay loading-overlay" aria-hidden="true" role="status">
+    <div class="skeleton-loading-card">
+        <!-- Circular Skeleton Spinner Orbit -->
+        <div class="skeleton-spinner-orbit">
+            <div class="skeleton-spinner-ring">
+                <svg class="skeleton-spinner-svg" viewBox="0 0 80 80" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="skeletonSpinnerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#0D5F4E" />
+                            <stop offset="65%" stop-color="#B78A3C" />
+                            <stop offset="100%" stop-color="#0D5F4E" />
+                        </linearGradient>
+                    </defs>
+                    <circle class="skeleton-spinner-track" cx="40" cy="40" r="32" />
+                    <circle class="skeleton-spinner-arc" cx="40" cy="40" r="32" stroke="url(#skeletonSpinnerGrad)" />
+                    <circle class="skeleton-spinner-dot" cx="40" cy="8" r="4.5" />
+                </svg>
+            </div>
+            <div class="skeleton-spinner-core">
+                <div class="skeleton-pulse-ring"></div>
+                <span class="skeleton-brand-mark">Doctory</span>
+            </div>
+        </div>
+
+        <!-- Animated Skeleton Placeholder Bars (The signature Skeleton Loading UI) -->
+        <div class="skeleton-loading-preview" aria-hidden="true">
+            <div class="skeleton-bar-shimmer skeleton-bar-shimmer--title"></div>
+            <div class="skeleton-bar-shimmer skeleton-bar-shimmer--sub"></div>
+        </div>
+
+        <!-- Loading Status with Live Pulsing Beacon -->
+        <div class="skeleton-loading-status">
+            <span class="skeleton-status-pulse"></span>
+            <span class="skeleton-status-text" id="globalLoadingText">جارٍ التحميل ومعالجة البيانات...</span>
+        </div>
+    </div>
+
+    <!-- Dual Slim Top Progress Indicator -->
+    <div id="globalApiSkeletonBar" class="api-skeleton-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="جاري تحميل البيانات..." aria-hidden="true">
+        <div class="api-skeleton-bar__track">
+            <div class="api-skeleton-bar__progress" id="globalApiSkeletonProgress">
+                <div class="api-skeleton-bar__shimmer"></div>
+            </div>
+            <div class="api-skeleton-bar__glow" id="globalApiSkeletonGlow"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        'use strict';
+
+        var activeRequests = 0;
+        var isPageNavigating = false;
+        var overlayEl = null;
+        var textEl = null;
+        var topBarEl = null;
+        var topProgressEl = null;
+        var safetyTimer = null;
+        var navSafetyTimer = null;
+        var hideTimeout = null;
+        var topProgressInterval = null;
+        var currentProgress = 0;
+        var lastShowTime = 0;
+        var MIN_DISPLAY_TIME = 450;
+        var MAX_LOAD_TIMEOUT = 14000;
+        var NAV_TIMEOUT = 9000;
+
+        function getElements() {
+            if (!overlayEl || !document.body || !document.body.contains(overlayEl)) {
+                overlayEl = document.getElementById('globalLoadingOverlay');
+                textEl = document.getElementById('globalLoadingText');
+                topBarEl = document.getElementById('globalApiSkeletonBar');
+                topProgressEl = document.getElementById('globalApiSkeletonProgress');
+            }
+            return overlayEl;
+        }
+
+        function isSilentUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            var lower = url.toLowerCase();
+
+            // Ignore static assets
+            if (/\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|map)(\?.*)?$/i.test(lower)) {
+                return true;
+            }
+
+            // Ignore background heartbeat / silent notifications polling only
+            return lower.indexOf('notificationscount') !== -1 ||
+                lower.indexOf('notificationslist') !== -1 ||
+                lower.indexOf('registerfcmtoken') !== -1 ||
+                lower.indexOf('fcm-token') !== -1 ||
+                lower.indexOf('refresh-token') !== -1 ||
+                lower.indexOf('refreshtoken') !== -1 ||
+                lower.indexOf('silent=1') !== -1 ||
+                lower.indexOf('silent=true') !== -1;
+        }
+
+        function isSilentRequest(input, init) {
+            var url = '';
+            if (typeof input === 'string') {
+                url = input;
+            } else if (input && input.url) {
+                url = input.url;
+            }
+
+            if (init) {
+                if (init.skipLoader || init.silent || init.background) return true;
+                if (init.headers) {
+                    var h = init.headers;
+                    if (h['X-Silent'] === 'true' || h['X-Skip-Loader'] === 'true' || h['X-Background'] === 'true') return true;
+                    if (typeof h.get === 'function' && (h.get('X-Silent') === 'true' || h.get('X-Skip-Loader') === 'true')) return true;
+                }
+            }
+
+            return isSilentUrl(url);
+        }
+
+        function setTopProgress(pct) {
+            currentProgress = pct;
+            if (topProgressEl) {
+                topProgressEl.style.width = pct + '%';
+            }
+            if (topBarEl) {
+                topBarEl.setAttribute('aria-valuenow', Math.round(pct));
+            }
+        }
+
+        function showLoader(customText) {
+            lastShowTime = Date.now();
+            clearTimeout(hideTimeout);
+            getElements();
+            if (overlayEl) {
+                if (textEl && customText && typeof customText === 'string') {
+                    textEl.textContent = customText;
+                } else if (textEl) {
+                    textEl.textContent = isPageNavigating ? 'جارٍ تحميل الصفحة...' : 'جارٍ التحميل ومعالجة البيانات...';
+                }
+                overlayEl.classList.add('loading-active');
+                overlayEl.setAttribute('aria-hidden', 'false');
+            }
+
+            if (topBarEl) {
+                topBarEl.classList.remove('is-finishing');
+                topBarEl.classList.add('is-loading', 'is-indeterminate');
+                topBarEl.setAttribute('aria-hidden', 'false');
+                setTopProgress(25);
+                clearInterval(topProgressInterval);
+                topProgressInterval = setInterval(function () {
+                    if (currentProgress < 88) {
+                        var inc = Math.max(0.5, (88 - currentProgress) * 0.12);
+                        setTopProgress(currentProgress + inc);
+                    }
+                }, 160);
+            }
+
+            clearTimeout(safetyTimer);
+            safetyTimer = setTimeout(function () {
+                hideLoader(true);
+            }, MAX_LOAD_TIMEOUT);
+
+            try {
+                document.dispatchEvent(new CustomEvent('loading-start', { detail: { count: activeRequests } }));
+            } catch (e) {}
+        }
+
+        function hideLoader(force) {
+            if (force) {
+                activeRequests = 0;
+                isPageNavigating = false;
+            }
+            if (activeRequests > 0 || isPageNavigating) return;
+
+            var elapsed = Date.now() - lastShowTime;
+            var remaining = Math.max(0, MIN_DISPLAY_TIME - elapsed);
+
+            clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(function () {
+                if (activeRequests > 0 || isPageNavigating) return;
+
+                clearTimeout(safetyTimer);
+                clearTimeout(navSafetyTimer);
+                clearInterval(topProgressInterval);
+                getElements();
+
+                if (topBarEl) {
+                    setTopProgress(100);
+                    topBarEl.classList.remove('is-indeterminate');
+                    topBarEl.classList.add('is-finishing');
+                }
+
+                if (overlayEl) {
+                    overlayEl.classList.remove('loading-active');
+                    overlayEl.setAttribute('aria-hidden', 'true');
+                }
+
+                setTimeout(function () {
+                    if (topBarEl && activeRequests === 0 && !isPageNavigating) {
+                        topBarEl.classList.remove('is-loading', 'is-finishing');
+                        topBarEl.setAttribute('aria-hidden', 'true');
+                        setTopProgress(0);
+                    }
+                }, 200);
+
+                try {
+                    document.dispatchEvent(new CustomEvent('loading-end', { detail: { count: 0 } }));
+                } catch (e) {}
+            }, remaining);
+        }
+
+        // Expose Global Public APIs
+        window.showLoader = function (text) {
+            activeRequests++;
+            showLoader(text);
+        };
+
+        window.hideLoader = function (force) {
+            if (force) {
+                activeRequests = 0;
+                isPageNavigating = false;
+            } else {
+                activeRequests = Math.max(0, activeRequests - 1);
+            }
+            if (activeRequests === 0 && !isPageNavigating) {
+                hideLoader(force);
+            }
+        };
+
+        window.loadingService = {
+            show: function (text) {
+                activeRequests++;
+                showLoader(text);
+            },
+            hide: function (force) {
+                if (force) {
+                    activeRequests = 0;
+                    isPageNavigating = false;
+                } else {
+                    activeRequests = Math.max(0, activeRequests - 1);
+                }
+                if (activeRequests === 0 && !isPageNavigating) {
+                    hideLoader(force);
+                }
+            },
+            getActiveCount: function () {
+                return activeRequests;
+            },
+            reset: function () {
+                activeRequests = 0;
+                isPageNavigating = false;
+                hideLoader(true);
+            }
+        };
+
+        window.apiSkeletonBar = window.loadingService;
+
+        // 1. Wrap window.fetch (Keeps animated until server returns data)
+        var origFetch = window.fetch;
+        if (typeof origFetch === 'function') {
+            window.fetch = function (input, init) {
+                if (isSilentRequest(input, init)) {
+                    return origFetch.apply(window, arguments);
+                }
+
+                activeRequests++;
+                showLoader('جارٍ التحميل ومعالجة البيانات...');
+
+                return origFetch.apply(window, arguments).then(function (response) {
+                    activeRequests = Math.max(0, activeRequests - 1);
+                    if (activeRequests === 0 && !isPageNavigating) {
+                        hideLoader();
+                    }
+                    return response;
+                }).catch(function (err) {
+                    activeRequests = Math.max(0, activeRequests - 1);
+                    if (activeRequests === 0 && !isPageNavigating) {
+                        hideLoader();
+                    }
+                    throw err;
+                });
+            };
+        }
+
+        // 2. Wrap XMLHttpRequest (jQuery $.ajax, axios, etc.)
+        var origXhrOpen = XMLHttpRequest.prototype.open;
+        var origXhrSend = XMLHttpRequest.prototype.send;
+
+        XMLHttpRequest.prototype.open = function (method, url) {
+            this.__xhrUrl = url;
+            return origXhrOpen.apply(this, arguments);
+        };
+
+        XMLHttpRequest.prototype.send = function () {
+            var xhr = this;
+            var isApi = !isSilentUrl(xhr.__xhrUrl);
+
+            if (isApi) {
+                activeRequests++;
+                showLoader('جارٍ التحميل ومعالجة البيانات...');
+
+                var completed = false;
+                var onDone = function () {
+                    if (completed) return;
+                    completed = true;
+                    xhr.removeEventListener('loadend', onDone);
+                    xhr.removeEventListener('error', onDone);
+                    xhr.removeEventListener('abort', onDone);
+                    xhr.removeEventListener('readystatechange', onReady);
+
+                    activeRequests = Math.max(0, activeRequests - 1);
+                    if (activeRequests === 0 && !isPageNavigating) {
+                        hideLoader();
+                    }
+                };
+
+                var onReady = function () {
+                    if (xhr.readyState === 4) {
+                        onDone();
+                    }
+                };
+
+                xhr.addEventListener('loadend', onDone);
+                xhr.addEventListener('error', onDone);
+                xhr.addEventListener('abort', onDone);
+                xhr.addEventListener('readystatechange', onReady);
+            }
+
+            return origXhrSend.apply(xhr, arguments);
+        };
+
+        // 3. Intercept MVC Page Navigation (Links clicking)
+        document.addEventListener('click', function (e) {
+            var anchor = e.target.closest('a');
+            if (!anchor) return;
+
+            var href = anchor.getAttribute('href');
+            if (!href || href === '#' || href.indexOf('javascript:') === 0) return;
+
+            // Skip new window or modifier keys
+            if (anchor.target === '_blank' || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+
+            // Skip downloads and protocols
+            if (anchor.hasAttribute('download') || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0) return;
+
+            // Skip file extensions / exports
+            var lowerHref = href.toLowerCase();
+            if (/\.(pdf|xlsx?|csv|zip|docx?)(\?.*)?$/i.test(lowerHref) ||
+                lowerHref.indexOf('/export') !== -1 ||
+                lowerHref.indexOf('download=') !== -1) {
+                return;
+            }
+
+            // Skip interactive toggles (Bootstrap modals, collapse, tabs, dropdowns)
+            if (anchor.hasAttribute('data-bs-toggle') ||
+                anchor.hasAttribute('data-bs-target') ||
+                anchor.hasAttribute('data-toggle') ||
+                anchor.hasAttribute('data-target') ||
+                anchor.hasAttribute('data-no-loader') ||
+                anchor.classList.contains('no-loader')) {
+                return;
+            }
+
+            // Verify internal destination URL
+            var targetUrl;
+            try {
+                targetUrl = new URL(anchor.href, window.location.origin);
+            } catch (err) {
+                return;
+            }
+
+            // Must match current origin
+            if (targetUrl.origin !== window.location.origin) return;
+
+            // Skip same-page in-page anchor hash navigation (e.g. /page#section)
+            if (targetUrl.pathname === window.location.pathname &&
+                targetUrl.search === window.location.search &&
+                targetUrl.hash) {
+                return;
+            }
+
+            // Trigger MVC page loading & persist handoff flag
+            isPageNavigating = true;
+            try {
+                sessionStorage.setItem('ch_mvc_nav_active', Date.now().toString());
+            } catch (err) {}
+
+            showLoader('جارٍ تحميل الصفحة...');
+
+            // Navigation safety timer
+            clearTimeout(navSafetyTimer);
+            navSafetyTimer = setTimeout(function () {
+                isPageNavigating = false;
+                if (activeRequests <= 0) {
+                    hideLoader(true);
+                }
+            }, NAV_TIMEOUT);
+        }, true);
+
+        // 4. Form submit handling (non-AJAX MVC forms)
+        document.addEventListener('submit', function (e) {
+            var form = e.target;
+            if (!form || !form.tagName || form.tagName.toLowerCase() !== 'form') return;
+            if (form.getAttribute('data-ajax') === 'true') return;
+            if (form.target === '_blank' || form.hasAttribute('data-no-loader') || form.classList.contains('no-loader')) return;
+
+            if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+                return;
+            }
+
+            isPageNavigating = true;
+            try {
+                sessionStorage.setItem('ch_mvc_nav_active', Date.now().toString());
+            } catch (err) {}
+
+            showLoader('جارٍ معالجة البيانات وتحميل الصفحة...');
+
+            clearTimeout(navSafetyTimer);
+            navSafetyTimer = setTimeout(function () {
+                isPageNavigating = false;
+                if (activeRequests <= 0) {
+                    hideLoader(true);
+                }
+            }, MAX_LOAD_TIMEOUT);
+        }, true);
+
+        // 5. Beforeunload for programmatic page transitions
+        window.addEventListener('beforeunload', function () {
+            if (!isPageNavigating && activeRequests === 0) {
+                showLoader('جارٍ الانتقال...');
+            }
+        });
+
+        // 6. Cross-page Navigation Handoff: show brief transition if user just navigated from another MVC page
+        try {
+            var navStamp = sessionStorage.getItem('ch_mvc_nav_active');
+            if (navStamp) {
+                sessionStorage.removeItem('ch_mvc_nav_active');
+                var diff = Date.now() - parseInt(navStamp, 10);
+                if (diff >= 0 && diff < 8000) {
+                    showLoader('جارٍ تحميل الصفحة...');
+                    setTimeout(function () {
+                        if (activeRequests <= 0) {
+                            hideLoader(true);
+                        }
+                    }, 400);
+                }
+            }
+        } catch (err) {}
+
+        // 7. Lifecycle & BFCache safety: NEVER reset activeRequests if requests are genuinely running
+        window.addEventListener('pageshow', function (e) {
+            isPageNavigating = false;
+            clearTimeout(navSafetyTimer);
+            if (activeRequests <= 0) {
+                hideLoader(true);
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', function () {
+            isPageNavigating = false;
+            if (activeRequests <= 0) {
+                hideLoader(true);
+            }
+        });
+
+        window.addEventListener('load', function () {
+            isPageNavigating = false;
+            if (activeRequests <= 0) {
+                hideLoader(true);
+            }
+        });
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible' && activeRequests <= 0 && !isPageNavigating) {
+                hideLoader(true);
+            }
+        });
+    })();
+</script>
