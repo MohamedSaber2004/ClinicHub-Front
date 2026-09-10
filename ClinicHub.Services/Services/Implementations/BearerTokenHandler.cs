@@ -86,6 +86,11 @@ namespace ClinicHub.Services.Services.Implementations
                     retryRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", refreshed);
                     return await base.SendAsync(retryRequest, cancellationToken);
                 }
+
+                // Refresh token is expired/invalid: the session is dead. Clear the cookies
+                // so the user falls back to anonymous and auth redirects to login instead
+                // of every subsequent request failing with the same 401/403.
+                ClearTokens();
             }
 
             return response;
@@ -158,6 +163,26 @@ namespace ClinicHub.Services.Services.Implementations
             finally
             {
                 _refreshLock.Release();
+            }
+        }
+
+        private void ClearTokens()
+        {
+            try
+            {
+                var context = _httpContextAccessor.HttpContext;
+                var response = context?.Response;
+                if (response?.HasStarted ?? true)
+                    return;
+
+                response.Cookies.Delete("AccessToken");
+                response.Cookies.Delete("accessToken");
+                response.Cookies.Delete("RefreshToken");
+                response.Cookies.Delete("refreshToken");
+            }
+            catch
+            {
+                // Best-effort cleanup.
             }
         }
 
