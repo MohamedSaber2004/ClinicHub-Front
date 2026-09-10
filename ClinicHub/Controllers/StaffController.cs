@@ -72,6 +72,17 @@ namespace ClinicHub.Controllers
             base.OnActionExecuting(context);
         }
 
+        private static bool IsMissingClinicMessage(string message)
+            => message.Contains("Clinic not found", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("العيادة غير موجودة");
+
+        private static string StaffClinicScopeErrorMessage(ApiException ex)
+        {
+            if (ex.StatusCode == 403 && IsMissingClinicMessage(ex.Message))
+                return "حساب الموظف غير مرتبط بعيادة. يرجى تسجيل الخروج ثم الدخول مجددًا، وإذا استمرت المشكلة تواصل مع مدير النظام لربط حسابك بعيادة.";
+            return ex.Message;
+        }
+
         public async Task<IActionResult> Notifications(int pageNumber = 1, int pageSize = 20)
         {
             try
@@ -257,7 +268,7 @@ namespace ClinicHub.Controllers
             }
             catch (ApiException ex)
             {
-                TempData["Error"] = ex.Message;
+                TempData["Error"] = StaffClinicScopeErrorMessage(ex);
                 ViewBag.Appointments = new List<StaffAppointmentDto>();
                 ViewBag.Pagination = null;
             }
@@ -390,7 +401,7 @@ namespace ClinicHub.Controllers
             catch (ApiException ex)
             {
                 Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = StaffClinicScopeErrorMessage(ex) });
             }
             catch (Exception ex)
             {
@@ -410,7 +421,7 @@ namespace ClinicHub.Controllers
             catch (ApiException ex)
             {
                 Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = StaffClinicScopeErrorMessage(ex) });
             }
             catch (Exception ex)
             {
@@ -430,7 +441,7 @@ namespace ClinicHub.Controllers
             catch (ApiException ex)
             {
                 Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = StaffClinicScopeErrorMessage(ex) });
             }
             catch (Exception ex)
             {
@@ -450,7 +461,7 @@ namespace ClinicHub.Controllers
             catch (ApiException ex)
             {
                 Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = StaffClinicScopeErrorMessage(ex) });
             }
             catch (Exception ex)
             {
@@ -470,7 +481,7 @@ namespace ClinicHub.Controllers
             catch (ApiException ex)
             {
                 Response.StatusCode = ex.StatusCode;
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = StaffClinicScopeErrorMessage(ex) });
             }
             catch (Exception ex)
             {
