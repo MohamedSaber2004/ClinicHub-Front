@@ -1,1 +1,33 @@
-﻿i don't want all clinics can have the ads feature clinics can subscribed in ads feature update superadmin dashboard and landing page logic to can add one subcripbtion plan in landing page and from superadmin can change values such as the number of days of the price or the number of ads allowed for clinic and number of views allowed for clinic and also can from superadmin add subscripbtion for clinic in ads manuall with any value needed make is flexiblity found
+﻿The requested resolver flow is already present in this checkout:
+
+  - IAttachmentUrlResolver is registered in DI.
+  - The Users list resolves raw image names.
+  - User details resolve Image/ImageUrl before rendering.
+  The likely remaining issue is an API contract mismatch—e.g., the detail endpoint returns imageName, but AdminUserOverviewDto only
+  accepts Image and ImageUrl.
+
+  Implementation plan:
+
+  1. Inspect the user-overview API payload and confirm the raw avatar field name and sample value (such as avatar.jpg, files/
+     avatar.jpg, or imageName).
+
+  2. Map that field into ClinicHub.Services/ReponseModels/AdminUserOverviewDto.cs:3, using JSON mapping if the API uses imageName.
+  3. In LoadUserOverviewAsync (ClinicHub/Controllers/AdminController.cs:1489), use the raw image field as the resolver input and store
+     the result exclusively in overview.ImageUrl:
+      - blank input → null
+      - filename → {BaseUrl}/files/{filename}
+      - files/... → avoid duplicating /files
+      - absolute URL → retain unchanged
+
+  4. Retain the existing users-list fallback when the overview endpoint has no image. Ensure the fallback also checks the newly mapped
+     raw field if applicable.
+
+  5. Keep ClinicHub/Views/Admin/Users/Overview.cshtml:33 bound to u.ImageUrl only, preserving its initials fallback when the URL is
+     absent or the image fails to load.
+
+  6. Verify with raw filename, files/ filename, full URL, missing image, and an overview response lacking an avatar but present in the
+     users list.
+
+  Note: AttachmentService handles upload/download; the correct component for filename-to-URL conversion is
+  ClinicHub.Services/Services/Implementations/AttachmentUrlResolver.cs. Also, this project’s current AGENTS.md design-only rule would
+  require explicit scope approval before changing the controller/service DTO implementation.

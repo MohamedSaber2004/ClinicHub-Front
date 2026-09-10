@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace ClinicHub.Services.ReponseModels
 {
     public class AdminUserOverviewDto
@@ -6,7 +8,10 @@ namespace ClinicHub.Services.ReponseModels
         public string FullName { get; set; } = "";
         public string Email { get; set; } = "";
         public string Phone { get; set; } = "";
+        public string? Image { get; set; }
         public string? ImageUrl { get; set; }
+        [JsonProperty("imageName")]
+        public string? ImageName { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<string> Roles { get; set; } = new();

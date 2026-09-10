@@ -32,7 +32,7 @@
             <div class="user-profile-avatar-lg">
                 @if (!string.IsNullOrWhiteSpace(u.ImageUrl))
                 {
-                    <img src="@u.ImageUrl" alt="@u.FullName" class="header-avatar-img" />
+                    <img src="@u.ImageUrl" alt="@u.FullName" class="header-avatar-img" loading="lazy" decoding="async" data-avatar-fallback="@Initials(u.FullName)" />
                 }
                 else
                 {
@@ -133,6 +133,16 @@
 @section Scripts {
     <script>
         (function() {
+            var avatarImg = document.querySelector('img[data-avatar-fallback]');
+            if (avatarImg) {
+                var showFallback = function () {
+                    var span = document.createElement('span');
+                    span.textContent = avatarImg.getAttribute('data-avatar-fallback') || '؟';
+                    avatarImg.replaceWith(span);
+                };
+                avatarImg.addEventListener('error', showFallback);
+                if (avatarImg.complete && avatarImg.naturalWidth === 0) showFallback();
+            }
             var pwdForm = document.getElementById('overviewChangePasswordForm');
             if (pwdForm) {
                 pwdForm.addEventListener('submit', function (e) {

@@ -1490,7 +1490,29 @@ namespace ClinicHub.Controllers
         {
             try
             {
-                return await _adminDashboardService.GetUserOverviewAsync(id) ?? new AdminUserOverviewDto();
+                var overview = await _adminDashboardService.GetUserOverviewAsync(id) ?? new AdminUserOverviewDto();
+                var resolved = _attachmentUrlResolver.Resolve(overview.ImageName ?? overview.Image ?? overview.ImageUrl);
+                if (string.IsNullOrWhiteSpace(resolved))
+                {
+                    // The overview endpoint may not include the avatar — fall back to the
+                    // users-list endpoint (same source the Users page renders images from).
+                    try
+                    {
+                        var usersResult = await _userService.GetAllUsersPagginatedAsync(new GetAllUsersRequest
+                        {
+                            PageNumber = 1,
+                            PageSize = 100
+                        });
+                        var match = usersResult.Items.FirstOrDefault(u => u.Id == id);
+                        resolved = _attachmentUrlResolver.Resolve(match?.Image ?? match?.ImageUrl);
+                    }
+                    catch (ApiException)
+                    {
+                        resolved = string.Empty;
+                    }
+                }
+                overview.ImageUrl = string.IsNullOrWhiteSpace(resolved) ? null : resolved;
+                return overview;
             }
             catch (ApiException ex)
             {
