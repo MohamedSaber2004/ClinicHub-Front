@@ -72,6 +72,10 @@
                             {
                                 <div class="notif-item-body">@item.BodyAr</div>
                             }
+                            @if (item.Type == 17)
+                            {
+                                <div class="notif-item-body"><span class="badge badge-success">المبلغ صافي العيادة — بدون رسوم المنصة</span></div>
+                            }
                             <div class="notif-item-time">@FormatNotificationDate(item.CreatedAt)</div>
                         </div>
                     </div>

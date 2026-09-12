@@ -530,9 +530,14 @@
             if (!isNaN(d.getTime())) date = d.toLocaleString("ar", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
         }
         var timeHtml = date ? '<div class="ch-bell-item-time">' + date + '</div>' : "";
+        // Type 17 = PaymentReceived for clinic owner: amount is clinic net only (no platform fees).
+        var netNote = (String(type) === "17")
+            ? '<div class="ch-bell-item-body"><span class="badge badge-success">المبلغ صافي العيادة — بدون رسوم المنصة</span></div>'
+            : "";
         return '<div class="ch-bell-item" data-type="' + type + '" role="button" tabindex="0">' +
             '<div class="ch-bell-item-title">' + title + '</div>' +
             (body ? '<div class="ch-bell-item-body">' + body + '</div>' : "") +
+            netNote +
             timeHtml +
             '</div>';
     }
