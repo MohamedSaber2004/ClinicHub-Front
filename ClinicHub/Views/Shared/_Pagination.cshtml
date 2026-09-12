@@ -23,6 +23,7 @@
     var paymentMonth = ViewBag.MonthFilter;
     var userTypes = (ViewBag.UserTypesFilter ?? ViewBag.SelectedUserTypes) as string;
     var clinicId = (ViewBag.SelectedClinicId ?? ViewBag.ClinicIdFilter) as Guid?;
+    var summarySearch = ViewBag.SummarySearch as string;
     var isActive = ViewBag.CurrentActiveFilter as bool?;
     var planId = ViewBag.PlanIdFilter as Guid?;
     if (pagination == null || totalCount == 0) return;
@@ -48,6 +49,7 @@
         ["month"] = paymentMonth,
         ["userTypes"] = userTypes,
         ["clinicId"] = clinicId,
+        ["summarySearch"] = summarySearch,
         ["isActive"] = isActive,
         ["planId"] = planId
     };

@@ -21,6 +21,7 @@
     var clinicIdFilter = ViewBag.ClinicIdFilter as Guid?;
     var clinicsSummary = ViewBag.ClinicsSummary as PagginatedResult<ClinicPaymentsSummaryDto>;
     var summaryItems = clinicsSummary?.Items ?? new List<ClinicPaymentsSummaryDto>();
+    var summarySearch = ViewBag.SummarySearch as string;
 }
 
 <div class="page-header">
@@ -87,6 +88,7 @@
     <form class="stats-month-form" method="get" action="@AdminRoutes.Pages.Payments()">
         <label for="statsMonthInput" class="stats-month-label">الشهر</label>
         <input type="month" name="month" id="statsMonthInput" class="form-input" value="@month" title="اختر الشهر" />
+        <input type="hidden" name="summarySearch" value="@summarySearch" />
     </form>
 </div>
 <div class="stats-grid">
@@ -143,6 +145,19 @@
     <div class="table-card-header">
         <h3 class="table-card-title mb-0">ملخص شهري لكل عيادة (@month)</h3>
     </div>
+    <form class="filter-bar" method="get" action="@AdminRoutes.Pages.Payments()">
+        <input type="hidden" name="month" value="@month" />
+        <input type="hidden" name="type" value="@typeFilter" />
+        <input type="hidden" name="status" value="@statusFilter" />
+        <input type="hidden" name="method" value="@methodFilter" />
+        <input type="hidden" name="fromDate" value="@fromDateFilter" />
+        <input type="hidden" name="toDate" value="@toDateFilter" />
+        <input type="hidden" name="searchTerm" value="@searchTerm" />
+        <input type="hidden" name="clinicId" value="@clinicIdFilter" />
+        <input type="text" name="summarySearch" class="form-input" placeholder="بحث باسم العيادة في الملخص..." value="@summarySearch" />
+        <button type="submit" class="btn btn-primary">بحث</button>
+        <a href="@Url.Action("Payments", new { month = month, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm, clinicId = clinicIdFilter })" class="btn btn-secondary">مسح</a>
+    </form>
     <div class="table-responsive">
         <table class="custom-table">
             <thead>
@@ -161,7 +176,11 @@
                         <td colspan="5">
                             <div class="empty-state">
                                 <i class="bi bi-building empty-state-icon"></i>
-                                <p class="empty-title">لا توجد عيادات مطابقة</p>
+                                <p class="empty-title">@(string.IsNullOrWhiteSpace(summarySearch) ? "لا توجد عيادات مطابقة" : "لا توجد عيادات مطابقة للبحث")</p>
+                                @if (!string.IsNullOrWhiteSpace(summarySearch))
+                                {
+                                    <a href="@Url.Action("Payments", new { month = month, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm, clinicId = clinicIdFilter })" class="btn btn-secondary btn-sm">مسح بحث الملخص</a>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -172,7 +191,7 @@
                     {
                         <tr>
                             <td class="text-md-medium">
-                                <a href="@Url.Action("Payments", new { month = month, clinicId = s.ClinicId })">@s.ClinicName</a>
+                                <a href="@Url.Action("Payments", new { month = month, clinicId = s.ClinicId, summarySearch = summarySearch })">@s.ClinicName</a>
                             </td>
                             <td class="text-md">@s.PaymentsCount</td>
                             <td class="text-md-medium amount-cell">@s.TotalRevenue.ToString("N2") ج.م</td>
@@ -195,7 +214,7 @@
                 @if (clinicsSummary.HasPreviousPage)
                 {
                     <li class="pagination-item">
-                        <a class="pagination-link" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = sp - 1 })" aria-label="الصفحة السابقة">
+                        <a class="pagination-link" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = sp - 1, summarySearch = summarySearch, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm })" aria-label="الصفحة السابقة">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
                             </svg>
@@ -206,13 +225,13 @@
                 @for (var i = swFrom; i <= swTo; i++)
                 {
                     <li class="pagination-item">
-                        <a class="pagination-link @(i == sp ? "pagination-link--active" : "")" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = i })" aria-label="الصفحة @i من @st" @(i == sp ? "aria-current=\"page\"" : "")>@i</a>
+                        <a class="pagination-link @(i == sp ? "pagination-link--active" : "")" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = i, summarySearch = summarySearch, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm })" aria-label="الصفحة @i من @st" @(i == sp ? "aria-current=\"page\"" : "")>@i</a>
                     </li>
                 }
                 @if (clinicsSummary.HasNextPage)
                 {
                     <li class="pagination-item">
-                        <a class="pagination-link" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = sp + 1 })" aria-label="الصفحة التالية">
+                        <a class="pagination-link" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = sp + 1, summarySearch = summarySearch, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm })" aria-label="الصفحة التالية">
                             <span class="pagination-text">التالي</span>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
@@ -228,6 +247,7 @@
 <!-- Filter Bar -->
 <form class="filter-bar" method="get" action="@AdminRoutes.Pages.Payments()">
     <input type="hidden" name="month" value="@month" />
+    <input type="hidden" name="summarySearch" value="@summarySearch" />
     <input type="text" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو الكود أو الرقم المرجعي..." value="@searchTerm" />
     <select name="clinicId" class="form-select">
         <option value="">جميع العيادات</option>

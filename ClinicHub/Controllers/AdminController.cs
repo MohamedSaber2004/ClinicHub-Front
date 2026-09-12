@@ -919,7 +919,8 @@ namespace ClinicHub.Controllers
             string? searchTerm = null,
             string? month = null,
             Guid? clinicId = null,
-            int summaryPage = 1)
+            int summaryPage = 1,
+            string? summarySearch = null)
         {
             ViewBag.Stats = null;
             ViewBag.Payments = new List<AdminPaymentDto>();
@@ -1016,10 +1017,11 @@ namespace ClinicHub.Controllers
             ViewBag.SearchTerm = searchTerm;
             ViewBag.ClinicIdFilter = clinicId;
             ViewBag.SummaryPage = summaryPage;
+            ViewBag.SummarySearch = summarySearch;
 
             try
             {
-                ViewBag.ClinicsSummary = await _adminPaymentService.GetClinicsSummaryAsync(statsFromDate, statsToDate, null, summaryPage, 10);
+                ViewBag.ClinicsSummary = await _adminPaymentService.GetClinicsSummaryAsync(statsFromDate, statsToDate, summarySearch, summaryPage, 10);
             }
             catch (ApiException ex)
             {
