@@ -113,6 +113,8 @@
         <div class="stat-info">
             <span class="stat-value">@(stats?.AppointmentsRevenue.ToString("N2") ?? "0.00") ج.م</span>
             <span class="stat-label">إيرادات المواعيد</span>
+            <span class="stat-label">رسوم المنصة: @(stats?.AppointmentsPlatformFees.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-label">صافي العيادات: @(stats?.AppointmentsNetRevenue.ToString("N2") ?? "0.00") ج.م</span>
         </div>
         <div class="icon-wrapper icon-wrapper--green">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -172,6 +174,8 @@
                     <th>الدافع</th>
                     <th>النوع</th>
                     <th>المبلغ</th>
+                    <th>رسوم المنصة</th>
+                    <th>صافي العيادة</th>
                     <th>طريقة الدفع</th>
                     <th>الحالة</th>
                     <th>التاريخ</th>
@@ -183,7 +187,7 @@
                 @if (payments.Count == 0)
                 {
                     <tr>
-                        <td colspan="9">
+                        <td colspan="11">
                             <div class="empty-state">
                                 <i class="bi bi-wallet2 empty-state-icon"></i>
                                 <p class="empty-title">لا توجد مدفوعات مطابقة</p>
@@ -214,6 +218,8 @@
                             </td>
                             <td><span class="badge @typeClass">@typeText</span></td>
                             <td class="text-md-medium amount-cell">@p.Amount.ToString("N2") ج.م</td>
+                            <td class="text-md">@p.PlatformFee.ToString("N2") ج.م</td>
+                            <td class="text-md">@p.ClinicNetAmount.ToString("N2") ج.م</td>
                             <td class="text-md">@methodText</td>
                             <td><span class="badge @statusClass">@statusText</span></td>
                             <td class="text-md">@p.Date.ToString("yyyy-MM-dd HH:mm")</td>

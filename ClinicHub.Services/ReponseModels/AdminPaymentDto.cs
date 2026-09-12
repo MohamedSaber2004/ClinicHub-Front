@@ -12,5 +12,7 @@ namespace ClinicHub.Services.ReponseModels
         public int Status { get; set; }
         public DateTime Date { get; set; }
         public string RefNumber { get; set; } = "";
+        public decimal PlatformFee { get; set; }
+        public decimal ClinicNetAmount { get; set; }
     }
 }

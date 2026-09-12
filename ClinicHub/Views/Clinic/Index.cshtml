@@ -124,6 +124,8 @@
                         <th>الفترة</th>
                         <th>الزيارات</th>
                         <th>الإيرادات</th>
+                        <th>رسوم المنصة</th>
+                        <th>صافي العيادة</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -131,21 +133,29 @@
                         <td><strong>اليوم</strong></td>
                         <td>@(dashStats?.TodayVisits ?? 0)</td>
                         <td>@(dashStats?.TodayIncome.ToString("N0") ?? "0") ج.م</td>
+                        <td>@(dashStats?.TodayPlatformFees.ToString("N0") ?? "0") ج.م</td>
+                        <td>@(dashStats?.TodayNetIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
                         <td><strong>الأسبوع</strong></td>
                         <td>@(dashStats?.WeeklyVisits ?? 0)</td>
                         <td>@(dashStats?.WeeklyIncome.ToString("N0") ?? "0") ج.م</td>
+                        <td>@(dashStats?.WeeklyPlatformFees.ToString("N0") ?? "0") ج.م</td>
+                        <td>@(dashStats?.WeeklyNetIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
                         <td><strong>الشهر</strong></td>
                         <td>@(dashStats?.MonthlyVisits ?? 0)</td>
                         <td>@(dashStats?.MonthlyIncome.ToString("N0") ?? "0") ج.م</td>
+                        <td>@(dashStats?.MonthlyPlatformFees.ToString("N0") ?? "0") ج.م</td>
+                        <td>@(dashStats?.MonthlyNetIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
                         <td><strong>السنة</strong></td>
                         <td>@(dashStats?.YearlyVisits ?? 0)</td>
                         <td>@(dashStats?.YearlyIncome.ToString("N0") ?? "0") ج.م</td>
+                        <td>@(dashStats?.YearlyPlatformFees.ToString("N0") ?? "0") ج.م</td>
+                        <td>@(dashStats?.YearlyNetIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                 </tbody>
             </table>
@@ -226,6 +236,27 @@
                         borderColor: palettes.primary,
                         backgroundColor: palettes.primarySoft,
                         fill: true,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'رسوم المنصة (ج.م)',
+                        data: (revenue || []).map(function (r) { return r.platformFees; }),
+                        borderColor: palettes.amber,
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        borderDash: [6, 4]
+                    },
+                    {
+                        label: 'صافي العيادة (ج.م)',
+                        data: (revenue || []).map(function (r) { return r.netRevenue; }),
+                        borderColor: palettes.green,
+                        backgroundColor: 'transparent',
+                        fill: false,
                         tension: 0.35,
                         pointRadius: 2,
                         borderWidth: 2

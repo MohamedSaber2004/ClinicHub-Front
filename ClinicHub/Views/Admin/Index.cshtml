@@ -201,6 +201,27 @@
                         tension: 0.35,
                         pointRadius: 2,
                         borderWidth: 2
+                    },
+                    {
+                        label: 'رسوم المنصة (ج.م)',
+                        data: revenue.map(function (r) { return r.platformFees; }),
+                        borderColor: palettes.amber,
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        borderDash: [6, 4]
+                    },
+                    {
+                        label: 'صافي العيادات (ج.م)',
+                        data: revenue.map(function (r) { return r.netRevenue; }),
+                        borderColor: palettes.green,
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        borderWidth: 2
                     }]
                 },
                 options: baseOptions()
