@@ -81,8 +81,8 @@
 
     <div class="stat-card">
         <div class="stat-info">
-            <span class="stat-value">@(dashStats?.MonthlyIncome.ToString("N0") ?? "0") ج.م</span>
-            <span class="stat-label">إيرادات الشهر</span>
+            <span class="stat-value">@(dashStats?.MonthlyNetIncome.ToString("N0") ?? "0") ج.م</span>
+            <span class="stat-label">صافي إيرادات الشهر</span>
         </div>
         <div class="stat-icon-wrapper icon-wrapper icon-wrapper--green">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -94,9 +94,10 @@
 </div>
 
 <!-- Charts Grid -->
+<p class="text-md text-muted">جميع المبالغ المعروضة هي صافي العيادة فقط من الحجوزات (بدون رسوم المنصة).</p>
 <div class="charts-grid">
     <div class="chart-card chart-card--wide">
-        <h4 class="chart-title">تطور الإيرادات - آخر 30 يوماً</h4>
+        <h4 class="chart-title">تطور صافي الإيرادات - آخر 30 يوماً</h4>
         <div class="chart-canvas-wrap">
             <canvas id="revenueTrendChart"></canvas>
         </div>
@@ -115,7 +116,7 @@
     <!-- Today's Stats Summary -->
     <div class="table-card">
         <div class="table-card-header">
-            <h3 class="table-card-title mb-0">ملخص الإيرادات</h3>
+            <h3 class="table-card-title mb-0">ملخص صافي الإيرادات</h3>
         </div>
         <div class="table-responsive">
             <table class="custom-table">
@@ -123,8 +124,6 @@
                     <tr>
                         <th>الفترة</th>
                         <th>الزيارات</th>
-                        <th>الإيرادات</th>
-                        <th>رسوم المنصة</th>
                         <th>صافي العيادة</th>
                     </tr>
                 </thead>
@@ -132,29 +131,21 @@
                     <tr>
                         <td><strong>اليوم</strong></td>
                         <td>@(dashStats?.TodayVisits ?? 0)</td>
-                        <td>@(dashStats?.TodayIncome.ToString("N0") ?? "0") ج.م</td>
-                        <td>@(dashStats?.TodayPlatformFees.ToString("N0") ?? "0") ج.م</td>
                         <td>@(dashStats?.TodayNetIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
                         <td><strong>الأسبوع</strong></td>
                         <td>@(dashStats?.WeeklyVisits ?? 0)</td>
-                        <td>@(dashStats?.WeeklyIncome.ToString("N0") ?? "0") ج.م</td>
-                        <td>@(dashStats?.WeeklyPlatformFees.ToString("N0") ?? "0") ج.م</td>
                         <td>@(dashStats?.WeeklyNetIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
                         <td><strong>الشهر</strong></td>
                         <td>@(dashStats?.MonthlyVisits ?? 0)</td>
-                        <td>@(dashStats?.MonthlyIncome.ToString("N0") ?? "0") ج.م</td>
-                        <td>@(dashStats?.MonthlyPlatformFees.ToString("N0") ?? "0") ج.م</td>
                         <td>@(dashStats?.MonthlyNetIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                     <tr>
                         <td><strong>السنة</strong></td>
                         <td>@(dashStats?.YearlyVisits ?? 0)</td>
-                        <td>@(dashStats?.YearlyIncome.ToString("N0") ?? "0") ج.م</td>
-                        <td>@(dashStats?.YearlyPlatformFees.ToString("N0") ?? "0") ج.م</td>
                         <td>@(dashStats?.YearlyNetIncome.ToString("N0") ?? "0") ج.م</td>
                     </tr>
                 </tbody>
@@ -231,32 +222,11 @@
                 data: {
                     labels: (revenue || []).map(function (r) { return r.period; }),
                     datasets: [{
-                        label: 'الإيرادات (ج.م)',
-                        data: (revenue || []).map(function (r) { return r.revenue; }),
-                        borderColor: palettes.primary,
+                        label: 'صافي العيادة (ج.م)',
+                        data: (revenue || []).map(function (r) { return r.netRevenue ?? r.revenue; }),
+                        borderColor: palettes.green,
                         backgroundColor: palettes.primarySoft,
                         fill: true,
-                        tension: 0.35,
-                        pointRadius: 2,
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'رسوم المنصة (ج.م)',
-                        data: (revenue || []).map(function (r) { return r.platformFees; }),
-                        borderColor: palettes.amber,
-                        backgroundColor: 'transparent',
-                        fill: false,
-                        tension: 0.35,
-                        pointRadius: 2,
-                        borderWidth: 2,
-                        borderDash: [6, 4]
-                    },
-                    {
-                        label: 'صافي العيادة (ج.م)',
-                        data: (revenue || []).map(function (r) { return r.netRevenue; }),
-                        borderColor: palettes.green,
-                        backgroundColor: 'transparent',
-                        fill: false,
                         tension: 0.35,
                         pointRadius: 2,
                         borderWidth: 2

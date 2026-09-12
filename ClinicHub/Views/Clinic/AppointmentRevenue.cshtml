@@ -44,7 +44,7 @@
         </span>
         إيرادات المواعيد
     </h2>
-    <p class="text-md text-muted">المبلغ الإجمالي هو ما دفعه المريض، وصافي العيادة = الإجمالي − رسوم المنصة.</p>
+    <p class="text-md text-muted">جميع المبالغ المعروضة هي صافي العيادة فقط من الحجوزات (بدون رسوم المنصة).</p>
 </div>
 
 <div class="stats-grid">
@@ -52,8 +52,6 @@
         <div class="stat-info">
             <span class="stat-value">@stats.TodayNet.ToString("N0") ج.م</span>
             <span class="stat-label">صافي إيرادات اليوم</span>
-            <span class="stat-label">الإجمالي: @stats.TodayRevenue.ToString("N0") ج.م</span>
-            <span class="stat-label">رسوم المنصة: @(stats.TodayPlatformFees?.ToString("N0") ?? "0") ج.م</span>
         </div>
         <div class="icon-wrapper icon-wrapper--green">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -65,8 +63,6 @@
         <div class="stat-info">
             <span class="stat-value">@stats.MonthNet.ToString("N0") ج.م</span>
             <span class="stat-label">صافي إيرادات الشهر</span>
-            <span class="stat-label">الإجمالي: @stats.MonthRevenue.ToString("N0") ج.م</span>
-            <span class="stat-label">رسوم المنصة: @(stats.MonthPlatformFees?.ToString("N0") ?? "0") ج.م</span>
         </div>
         <div class="icon-wrapper icon-wrapper--primary">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -78,8 +74,6 @@
         <div class="stat-info">
             <span class="stat-value">@stats.PaidNet.ToString("N0") ج.م</span>
             <span class="stat-label">صافي مدفوعات محصلة</span>
-            <span class="stat-label">الإجمالي: @stats.PaidTotal.ToString("N0") ج.م</span>
-            <span class="stat-label">رسوم المنصة: @(stats.PaidPlatformFees?.ToString("N0") ?? "0") ج.م</span>
         </div>
         <div class="icon-wrapper icon-wrapper--blue">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -91,8 +85,6 @@
         <div class="stat-info">
             <span class="stat-value">@stats.PendingNet.ToString("N0") ج.م</span>
             <span class="stat-label">صافي مدفوعات معلقة</span>
-            <span class="stat-label">الإجمالي: @stats.PendingTotal.ToString("N0") ج.م</span>
-            <span class="stat-label">رسوم المنصة: @(stats.PendingPlatformFees?.ToString("N0") ?? "0") ج.م</span>
         </div>
         <div class="icon-wrapper icon-wrapper--amber">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -127,8 +119,6 @@
                     <th>الطبيب</th>
                     <th>التاريخ</th>
                     <th>الوقت</th>
-                    <th>المبلغ الإجمالي</th>
-                    <th>رسوم المنصة</th>
                     <th>صافي العيادة</th>
                     <th>طريقة الدفع</th>
                     <th>الحالة</th>
@@ -138,7 +128,7 @@
                 @if (revenues.Count == 0)
                 {
                     <tr>
-                        <td colspan="9" class="text-md text-center">لا توجد إيرادات مطابقة للفلاتر المحددة</td>
+                        <td colspan="7" class="text-md text-center">لا توجد إيرادات مطابقة للفلاتر المحددة</td>
                     </tr>
                 }
                 @foreach (var rev in revenues)
@@ -148,8 +138,6 @@
                         <td class="text-md">@rev.DoctorName</td>
                         <td class="text-md">@(rev.AppointmentDate.Year > 2000 ? rev.AppointmentDate.ToString("yyyy-MM-dd") : "—")</td>
                         <td class="text-md">@rev.StartTime</td>
-                        <td class="text-md-medium">@rev.Amount.ToString("N0") ج.م</td>
-                        <td class="text-md">@(rev.PlatformFee?.ToString("N0") ?? "0") ج.م</td>
                         <td class="text-md-medium">@rev.NetAmount.ToString("N0") ج.م</td>
                         <td><span class="badge @MethodClass(rev.Method)">@MethodLabel(rev.Method)</span></td>
                         <td><span class="badge @StatusClass(rev.Status)">@StatusLabel(rev.Status)</span></td>
@@ -161,4 +149,4 @@
     <partial name="_Pagination" />
 </div>
 
-<p class="text-md text-muted">ملاحظة: صافي العيادة = المبلغ الإجمالي المدفوع من المريض − رسوم المنصة الخاصة بالإدارة.</p>
+<p class="text-md text-muted">ملاحظة: المبلغ في كل صف هو صافي مستحقات العيادة من الحجز فقط، ولا يشمل رسوم المنصة الخاصة بالإدارة.</p>
