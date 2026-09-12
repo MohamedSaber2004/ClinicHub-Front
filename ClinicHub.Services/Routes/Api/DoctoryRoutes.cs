@@ -403,6 +403,7 @@ namespace ClinicHub.Services.Routes.Api
 
             public string List => $"{_baseRoute}";
             public string Stats => $"{_baseRoute}/stats";
+            public string ClinicsSummary => $"{_baseRoute}/clinics-summary";
             public string Detail(Guid id) => $"{_baseRoute}/{id}";
             public string Manual => $"{_baseRoute}/manual";
             public string Refund(Guid id) => $"{_baseRoute}/{id}/refund";

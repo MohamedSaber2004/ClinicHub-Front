@@ -42,6 +42,7 @@ namespace ClinicHub.Services.Services.Implementations
                 if (request.FromDate.HasValue) url += $"&FromDate={request.FromDate.Value:yyyy-MM-dd}";
                 if (request.ToDate.HasValue) url += $"&ToDate={request.ToDate.Value:yyyy-MM-dd}";
                 if (!string.IsNullOrWhiteSpace(request.SearchTerm)) url += $"&SearchTerm={Uri.EscapeDataString(request.SearchTerm)}";
+                if (request.ClinicId.HasValue) url += $"&ClinicId={request.ClinicId.Value}";
 
                 var response = await _httpClient.GetAsync(url);
                 var body = await response.Content.ReadAsStringAsync();
@@ -57,6 +58,25 @@ namespace ClinicHub.Services.Services.Implementations
                 var dataJson = dataToken?.ToString() ?? body;
                 return JsonConvert.DeserializeObject<PagginatedResult<AdminPaymentDto>>(dataJson, _jsonSettings)
                     ?? new PagginatedResult<AdminPaymentDto>(new List<AdminPaymentDto>(), 0);
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<PagginatedResult<ClinicPaymentsSummaryDto>> GetClinicsSummaryAsync(DateTime? fromDate = null, DateTime? toDate = null, string? searchTerm = null, int pageNumber = 1, int pageSize = 20)
+        {
+            try
+            {
+                var url = $"{DoctoryRoutes.AdminPayments.ClinicsSummary}?PageNumber={pageNumber}&PageSize={pageSize}";
+                if (fromDate.HasValue) url += $"&FromDate={fromDate.Value:yyyy-MM-dd}";
+                if (toDate.HasValue) url += $"&ToDate={toDate.Value:yyyy-MM-dd}";
+                if (!string.IsNullOrWhiteSpace(searchTerm)) url += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
+
+                var response = await _httpClient.GetAsync(url);
+                return await _deserializerService.DeserializeApiResponse<PagginatedResult<ClinicPaymentsSummaryDto>>(response, "حدث خطأ في جلب ملخص إيرادات العيادات");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

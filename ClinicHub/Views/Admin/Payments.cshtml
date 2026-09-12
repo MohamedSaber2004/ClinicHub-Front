@@ -18,6 +18,9 @@
     var toDateFilter = ViewBag.ToDateFilter as string;
     var searchTerm = ViewBag.SearchTerm as string;
     var month = ViewBag.Month as string;
+    var clinicIdFilter = ViewBag.ClinicIdFilter as Guid?;
+    var clinicsSummary = ViewBag.ClinicsSummary as PagginatedResult<ClinicPaymentsSummaryDto>;
+    var summaryItems = clinicsSummary?.Items ?? new List<ClinicPaymentsSummaryDto>();
 }
 
 <div class="page-header">
@@ -135,10 +138,104 @@
     </div>
 </div>
 
+<!-- Per-Clinic Monthly Summary -->
+<div class="table-card mb-3">
+    <div class="table-card-header">
+        <h3 class="table-card-title mb-0">ملخص شهري لكل عيادة (@month)</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>العيادة</th>
+                    <th>عدد المدفوعات</th>
+                    <th>إجمالي الإيرادات</th>
+                    <th>رسوم المنصة</th>
+                    <th>صافي العيادة</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (summaryItems.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="bi bi-building empty-state-icon"></i>
+                                <p class="empty-title">لا توجد عيادات مطابقة</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var s in summaryItems)
+                    {
+                        <tr>
+                            <td class="text-md-medium">
+                                <a href="@Url.Action("Payments", new { month = month, clinicId = s.ClinicId })">@s.ClinicName</a>
+                            </td>
+                            <td class="text-md">@s.PaymentsCount</td>
+                            <td class="text-md-medium amount-cell">@s.TotalRevenue.ToString("N2") ج.م</td>
+                            <td class="text-md">@s.PlatformFees.ToString("N2") ج.م</td>
+                            <td class="text-md-medium">@s.NetRevenue.ToString("N2") ج.م</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (clinicsSummary != null && clinicsSummary.TotalPages > 1)
+    {
+        var sp = clinicsSummary.PageNumber;
+        var st = clinicsSummary.TotalPages;
+        var swFrom = Math.Max(1, sp - 2);
+        var swTo = Math.Min(st, sp + 2);
+        <nav class="pagination-nav" aria-label="التنقل بين صفحات ملخص العيادات">
+            <ul class="pagination-list">
+                @if (clinicsSummary.HasPreviousPage)
+                {
+                    <li class="pagination-item">
+                        <a class="pagination-link" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = sp - 1 })" aria-label="الصفحة السابقة">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                            </svg>
+                            <span class="pagination-text">السابق</span>
+                        </a>
+                    </li>
+                }
+                @for (var i = swFrom; i <= swTo; i++)
+                {
+                    <li class="pagination-item">
+                        <a class="pagination-link @(i == sp ? "pagination-link--active" : "")" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = i })" aria-label="الصفحة @i من @st" @(i == sp ? "aria-current=\"page\"" : "")>@i</a>
+                    </li>
+                }
+                @if (clinicsSummary.HasNextPage)
+                {
+                    <li class="pagination-item">
+                        <a class="pagination-link" href="@Url.Action("Payments", new { month = month, clinicId = clinicIdFilter, summaryPage = sp + 1 })" aria-label="الصفحة التالية">
+                            <span class="pagination-text">التالي</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                            </svg>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
 <!-- Filter Bar -->
 <form class="filter-bar" method="get" action="@AdminRoutes.Pages.Payments()">
     <input type="hidden" name="month" value="@month" />
     <input type="text" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو الكود أو الرقم المرجعي..." value="@searchTerm" />
+    <select name="clinicId" class="form-select">
+        <option value="">جميع العيادات</option>
+        @foreach (var clinic in clinics)
+        {
+            <option value="@clinic.Id" selected="@(clinicIdFilter == clinic.Id)">@clinic.Name</option>
+        }
+    </select>
     <select name="type" class="form-select">
         <option value="" selected="@(string.IsNullOrEmpty(typeFilter))">جميع الأنواع</option>
         <option value="0" selected="@(typeFilter == "0")">موعد مريض</option>

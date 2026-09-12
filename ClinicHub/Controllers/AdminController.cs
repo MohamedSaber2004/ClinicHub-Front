@@ -917,7 +917,9 @@ namespace ClinicHub.Controllers
             string? fromDate = null,
             string? toDate = null,
             string? searchTerm = null,
-            string? month = null)
+            string? month = null,
+            Guid? clinicId = null,
+            int summaryPage = 1)
         {
             ViewBag.Stats = null;
             ViewBag.Payments = new List<AdminPaymentDto>();
@@ -946,7 +948,8 @@ namespace ClinicHub.Controllers
                     Method = method,
                     FromDate = DateTime.TryParse(fromDate, out var fd) ? fd : null,
                     ToDate = DateTime.TryParse(toDate, out var td) ? td : null,
-                    SearchTerm = searchTerm
+                    SearchTerm = searchTerm,
+                    ClinicId = clinicId
                 };
                 var paged = await _adminPaymentService.GetPaymentsAsync(request);
                 ViewBag.Payments = paged.Items;
@@ -1011,6 +1014,19 @@ namespace ClinicHub.Controllers
             ViewBag.FromDateFilter = fromDate;
             ViewBag.ToDateFilter = toDate;
             ViewBag.SearchTerm = searchTerm;
+            ViewBag.ClinicIdFilter = clinicId;
+            ViewBag.SummaryPage = summaryPage;
+
+            try
+            {
+                ViewBag.ClinicsSummary = await _adminPaymentService.GetClinicsSummaryAsync(statsFromDate, statsToDate, null, summaryPage, 10);
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage ??= ex.Message;
+                ViewBag.ClinicsSummary = null;
+            }
+
             return View();
         }
 

@@ -10,5 +10,6 @@ namespace ClinicHub.Services.RequestModels
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
         public string? SearchTerm { get; set; }
+        public Guid? ClinicId { get; set; }
     }
 }
