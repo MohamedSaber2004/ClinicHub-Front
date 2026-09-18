@@ -1568,6 +1568,16 @@ namespace ClinicHub.Controllers
             {
                 return null;
             }
+            // Authoritative backend signal (present value proves affiliation;
+            // absence proves nothing — older backends omit the field entirely).
+            if (overview.IsFreelanceDoctor)
+            {
+                return true;
+            }
+            if (overview.ClinicId.HasValue && overview.ClinicId.Value != Guid.Empty)
+            {
+                return false;
+            }
             var terms = new[] { overview.Email, overview.FullName, overview.Phone }
                 .Where(t => !string.IsNullOrWhiteSpace(t))
                 .Select(t => t.Trim())

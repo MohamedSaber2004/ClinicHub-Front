@@ -15,6 +15,12 @@ namespace ClinicHub.Services.ReponseModels
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<string> Roles { get; set; } = new();
+        // Optional: sent by the backend when the user follows a clinic.
+        // Null when freelance (or when the endpoint omits it) — absence alone
+        // never proves freelance; only a present value proves affiliation.
+        public Guid? ClinicId { get; set; }
+        // Authoritative backend verdict (false by default on older backends).
+        public bool IsFreelanceDoctor { get; set; }
 
         public int TotalAppointments { get; set; }
         public int TotalVisits { get; set; }
