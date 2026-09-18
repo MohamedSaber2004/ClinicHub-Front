@@ -1558,38 +1558,55 @@ namespace ClinicHub.Controllers
 
         // Returns true when the user is a doctor with no clinic affiliation
         // (freelance), false when affiliated, null when unknown/not a doctor.
+        // Tries email, name and phone because the doctors search may match on
+        // any of them; a user found on BOTH sides means the filter is ignored
+        // and the result is treated as unknown rather than guessed.
         private async Task<bool?> LoadDoctorFreelanceAsync(AdminUserOverviewDto overview)
         {
             if (overview == null || overview.Id == Guid.Empty ||
-                !overview.Roles.Contains(UserRole.Doctor.ToString()) ||
-                string.IsNullOrWhiteSpace(overview.Email))
+                !overview.Roles.Contains(UserRole.Doctor.ToString()))
             {
                 return null;
             }
+            var terms = new[] { overview.Email, overview.FullName, overview.Phone }
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Select(t => t.Trim())
+                .Distinct()
+                .ToList();
+            if (terms.Count == 0) return null;
             try
             {
-                var unassigned = await _doctorService.GetAllDoctorsPagginatedAsync(new GetAllDoctorsRequest
+                foreach (var term in terms)
                 {
-                    SearchTerm = overview.Email,
-                    IsUnassigned = true,
-                    PageNumber = 1,
-                    PageSize = 5
-                });
-                if (unassigned.Items.Any(u => u.Id == overview.Id)) return true;
-                var assigned = await _doctorService.GetAllDoctorsPagginatedAsync(new GetAllDoctorsRequest
+                    if (await IsDoctorInListAsync(term, true, overview.Id))
+                    {
+                        // Contradiction guard: also listed as assigned → filter unreliable.
+                        if (await IsDoctorInListAsync(term, false, overview.Id)) return null;
+                        return true;
+                    }
+                }
+                foreach (var term in terms)
                 {
-                    SearchTerm = overview.Email,
-                    IsUnassigned = false,
-                    PageNumber = 1,
-                    PageSize = 5
-                });
-                if (assigned.Items.Any(u => u.Id == overview.Id)) return false;
+                    if (await IsDoctorInListAsync(term, false, overview.Id)) return false;
+                }
                 return null;
             }
             catch (ApiException)
             {
                 return null;
             }
+        }
+
+        private async Task<bool> IsDoctorInListAsync(string term, bool unassigned, Guid userId)
+        {
+            var result = await _doctorService.GetAllDoctorsPagginatedAsync(new GetAllDoctorsRequest
+            {
+                SearchTerm = term,
+                IsUnassigned = unassigned,
+                PageNumber = 1,
+                PageSize = 5
+            });
+            return result.Items.Any(u => u.Id == userId);
         }
         // Maps the overview endpoint's raw role strings to the same canonical
         // UserRole names the Users table uses (Patient filtered out there too).
