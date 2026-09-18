@@ -1,2 +1,288 @@
 ﻿<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+@{
+    var hasServerFormError = TempData["ErrorMessage"] != null || ViewBag.ErrorMessage != null || TempData["Error"] != null;
+}
+@*
+    Shared client-side form UX (all layouts render this partial):
+    1. Inline under-input errors on submit/blur via the Constraint Validation API
+       (custom Arabic messages, no native bubbles, data never lost on bad input).
+    2. Draft preservation: snapshots typed values to sessionStorage on every edit
+       and restores them after a failed server postback (window.__serverFormError).
+       Passwords and file inputs are never stored. Restores fire change/input
+       events so page handlers (e.g. date dropdown sync) recompute derived fields.
+*@
+<script>
+    window.__serverFormError = @(hasServerFormError ? "true" : "false");
+</script>
+<script>
+    (function () {
+        'use strict';
+
+        var DRAFT_PREFIX = 'ch_form_draft_';
+        var DRAFT_TTL = 24 * 60 * 60 * 1000;
+
+        var MSG_REQUIRED = 'هذا الحقل مطلوب.';
+        var MSG_EMAIL = 'صيغة البريد الإلكتروني غير صحيحة.';
+        var MSG_BAD = 'القيمة المدخلة غير صالحة.';
+
+        function isOptedOut(form) {
+            return !form || form.hasAttribute('data-no-clientval') || form.classList.contains('no-clientval');
+        }
+
+        function isSkipped(el) {
+            if (!el || !el.name || el.disabled) return true;
+            var t = (el.type || '').toLowerCase();
+            return t === 'hidden' || t === 'submit' || t === 'button' || t === 'reset' ||
+                t === 'password' || t === 'file';
+        }
+
+        /* ---------- inline under-input errors ---------- */
+
+        function fieldMessage(el) {
+            var custom = el.getAttribute('data-error');
+            if (custom) return custom;
+            var v = el.validity;
+            if (!v || v.valid) return '';
+            if (v.valueMissing) return el.getAttribute('data-error-required') || MSG_REQUIRED;
+            if (v.typeMismatch) {
+                if (el.type === 'email') return el.getAttribute('data-error-email') || MSG_EMAIL;
+                return MSG_BAD;
+            }
+            if (v.tooShort) return el.getAttribute('data-error-minlength') || ('الحد الأدنى ' + el.minLength + ' أحرف.');
+            if (v.tooLong) return 'الحد الأقصى ' + el.maxLength + ' أحرف.';
+            if (v.rangeUnderflow || v.rangeOverflow) return 'القيمة خارج النطاق المسموح.';
+            if (v.patternMismatch) return el.getAttribute('data-error-pattern') || 'الصيغة المدخلة غير صحيحة.';
+            if (v.stepMismatch || v.badInput) return MSG_BAD;
+            return el.getAttribute('data-error-invalid') || 'تحقق من هذه القيمة.';
+        }
+
+        function clearFieldError(el) {
+            if (!el) return;
+            el.classList.remove('input-invalid');
+            el.removeAttribute('aria-invalid');
+            if (el._fieldErrNode && el._fieldErrNode.parentNode) {
+                el._fieldErrNode.parentNode.removeChild(el._fieldErrNode);
+            }
+            el._fieldErrNode = null;
+        }
+
+        function showFieldError(el) {
+            var msg = fieldMessage(el);
+            if (!msg) {
+                clearFieldError(el);
+                return false;
+            }
+            clearFieldError(el);
+            el.classList.add('input-invalid');
+            el.setAttribute('aria-invalid', 'true');
+            var node = document.createElement('div');
+            node.className = 'field-error';
+            node.setAttribute('role', 'alert');
+            node.textContent = msg;
+            var group = el.closest ? el.closest('.form-group') : null;
+            if (group) {
+                group.appendChild(node);
+            } else if (el.parentNode) {
+                el.parentNode.insertBefore(node, el.nextSibling);
+            }
+            el._fieldErrNode = node;
+            return true;
+        }
+
+        function validateControl(el) {
+            if (!el || !el.willValidate || el.disabled) return true;
+            var t = (el.type || '').toLowerCase();
+            if (t === 'hidden' || t === 'submit' || t === 'button' || t === 'reset') return true;
+            if (!el.checkValidity()) {
+                showFieldError(el);
+                return false;
+            }
+            clearFieldError(el);
+            return true;
+        }
+
+        document.addEventListener('submit', function (e) {
+            var form = e.target;
+            if (!form || form.tagName !== 'FORM' || isOptedOut(form)) return;
+            var invalid = [];
+            Array.prototype.forEach.call(form.elements, function (el) {
+                if (!validateControl(el) && invalid.indexOf(el) === -1) {
+                    invalid.push(el);
+                }
+            });
+            if (invalid.length) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (invalid[0].focus) {
+                    try {
+                        invalid[0].focus();
+                    } catch (err) {
+                        invalid[0].focus();
+                    }
+                }
+            }
+        }, true);
+
+        document.addEventListener('focusout', function (e) {
+            var el = e.target;
+            if (!el || !el.willValidate || el.disabled || !el.form || isOptedOut(el.form)) return;
+            var t = (el.type || '').toLowerCase();
+            if (t === 'checkbox' || t === 'radio') {
+                if (el._fieldErrNode) validateControl(el);
+                return;
+            }
+            if (el.value !== '') {
+                validateControl(el);
+            } else if (el._fieldErrNode && el.checkValidity()) {
+                clearFieldError(el);
+            }
+        });
+
+        document.addEventListener('input', function (e) {
+            var el = e.target;
+            if (!el || !el.form || isOptedOut(el.form)) return;
+            if (el._fieldErrNode && el.checkValidity && el.checkValidity()) {
+                clearFieldError(el);
+            }
+            scheduleSave(el.form);
+        });
+
+        document.addEventListener('change', function (e) {
+            var el = e.target;
+            if (!el || !el.form || isOptedOut(el.form)) return;
+            if (el._fieldErrNode) validateControl(el);
+            scheduleSave(el.form);
+        });
+
+        /* ---------- draft preservation across failed postbacks ---------- */
+
+        function draftKey(form) {
+            var id = form.getAttribute('id') || form.getAttribute('name') || '';
+            var act = form.getAttribute('action') || '';
+            return DRAFT_PREFIX + (id ? 'id:' + id : 'act:' + act + '|' + window.location.pathname);
+        }
+
+        function pruneDrafts() {
+            try {
+                var now = Date.now();
+                for (var i = sessionStorage.length - 1; i >= 0; i--) {
+                    var k = sessionStorage.key(i);
+                    if (!k || k.indexOf(DRAFT_PREFIX) !== 0) continue;
+                    try {
+                        var p = JSON.parse(sessionStorage.getItem(k));
+                        if (!p || !p.ts || now - p.ts > DRAFT_TTL) sessionStorage.removeItem(k);
+                    } catch (err) {
+                        sessionStorage.removeItem(k);
+                    }
+                }
+            } catch (err) {}
+        }
+
+        function snapshotForm(form) {
+            if (!form || form.hasAttribute('data-no-draft') || form.classList.contains('no-draft')) return;
+            var data = {};
+            Array.prototype.forEach.call(form.elements, function (el) {
+                if (isSkipped(el)) return;
+                var t = (el.type || '').toLowerCase();
+                if (t === 'checkbox' || t === 'radio') {
+                    if (el.checked) {
+                        if (!data[el.name]) data[el.name] = [];
+                        data[el.name].push(el.value);
+                    }
+                    return;
+                }
+                if (el.tagName === 'SELECT' && el.multiple) {
+                    var vals = [];
+                    Array.prototype.forEach.call(el.options, function (o) {
+                        if (o.selected) vals.push(o.value);
+                    });
+                    data[el.name] = vals;
+                    return;
+                }
+                data[el.name] = el.value;
+            });
+            try {
+                pruneDrafts();
+                sessionStorage.setItem(draftKey(form), JSON.stringify({ ts: Date.now(), data: data }));
+            } catch (err) {}
+        }
+
+        var saveTimers = {};
+
+        function scheduleSave(form) {
+            if (!form) return;
+            var k = draftKey(form);
+            clearTimeout(saveTimers[k]);
+            saveTimers[k] = setTimeout(function () {
+                snapshotForm(form);
+            }, 200);
+        }
+
+        function fireEvt(el, name) {
+            try {
+                el.dispatchEvent(new Event(name, { bubbles: true }));
+            } catch (err) {
+                var ev = document.createEvent('HTMLEvents');
+                ev.initEvent(name, true, false);
+                el.dispatchEvent(ev);
+            }
+        }
+
+        function restoreForm(form) {
+            if (!form || form.hasAttribute('data-no-draft') || form.classList.contains('no-draft')) return;
+            var raw = null;
+            try {
+                raw = sessionStorage.getItem(draftKey(form));
+            } catch (err) {}
+            if (!raw) return;
+            var parsed = null;
+            try {
+                parsed = JSON.parse(raw);
+            } catch (err) {
+                return;
+            }
+            if (!parsed || !parsed.data || !parsed.ts || Date.now() - parsed.ts > DRAFT_TTL) return;
+            var data = parsed.data;
+            Array.prototype.forEach.call(form.elements, function (el) {
+                if (isSkipped(el) || !(el.name in data)) return;
+                var t = (el.type || '').toLowerCase();
+                if (t === 'checkbox' || t === 'radio') {
+                    var vals = data[el.name] || [];
+                    el.checked = vals.indexOf(el.value) !== -1;
+                    fireEvt(el, 'change');
+                    return;
+                }
+                if (el.tagName === 'SELECT' && el.multiple) {
+                    var sel = data[el.name] || [];
+                    Array.prototype.forEach.call(el.options, function (o) {
+                        o.selected = sel.indexOf(o.value) !== -1;
+                    });
+                    fireEvt(el, 'change');
+                    return;
+                }
+                el.value = data[el.name];
+                fireEvt(el, 'input');
+                fireEvt(el, 'change');
+            });
+        }
+
+        function initForms() {
+            Array.prototype.forEach.call(document.forms, function (form) {
+                if (isOptedOut(form)) return;
+                form.setAttribute('novalidate', 'novalidate');
+            });
+            if (window.__serverFormError === true) {
+                Array.prototype.forEach.call(document.forms, function (form) {
+                    restoreForm(form);
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initForms);
+        } else {
+            initForms();
+        }
+    })();
+</script>

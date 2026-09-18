@@ -916,6 +916,27 @@ a {
   margin-top: 4px;
 }
 
+/* Inline under-input validation error (rendered by shared form UX script) */
+.field-error {
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  color: var(--clr-danger);
+  margin-top: 4px;
+}
+
+.form-input.input-invalid,
+.form-select.input-invalid,
+.form-textarea.input-invalid {
+  border-color: var(--clr-danger);
+}
+
+.form-input.input-invalid:focus,
+.form-select.input-invalid:focus,
+.form-textarea.input-invalid:focus {
+  border-color: var(--clr-danger);
+  box-shadow: 0 0 0 4px rgba(177, 59, 50, 0.12);
+}
+
 /* Toggle Switch */
 .form-toggle {
   position: relative;
