@@ -180,7 +180,10 @@
                 </p>
                 <input type="hidden" id="clinicDetailLat" value="@(clinic.Lat?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.0409")" />
                 <input type="hidden" id="clinicDetailLng" value="@(clinic.Lng?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.3785")" />
-                <input type="text" id="clinicDetailPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
+                <div class="map-search-row">
+                    <input type="text" id="clinicDetailPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
+                    <button type="button" class="btn btn-primary btn-sm map-search-btn" id="clinicDetailPlaceSearchBtn">بحث</button>
+                </div>
                 <div id="clinicDetailMap" class="register-map-container"></div>
                 <div class="settings-map-tools">
                     <span class="text-muted settings-coords-display" id="clinicDetailCoordsDisplay"></span>
@@ -487,9 +490,14 @@
             var map = new google.maps.Map(document.getElementById('clinicDetailMap'), {
                 center: pos,
                 zoom: 15,
+                minZoom: 3,
                 mapTypeControl: false,
                 streetViewControl: false,
-                fullscreenControl: false
+                fullscreenControl: false,
+                zoomControl: true,
+                zoomControlOptions: {
+                    position: google.maps.ControlPosition.LEFT_BOTTOM
+                }
             });
             var marker = new google.maps.Marker({
                 position: pos,
@@ -524,24 +532,57 @@
                 updateClinicCoords(e.latLng);
             });
 
+            function applyClinicDetailPlace(location, viewport) {
+                if (viewport) {
+                    map.fitBounds(viewport);
+                } else {
+                    map.setCenter(location);
+                    map.setZoom(16);
+                }
+                marker.setPosition(location);
+                updateClinicCoords(location);
+            }
+
             var searchInput = document.getElementById('clinicDetailPlaceSearch');
+            var searchBtn = document.getElementById('clinicDetailPlaceSearchBtn');
+            var detailGeocoder = new google.maps.Geocoder();
+
+            function searchClinicDetailPlace() {
+                if (!searchInput) return;
+                var q = searchInput.value.trim();
+                if (!q) {
+                    searchInput.focus();
+                    return;
+                }
+                detailGeocoder.geocode({ address: q }, function(results, status) {
+                    if (status === 'OK' && results && results[0] && results[0].geometry) {
+                        applyClinicDetailPlace(results[0].geometry.location, results[0].geometry.viewport);
+                    } else {
+                        showErrorModal('لم نعثر على نتائج مطابقة. جرّب صياغة أخرى للعنوان.');
+                    }
+                });
+            }
+
             if (searchInput && google.maps.places) {
                 var autocomplete = new google.maps.places.Autocomplete(searchInput);
                 autocomplete.addListener('place_changed', function() {
                     var place = autocomplete.getPlace();
-                    if (!place.geometry) {
-                        showErrorModal('لم نتمكن من تحديد الموقع المختار. حاول مرة أخرى.');
+                    if (!place.geometry || !place.geometry.location) {
+                        searchClinicDetailPlace();
                         return;
                     }
-                    if (place.geometry.viewport) {
-                        map.fitBounds(place.geometry.viewport);
-                    } else {
-                        map.setCenter(place.geometry.location);
-                        map.setZoom(16);
-                    }
-                    marker.setPosition(place.geometry.location);
-                    updateClinicCoords(place.geometry.location);
+                    applyClinicDetailPlace(place.geometry.location, place.geometry.viewport);
                 });
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchClinicDetailPlace();
+                    }
+                });
+            }
+
+            if (searchBtn) {
+                searchBtn.addEventListener('click', searchClinicDetailPlace);
             }
         }
 

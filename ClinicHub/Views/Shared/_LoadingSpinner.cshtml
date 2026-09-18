@@ -91,6 +91,20 @@
                 return true;
             }
 
+            // Ignore Google Maps traffic (tiles, imagery, Places, geocode, photos).
+            // Zoom & pan download tiles continuously — they are never an "API wait".
+            if (lower.indexOf('maps.googleapis.com') !== -1 ||
+                lower.indexOf('maps.google.com') !== -1 ||
+                lower.indexOf('google.com/maps') !== -1 ||
+                lower.indexOf('maps.gstatic.com') !== -1 ||
+                lower.indexOf('places.googleapis.com') !== -1 ||
+                lower.indexOf('khms') !== -1 ||
+                lower.indexOf('streetviewpixels') !== -1 ||
+                lower.indexOf('googleusercontent.com') !== -1 ||
+                lower.indexOf('/maps/vt') !== -1) {
+                return true;
+            }
+
             // Ignore background heartbeat / silent notifications polling only
             return lower.indexOf('notificationscount') !== -1 ||
                 lower.indexOf('notificationslist') !== -1 ||

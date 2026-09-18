@@ -86,7 +86,10 @@
             <input type="hidden" id="settingsLng" value="@lng.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
             @if (hasMapKey)
             {
-                <input type="text" id="settingsPlaceSearch" class="form-input settings-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
+                <div class="map-search-row">
+                    <input type="text" id="settingsPlaceSearch" class="form-input settings-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
+                    <button type="button" class="btn btn-primary btn-sm map-search-btn" id="settingsPlaceSearchBtn">بحث</button>
+                </div>
                 <div id="settingsClinicMap" class="settings-map"></div>
                 <div class="settings-map-tools">
                     <button type="button" class="btn btn-sm btn-outline-primary settings-location-btn" id="settingsMyLocationBtn">
@@ -205,9 +208,14 @@
                 var map = new google.maps.Map(document.getElementById('settingsClinicMap'), {
                     center: center,
                     zoom: 13,
+                    minZoom: 3,
                     mapTypeControl: false,
                     streetViewControl: false,
-                    fullscreenControl: false
+                    fullscreenControl: false,
+                    zoomControl: true,
+                    zoomControlOptions: {
+                        position: google.maps.ControlPosition.LEFT_BOTTOM
+                    }
                 });
 
                 var marker = new google.maps.Marker({
@@ -234,24 +242,57 @@
                     updateCoords(e.latLng);
                 });
 
+                function applySettingsPlace(location, viewport) {
+                    if (viewport) {
+                        map.fitBounds(viewport);
+                    } else {
+                        map.setCenter(location);
+                        map.setZoom(16);
+                    }
+                    marker.setPosition(location);
+                    updateCoords(location);
+                }
+
                 var searchInput = document.getElementById('settingsPlaceSearch');
+                var searchBtn = document.getElementById('settingsPlaceSearchBtn');
+                var settingsGeocoder = new google.maps.Geocoder();
+
+                function searchSettingsPlace() {
+                    if (!searchInput) return;
+                    var q = searchInput.value.trim();
+                    if (!q) {
+                        searchInput.focus();
+                        return;
+                    }
+                    settingsGeocoder.geocode({ address: q }, function(results, status) {
+                        if (status === 'OK' && results && results[0] && results[0].geometry) {
+                            applySettingsPlace(results[0].geometry.location, results[0].geometry.viewport);
+                        } else {
+                            showErrorModal('لم نعثر على نتائج مطابقة. جرّب صياغة أخرى للعنوان.');
+                        }
+                    });
+                }
+
                 if (searchInput && google.maps.places) {
                     var autocomplete = new google.maps.places.Autocomplete(searchInput);
                     autocomplete.addListener('place_changed', function() {
                         var place = autocomplete.getPlace();
-                        if (!place.geometry) {
-                            showErrorModal('لم نتمكن من تحديد الموقع المختار. حاول مرة أخرى.');
+                        if (!place.geometry || !place.geometry.location) {
+                            searchSettingsPlace();
                             return;
                         }
-                        if (place.geometry.viewport) {
-                            map.fitBounds(place.geometry.viewport);
-                        } else {
-                            map.setCenter(place.geometry.location);
-                            map.setZoom(16);
-                        }
-                        marker.setPosition(place.geometry.location);
-                        updateCoords(place.geometry.location);
+                        applySettingsPlace(place.geometry.location, place.geometry.viewport);
                     });
+                    searchInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            searchSettingsPlace();
+                        }
+                    });
+                }
+
+                if (searchBtn) {
+                    searchBtn.addEventListener('click', searchSettingsPlace);
                 }
 
                 document.getElementById('settingsMyLocationBtn').addEventListener('click', function() {
