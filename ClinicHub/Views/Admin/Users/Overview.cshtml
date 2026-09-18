@@ -5,13 +5,16 @@
     ViewBag.SubSidebarSection = "overview";
     var u = ViewBag.User as AdminUserOverviewDto ?? new AdminUserOverviewDto();
     ViewBag.UserId = u.Id;
+    var isDoctor = u.Roles.Contains("Doctor");
+    var isFreelance = isDoctor && ViewBag.IsFreelanceDoctor is true;
 
+    // Same mapping as Users/Index table (roles arrive normalized by the controller).
     string RoleLabel(string r) => r switch
     {
         "SuperAdmin" or "SystemAdmin" => "مدير النظام",
         "ClinicOwner" or "ClinicManager" => "مدير عيادة",
         "Doctor" => "طبيب",
-        "ClinicStaff" => "موظف عيادة",
+        "ClinicStaff" => "موظف",
         _ => "مريض"
     };
 
@@ -45,7 +48,14 @@
                 <div class="role-list">
                     @foreach (var role in u.Roles)
                     {
-                        <span class="badge badge-info">@RoleLabel(role)</span>
+                        if (role == "Doctor" && isFreelance)
+                        {
+                            <span class="badge badge-warning">طبيب حر</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-info">@RoleLabel(role)</span>
+                        }
                     }
                     @if (u.Roles.Count == 0)
                     {
@@ -95,6 +105,22 @@
                     <span class="detail-info-label">تاريخ التسجيل</span>
                     <span class="detail-info-value">@u.CreatedAt.ToString("yyyy-MM-dd")</span>
                 </div>
+                @if (isDoctor && ViewBag.IsFreelanceDoctor is bool freelance)
+                {
+                    <div class="detail-info-row">
+                        <span class="detail-info-label">التبعية لعيادة</span>
+                        <span class="detail-info-value">
+                            @if (freelance)
+                            {
+                                <span class="badge badge-warning">طبيب حر — غير تابع لأي عيادة</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-success">تابع لعيادة</span>
+                            }
+                        </span>
+                    </div>
+                }
                 <div class="detail-info-row">
                     <span class="detail-info-label">الحالة</span>
                     <span class="detail-info-value">

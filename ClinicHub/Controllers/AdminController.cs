@@ -1509,11 +1509,14 @@ namespace ClinicHub.Controllers
             try
             {
                 var overview = await _adminDashboardService.GetUserOverviewAsync(id) ?? new AdminUserOverviewDto();
+                // Single source of truth with the Users table: normalize the overview
+                // endpoint's raw role strings through the same mapping (Patient filtered).
+                overview.Roles = NormalizeOverviewRoles(overview.Roles);
                 var resolved = _attachmentUrlResolver.Resolve(overview.ImageName ?? overview.Image ?? overview.ImageUrl);
-                if (string.IsNullOrWhiteSpace(resolved))
+                if (string.IsNullOrWhiteSpace(resolved) || overview.Roles.Count == 0)
                 {
-                    // The overview endpoint may not include the avatar — fall back to the
-                    // users-list endpoint (same source the Users page renders images from).
+                    // The overview endpoint may omit the avatar and/or the roles — fall back
+                    // to the users-list endpoint (same source the Users page renders from).
                     try
                     {
                         var usersResult = await _userService.GetAllUsersPagginatedAsync(new GetAllUsersRequest
@@ -1522,7 +1525,18 @@ namespace ClinicHub.Controllers
                             PageSize = 100
                         });
                         var match = usersResult.Items.FirstOrDefault(u => u.Id == id);
-                        resolved = _attachmentUrlResolver.Resolve(match?.Image ?? match?.ImageUrl);
+                        if (string.IsNullOrWhiteSpace(resolved))
+                        {
+                            resolved = _attachmentUrlResolver.Resolve(match?.Image ?? match?.ImageUrl);
+                        }
+                        if (overview.Roles.Count == 0 && match != null)
+                        {
+                            overview.Roles = match.Roles
+                                .Select(r => MapUserTypeToRole(r).ToString())
+                                .Where(r => r != UserRole.Patient.ToString())
+                                .Distinct()
+                                .ToList();
+                        }
                     }
                     catch (ApiException)
                     {
@@ -1530,6 +1544,9 @@ namespace ClinicHub.Controllers
                     }
                 }
                 overview.ImageUrl = string.IsNullOrWhiteSpace(resolved) ? null : resolved;
+                // Critical distinction for doctors: freelance (not following any clinic)
+                // vs clinic-affiliated — resolved via the doctors endpoint's IsUnassigned flag.
+                ViewBag.IsFreelanceDoctor = await LoadDoctorFreelanceAsync(overview);
                 return overview;
             }
             catch (ApiException ex)
@@ -1537,6 +1554,72 @@ namespace ClinicHub.Controllers
                 TempData["ErrorMessage"] ??= ex.Message;
                 return new AdminUserOverviewDto();
             }
+        }
+
+        // Returns true when the user is a doctor with no clinic affiliation
+        // (freelance), false when affiliated, null when unknown/not a doctor.
+        private async Task<bool?> LoadDoctorFreelanceAsync(AdminUserOverviewDto overview)
+        {
+            if (overview == null || overview.Id == Guid.Empty ||
+                !overview.Roles.Contains(UserRole.Doctor.ToString()) ||
+                string.IsNullOrWhiteSpace(overview.Email))
+            {
+                return null;
+            }
+            try
+            {
+                var unassigned = await _doctorService.GetAllDoctorsPagginatedAsync(new GetAllDoctorsRequest
+                {
+                    SearchTerm = overview.Email,
+                    IsUnassigned = true,
+                    PageNumber = 1,
+                    PageSize = 5
+                });
+                if (unassigned.Items.Any(u => u.Id == overview.Id)) return true;
+                var assigned = await _doctorService.GetAllDoctorsPagginatedAsync(new GetAllDoctorsRequest
+                {
+                    SearchTerm = overview.Email,
+                    IsUnassigned = false,
+                    PageNumber = 1,
+                    PageSize = 5
+                });
+                if (assigned.Items.Any(u => u.Id == overview.Id)) return false;
+                return null;
+            }
+            catch (ApiException)
+            {
+                return null;
+            }
+        }
+        // Maps the overview endpoint's raw role strings to the same canonical
+        // UserRole names the Users table uses (Patient filtered out there too).
+        private static List<string> NormalizeOverviewRoles(IEnumerable<string>? roles)
+        {
+            var mapped = new List<string>();
+            foreach (var raw in roles ?? Enumerable.Empty<string>())
+            {
+                var key = raw?.Trim();
+                if (string.IsNullOrEmpty(key)) continue;
+                UserRole role;
+                if (Enum.TryParse<ClinicHub.Services.Enums.UserType>(key, true, out var userType))
+                {
+                    role = MapUserTypeToRole(userType);
+                }
+                else if (Enum.TryParse<UserRole>(key, true, out var direct))
+                {
+                    role = direct;
+                }
+                else
+                {
+                    continue;
+                }
+                var name = role.ToString();
+                if (name != UserRole.Patient.ToString() && !mapped.Contains(name))
+                {
+                    mapped.Add(name);
+                }
+            }
+            return mapped;
         }
 
         [HttpPost]
