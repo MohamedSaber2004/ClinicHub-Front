@@ -368,3 +368,6 @@ FodyWeavers.xsd
 /ClinicHub/appsettings.Test.json
 /ClinicHub/appsettings.Production.json
 /ClinicHub/web.config
+
+# Data Protection key ring (created at runtime, per machine — never commit)
+keys/

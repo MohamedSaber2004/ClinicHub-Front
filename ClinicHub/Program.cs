@@ -1,5 +1,6 @@
 using ClinicHub.Services;
 using ClinicHub.Services.Options;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Serilog;
 using System.Reflection;
@@ -34,6 +35,15 @@ namespace ClinicHub
             Log.Information("ClinicHub API is starting up and connecting to Seq at {Time}", DateTime.Now);
 
             builder.Host.UseSerilog();
+
+            // Persist Data Protection keys to disk so auth cookies survive
+            // restarts and redeploys. Without this the key ring is ephemeral
+            // and every restart logs all users out.
+            var keysDirectory = Path.Combine(builder.Environment.ContentRootPath, "keys");
+            Directory.CreateDirectory(keysDirectory);
+            builder.Services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(keysDirectory))
+                .SetApplicationName("ClinicHub");
 
             // Add services to the container.
             builder.Services.AddControllersWithViews()
