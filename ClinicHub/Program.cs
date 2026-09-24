@@ -14,11 +14,6 @@ namespace ClinicHub
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Root fix for shared-host port conflicts: when IIS/ANCM launches the
-            // app it assigns a random port (ASPNETCORE_PORT) and that always wins.
-            // Only when NO port comes from the host (direct `dotnet *.dll` launch)
-            // fall back to this site's own loopback port, so the dashboard (:5000)
-            // and the API (:5001) can never collide with each other.
             if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_PORT"))
                 && string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
             {
@@ -47,16 +42,12 @@ namespace ClinicHub
 
             builder.Host.UseSerilog();
 
-            // Persist Data Protection keys to disk so auth cookies survive
-            // restarts and redeploys. Without this the key ring is ephemeral
-            // and every restart logs all users out.
             var keysDirectory = Path.Combine(builder.Environment.ContentRootPath, "keys");
             Directory.CreateDirectory(keysDirectory);
             builder.Services.AddDataProtection()
                 .PersistKeysToFileSystem(new DirectoryInfo(keysDirectory))
                 .SetApplicationName("ClinicHub");
 
-            // Add services to the container.
             builder.Services.AddControllersWithViews()
                 .AddJsonOptions(options =>
                 {
@@ -87,11 +78,8 @@ namespace ClinicHub
 
             var app = builder.Build();
 
-            // Compress responses (Brotli/Gzip) — must run before static files
-            // and endpoints so CSS, JS, and JSON all ship compressed.
             app.UseResponseCompression();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -100,8 +88,6 @@ namespace ClinicHub
 
             app.UseHttpsRedirection();
 
-            // Static assets with a version fingerprint (?v=...) never change —
-            // cache them forever. Everything else gets a week.
             app.UseStaticFiles(new StaticFileOptions
             {
                 OnPrepareResponse = ctx =>
