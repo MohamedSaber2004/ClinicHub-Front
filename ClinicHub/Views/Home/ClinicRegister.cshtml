@@ -3,6 +3,7 @@
     ViewData["Title"] = "تسجيل العيادة - Doctory";
     var plans = ViewBag.Plans as List<PlanDto> ?? new();
     var specializations = ViewBag.Specializations as List<SpecializationDto> ?? new();
+    var googleMapsApiKey = ViewBag.GoogleMapsApiKey as string ?? "";
 }
 
 <section class="register-hero">
@@ -341,7 +342,7 @@
 </section>
 
 @section Scripts {
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0zRl4KKc394VUOG46r1QGTwVLH8Tu_do&libraries=places&language=ar&region=EG"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=@googleMapsApiKey&libraries=places&language=ar&region=EG"></script>
     <script>
         window.gm_authFailure = function () {
             var authErr = document.getElementById('registerMapError');
