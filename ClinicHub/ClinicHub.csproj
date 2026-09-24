@@ -4,6 +4,10 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- SmarterASP shared plans run ALL sites in ONE app pool, which requires
+         OutOfProcess for every .NET Core app. Pinning it here makes every
+         VSDeploy publish generate hostingModel="OutOfProcess" automatically. -->
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
   <ItemGroup>
