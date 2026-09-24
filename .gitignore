@@ -365,3 +365,5 @@ FodyWeavers.xsd
 /ClinicHub/appsettings.Development.json
 /ClinicHub/appsettings.Live.json
 /ClinicHub/appsettings.Production.json
+/ClinicHub/appsettings.Test.json
+/ClinicHub/appsettings.Production.json
