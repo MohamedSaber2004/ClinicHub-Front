@@ -4,15 +4,18 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- SmarterASP shared plans run ALL sites in ONE app pool, which requires
-         OutOfProcess for every .NET Core app. Pinning it here makes every
-         VSDeploy publish generate hostingModel="OutOfProcess" automatically. -->
-    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="app_offline.htm">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -26,5 +29,9 @@
   <ItemGroup>
     <ProjectReference Include="..\ClinicHub.Services\ClinicHub.Services.csproj" />
   </ItemGroup>
+
+  <Target Name="EnsureAppOfflineBeforePublish" BeforeTargets="BeforePublish" Condition="'$(WebPublishMethod)' == 'MSDeploy'">
+    <Message Text="Ensuring app_offline.htm is deployed first to prevent DLL locks during Web Deploy" Importance="high" />
+  </Target>
 
 </Project>
