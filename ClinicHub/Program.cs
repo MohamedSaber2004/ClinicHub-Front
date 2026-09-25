@@ -14,11 +14,6 @@ namespace ClinicHub
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_PORT"))
-                && string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
-            {
-                builder.WebHost.UseUrls("http://127.0.0.1:5000");
-            }
 
             var env = builder.Environment;
 
