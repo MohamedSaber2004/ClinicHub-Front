@@ -1240,11 +1240,11 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Clinic/Subscribe")]
-        public async Task<IActionResult> Subscribe(Guid planId, int period = 0)
+        public async Task<IActionResult> Subscribe(Guid planId, int period = 0, string? paymentMethod = null)
         {
             if (!Request.Cookies.ContainsKey("AccessToken"))
             {
-                var returnUrl = $"{ClinicRoutes.Pages.Subscribe()}?planId={planId}&period={period}";
+                var returnUrl = $"{ClinicRoutes.Pages.Subscribe()}?planId={planId}&period={period}&paymentMethod={Uri.EscapeDataString(paymentMethod ?? "")}";
                 return RedirectToAction("Login", "Account", new { returnUrl = returnUrl });
             }
 
@@ -1295,7 +1295,8 @@ namespace ClinicHub.Controllers
                     PlanId = planId,
                     Period = period,
                     ReturnUrl = returnUrl,
-                    ClinicId = clinicId
+                    ClinicId = clinicId,
+                    PaymentMethod = paymentMethod
                 });
 
                 var targetUrl = result?.TargetRedirectUrl;
