@@ -1,12 +1,11 @@
-﻿
-﻿
-jquery.validate.min.js:4
- Uncaught ReferenceError: jQuery is not defined
-    at jquery.validate.min.js:4:151
-    at jquery.validate.min.js:4:159
-jquery.validate.unobtrusive.min.js:8
- Uncaught ReferenceError: jQuery is not defined
-    at jquery.validate.unobtrusive.min.js:8:201
-    at jquery.validate.unobtrusive.min.js:8:240
-Login:1 
- Failed to load resource: net::ERR_CONNECTION_TIMED_OUT
+﻿o https://github.com/MohamedSaber2004/ClinicHub-Front.git
+   288d556..3d52df5  production-branch -> production-branch
+Commit 85baa6d8 created locally in repository E:\Clinichub Front Production\ClinicHub-Frontend
+Pushing production-branch
+Error encountered while pushing to the remote repository: Git failed with a fatal error.
+unable to access 'https://github.com/MohamedSaber2004/ClinicHub-Front.git/': Failed to connect to github.com port 443 after 21102 ms: Could not connect to server
+
+Failed to push to the remote repository. See the Output window for more details.
+Git failed with a fatal error.
+unable to access 'https://github.com/MohamedSaber2004/ClinicHub-Front.git/': Failed to connect to github.com port 443 after 21128 ms: Could not connect to server
+
