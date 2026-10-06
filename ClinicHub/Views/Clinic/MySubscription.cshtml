@@ -188,6 +188,13 @@ else
                         </span>
                     </label>
                 </div>
+                <div id="subWalletPhoneBox" class="mt-3 text-start">
+                    <label for="subWalletPhoneInput" class="form-label text-muted small mb-1">
+                        <i class="bi bi-phone me-1"></i> رقم المحفظة (فودافون كاش / اتصالات / أورنج / وي):
+                    </label>
+                    <input type="tel" id="subWalletPhoneInput" class="form-control" placeholder="01xxxxxxxxx" dir="ltr" maxlength="11">
+                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
+                </div>
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -330,11 +337,15 @@ else
 
         (function () {
             var pendingSub = null;
+            var subWalletPhoneBox = document.getElementById('subWalletPhoneBox');
 
             document.querySelectorAll('#paymentMethodSubModal input[name="subPaymentMethod"]').forEach(function (radio) {
                 radio.addEventListener('change', function () {
                     document.querySelectorAll('#paymentMethodSubModal .payment-method-card').forEach(function (c) { c.classList.remove('selected'); });
                     this.closest('.payment-method-card')?.classList.add('selected');
+                    if (subWalletPhoneBox) {
+                        subWalletPhoneBox.style.display = this.value === 'PaymobWallet' ? 'block' : 'none';
+                    }
                 });
             });
             document.querySelectorAll('#paymentMethodSubModal .payment-method-card').forEach(function (card) {
@@ -370,14 +381,27 @@ else
                 confirmBtn.addEventListener('click', function () {
                     if (!pendingSub || !pendingSub.planId) return;
                     var selectedMethod = document.querySelector('input[name="subPaymentMethod"]:checked')?.value || 'PaymobWallet';
+                    var walletPhone = document.getElementById('subWalletPhoneInput')?.value?.trim() || '';
+                    if (selectedMethod === 'PaymobWallet' && !walletPhone) {
+                        alert('يرجى إدخال رقم المحفظة الإلكترونية للمتابعة (للتجربة: 01010101010)');
+                        return;
+                    }
                     var periodInt = parseInt(pendingSub.period, 10);
                     if (isNaN(periodInt)) periodInt = 0;
                     confirmBtn.disabled = true;
                     confirmBtn.textContent = 'جارٍ التحويل للدفع...';
+
+                    try {
+                        var currentUrl = window.location.href;
+                        sessionStorage.setItem('prePaymentPage', currentUrl);
+                        localStorage.setItem('prePaymentPage', currentUrl);
+                        document.cookie = "prePaymentUrl=" + encodeURIComponent(currentUrl) + "; path=/; max-age=3600; SameSite=Lax";
+                    } catch (e) {}
+
                     fetch('/Clinic/InitiatePayment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ planId: pendingSub.planId, period: periodInt, paymentMethod: selectedMethod })
+                        body: JSON.stringify({ planId: pendingSub.planId, period: periodInt, paymentMethod: selectedMethod, walletPhoneNumber: walletPhone })
                     }).then(function (r) { return r.json(); })
                       .then(function (result) {
                           if (result && result.success && result.targetUrl) {
@@ -386,10 +410,10 @@ else
                               if (typeof showErrorModal === 'function') showErrorModal(result.message);
                               else alert(result.message);
                           } else {
-                              window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(pendingSub.planId) + '&period=' + encodeURIComponent(periodInt) + '&paymentMethod=' + encodeURIComponent(selectedMethod);
+                              window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(pendingSub.planId) + '&period=' + encodeURIComponent(periodInt) + '&paymentMethod=' + encodeURIComponent(selectedMethod) + '&walletPhoneNumber=' + encodeURIComponent(walletPhone);
                           }
                       }).catch(function () {
-                          window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(pendingSub.planId) + '&period=' + encodeURIComponent(periodInt) + '&paymentMethod=' + encodeURIComponent(selectedMethod);
+                          window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(pendingSub.planId) + '&period=' + encodeURIComponent(periodInt) + '&paymentMethod=' + encodeURIComponent(selectedMethod) + '&walletPhoneNumber=' + encodeURIComponent(walletPhone);
                       }).finally(function () {
                           confirmBtn.disabled = false;
                           confirmBtn.textContent = 'متابعة للدفع';
