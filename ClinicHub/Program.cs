@@ -13,7 +13,7 @@ namespace ClinicHub
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            builder.Environment.EnvironmentName = Environments.Production;
 
             var env = builder.Environment;
 
