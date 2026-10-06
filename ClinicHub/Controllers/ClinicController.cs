@@ -1133,9 +1133,20 @@ namespace ClinicHub.Controllers
                     return Json(new { success = false, message = "بيانات طلب الإعلان غير صالحة" });
                 }
 
+                var referer = Request.Headers["Referer"].ToString();
+                if (!string.IsNullOrWhiteSpace(referer) && !referer.Contains("/PaymentResult", StringComparison.OrdinalIgnoreCase))
+                {
+                    Response.Cookies.Append("prePaymentUrl", referer, new CookieOptions
+                    {
+                        Path = "/",
+                        Expires = DateTimeOffset.UtcNow.AddHours(1),
+                        SameSite = SameSiteMode.Lax
+                    });
+                }
+
                 if (string.IsNullOrWhiteSpace(request.ReturnUrl))
                 {
-                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Clinic/AdPaymentResult";
+                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult?type=ads";
                 }
 
                 var result = await _adService.CreateOrderAsync(clinicId, request);

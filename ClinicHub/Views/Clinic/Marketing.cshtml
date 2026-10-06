@@ -272,6 +272,14 @@
                         </span>
                     </label>
                 </div>
+
+                <div id="adWalletPhoneBox" class="mt-3 text-start">
+                    <label for="adWalletPhoneInput" class="form-label text-muted small mb-1">
+                        <i class="bi bi-phone me-1"></i> رقم المحفظة (فودافون كاش / اتصالات / أورنج / وي):
+                    </label>
+                    <input type="tel" id="adWalletPhoneInput" class="form-control" placeholder="01xxxxxxxxx" dir="ltr" maxlength="11">
+                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
+                </div>
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -360,10 +368,14 @@
 
 @section Scripts {
     <script>
+        var adWalletPhoneBox = document.getElementById('adWalletPhoneBox');
         document.querySelectorAll('input[name="adPaymentMethod"]').forEach(function(radio){
             radio.addEventListener('change', function(){
                 document.querySelectorAll('#paymentMethodAdModal .payment-method-card').forEach(function(c){ c.classList.remove('selected'); });
                 this.closest('.payment-method-card')?.classList.add('selected');
+                if (adWalletPhoneBox) {
+                    adWalletPhoneBox.style.display = this.value === 'PaymobWallet' ? 'block' : 'none';
+                }
             });
         });
         document.querySelectorAll('#paymentMethodAdModal .payment-method-card').forEach(function(card){
@@ -682,10 +694,24 @@
                 adConfirmBtn.addEventListener('click', function () {
                     if (!pendingAdOrder) return;
                     var selectedMethod = document.querySelector('input[name="adPaymentMethod"]:checked')?.value || 'PaymobWallet';
+                    var walletPhone = document.getElementById('adWalletPhoneInput')?.value?.trim() || '';
+                    if (selectedMethod === 'PaymobWallet' && !walletPhone) {
+                        alert('يرجى إدخال رقم المحفظة الإلكترونية للمتابعة (للتجربة: 01010101010)');
+                        return;
+                    }
+
                     adConfirmBtn.disabled = true;
                     adConfirmBtn.textContent = 'جارٍ التحويل للدفع...';
 
                     if (buyBtn) { buyBtn.disabled = true; buyBtn.textContent = 'جارٍ إنشاء الطلب...'; }
+
+                    try {
+                        var currentUrl = window.location.href;
+                        sessionStorage.setItem('prePaymentPage', currentUrl);
+                        localStorage.setItem('prePaymentPage', currentUrl);
+                        document.cookie = "prePaymentUrl=" + encodeURIComponent(currentUrl) + "; path=/; max-age=3600; SameSite=Lax";
+                    } catch (e) {}
+
                     fetch('/Clinic/CreateAdOrder', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -693,7 +719,8 @@
                             adPackageId: pendingAdOrder.packageId,
                             durationDays: pendingAdOrder.duration,
                             logoImageUrl: uploadedAdLogos.length > 0 ? uploadedAdLogos.join(',') : null,
-                            paymentMethod: selectedMethod
+                            paymentMethod: selectedMethod,
+                            walletPhoneNumber: walletPhone
                         })
                     })
                     .then(function (r) { return r.json(); })
@@ -702,8 +729,7 @@
                         var pmModal = bootstrap.Modal.getInstance(pmModalEl);
                         if (pmModal) pmModal.hide();
                         if (result.success && result.data && result.data.paymobRedirectUrl) {
-                            showSuccessModal('تم إنشاء الطلب بنجاح، أكمل الدفع في نافذة Paymob ثم اضغط "تحديث الحالة" لتأكيد التفعيل.');
-                            window.open(result.data.paymobRedirectUrl, '_blank');
+                            window.location.href = result.data.paymobRedirectUrl;
                         } else if (result.success) {
                             showSuccessModal(result.message || 'تم إنشاء الطلب بنجاح');
                         } else {
