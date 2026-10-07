@@ -7,5 +7,6 @@ namespace ClinicHub.Services.RequestModels
         public string? ReturnUrl { get; set; }
         public Guid? ClinicId { get; set; }
         public string? PaymentMethod { get; set; }
+        public string? WalletPhoneNumber { get; set; }
     }
 }

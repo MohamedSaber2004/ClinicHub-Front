@@ -1,4 +1,33 @@
-﻿Google Maps browser key is provided via the GoogleMaps__ApiKey environment variable
-(Windows User scope on dev machines, hosting-panel variable in production).
-See docs/specs/2026-09-18-google-maps-key-delivery-design.md.
-Do NOT commit API keys in this repo — retrieve the key from Google Cloud Console > Credentials.
+﻿Commit 3d52df50 created locally in repository E:\Clinichub Front Production\ClinicHub-Frontend
+Pushing production-branch
+Enumerating objects: 13, done.
+Delta compression using up to 4 threads
+Total 7 (delta 4), reused 0 (delta 0), pack-reused 0 (from 0)
+Remote: Resolving deltas:   0% (0/4)        
+Remote: Resolving deltas:  25% (1/4)        
+Remote: Resolving deltas:  50% (2/4)        
+Remote: Resolving deltas:  75% (3/4)        
+Remote: Resolving deltas: 100% (4/4)        
+Remote: Resolving deltas: 100% (4/4), completed with 4 local objects.        
+To https://github.com/MohamedSaber2004/ClinicHub-Front.git
+   288d556..3d52df5  production-branch -> production-branch
+Commit 85baa6d8 created locally in repository E:\Clinichub Front Production\ClinicHub-Frontend
+Pushing production-branch
+Error encountered while pushing to the remote repository: Git failed with a fatal error.
+unable to access 'https://github.com/MohamedSaber2004/ClinicHub-Front.git/': Failed to connect to github.com port 443 after 21102 ms: Could not connect to server
+
+Failed to push to the remote repository. See the Output window for more details.
+Git failed with a fatal error.
+unable to access 'https://github.com/MohamedSaber2004/ClinicHub-Front.git/': Failed to connect to github.com port 443 after 21128 ms: Could not connect to server
+
+Pushing production-branch
+Error encountered while pushing to the remote repository: Git failed with a fatal error.
+unable to access 'https://github.com/MohamedSaber2004/ClinicHub-Front.git/': Failed to connect to github.com port 443 after 21065 ms: Could not connect to server
+
+Failed to push to the remote repository. See the Output window for more details.
+Commit 679ddc66 created locally in repository E:\Clinichub Front Production\ClinicHub-Frontend
+Pushing production-branch
+Error encountered while pushing to the remote repository: Git failed with a fatal error.
+unable to access 'https://github.com/MohamedSaber2004/ClinicHub-Front.git/': Failed to connect to github.com port 443 after 21117 ms: Could not connect to server
+
+Failed to push to the remote repository. See the Output window for more details.

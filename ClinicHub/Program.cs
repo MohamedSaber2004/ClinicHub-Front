@@ -1,5 +1,6 @@
 using ClinicHub.Services;
 using ClinicHub.Services.Options;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Serilog;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace ClinicHub
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Environment.EnvironmentName = Environments.Production;
 
             var env = builder.Environment;
 
@@ -35,7 +37,12 @@ namespace ClinicHub
 
             builder.Host.UseSerilog();
 
-            // Add services to the container.
+            var keysDirectory = Path.Combine(builder.Environment.ContentRootPath, "keys");
+            Directory.CreateDirectory(keysDirectory);
+            builder.Services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(keysDirectory))
+                .SetApplicationName("ClinicHub");
+
             builder.Services.AddControllersWithViews()
                 .AddJsonOptions(options =>
                 {
@@ -66,11 +73,8 @@ namespace ClinicHub
 
             var app = builder.Build();
 
-            // Compress responses (Brotli/Gzip) — must run before static files
-            // and endpoints so CSS, JS, and JSON all ship compressed.
             app.UseResponseCompression();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -79,8 +83,6 @@ namespace ClinicHub
 
             app.UseHttpsRedirection();
 
-            // Static assets with a version fingerprint (?v=...) never change —
-            // cache them forever. Everything else gets a week.
             app.UseStaticFiles(new StaticFileOptions
             {
                 OnPrepareResponse = ctx =>
