@@ -1133,9 +1133,20 @@ namespace ClinicHub.Controllers
                     return Json(new { success = false, message = "بيانات طلب الإعلان غير صالحة" });
                 }
 
+                var referer = Request.Headers["Referer"].ToString();
+                if (!string.IsNullOrWhiteSpace(referer) && !referer.Contains("/PaymentResult", StringComparison.OrdinalIgnoreCase))
+                {
+                    Response.Cookies.Append("prePaymentUrl", referer, new CookieOptions
+                    {
+                        Path = "/",
+                        Expires = DateTimeOffset.UtcNow.AddHours(1),
+                        SameSite = SameSiteMode.Lax
+                    });
+                }
+
                 if (string.IsNullOrWhiteSpace(request.ReturnUrl))
                 {
-                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Clinic/AdPaymentResult";
+                    request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult?type=ads";
                 }
 
                 var result = await _adService.CreateOrderAsync(clinicId, request);
@@ -1208,9 +1219,7 @@ namespace ClinicHub.Controllers
 
         public IActionResult AdPaymentResult(bool success = false)
         {
-            ViewBag.PaymentSuccess = success;
-            ViewBag.PaymentType = "ads";
-            return View();
+            return RedirectToAction("PaymentResult", "Home", new { success = success, type = "ads" });
         }
 
         [Route("Clinic/MySubscription")]
@@ -1240,11 +1249,22 @@ namespace ClinicHub.Controllers
         }
 
         [Route("Clinic/Subscribe")]
-        public async Task<IActionResult> Subscribe(Guid planId, int period = 0)
+        public async Task<IActionResult> Subscribe(Guid planId, int period = 0, string? paymentMethod = null, string? walletPhoneNumber = null)
         {
+            var referer = Request.Headers["Referer"].ToString();
+            if (!string.IsNullOrWhiteSpace(referer) && !referer.Contains("/PaymentResult", StringComparison.OrdinalIgnoreCase) && !referer.Contains("/Subscribe", StringComparison.OrdinalIgnoreCase))
+            {
+                Response.Cookies.Append("prePaymentUrl", referer, new CookieOptions
+                {
+                    Path = "/",
+                    Expires = DateTimeOffset.UtcNow.AddHours(1),
+                    SameSite = SameSiteMode.Lax
+                });
+            }
+
             if (!Request.Cookies.ContainsKey("AccessToken"))
             {
-                var returnUrl = $"{ClinicRoutes.Pages.Subscribe()}?planId={planId}&period={period}";
+                var returnUrl = $"{ClinicRoutes.Pages.Subscribe()}?planId={planId}&period={period}&paymentMethod={Uri.EscapeDataString(paymentMethod ?? "")}&walletPhoneNumber={Uri.EscapeDataString(walletPhoneNumber ?? "")}";
                 return RedirectToAction("Login", "Account", new { returnUrl = returnUrl });
             }
 
@@ -1295,7 +1315,9 @@ namespace ClinicHub.Controllers
                     PlanId = planId,
                     Period = period,
                     ReturnUrl = returnUrl,
-                    ClinicId = clinicId
+                    ClinicId = clinicId,
+                    PaymentMethod = paymentMethod,
+                    WalletPhoneNumber = walletPhoneNumber
                 });
 
                 var targetUrl = result?.TargetRedirectUrl;
@@ -1325,6 +1347,17 @@ namespace ClinicHub.Controllers
         {
             try
             {
+                var referer = Request.Headers["Referer"].ToString();
+                if (!string.IsNullOrWhiteSpace(referer) && !referer.Contains("/PaymentResult", StringComparison.OrdinalIgnoreCase) && !referer.Contains("/Subscribe", StringComparison.OrdinalIgnoreCase))
+                {
+                    Response.Cookies.Append("prePaymentUrl", referer, new CookieOptions
+                    {
+                        Path = "/",
+                        Expires = DateTimeOffset.UtcNow.AddHours(1),
+                        SameSite = SameSiteMode.Lax
+                    });
+                }
+
                 if (string.IsNullOrWhiteSpace(request.ReturnUrl))
                 {
                     request.ReturnUrl = $"{Request.Scheme}://{Request.Host}/Home/PaymentResult";

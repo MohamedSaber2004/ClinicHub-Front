@@ -14,7 +14,8 @@
     <link rel="preload" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" /></noscript>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" /></noscript>
     <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css?v=20260910_skeleton_v3" asp-append-version="true" />
     <meta name="csrf-token" content="@_antiforgery.GetAndStoreTokens(Context).RequestToken" />
@@ -80,7 +81,6 @@
     <partial name="_SuccessModal" />
     <partial name="_ConfirmModal" />
     <partial name="_LoadingSpinner" />
-    <partial name="_ValidationScriptsPartial" />
     <!-- Toast container -->
     <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
@@ -97,6 +97,7 @@
         }
     </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/scroll-animations.js" asp-append-version="true"></script>
     <script src="~/js/error-service.js" asp-append-version="true"></script>

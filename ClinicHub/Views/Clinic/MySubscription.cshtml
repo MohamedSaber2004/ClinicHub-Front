@@ -94,11 +94,14 @@ else
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
                                 <span>اشتراكك منتهٍ أو غير نشط. يرجى التجديد للاستمرار في استخدام لوحة التحكم.</span>
                             </div>
-                            <a href="@ClinicRoutes.Pages.Subscribe()@($"?planId={subscription.PlanId}&period={subscription.Period}")"
-                               class="btn btn-primary btn-renew">
+                            <button type="button"
+                               class="btn btn-primary btn-renew js-subscribe-open"
+                               data-plan-id="@subscription.PlanId"
+                               data-period="@subscription.Period"
+                               data-plan-name="@planNameText">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" fill="currentColor"/></svg>
                                 تجديد الاشتراك — @planNameText
-                            </a>
+                            </button>
                         </div>
                     }
                 </div>
@@ -125,10 +128,13 @@ else
                                     }
                                     else
                                     {
-                                        <a href="@ClinicRoutes.Pages.Subscribe()@($"?planId={plan.Id}&period={subscription.Period}")"
-                                           class="btn btn-sm @(isCurrent ? "btn-primary" : "btn-secondary") btn-plan-subscribe">
+                                        <button type="button"
+                                           class="btn btn-sm @(isCurrent ? "btn-primary" : "btn-secondary") btn-plan-subscribe js-subscribe-open"
+                                           data-plan-id="@plan.Id"
+                                           data-period="@subscription.Period"
+                                           data-plan-name="@plan.NameAr">
                                             @(isCurrent ? "تجديد هذه الباقة" : "اشترك بهذه الباقة")
-                                        </a>
+                                        </button>
                                     }
                                 </div>
                             </div>
@@ -139,6 +145,64 @@ else
         </div>
     </div>
 }
+
+<div class="modal fade" id="paymentMethodSubModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">اختر طريقة الدفع</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="modal-premium-subtitle" id="paymentMethodSubModalSubtitle"></p>
+                <div class="payment-methods-grid">
+                    <label class="payment-method-card selected">
+                        <input type="radio" name="subPaymentMethod" value="PaymobWallet" checked>
+                        <div class="payment-method-icon payment-method-icon--wallet">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 019-9"/>
+                            </svg>
+                        </div>
+                        <div class="payment-method-info">
+                            <p class="payment-method-title">محفظة Paymob</p>
+                            <p class="payment-method-desc">الدفع عبر المحفظة الإلكترونية</p>
+                        </div>
+                        <span class="payment-method-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+                        </span>
+                    </label>
+                    <label class="payment-method-card">
+                        <input type="radio" name="subPaymentMethod" value="PaymobCreditCard">
+                        <div class="payment-method-icon payment-method-icon--card">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                        </div>
+                        <div class="payment-method-info">
+                            <p class="payment-method-title">بطاقة ائتمانية</p>
+                            <p class="payment-method-desc">الدفع ببطاقة بنكية عبر Paymob</p>
+                        </div>
+                        <span class="payment-method-check">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+                        </span>
+                    </label>
+                </div>
+                <div id="subWalletPhoneBox" class="mt-3 text-start">
+                    <label for="subWalletPhoneInput" class="form-label text-muted small mb-1">
+                        <i class="bi bi-phone me-1"></i> رقم المحفظة (فودافون كاش / اتصالات / أورنج / وي):
+                    </label>
+                    <input type="tel" id="subWalletPhoneInput" class="form-control" placeholder="01xxxxxxxxx" dir="ltr" maxlength="11">
+                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="subConfirmPaymentMethodBtn">متابعة للدفع</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
     .subscription-empty-state {
@@ -270,5 +334,92 @@ else
                   });
             });
         }
+
+        (function () {
+            var pendingSub = null;
+            var subWalletPhoneBox = document.getElementById('subWalletPhoneBox');
+
+            document.querySelectorAll('#paymentMethodSubModal input[name="subPaymentMethod"]').forEach(function (radio) {
+                radio.addEventListener('change', function () {
+                    document.querySelectorAll('#paymentMethodSubModal .payment-method-card').forEach(function (c) { c.classList.remove('selected'); });
+                    this.closest('.payment-method-card')?.classList.add('selected');
+                    if (subWalletPhoneBox) {
+                        subWalletPhoneBox.style.display = this.value === 'PaymobWallet' ? 'block' : 'none';
+                    }
+                });
+            });
+            document.querySelectorAll('#paymentMethodSubModal .payment-method-card').forEach(function (card) {
+                card.addEventListener('click', function (e) {
+                    if (e.target.closest('input')) return;
+                    var r = this.querySelector('input[type="radio"]');
+                    if (r && !r.checked) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
+                });
+            });
+
+            document.querySelectorAll('.js-subscribe-open').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    pendingSub = {
+                        planId: this.getAttribute('data-plan-id'),
+                        period: this.getAttribute('data-period'),
+                        planName: this.getAttribute('data-plan-name') || 'الباقة المختارة'
+                    };
+                    if (!pendingSub.planId) return;
+                    var subtitleEl = document.getElementById('paymentMethodSubModalSubtitle');
+                    if (subtitleEl) {
+                        subtitleEl.textContent = 'باقة ' + pendingSub.planName;
+                    }
+                    var modalEl = document.getElementById('paymentMethodSubModal');
+                    if (modalEl) {
+                        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
+                });
+            });
+
+            var confirmBtn = document.getElementById('subConfirmPaymentMethodBtn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function () {
+                    if (!pendingSub || !pendingSub.planId) return;
+                    var selectedMethod = document.querySelector('input[name="subPaymentMethod"]:checked')?.value || 'PaymobWallet';
+                    var walletPhone = document.getElementById('subWalletPhoneInput')?.value?.trim() || '';
+                    if (selectedMethod === 'PaymobWallet' && !walletPhone) {
+                        alert('يرجى إدخال رقم المحفظة الإلكترونية للمتابعة (للتجربة: 01010101010)');
+                        return;
+                    }
+                    var periodInt = parseInt(pendingSub.period, 10);
+                    if (isNaN(periodInt)) periodInt = 0;
+                    confirmBtn.disabled = true;
+                    confirmBtn.textContent = 'جارٍ التحويل للدفع...';
+
+                    try {
+                        var currentUrl = window.location.href;
+                        sessionStorage.setItem('prePaymentPage', currentUrl);
+                        localStorage.setItem('prePaymentPage', currentUrl);
+                        document.cookie = "prePaymentUrl=" + encodeURIComponent(currentUrl) + "; path=/; max-age=3600; SameSite=Lax";
+                    } catch (e) {}
+
+                    fetch('/Clinic/InitiatePayment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ planId: pendingSub.planId, period: periodInt, paymentMethod: selectedMethod, walletPhoneNumber: walletPhone })
+                    }).then(function (r) { return r.json(); })
+                      .then(function (result) {
+                          if (result && result.success && result.targetUrl) {
+                              window.location.href = result.targetUrl;
+                          } else if (result && result.message) {
+                              if (typeof showErrorModal === 'function') showErrorModal(result.message);
+                              else alert(result.message);
+                          } else {
+                              window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(pendingSub.planId) + '&period=' + encodeURIComponent(periodInt) + '&paymentMethod=' + encodeURIComponent(selectedMethod) + '&walletPhoneNumber=' + encodeURIComponent(walletPhone);
+                          }
+                      }).catch(function () {
+                          window.location.href = '@ClinicRoutes.Pages.Subscribe()' + '?planId=' + encodeURIComponent(pendingSub.planId) + '&period=' + encodeURIComponent(periodInt) + '&paymentMethod=' + encodeURIComponent(selectedMethod) + '&walletPhoneNumber=' + encodeURIComponent(walletPhone);
+                      }).finally(function () {
+                          confirmBtn.disabled = false;
+                          confirmBtn.textContent = 'متابعة للدفع';
+                      });
+                });
+            }
+        })();
     </script>
 }

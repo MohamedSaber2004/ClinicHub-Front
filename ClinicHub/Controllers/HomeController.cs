@@ -282,6 +282,7 @@ public class HomeController : BaseController
             ViewBag.VerificationStatus = null;
             ViewBag.SubscriptionActive = false;
             ViewBag.SubscriptionEndDate = null;
+            ViewBag.PrePaymentUrl = Request.Cookies["prePaymentUrl"];
 
             if (Request.Cookies.ContainsKey("AccessToken"))
             {
