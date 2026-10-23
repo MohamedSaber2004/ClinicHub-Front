@@ -154,7 +154,7 @@
         <input type="hidden" name="toDate" value="@toDateFilter" />
         <input type="hidden" name="searchTerm" value="@searchTerm" />
         <input type="hidden" name="clinicId" value="@clinicIdFilter" />
-        <input type="text" name="summarySearch" class="form-input" placeholder="بحث باسم العيادة في الملخص..." value="@summarySearch" />
+        <input type="text" name="summarySearch" aria-label="بحث في المدفوعات" class="form-input" placeholder="بحث باسم العيادة في الملخص..." value="@summarySearch" />
         <button type="submit" class="btn btn-primary">بحث</button>
         <a href="@Url.Action("Payments", new { month = month, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm, clinicId = clinicIdFilter })" class="btn btn-secondary">مسح</a>
     </form>
@@ -248,7 +248,7 @@
 <form class="filter-bar" method="get" action="@AdminRoutes.Pages.Payments()">
     <input type="hidden" name="month" value="@month" />
     <input type="hidden" name="summarySearch" value="@summarySearch" />
-    <input type="text" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو الكود أو الرقم المرجعي..." value="@searchTerm" />
+    <input type="text" name="searchTerm" class="form-input" aria-label="بحث في المدفوعات" placeholder="بحث بالاسم أو الكود أو الرقم المرجعي..." value="@searchTerm" />
     <select name="clinicId" class="form-select">
         <option value="">جميع العيادات</option>
         @foreach (var clinic in clinics)
@@ -278,8 +278,8 @@
         <option value="6" selected="@(statusFilter == "6")">استرداد معلق</option>
         <option value="7" selected="@(statusFilter == "7")">فشل الاسترداد</option>
     </select>
-    <input type="date" name="fromDate" class="form-input" value="@fromDateFilter" title="من تاريخ" />
-    <input type="date" name="toDate" class="form-input" value="@toDateFilter" title="إلى تاريخ" />
+    <input type="date" name="fromDate" aria-label="من تاريخ" class="form-input" value="@fromDateFilter" title="من تاريخ" />
+    <input type="date" name="toDate" aria-label="إلى تاريخ" class="form-input" value="@toDateFilter" title="إلى تاريخ" />
     <button type="submit" class="btn btn-primary">بحث</button>
     <a href="@AdminRoutes.Pages.Payments()" class="btn btn-secondary">مسح</a>
 </form>
@@ -379,7 +379,7 @@
             </div>
             <div class="modal-body-custom">
                 <div class="form-group">
-                    <label class="form-label">العيادة</label>
+                    <label class="form-label" for="manualPayer">العيادة</label>
                     <select id="manualPayer" class="form-select">
                         <option value="">اختر العيادة</option>
                         @if (clinics.Count == 0)
@@ -398,13 +398,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">المبلغ</label>
+                            <label class="form-label" for="manualAmount">المبلغ</label>
                             <input type="number" id="manualAmount" class="form-input" min="0" step="0.01" placeholder="0.00 ج.م" />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">طريقة الدفع</label>
+                            <label class="form-label" for="manualMethod">طريقة الدفع</label>
                             <select id="manualMethod" class="form-select">
                                 <option value="0">نقدي</option>
                                 <option value="1">Paymob - محفظة إلكترونية</option>
@@ -414,7 +414,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">الوصف / ملاحظات <span class="text-muted">(اختياري)</span></label>
+                    <label class="form-label" for="manualNotes">الوصف / ملاحظات <span class="text-muted">(اختياري)</span></label>
                     <textarea id="manualNotes" class="form-textarea" maxlength="500" placeholder="وصف الدفعة..." rows="2"></textarea>
                 </div>
             </div>
@@ -438,7 +438,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">العيادة</label>
+                            <label class="form-label" for="adsClinic">العيادة</label>
                             <select id="adsClinic" class="form-select">
                                 <option value="">اختر العيادة</option>
                                 @if (eligibleClinics.Count == 0)
@@ -457,7 +457,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الباقة</label>
+                            <label class="form-label" for="adsPackage">الباقة</label>
                             <select id="adsPackage" class="form-select" onchange="onAdsPackageChange()">
                                 <option value="">اختر الباقة</option>
                                 @foreach (var pkg in adPackages)
@@ -471,7 +471,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">المدة (أيام)</label>
+                            <label class="form-label" for="adsDuration">المدة (أيام)</label>
                             <select id="adsDuration" class="form-select" onchange="onAdsDurationChange()" disabled>
                                 <option value="">اختر المدة</option>
                             </select>
@@ -479,7 +479,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">السعر</label>
+                            <label class="form-label" for="adsPrice">السعر</label>
                             <input type="text" id="adsPrice" class="form-input" readonly placeholder="0.00 ج.م" />
                         </div>
                     </div>

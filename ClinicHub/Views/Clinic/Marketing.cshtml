@@ -156,7 +156,7 @@
         <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <div class="ads-search-wrap" style="min-width:180px;flex:1;max-width:280px">
                 <svg class="ads-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" id="marketingAdsSearch" class="form-input form-input-sm" placeholder="بحث في إعلاناتي..." style="padding-right:32px" />
+                <input type="text" id="marketingAdsSearch" aria-label="بحث في الإعلانات" class="form-input form-input-sm" placeholder="بحث في إعلاناتي..." style="padding-right:32px" />
             </div>
             <button type="button" class="btn btn-secondary btn-sm" id="refreshAdsBtn" onclick="refreshAds()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -307,7 +307,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">الباقة الإعلانية</label>
+                                <label class="form-label" for="buyPackage">الباقة الإعلانية</label>
                                 <select id="buyPackage" class="form-select" onchange="onBuyPackageChange()">
                                     <option value="">اختر الباقة</option>
                                     @foreach (var pkg in packages)
@@ -321,7 +321,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">المدة (أيام)</label>
+                                <label class="form-label" for="buyDuration">المدة (أيام)</label>
                                 <select id="buyDuration" class="form-select" onchange="updateBuyPrice()" disabled>
                                     <option value="">اختر المدة</option>
                                 </select>
@@ -330,7 +330,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">السعر الإجمالي</label>
+                        <label class="form-label" for="buyPrice">السعر الإجمالي</label>
                         <input type="text" id="buyPrice" class="form-input" readonly placeholder="0.00 ج.م" />
                     </div>
                     <div class="form-group">

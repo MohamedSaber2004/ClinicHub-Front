@@ -36,12 +36,12 @@
 <div class="table-card p-4 mb-4">
     <form method="get" action="@Url.Action("Doctors")" class="row g-3 align-items-end">
         <div class="col-md-5">
-            <label class="form-label">بحث</label>
-            <input type="text" name="searchTerm" class="form-input form-input-sm w-100" placeholder="ابحث باسم الطبيب أو البريد الإلكتروني..." value="@searchTerm" />
+            <label class="form-label" for="searchTerm">بحث</label>
+            <input id="searchTerm" type="text" name="searchTerm" class="form-input form-input-sm w-100" placeholder="ابحث باسم الطبيب أو البريد الإلكتروني..." value="@searchTerm" />
         </div>
         <div class="col-md-4">
-            <label class="form-label">التخصص</label>
-            <select name="specializationId" class="form-select form-input-sm w-100">
+            <label class="form-label" for="specializationId">التخصص</label>
+            <select id="specializationId" name="specializationId" class="form-select form-input-sm w-100">
                 <option value="">جميع التخصصات</option>
                 @foreach (var spec in specializations)
                 {
@@ -208,34 +208,34 @@
                 <form id="createDoctorForm">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                            <label class="form-label" for="createDoctorFullName">الاسم الكامل <span class="text-danger">*</span></label>
                             <input type="text" class="form-input form-input-sm w-100" id="createDoctorFullName" required placeholder="مثال: أحمد علي" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                            <label class="form-label" for="createDoctorEmail">البريد الإلكتروني <span class="text-danger">*</span></label>
                             <input type="email" class="form-input form-input-sm w-100" id="createDoctorEmail" required placeholder="example@domain.com" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">رقم الهاتف <span class="text-danger">*</span></label>
+                            <label class="form-label" for="createDoctorPhone">رقم الهاتف <span class="text-danger">*</span></label>
                             <input type="text" class="form-input form-input-sm w-100" id="createDoctorPhone" required placeholder="+201234567890" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">كلمة المرور <span class="text-danger">*</span></label>
+                            <label class="form-label" for="createDoctorPassword">كلمة المرور <span class="text-danger">*</span></label>
                             <input type="password" class="form-input form-input-sm w-100" id="createDoctorPassword" required minlength="6" placeholder="********" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">الجنس <span class="text-danger">*</span></label>
+                            <label class="form-label" for="createDoctorGender">الجنس <span class="text-danger">*</span></label>
                             <select class="form-select form-input-sm w-100" id="createDoctorGender" required>
                                 <option value="1">ذكر</option>
                                 <option value="2">أنثى</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ الميلاد</label>
+                            <label class="form-label" for="createDoctorBirthDate">تاريخ الميلاد</label>
                             <input type="date" class="form-input form-input-sm w-100" id="createDoctorBirthDate" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">التخصص <span class="text-danger">*</span></label>
+                            <label class="form-label" for="createDoctorSpecializationId">التخصص <span class="text-danger">*</span></label>
                             <select class="form-select form-input-sm w-100" id="createDoctorSpecializationId" required>
                                 <option value="">اختر التخصص</option>
                                 @foreach (var spec in specializations)
@@ -245,11 +245,11 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">سنوات الخبرة</label>
+                            <label class="form-label" for="createDoctorExperience">سنوات الخبرة</label>
                             <input type="number" class="form-input form-input-sm w-100" id="createDoctorExperience" value="0" min="0" />
                         </div>
                         <div class="col-12">
-                            <label class="form-label">صورة الطبيب (اختياري)</label>
+                            <label class="form-label" for="createDoctorImageInput">صورة الطبيب (اختياري)</label>
                             <div class="file-upload-wrapper">
                                 <input type="file" id="createDoctorImageInput" accept="image/*" class="form-input form-input-sm w-100" />
                                 <input type="hidden" id="createDoctorImage" />
@@ -263,14 +263,14 @@
                             </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">السيرة الذاتية (اختياري)</label>
+                            <label class="form-label" for="createDoctorBio">السيرة الذاتية (اختياري)</label>
                             <textarea class="form-input form-input-sm w-100" id="createDoctorBio" rows="3" placeholder="نبذة عن الطبيب..."></textarea>
                         </div>
                         <div class="col-12">
                             <label class="form-label">أوقات العمل (اختياري)</label>
                             <div id="availabilityContainer">
                                 <div class="availability-row" data-index="0">
-                                    <select class="availability-day form-select auth-form-control">
+                                    <select class="availability-day form-select auth-form-control" aria-label="اليوم">
                                         <option value="">اليوم</option>
                                         <option value="0">الأحد</option>
                                         <option value="1">الإثنين</option>
@@ -347,23 +347,23 @@
                     <input type="hidden" id="editDoctorId" />
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">الاسم الكامل</label>
+                            <label class="form-label" for="editDoctorFullName">الاسم الكامل</label>
                             <input type="text" class="form-input form-input-sm w-100" id="editDoctorFullName" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">البريد الإلكتروني</label>
+                            <label class="form-label" for="editDoctorEmail">البريد الإلكتروني</label>
                             <input type="email" class="form-input form-input-sm w-100" id="editDoctorEmail" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">رقم الهاتف</label>
+                            <label class="form-label" for="editDoctorPhone">رقم الهاتف</label>
                             <input type="text" class="form-input form-input-sm w-100" id="editDoctorPhone" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">تاريخ الميلاد</label>
+                            <label class="form-label" for="editDoctorBirthDate">تاريخ الميلاد</label>
                             <input type="date" class="form-input form-input-sm w-100" id="editDoctorBirthDate" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">الجنس</label>
+                            <label class="form-label" for="editDoctorGender">الجنس</label>
                             <select class="form-select form-input-sm w-100" id="editDoctorGender">
                                 <option value="">اختر</option>
                                 <option value="1">ذكر</option>
@@ -371,7 +371,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">التخصص</label>
+                            <label class="form-label" for="editDoctorSpecializationId">التخصص</label>
                             <select class="form-select form-input-sm w-100" id="editDoctorSpecializationId">
                                 <option value="">اختر التخصص</option>
                                 @foreach (var spec in specializations)
@@ -381,7 +381,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">سنوات الخبرة</label>
+                            <label class="form-label" for="editDoctorExperience">سنوات الخبرة</label>
                             <input type="number" class="form-input form-input-sm w-100" id="editDoctorExperience" min="0" />
                         </div>
                         <div class="col-md-6">
@@ -393,7 +393,7 @@
                             </label>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">صورة الطبيب</label>
+                            <label class="form-label" for="editDoctorImageInput">صورة الطبيب</label>
                             <div class="file-upload-wrapper">
                                 <input type="file" id="editDoctorImageInput" accept="image/*" class="form-input form-input-sm w-100" />
                                 <input type="hidden" id="editDoctorImage" />
@@ -406,7 +406,7 @@
                             </div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">السيرة الذاتية</label>
+                            <label class="form-label" for="editDoctorBio">السيرة الذاتية</label>
                             <textarea class="form-input form-input-sm w-100" id="editDoctorBio" rows="3" placeholder="نبذة عن الطبيب..."></textarea>
                         </div>
                         <div class="col-12">
@@ -464,11 +464,11 @@
                         <p class="fw-bold mb-0" id="changePasswordDoctorName"></p>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">كلمة المرور الجديدة</label>
+                        <label class="form-label" for="changePasswordDoctorNew">كلمة المرور الجديدة</label>
                         <input type="password" class="form-input form-input-sm w-100" id="changePasswordDoctorNew" placeholder="كلمة المرور الجديدة" required />
                     </div>
                     <div class="form-group">
-                        <label class="form-label">تأكيد كلمة المرور</label>
+                        <label class="form-label" for="changePasswordDoctorConfirm">تأكيد كلمة المرور</label>
                         <input type="password" class="form-input form-input-sm w-100" id="changePasswordDoctorConfirm" placeholder="تأكيد كلمة المرور" required />
                     </div>
                 </form>

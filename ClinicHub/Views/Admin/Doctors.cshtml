@@ -25,7 +25,7 @@
 
 <!-- Filter Bar -->
 <form method="get" action="/Admin/Doctors" class="filter-bar">
-    <input type="text" name="searchTerm" class="form-input" placeholder="بحث عن طبيب..." value="@searchTerm" />
+    <input type="text" name="searchTerm" class="form-input" aria-label="بحث عن طبيب" placeholder="بحث عن طبيب..." value="@searchTerm" />
     <select name="clinicId" class="form-select" onchange="this.form.submit()">
         <option value="">جميع العيادات</option>
         @foreach (var c in clinics)

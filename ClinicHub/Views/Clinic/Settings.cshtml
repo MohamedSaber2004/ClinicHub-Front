@@ -9,6 +9,7 @@
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
     var googleMapsApiKey = ViewBag.GoogleMapsApiKey as string ?? "";
     var hasMapKey = !string.IsNullOrEmpty(googleMapsApiKey);
+    var mapFieldId = hasMapKey ? "settingsPlaceSearch" : null;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -29,26 +30,26 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label class="form-label">اسم العيادة</label>
+                    <label class="form-label" for="settingsName">اسم العيادة</label>
                     <input type="text" class="form-input" id="settingsName" value="@settings?.Name" />
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label class="form-label">الطبيب المسؤول</label>
+                    <label class="form-label" for="settingsDoctor">الطبيب المسؤول</label>
                     <input type="text" class="form-input" id="settingsDoctor" value="@settings?.ResponsibleDoctor" disabled />
                     <p class="form-hint">الطبيب المسؤول هو مدير العيادة ولا يمكن تعديله.</p>
                 </div>
             </div>
         </div>
         <div class="form-group">
-            <label class="form-label">الوصف</label>
+            <label class="form-label" for="settingsDesc">الوصف</label>
             <textarea class="form-input form-textarea" rows="3" id="settingsDesc">@settings?.Description</textarea>
         </div>
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label class="form-label">رقم الهاتف</label>
+                    <label class="form-label" for="settingsPhone">رقم الهاتف</label>
                     <input type="text" class="form-input" id="settingsPhone" value="@settings?.Phone" placeholder="01XXXXXXXXX" />
                 </div>
             </div>
@@ -62,13 +63,13 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
-                    <label class="form-label">الموقع (الغرفة)</label>
+                    <label class="form-label" for="settingsLocation">الموقع (الغرفة)</label>
                     <input type="text" class="form-input" id="settingsLocation" value="@settings?.Location" placeholder="الطابق - الغرفة" />
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label class="form-label">التخصص الرئيسي</label>
+                    <label class="form-label" for="settingsSpecialty">التخصص الرئيسي</label>
                     <select class="form-select" id="settingsSpecialty">
                         <option value="">اختر التخصص</option>
                         @foreach (var spec in specializations)
@@ -81,22 +82,23 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="form-label">الموقع على الخريطة</label>
+            <label class="form-label" for="@mapFieldId">الموقع على الخريطة</label>
             <input type="hidden" id="settingsLat" value="@lat.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
             <input type="hidden" id="settingsLng" value="@lng.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
             @if (hasMapKey)
             {
                 <div class="map-search-row">
-                    <input type="text" id="settingsPlaceSearch" class="form-input settings-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
+                    <input type="text" id="settingsPlaceSearch" class="form-input settings-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" aria-describedby="settingsMapHint" />
                     <button type="button" class="btn btn-primary btn-sm map-search-btn" id="settingsPlaceSearchBtn">بحث</button>
                 </div>
-                <div id="settingsClinicMap" class="settings-map"></div>
+                <div class="form-hint" id="settingsMapHint">اسحب الدبوس أو ابحث لتحديد موقع العيادة بدقة</div>
+                <div id="settingsClinicMap" class="settings-map" role="application" aria-label="خريطة تحديد موقع العيادة" aria-describedby="settingsMapHint"></div>
                 <div class="settings-map-tools">
                     <button type="button" class="btn btn-sm btn-outline-primary settings-location-btn" id="settingsMyLocationBtn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
                         موقعي الحالي
                     </button>
-                    <span class="text-muted text-sm settings-coords-display" id="settingsCoordsDisplay">@lat.ToString("F4", System.Globalization.CultureInfo.InvariantCulture), @lng.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)</span>
+                    <span class="text-muted text-sm settings-coords-display" id="settingsCoordsDisplay" dir="ltr">@lat.ToString("F4", System.Globalization.CultureInfo.InvariantCulture), @lng.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)</span>
                 </div>
             }
             else
@@ -114,31 +116,31 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="form-group">
-                    <label class="form-label">رسوم الكشف (جنيه)</label>
+                    <label class="form-label" for="settingsFee">رسوم الكشف (جنيه)</label>
                     <input type="number" class="form-input" id="settingsFee" min="0" step="0.01" value="@(settings?.ConsultationFee ?? 0)" />
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                    <label class="form-label">العملة</label>
+                    <label class="form-label" for="settingsCurrency">العملة</label>
                     <input type="text" class="form-input" id="settingsCurrency" maxlength="3" value="@(settings?.Currency ?? "EGP")" />
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                    <label class="form-label">أقصى أيام للحجز المسبق</label>
+                    <label class="form-label" for="settingsMaxDays">أقصى أيام للحجز المسبق</label>
                     <input type="number" class="form-input" id="settingsMaxDays" min="1" value="@(settings?.MaxAdvanceBookingDays ?? 30)" />
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                    <label class="form-label">مهلة تأكيد الحجز (دقائق)</label>
+                    <label class="form-label" for="settingsTtl">مهلة تأكيد الحجز (دقائق)</label>
                     <input type="number" class="form-input" id="settingsTtl" min="1" value="@(settings?.ReservationTtlMinutes ?? 10)" />
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                    <label class="form-label">مهلة الإلغاء (دقائق)</label>
+                    <label class="form-label" for="settingsCancelWindow">مهلة الإلغاء (دقائق)</label>
                     <input type="number" class="form-input" id="settingsCancelWindow" min="1" value="@(settings?.CancellationWindowMinutes ?? 120)" />
                     <p class="form-hint">الفترة المتاحة للمريض لإلغاء الحجز واسترداد رسومه بعد تأكيده (افتراضياً 120 دقيقة = ساعتان).</p>
                 </div>

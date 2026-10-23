@@ -75,9 +75,9 @@
             <option value="2" selected="@(ViewBag.StatusFilter == "2")">ملغى</option>
             <option value="7" selected="@(ViewBag.StatusFilter == "7")">مرفوض</option>
         </select>
-        <input type="date" name="startDate" class="form-input" value="@ViewBag.StartDate" title="من تاريخ" />
-        <input type="date" name="endDate" class="form-input" value="@ViewBag.EndDate" title="إلى تاريخ" />
-        <input type="text" name="searchTerm" class="form-input" placeholder="اسم المريض أو الهاتف..." value="@ViewBag.SearchTerm" />
+        <input type="date" name="startDate" aria-label="من تاريخ" class="form-input" value="@ViewBag.StartDate" title="من تاريخ" />
+        <input type="date" name="endDate" aria-label="إلى تاريخ" class="form-input" value="@ViewBag.EndDate" title="إلى تاريخ" />
+        <input type="text" name="searchTerm" aria-label="بحث في المواعيد" class="form-input" placeholder="اسم المريض أو الهاتف..." value="@ViewBag.SearchTerm" />
         <button type="submit" class="btn btn-primary btn-sm">بحث</button>
         <a href="@Url.Action("Appointments")" class="btn btn-outline-secondary btn-sm">مسح</a>
     </form>

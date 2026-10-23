@@ -6850,27 +6850,34 @@ body {
   border-radius: var(--radius-sm);
 }
 
+/* Widths are preference, not a hard floor: in a narrow content column on a
+   desktop the row shrinks down to the min-widths (which are just big enough
+   for the padding + the widest option text) instead of spilling sideways. */
 .availability-row .availability-day {
   width: 110px;
-  flex-shrink: 0;
+  min-width: 84px;
+  flex-shrink: 1;
 }
 
 .availability-row .availability-from-hour,
 .availability-row .availability-to-hour {
-  width: 70px;
-  flex-shrink: 0;
+  width: 74px;
+  min-width: 60px;
+  flex-shrink: 1;
 }
 
 .availability-row .availability-from-minute,
 .availability-row .availability-to-minute {
-  width: 70px;
-  flex-shrink: 0;
+  width: 74px;
+  min-width: 60px;
+  flex-shrink: 1;
 }
 
 .availability-row .availability-from-period,
 .availability-row .availability-to-period {
   width: 95px;
-  flex-shrink: 0;
+  min-width: 80px;
+  flex-shrink: 1;
 }
 
 .availability-row .availability-slot {
@@ -6891,6 +6898,8 @@ body {
   color: var(--clr-danger);
   cursor: pointer;
   padding: 4px;
+  min-width: 32px;
+  min-height: 32px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -6918,48 +6927,12 @@ body {
   background: var(--clr-primary-light) !important;
 }
 
+/* Compact controls — the chevron is drawn 12px from the left edge, so the
+   left padding has to clear it (the old 8px padding sat on top of the digits). */
 .availability-row select,
 .availability-row input {
-  font-size: 13px !important;
-  padding: 6px 8px !important;
-}
-
-#adminAvailabilityContainer .availability-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding: 8px;
-  background: var(--clr-surface-subtle);
-  border-radius: var(--radius-sm);
-}
-
-#adminAvailabilityContainer .availability-day {
-  width: 110px;
-  flex-shrink: 0;
-}
-
-#adminAvailabilityContainer .availability-from-hour,
-#adminAvailabilityContainer .availability-to-hour {
-  width: 70px;
-  flex-shrink: 0;
-}
-
-#adminAvailabilityContainer .availability-from-minute,
-#adminAvailabilityContainer .availability-to-minute {
-  width: 70px;
-  flex-shrink: 0;
-}
-
-#adminAvailabilityContainer .availability-from-period,
-#adminAvailabilityContainer .availability-to-period {
-  width: 95px;
-  flex-shrink: 0;
-}
-
-#adminAvailabilityContainer .availability-slot {
-  width: 80px;
-  flex-shrink: 0;
+  font-size: var(--fs-md);
+  padding: 8px 10px 8px 30px;
 }
 
 /* ============================================================
@@ -7748,34 +7721,56 @@ img {
   }
 }
 
-@media (max-width: 768px) {
+/* Working-hours rows on touch widths: day + delete on the first line, then
+   hour / minute / period for the start time, a centred "إلى", the end time.
+   Six selects sharing one line squeezed each one down to ~37px. */
+@media (max-width: 991px) {
   .availability-row {
     flex-wrap: wrap;
-    padding: var(--space-2);
+    gap: var(--space-2);
+    padding: var(--space-3);
   }
 
-  .availability-row .availability-day {
-    width: 100%;
+  /* The row's own 14px rule outranks the .form-select mobile guard, and iOS
+     zooms the page when a focused control is under 16px. */
+  .availability-row select,
+  .availability-row input {
+    font-size: var(--fs-lg);
+    padding-left: 26px;
   }
 
-  .availability-row .availability-from-hour,
-  .availability-row .availability-from-minute,
-  .availability-row .availability-to-hour,
-  .availability-row .availability-to-minute,
-  .availability-row .availability-from-period,
-  .availability-row .availability-to-period,
-  .availability-row .availability-slot {
-    flex: 1 1 auto;
+  .availability-row > .availability-day {
+    order: 0;
+    flex: 1 1 calc(100% - 64px);
+    width: auto;
+    min-width: 0;
+  }
+
+  .availability-row > .availability-remove-btn {
+    order: 1;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .availability-row > .availability-from-hour,
+  .availability-row > .availability-from-minute,
+  .availability-row > .availability-from-period,
+  .availability-row > .availability-to-hour,
+  .availability-row > .availability-to-minute,
+  .availability-row > .availability-to-period {
+    order: 2;
+    flex: 1 1 calc(33.333% - 14px);
     width: auto;
     min-width: 0;
   }
 
   .availability-sep {
-    display: none;
-  }
-
-  #adminAvailabilityContainer .availability-row {
-    flex-wrap: wrap;
+    order: 2;
+    flex: 1 1 100%;
+    text-align: center;
+    font-size: var(--fs-lg);
   }
 }
 
@@ -11164,3 +11159,107 @@ button:focus:not(:focus-visible),
 }
 
 
+
+/* ============================================================
+   Inputs & map pickers — responsive + accessibility pass
+   - one map-picker height for every map (register / settings / admin)
+   - search rows keep field + button on one line with a real tap target
+   - coordinates stay LTR so the pair is never reordered by bidi
+   - 16px controls on small screens (stops iOS focus zoom)
+   - registration form density restored to the shared rhythm
+   ============================================================ */
+
+/* Coordinates are data, not prose: isolate them from the RTL flow */
+.register-coords-display,
+.settings-coords-display {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+/* One map height everywhere a pin is placed on a map (was 160/180/300) */
+.register-map-container,
+.settings-map {
+  height: 280px;
+}
+
+.map-search-row,
+.register-map-search-row {
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+}
+
+/* width:100% on .form-input gives the field a 100% flex-basis, which pushes
+   the button onto its own line — a zero basis keeps them side by side. */
+.map-search-row .form-input,
+.register-map-search-row .form-input {
+  flex: 1 1 0%;
+  min-height: 44px;
+}
+
+.map-search-btn,
+.register-map-search-btn {
+  min-height: 44px;
+  padding-inline: var(--space-4);
+}
+
+/* .form-input-sm is the desktop density variant — the 44px floor belongs to
+   the default size, so the compact one only reaches it on small screens. */
+.form-input-sm {
+  min-height: 0;
+}
+
+/* Google Places suggestions sit on <body>; keep them above dashboard overlays */
+.pac-container {
+  z-index: 2000;
+}
+
+/* Registration fields were stacked 5px apart, alone among all forms */
+.register-form-card .form-group {
+  margin-bottom: var(--space-5);
+}
+
+.register-form-card .row {
+  --bs-gutter-y: 0;
+}
+
+@media (max-width: 991px) {
+  /* iOS zooms the page when a focused control is under 16px */
+  .form-input,
+  .form-select,
+  .form-textarea,
+  .form-control,
+  .form-input-sm,
+  .auth-form-control {
+    font-size: 16px;
+  }
+
+  /* touch sizing for the compact variant */
+  .form-input-sm {
+    min-height: 44px;
+  }
+
+  /* The compact table search is 32px tall with a 13px font; at 16px that
+     would clip, so it has to grow to a touch-sized field on small screens. */
+  .ads-table-search .form-input-sm {
+    height: auto;
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .map-search-row,
+  .register-map-search-row {
+    gap: var(--space-1);
+    margin-bottom: var(--space-2);
+  }
+
+  /* Keep the field and the button on one line: the button needs a real tap
+     target, not the whole row, so the field keeps its width. */
+  .map-search-btn,
+  .register-map-search-btn {
+    min-width: 44px;
+  }
+}

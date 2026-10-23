@@ -181,12 +181,14 @@
                 <input type="hidden" id="clinicDetailLat" value="@(clinic.Lat?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.0409")" />
                 <input type="hidden" id="clinicDetailLng" value="@(clinic.Lng?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.3785")" />
                 <div class="map-search-row">
-                    <input type="text" id="clinicDetailPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
+                    <label class="sr-only" for="clinicDetailPlaceSearch">ابحث عن مكان أو عنوان لتحديد موقع العيادة</label>
+                    <input type="text" id="clinicDetailPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" aria-describedby="clinicDetailMapHint" />
                     <button type="button" class="btn btn-primary btn-sm map-search-btn" id="clinicDetailPlaceSearchBtn">بحث</button>
                 </div>
-                <div id="clinicDetailMap" class="register-map-container"></div>
+                <div class="form-hint" id="clinicDetailMapHint">اسحب الدبوس أو ابحث لتحديد موقع العيادة بدقة</div>
+                <div id="clinicDetailMap" class="register-map-container" role="application" aria-label="خريطة موقع العيادة" aria-describedby="clinicDetailMapHint"></div>
                 <div class="settings-map-tools">
-                    <span class="text-muted settings-coords-display" id="clinicDetailCoordsDisplay"></span>
+                    <span class="text-muted settings-coords-display" id="clinicDetailCoordsDisplay" dir="ltr"></span>
                 </div>
             </div>
             @if (clinic.WorkingDays != null && clinic.WorkingDays.Any())
@@ -225,16 +227,16 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label class="form-label">اسم العيادة</label>
-                            <input type="text" name="nameAr" class="form-input" value="@clinic.NameAr" disabled />
+                            <label class="form-label" for="nameAr">اسم العيادة</label>
+                            <input id="nameAr" type="text" name="nameAr" class="form-input" value="@clinic.NameAr" disabled />
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">التخصص الرئيسي</label>
-                            <select name="specializationId" class="form-select" disabled>
+                            <label class="form-label" for="specializationId">التخصص الرئيسي</label>
+                            <select id="specializationId" name="specializationId" class="form-select" disabled>
                                 <option value="">اختر التخصص</option>
                                 @if (ViewBag.Specializations != null)
                                 {
@@ -248,58 +250,58 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">البريد الإلكتروني</label>
-                            <input type="email" name="email" class="form-input" value="@clinic.Email" disabled />
+                            <label class="form-label" for="email">البريد الإلكتروني</label>
+                            <input id="email" type="email" name="email" class="form-input" value="@clinic.Email" disabled />
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label class="form-label">الوصف</label>
-                            <textarea name="arDescription" class="form-input form-textarea" rows="2" disabled>@clinic.ArDescription</textarea>
+                            <label class="form-label" for="arDescription">الوصف</label>
+                            <textarea id="arDescription" name="arDescription" class="form-input form-textarea" rows="2" disabled>@clinic.ArDescription</textarea>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">العنوان</label>
-                            <input type="text" name="addressAr" class="form-input" value="@clinic.AddressAr" disabled />
+                            <label class="form-label" for="addressAr">العنوان</label>
+                            <input id="addressAr" type="text" name="addressAr" class="form-input" value="@clinic.AddressAr" disabled />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">رقم الهاتف</label>
-                            <input type="text" name="phone" class="form-input" value="@clinic.Phone" disabled />
+                            <label class="form-label" for="phone">رقم الهاتف</label>
+                            <input id="phone" type="text" name="phone" class="form-input" value="@clinic.Phone" disabled />
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الموقع الإلكتروني</label>
-                            <input type="url" name="website" class="form-input" value="@clinic.Website" disabled />
+                            <label class="form-label" for="website">الموقع الإلكتروني</label>
+                            <input id="website" type="url" name="website" class="form-input" value="@clinic.Website" disabled />
                         </div>
                     </div>
                     <div class="col-md-6 edit-field">
                         <div class="form-group">
-                            <label class="form-label">مواعيد العمل (نص)</label>
-                            <input type="text" name="workingHours" class="form-input" value="@clinic.WorkingHours" placeholder="مثال: 9:00 ص - 5:00 م" disabled />
+                            <label class="form-label" for="workingHours">مواعيد العمل (نص)</label>
+                            <input id="workingHours" type="text" name="workingHours" class="form-input" value="@clinic.WorkingHours" placeholder="مثال: 9:00 ص - 5:00 م" disabled />
                         </div>
                     </div>
                 </div>
                 <div class="row edit-field">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="form-label">وقت البدء</label>
-                            <input type="time" name="workingHoursStart" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.StartTime.ToString("HH:mm"))" disabled />
+                            <label class="form-label" for="workingHoursStart">وقت البدء</label>
+                            <input id="workingHoursStart" type="time" name="workingHoursStart" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.StartTime.ToString("HH:mm"))" disabled />
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="form-label">وقت الانتهاء</label>
-                            <input type="time" name="workingHoursEnd" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.EndTime.ToString("HH:mm"))" disabled />
+                            <label class="form-label" for="workingHoursEnd">وقت الانتهاء</label>
+                            <input id="workingHoursEnd" type="time" name="workingHoursEnd" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.EndTime.ToString("HH:mm"))" disabled />
                         </div>
                     </div>
                     <div class="col-md-4">

@@ -23,7 +23,7 @@
         <h3 class="table-card-title">سجلات المرضى النشطة</h3>
     </div>
     <form method="get" action="@Url.Action("MedicalRecords")" class="filter-bar table-filter-bar">
-        <input type="text" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
+        <input type="text" name="searchTerm" aria-label="بحث في السجلات الطبية" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
         <button type="submit" class="btn btn-primary btn-sm">بحث</button>
         <a href="@Url.Action("MedicalRecords")" class="btn btn-outline-secondary btn-sm">مسح</a>
     </form>

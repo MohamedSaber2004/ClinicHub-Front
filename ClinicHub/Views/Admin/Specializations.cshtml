@@ -22,7 +22,7 @@
 
 <!-- Filter Bar -->
 <div class="filter-bar">
-    <input type="text" id="filterSearch" class="form-input" placeholder="بحث عن تخصص..." />
+    <input type="text" id="filterSearch" aria-label="بحث في التخصصات" class="form-input" placeholder="بحث عن تخصص..." />
     <select id="filterStatus" class="form-select">
         <option value="">جميع التخصصات</option>
         <option value="true">مميز</option>
@@ -134,11 +134,11 @@
                     <input type="hidden" id="formAction" name="formAction" value="create" />
                     <input type="hidden" id="specCurrentIcon" name="CurrentIcon" value="" />
                     <div class="form-group">
-                        <label class="form-label" for="specName">اسم التخصص (عربي)</label>
+                        <label class="form-label" for="specArName">اسم التخصص (عربي)</label>
                         <input type="text" id="specArName" name="ArName" class="form-input" placeholder="مثال: أمراض القلب" required />
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="specNameEn">اسم التخصص (إنجليزي)</label>
+                        <label class="form-label" for="specName">اسم التخصص (إنجليزي)</label>
                         <input type="text" id="specName" name="Name" class="form-input" placeholder="Example: Cardiology" required />
                     </div>
                     <div class="form-group">

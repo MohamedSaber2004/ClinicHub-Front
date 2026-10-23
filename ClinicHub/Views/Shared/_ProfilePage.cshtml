@@ -129,7 +129,7 @@
             <div class="modal-body modal-body-custom">
                 <form id="editProfileForm">
                     <div class="form-group mb-3">
-                        <label class="form-label">الصورة الشخصية</label>
+                        <label class="form-label" for="profileImageInput">الصورة الشخصية</label>
                         <input type="file" class="form-input" id="profileImageInput" accept="image/*" />
                         <div id="profileImageStatus" class="profile-image-status">
                             <img id="profileImagePreview" src="@profilePictureUrl" alt="الصورة الشخصية" />
@@ -139,19 +139,19 @@
                         </div>
                     </div>
                     <div class="form-group mb-3">
-                        <label class="form-label">الاسم الكامل</label>
+                        <label class="form-label" for="profileFullName">الاسم الكامل</label>
                         <input type="text" class="form-input" id="profileFullName" value="@FullName()" maxlength="100" />
                     </div>
                     <div class="form-group mb-3">
-                        <label class="form-label">رقم الهاتف</label>
+                        <label class="form-label" for="profilePhone">رقم الهاتف</label>
                         <input type="tel" class="form-input" id="profilePhone" dir="ltr" value="@(profile?.PhoneNumber ?? "")" />
                     </div>
                     <div class="form-group mb-3">
-                        <label class="form-label">تاريخ الميلاد</label>
+                        <label class="form-label" for="profileBirthDate">تاريخ الميلاد</label>
                         <input type="date" class="form-input" id="profileBirthDate" value="@BirthDateText()" />
                     </div>
                     <div class="form-group mb-3">
-                        <label class="form-label">النوع</label>
+                        <label class="form-label" for="profileGender">النوع</label>
                         <select class="form-select" id="profileGender">
                             <option value="">غير محدد</option>
                             <option value="1" selected="@(profile?.Gender == 1)">ذكر</option>

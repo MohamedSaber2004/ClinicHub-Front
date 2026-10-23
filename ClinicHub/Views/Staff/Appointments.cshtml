@@ -37,8 +37,8 @@
             <option value="rejected" selected="@(ViewBag.StatusFilter == "rejected")">مرفوض</option>
             <option value="noshow" selected="@(ViewBag.StatusFilter == "noshow")">لم يحضر</option>
         </select>
-        <input type="date" name="date" class="form-input" value="@ViewBag.DateFilter" title="تاريخ الموعد" />
-        <input type="text" name="searchTerm" class="form-input" placeholder="بحث باسم المريض..." value="@ViewBag.SearchTerm" />
+        <input type="date" name="date" aria-label="تاريخ الموعد" class="form-input" value="@ViewBag.DateFilter" title="تاريخ الموعد" />
+        <input type="text" name="searchTerm" aria-label="بحث في المواعيد" class="form-input" placeholder="بحث باسم المريض..." value="@ViewBag.SearchTerm" />
         <button type="submit" class="btn btn-primary btn-sm">بحث</button>
         <a href="@Url.Action("Appointments")" class="btn btn-outline-secondary btn-sm">مسح</a>
     </form>

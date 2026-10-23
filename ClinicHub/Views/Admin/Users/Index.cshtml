@@ -29,7 +29,7 @@
 
 <!-- Filter Bar -->
 <form method="get" action="/Admin/Users" class="filter-bar">
-    <input type="text" id="filterSearch" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو البريد أو الهاتف..." value="@searchTerm" />
+    <input type="text" id="filterSearch" aria-label="بحث في المستخدمين" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو البريد أو الهاتف..." value="@searchTerm" />
     <select id="filterUserTypes" name="userTypes" class="form-select" onchange="this.form.submit()">
         <option value="">جميع الأدوار</option>
         <option value="2" selected="@(userTypesFilter == "2" ? true : null)">مدير النظام</option>
@@ -233,7 +233,7 @@
                     </div>
                     <div class="form-group form-group-hidden" id="bioGroup">
                         <label class="form-label" for="createBio">نبذة تعريفية</label>
-                        <textarea id="createBio" name="Bio" class="form-input" rows="3" placeholder="نبذة عن الطبيب"></textarea>
+                        <textarea id="createBio" name="Bio" class="form-input form-textarea" rows="3" placeholder="نبذة عن الطبيب"></textarea>
                     </div>
                     <div class="form-group form-group-hidden" id="experienceGroup">
                         <label class="form-label" for="createExperience">سنوات الخبرة</label>

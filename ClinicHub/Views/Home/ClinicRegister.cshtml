@@ -42,8 +42,8 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label" for="password">كلمة المرور <span class="text-danger">*</span></label>
-                                <input type="password" id="password" name="Password" class="form-input" placeholder="6 أحرف على الأقل" required minlength="6" autocomplete="new-password" />
-                                <div class="form-hint">6 أحرف على الأقل</div>
+                                <input type="password" id="password" name="Password" class="form-input" placeholder="6 أحرف على الأقل" required minlength="6" autocomplete="new-password" aria-describedby="passwordHint" />
+                                <div class="form-hint" id="passwordHint">6 أحرف على الأقل</div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -129,7 +129,7 @@
                         <div class="col-12">
                             <div class="form-group">
                                 <label class="form-label" for="clinicDescription">وصف العيادة</label>
-                                <textarea id="clinicDescription" name="ClinicDescription" class="form-input" rows="2" placeholder="اكتب وصفاً مختصراً عن العيادة وخدماتها..."></textarea>
+                                <textarea id="clinicDescription" name="ClinicDescription" class="form-input form-textarea" rows="2" placeholder="اكتب وصفاً مختصراً عن العيادة وخدماتها..."></textarea>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -179,7 +179,7 @@
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
                                         موقعي الحالي
                                     </button>
-                                    <span class="text-muted register-coords-display" id="registerCoordsDisplay">31.0409, 31.3785</span>
+                                    <span class="text-muted register-coords-display" id="registerCoordsDisplay" dir="ltr">31.0409, 31.3785</span>
                                 </div>
                             </div>
                         </div>
@@ -206,8 +206,8 @@
                         </div>
                         <div class="col-12">
                             <div class="form-group">
-                                <label class="form-label">أيام العمل</label>
-                                <div class="working-days-container">
+                                <label class="form-label" id="workingDaysLabel">أيام العمل</label>
+                                <div class="working-days-container" role="group" aria-labelledby="workingDaysLabel">
                                     @{
                                         var days = new[] {
                                             ("Saturday",  "السبت"),
@@ -248,7 +248,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label" for="bio">نبذة تعريفية (Bio)</label>
-                                <textarea id="bio" name="Bio" class="form-input" rows="2" placeholder="اكتب نبذة مختصرة عن مؤهلاتك وخبرتك..."></textarea>
+                                <textarea id="bio" name="Bio" class="form-input form-textarea" rows="2" placeholder="اكتب نبذة مختصرة عن مؤهلاتك وخبرتك..."></textarea>
                             </div>
                         </div>
                     </div>

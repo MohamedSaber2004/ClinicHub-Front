@@ -44,31 +44,31 @@
             <div class="filter-divider"></div>
             <div class="filter-row">
                 <div class="filter-group">
-                    <label class="filter-label">الاسم</label>
+                    <label class="filter-label" for="filterName">الاسم</label>
                     <input type="text" id="filterName" class="form-input" placeholder="اسم العيادة..." />
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">البريد الإلكتروني</label>
+                    <label class="filter-label" for="filterEmail">البريد الإلكتروني</label>
                     <input type="email" id="filterEmail" class="form-input" placeholder="البريد الإلكتروني..." />
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">رقم الهاتف</label>
+                    <label class="filter-label" for="filterPhone">رقم الهاتف</label>
                     <input type="text" id="filterPhone" class="form-input" placeholder="رقم الهاتف..." />
                 </div>
             </div>
             <div class="filter-row">
                 <div class="filter-group filter-group-date">
-                    <label class="filter-label">من تاريخ</label>
+                    <label class="filter-label" for="filterCreatedFrom">من تاريخ</label>
                     <input type="date" id="filterCreatedFrom" class="form-input" />
                 </div>
                 <div class="filter-group filter-group-date">
-                    <label class="filter-label">إلى تاريخ</label>
+                    <label class="filter-label" for="filterCreatedTo">إلى تاريخ</label>
                     <input type="date" id="filterCreatedTo" class="form-input" />
                 </div>
             </div>
             <div class="filter-row">
                 <div class="filter-group">
-                    <label class="filter-label">ترتيب حسب</label>
+                    <label class="filter-label" for="filterSortBy">ترتيب حسب</label>
                     <select id="filterSortBy" class="form-select">
                         <option value="">بدون ترتيب</option>
                         <option value="name">الاسم</option>
@@ -76,8 +76,8 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">اتجاه الترتيب</label>
-                    <div class="sort-direction-group">
+                    <label class="filter-label" id="sortDirLabel">اتجاه الترتيب</label>
+                    <div class="sort-direction-group" role="group" aria-labelledby="sortDirLabel">
                         <label class="sort-radio">
                             <input type="radio" name="sortDir" value="asc" />
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
@@ -186,14 +186,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">اسم العيادة <span class="text-danger">*</span></label>
-                                <input type="text" name="nameAr" class="form-input" placeholder="مثال: مركز القلب التخصصي" required />
+                                <label class="form-label" for="nameAr">اسم العيادة <span class="text-danger">*</span></label>
+                                <input id="nameAr" type="text" name="nameAr" class="form-input" placeholder="مثال: مركز القلب التخصصي" required />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">التخصص الرئيسي <span class="text-danger">*</span></label>
-                                <select name="specializationId" class="form-select" required>
+                                <label class="form-label" for="specializationId">التخصص الرئيسي <span class="text-danger">*</span></label>
+                                <select id="specializationId" name="specializationId" class="form-select" required>
                                     <option value="">اختر التخصص</option>
                                     @if (ViewBag.Specializations != null)
                                     {
@@ -208,34 +208,34 @@
                     </div>
                     <div id="createClinicErrors" class="validation-summary form-group-hidden"></div>
                     <div class="form-group">
-                        <label class="form-label">وصف العيادة</label>
-                        <textarea name="arDescription" class="form-input form-textarea" rows="2" placeholder="وصف مختصر عن العيادة"></textarea>
+                        <label class="form-label" for="arDescription">وصف العيادة</label>
+                        <textarea id="arDescription" name="arDescription" class="form-input form-textarea" rows="2" placeholder="وصف مختصر عن العيادة"></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">رقم الهاتف</label>
-                                <input type="text" name="phone" class="form-input" pattern="^01[0125][0-9]{8}$" placeholder="01X XXX XXXX" title="أدخل رقم هاتف مصري صحيح: 01XXXXXXXXX" />
+                                <label class="form-label" for="phone">رقم الهاتف</label>
+                                <input id="phone" type="text" name="phone" class="form-input" pattern="^01[0125][0-9]{8}$" placeholder="01X XXX XXXX" title="أدخل رقم هاتف مصري صحيح: 01XXXXXXXXX" />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
-                                <input type="email" name="email" class="form-input" placeholder="clinic@example.com" required />
+                                <label class="form-label" for="email">البريد الإلكتروني <span class="text-danger">*</span></label>
+                                <input id="email" type="email" name="email" class="form-input" placeholder="clinic@example.com" required />
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">الموقع الإلكتروني</label>
-                                <input type="url" name="website" class="form-input" placeholder="https://" />
+                                <label class="form-label" for="website">الموقع الإلكتروني</label>
+                                <input id="website" type="url" name="website" class="form-input" placeholder="https://" />
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">العنوان</label>
-                                <input type="text" name="addressAr" class="form-input" placeholder="العنوان" />
+                                <label class="form-label" for="addressAr">العنوان</label>
+                                <input id="addressAr" type="text" name="addressAr" class="form-input" placeholder="العنوان" />
                             </div>
                         </div>
                     </div>
@@ -245,21 +245,23 @@
                         <input type="hidden" name="lat" id="createClinicLat" value="" />
                         <input type="hidden" name="lng" id="createClinicLng" value="" />
                         <div class="map-search-row">
-                            <input type="text" id="createClinicPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" />
+                            <label class="sr-only" for="createClinicPlaceSearch">ابحث عن مكان أو عنوان لتحديد موقع العيادة</label>
+                            <input type="text" id="createClinicPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" aria-describedby="createClinicMapHint" />
                             <button type="button" class="btn btn-primary btn-sm map-search-btn" id="createClinicPlaceSearchBtn">بحث</button>
                         </div>
-                        <div id="createClinicMap" class="register-map-container"></div>
+                        <div class="form-hint" id="createClinicMapHint">اسحب الدبوس أو ابحث لتحديد موقع العيادة بدقة</div>
+                        <div id="createClinicMap" class="register-map-container" role="application" aria-label="خريطة تحديد موقع العيادة" aria-describedby="createClinicMapHint"></div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group mb-0">
-                                    <label class="form-label">خط العرض</label>
-                                    <input type="text" id="createClinicLatDisplay" class="form-input" placeholder="اختر نقطة على الخريطة" readonly />
+                                    <label class="form-label" for="createClinicLatDisplay">خط العرض</label>
+                                    <input type="text" id="createClinicLatDisplay" class="form-input" placeholder="اختر نقطة على الخريطة" dir="ltr" readonly />
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group mb-0">
-                                    <label class="form-label">خط الطول</label>
-                                    <input type="text" id="createClinicLngDisplay" class="form-input" placeholder="اختر نقطة على الخريطة" readonly />
+                                    <label class="form-label" for="createClinicLngDisplay">خط الطول</label>
+                                    <input type="text" id="createClinicLngDisplay" class="form-input" placeholder="اختر نقطة على الخريطة" dir="ltr" readonly />
                                 </div>
                             </div>
                         </div>
@@ -269,20 +271,20 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">اسم المدير <span class="text-danger">*</span></label>
-                                    <input type="text" name="ownerName" class="form-input" placeholder="اسم المدير" required />
+                                    <label class="form-label" for="ownerName">اسم المدير <span class="text-danger">*</span></label>
+                                    <input id="ownerName" type="text" name="ownerName" class="form-input" placeholder="اسم المدير" required />
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">بريد المدير <span class="text-danger">*</span></label>
-                                    <input type="email" name="ownerEmail" class="form-input" placeholder="owner@example.com" required />
+                                    <label class="form-label" for="ownerEmail">بريد المدير <span class="text-danger">*</span></label>
+                                    <input id="ownerEmail" type="email" name="ownerEmail" class="form-input" placeholder="owner@example.com" required />
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">هاتف المدير</label>
-                                    <input type="text" name="ownerPhone" class="form-input" pattern="^01[0125][0-9]{8}$" placeholder="01X XXX XXXX" title="أدخل رقم هاتف مصري صحيح: 01XXXXXXXXX" />
+                                    <label class="form-label" for="ownerPhone">هاتف المدير</label>
+                                    <input id="ownerPhone" type="text" name="ownerPhone" class="form-input" pattern="^01[0125][0-9]{8}$" placeholder="01X XXX XXXX" title="أدخل رقم هاتف مصري صحيح: 01XXXXXXXXX" />
                                 </div>
                             </div>
                         </div>
@@ -292,8 +294,8 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">تخصص الطبيب <span class="text-danger">*</span></label>
-                                    <select name="doctorSpecializationId" class="form-select" required>
+                                    <label class="form-label" for="doctorSpecializationId">تخصص الطبيب <span class="text-danger">*</span></label>
+                                    <select id="doctorSpecializationId" name="doctorSpecializationId" class="form-select" required>
                                         <option value="">اختر التخصص</option>
                                         @if (ViewBag.Specializations != null)
                                         {
@@ -307,14 +309,14 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">سنوات الخبرة</label>
-                                    <input type="number" name="yearsOfExperience" class="form-input" min="0" value="0" />
+                                    <label class="form-label" for="yearsOfExperience">سنوات الخبرة</label>
+                                    <input id="yearsOfExperience" type="number" name="yearsOfExperience" class="form-input" min="0" value="0" />
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">السيرة الذاتية</label>
-                                    <textarea name="bio" class="form-input form-textarea" rows="2" placeholder="نبذة عن الطبيب"></textarea>
+                                    <label class="form-label" for="bio">السيرة الذاتية</label>
+                                    <textarea id="bio" name="bio" class="form-input form-textarea" rows="2" placeholder="نبذة عن الطبيب"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -324,14 +326,14 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">بداية الدوام</label>
-                                    <input type="text" name="workingHoursStart" class="form-input" placeholder="09:00 ص" />
+                                    <label class="form-label" for="workingHoursStart">بداية الدوام</label>
+                                    <input id="workingHoursStart" type="text" name="workingHoursStart" class="form-input" placeholder="09:00 ص" />
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label class="form-label">نهاية الدوام</label>
-                                    <input type="text" name="workingHoursEnd" class="form-input" placeholder="05:00 م" />
+                                    <label class="form-label" for="workingHoursEnd">نهاية الدوام</label>
+                                    <input id="workingHoursEnd" type="text" name="workingHoursEnd" class="form-input" placeholder="05:00 م" />
                                 </div>
                             </div>
                         </div>
@@ -358,7 +360,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">صورة العيادة</label>
+                        <label class="form-label" for="clinicLogoInput">صورة العيادة</label>
                         <input type="file" id="clinicLogoInput" class="form-input" accept="image/*" />
                         <div id="clinicLogoPreview" class="upload-preview form-group-hidden mt-2">
                             <img id="clinicLogoImg" src="" alt="صورة العيادة" class="img-fluid rounded border" />

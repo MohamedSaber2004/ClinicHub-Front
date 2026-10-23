@@ -41,7 +41,7 @@
     </h2>
     <div class="ads-search-wrap" style="margin-top:12px;max-width:400px">
         <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" id="adsLocalSearch" class="form-input ads-global-input" placeholder="بحث سريع في الإعلانات والباقات..." autocomplete="off" />
+        <input type="text" id="adsLocalSearch" class="form-input ads-global-input" aria-label="بحث في الإعلانات" placeholder="بحث سريع في الإعلانات والباقات..." autocomplete="off" />
         <button type="button" id="adsLocalClear" class="ads-search-clear d-none" aria-label="مسح"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="page-header-actions">
@@ -299,7 +299,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">العيادة المستفيدة <span class="text-danger">*</span></label>
+                            <label class="form-label" for="manualSubClinic">العيادة المستفيدة <span class="text-danger">*</span></label>
                             <select id="manualSubClinic" class="form-select" required>
                                 <option value="">اختر العيادة</option>
                                 @foreach (var c in clinics)
@@ -311,7 +311,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">قالب الباقة (اختياري للتعبئة السريعة)</label>
+                            <label class="form-label" for="manualSubPackageSelect">قالب الباقة (اختياري للتعبئة السريعة)</label>
                             <select id="manualSubPackageSelect" class="form-select" onchange="onManualPackageTemplateChange()">
                                 <option value="">تخصيص يدوي حر</option>
                                 @foreach (var p in packages)
@@ -326,14 +326,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">المدة (أيام) <span class="text-danger">*</span></label>
+                            <label class="form-label" for="manualSubDuration">المدة (أيام) <span class="text-danger">*</span></label>
                             <input type="number" id="manualSubDuration" class="form-input" min="1" value="30" placeholder="مثال: 30 أو 60 أو 90" required />
                             <p class="form-hint">عدد أيام صلاحية الاشتراك الإعلاني.</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">المبلغ المطلوب (ج.م)</label>
+                            <label class="form-label" for="manualSubPrice">المبلغ المطلوب (ج.م)</label>
                             <input type="number" id="manualSubPrice" class="form-input" min="0" step="0.01" value="0.00" placeholder="0.00" />
                             <p class="form-hint">اترك 0 للمنح الإداري المجاني، أو أدخل السعر المتفق عليه.</p>
                         </div>
@@ -343,14 +343,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الحد الأقصى للإعلانات المسموح بها</label>
+                            <label class="form-label" for="manualSubMaxAds">الحد الأقصى للإعلانات المسموح بها</label>
                             <input type="number" id="manualSubMaxAds" class="form-input" min="0" value="1" placeholder="0 = غير محدود" />
                             <p class="form-hint">عدد الإعلانات النشطة المسموح للعيادة بنشرها بالتزامن.</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">عدد المشاهدات المسموح بها</label>
+                            <label class="form-label" for="manualSubMaxImpressions">عدد المشاهدات المسموح بها</label>
                             <input type="number" id="manualSubMaxImpressions" class="form-input" min="0" value="5000" placeholder="0 = غير محدود" />
                             <p class="form-hint">عدد مرات ظهور الإعلانات للمرضى بالتطبيق.</p>
                         </div>
@@ -360,7 +360,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">طريقة السداد / نوع المعاملة</label>
+                            <label class="form-label" for="manualSubMethod">طريقة السداد / نوع المعاملة</label>
                             <select id="manualSubMethod" class="form-select">
                                 <option value="0">سداد نقدي (Cash)</option>
                                 <option value="1">محفظة إلكترونية (Paymob Wallet)</option>
@@ -371,14 +371,14 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">تاريخ البدء</label>
+                            <label class="form-label" for="manualSubStartDate">تاريخ البدء</label>
                             <input type="date" id="manualSubStartDate" class="form-input" />
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">ملاحظات / سبب المنح <span class="text-muted">(اختياري)</span></label>
+                    <label class="form-label" for="manualSubNotes">ملاحظات / سبب المنح <span class="text-muted">(اختياري)</span></label>
                     <textarea id="manualSubNotes" class="form-textarea" rows="2" placeholder="مثال: اشتراك إعلاني لفرع المهندسين لمدة 30 يوم..."></textarea>
                 </div>
             </div>
@@ -432,7 +432,7 @@
                 <input type="hidden" id="deactivateAdId" value="" />
                 <p class="form-hint">سيتم إزالة الإعلان من التطبيق فوراً ولا يمكن إعادة تفعيله لاحقاً.</p>
                 <div class="form-group">
-                    <label class="form-label">سبب الإلغاء <span class="text-muted">(اختياري)</span></label>
+                    <label class="form-label" for="deactivateReason">سبب الإلغاء <span class="text-muted">(اختياري)</span></label>
                     <textarea id="deactivateReason" class="form-textarea" maxlength="200" rows="3" placeholder="مثال: محتوى مخالف"></textarea>
                 </div>
             </div>
@@ -457,13 +457,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">اسم الباقة (عربي) <span class="text-danger">*</span></label>
+                            <label class="form-label" for="packageNameAr">اسم الباقة (عربي) <span class="text-danger">*</span></label>
                             <input type="text" id="packageNameAr" class="form-input" placeholder="مثال: باقة الظهور المميز" required />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الاسم (إنجليزي)</label>
+                            <label class="form-label" for="packageName">الاسم (إنجليزي)</label>
                             <input type="text" id="packageName" class="form-input" placeholder="e.g. Featured Ad Package" />
                         </div>
                     </div>
@@ -471,13 +471,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الوصف (عربي)</label>
+                            <label class="form-label" for="packageDescriptionAr">الوصف (عربي)</label>
                             <input type="text" id="packageDescriptionAr" class="form-input" placeholder="مثال: ظهور أعلى قائمة البحث وشارة مميزة" />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الوصف (إنجليزي)</label>
+                            <label class="form-label" for="packageDescription">الوصف (إنجليزي)</label>
                             <input type="text" id="packageDescription" class="form-input" placeholder="e.g. Top search position and badge" />
                         </div>
                     </div>
@@ -485,13 +485,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">السعر (ج.م) <span class="text-danger">*</span></label>
+                            <label class="form-label" for="packagePrice">السعر (ج.م) <span class="text-danger">*</span></label>
                             <input type="number" id="packagePrice" class="form-input" min="0" step="0.01" placeholder="مثال: 750.00" required />
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">المدة (أيام) <span class="text-danger">*</span></label>
+                            <label class="form-label" for="packageDuration">المدة (أيام) <span class="text-danger">*</span></label>
                             <input type="number" id="packageDuration" class="form-input" min="1" placeholder="مثال: 30" required />
                         </div>
                     </div>
@@ -499,14 +499,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">الحد الأقصى للإعلانات المسموح بها</label>
+                            <label class="form-label" for="packageMaxAds">الحد الأقصى للإعلانات المسموح بها</label>
                             <input type="number" id="packageMaxAds" class="form-input" min="0" placeholder="0 = غير محدود" />
                             <p class="form-hint">عدد الإعلانات النشطة المسموح بها لمن يشتري هذه الباقة.</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label">عدد المشاهدات المسموح بها</label>
+                            <label class="form-label" for="packageMaxImpressions">عدد المشاهدات المسموح بها</label>
                             <input type="number" id="packageMaxImpressions" class="form-input" min="0" placeholder="0 = غير محدود" />
                             <p class="form-hint">عدد مرات مشاهدة الإعلانات في تطبيق المرضى.</p>
                         </div>
@@ -540,12 +540,12 @@
                 <input type="hidden" id="editClinicId" value="" />
                 <p class="form-hint">العيادة: <strong id="editClinicName"></strong></p>
                 <div class="form-group">
-                    <label class="form-label">الحد الأقصى للإعلانات المسموح بها</label>
+                    <label class="form-label" for="editMaxAds">الحد الأقصى للإعلانات المسموح بها</label>
                     <input type="number" id="editMaxAds" class="form-input" min="0" placeholder="0 = غير محدود" />
                     <p class="form-hint">عدد الإعلانات النشطة المسموح بها للعيادة. اترك 0 لعدم التحديد.</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">عدد المشاهدات المسموح بها</label>
+                    <label class="form-label" for="editMaxImpressions">عدد المشاهدات المسموح بها</label>
                     <input type="number" id="editMaxImpressions" class="form-input" min="0" placeholder="0 = غير محدود" />
                     <p class="form-hint">عدد مرات مشاهدة إعلانات العيادة في تطبيق المرضى. اترك 0 لعدم التحديد.</p>
                 </div>
