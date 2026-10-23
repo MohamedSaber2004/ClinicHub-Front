@@ -13,5 +13,7 @@ namespace ClinicHub.Services.Contracts
         Task<AppointmentAcceptResponseDto?> UpdateStatusAsync(Guid id, int status, string? notes = null);
         Task<PagginatedResult<DoctorPatientDto>> GetPatientsAsync(string? searchTerm = null, int pageNumber = 1, int pageSize = 10);
         Task<PagginatedResult<PatientHistoryDto>> GetPatientHistoryAsync(Guid patientId, int pageNumber = 1, int pageSize = 10);
+        Task<PatientAssessmentDto?> GetPatientAssessmentAsync(Guid patientId);
+        Task<bool> SavePatientAssessmentAsync(Guid patientId, PatientAssessmentDto assessment);
     }
 }

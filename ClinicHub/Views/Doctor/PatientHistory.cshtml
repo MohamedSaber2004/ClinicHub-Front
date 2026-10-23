@@ -1,9 +1,21 @@
 @using ClinicHub.Services.ReponseModels
 @{
-    ViewData["Title"] = "تاريخ المريض";
+    ViewData["Title"] = "تقييم وتاريخ المريض";
 
-    var patientName = ViewBag.PatientName as string ?? "مريض";
+    var assessment = ViewBag.Assessment as PatientAssessmentDto ?? new PatientAssessmentDto();
     var history = ViewBag.History as IReadOnlyCollection<PatientHistoryDto> ?? new List<PatientHistoryDto>();
+    var patientName = ViewBag.PatientName as string ?? (string.IsNullOrWhiteSpace(assessment.PatientName) ? "مريض" : assessment.PatientName);
+    var patientProtectedId = ViewBag.PatientProtectedId as string ?? "";
+
+    string FormatVal(string? val) => string.IsNullOrWhiteSpace(val) ? "—" : val;
+    bool IsEmpty(string? val) => string.IsNullOrWhiteSpace(val);
+
+    string GenderLabel(int? g) => g switch
+    {
+        0 => "ذكر (Male)",
+        1 => "أنثى (Female)",
+        _ => "—"
+    };
 
     string StatusLabel(int? s) => s switch
     {
@@ -31,63 +43,668 @@
         _ => "badge-secondary"
     };
 
+    string StatusMarker(int? s) => s switch
+    {
+        1 or 3 => "timeline-marker--success",
+        4 => "timeline-marker--info",
+        0 or 6 => "timeline-marker--warning",
+        _ => "timeline-marker--danger"
+    };
+
     string TypeLabel(int t) => t == 1 ? "منزلي" : "في العيادة";
     string TimeRange(string? from, string? to)
     {
         string Only(string? t) => string.IsNullOrEmpty(t) || t.Length < 5 ? "—" : t[..5];
         return $"{Only(from)} - {Only(to)}";
     }
+
+    double? bmiVal = assessment.Bmi;
+    if (!bmiVal.HasValue && assessment.HeightCm.HasValue && assessment.WeightKg.HasValue && assessment.HeightCm.Value > 0)
+    {
+        var hM = assessment.HeightCm.Value / 100.0;
+        bmiVal = Math.Round(assessment.WeightKg.Value / (hM * hM), 1);
+    }
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-clock-history"></i>
-    </span>
-    السجل الطبي: @patientName
-</h2>
-
-<div class="table-card">
-    <div class="table-card-header">
-        <h3 class="table-card-title">الزيارات السابقة</h3>
+<div class="assessment-wrapper">
+    <!-- Top Action Toolbar -->
+    <div class="assessment-toolbar">
+        <div>
+            <h2 class="page-title mb-0">
+                <span class="page-title-icon">
+                    <i class="bi bi-file-earmark-medical"></i>
+                </span>
+                تقييم وفحص المريض: @patientName
+            </h2>
+        </div>
+        <div class="assessment-toolbar-actions">
+            <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="bi bi-printer"></i> طباعة النموذج
+            </button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editAssessmentModal">
+                <i class="bi bi-pencil-square"></i> تعديل التقييم وخطة العلاج
+            </button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Patients")">
+                <i class="bi bi-arrow-right"></i> قائمة المرضى
+            </a>
+        </div>
     </div>
-    <div class="table-responsive">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>التاريخ</th>
-                    <th>الوقت</th>
-                    <th>نوع الزيارة</th>
-                    <th>الشكوى</th>
-                    <th>الأمراض المزمنة</th>
-                    <th>الحالة</th>
-                </tr>
-            </thead>
-            <tbody>
+
+    <!-- Official Assessment Sheet (matches Orthopedic Patient Assessment Form) -->
+    <div class="assessment-sheet">
+        <div class="assessment-watermark">ClinicHub Assessment</div>
+        
+        <div class="assessment-content-layer">
+            <!-- Sheet Header -->
+            <div class="assessment-header">
+                <h1 class="assessment-main-title">Orthopedic Patient Assessment Form</h1>
+                <p class="assessment-sub-title">نموذج التقييم السريري والتاريخ الطبي لجراحة العظام والمفاصل</p>
+            </div>
+
+            <!-- 1. PERSONAL HISTORY -->
+            <div class="assessment-section">
+                <div class="assessment-section-title">
+                    <i class="bi bi-person-vcard"></i>
+                    <span>PERSONAL HISTORY</span>
+                </div>
+                <div class="assessment-grid-3">
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Name:</span>
+                        <span class="assessment-field-value @(IsEmpty(assessment.PatientName) ? "is-empty" : "")" id="view-name">
+                            @FormatVal(assessment.PatientName)
+                        </span>
+                    </div>
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Age:</span>
+                        <span class="assessment-field-value @(assessment.Age.HasValue ? "" : "is-empty")" id="view-age">
+                            @(assessment.Age.HasValue ? $"{assessment.Age.Value} سنة" : "—")
+                        </span>
+                    </div>
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Date:</span>
+                        <span class="assessment-field-value" id="view-date">
+                            @FormatVal(assessment.AssessmentDate)
+                        </span>
+                    </div>
+
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Sex:</span>
+                        <span class="assessment-field-value" id="view-gender">
+                            @GenderLabel(assessment.Gender)
+                        </span>
+                    </div>
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Occupation:</span>
+                        <span class="assessment-field-value @(IsEmpty(assessment.Occupation) ? "is-empty" : "")" id="view-occupation">
+                            @FormatVal(assessment.Occupation)
+                        </span>
+                    </div>
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Handedness:</span>
+                        <span class="assessment-field-value @(IsEmpty(assessment.Handedness) ? "is-empty" : "")" id="view-handedness">
+                            @FormatVal(assessment.Handedness)
+                        </span>
+                    </div>
+
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Special Habits:</span>
+                        <span class="assessment-field-value @(IsEmpty(assessment.SpecialHabits) ? "is-empty" : "")" id="view-habits">
+                            @FormatVal(assessment.SpecialHabits)
+                        </span>
+                    </div>
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Contact No.:</span>
+                        <span class="assessment-field-value @(IsEmpty(assessment.ContactNumber) ? "is-empty" : "")" id="view-contact">
+                            @FormatVal(assessment.ContactNumber)
+                        </span>
+                    </div>
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Address:</span>
+                        <span class="assessment-field-value @(IsEmpty(assessment.Address) ? "is-empty" : "")" id="view-address">
+                            @FormatVal(assessment.Address)
+                        </span>
+                    </div>
+
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Height (cm):</span>
+                        <span class="assessment-field-value @(assessment.HeightCm.HasValue ? "" : "is-empty")" id="view-height">
+                            @(assessment.HeightCm.HasValue ? $"{assessment.HeightCm.Value} cm" : "—")
+                        </span>
+                    </div>
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">Weight (kg):</span>
+                        <span class="assessment-field-value @(assessment.WeightKg.HasValue ? "" : "is-empty")" id="view-weight">
+                            @(assessment.WeightKg.HasValue ? $"{assessment.WeightKg.Value} kg" : "—")
+                        </span>
+                    </div>
+                    <div class="assessment-field-row">
+                        <span class="assessment-field-label">BMI (kg/m²):</span>
+                        <span class="assessment-field-value @(bmiVal.HasValue ? "" : "is-empty")" id="view-bmi">
+                            @if (bmiVal.HasValue)
+                            {
+                                <span>@bmiVal.Value</span>
+                                <span class="assessment-bmi-badge">
+                                    @(bmiVal < 18.5 ? "نقص وزن" : bmiVal < 25 ? "طبيعي" : bmiVal < 30 ? "وزن زائد" : "سمنة")
+                                </span>
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. DIAGNOSIS -->
+            <div class="assessment-section">
+                <div class="assessment-section-title">
+                    <i class="bi bi-clipboard2-pulse"></i>
+                    <span>DIAGNOSIS</span>
+                </div>
+                <div class="assessment-note-block @(IsEmpty(assessment.Diagnosis) ? "is-empty" : "")" id="view-diagnosis">
+                    @FormatVal(assessment.Diagnosis)
+                </div>
+            </div>
+
+            <!-- 3. CHIEF COMPLAIN -->
+            <div class="assessment-section">
+                <div class="assessment-section-title">
+                    <i class="bi bi-chat-square-text"></i>
+                    <span>CHIEF COMPLAIN</span>
+                </div>
+                <div class="assessment-note-block @(IsEmpty(assessment.ChiefComplaint) ? "is-empty" : "")" id="view-complaint">
+                    @FormatVal(assessment.ChiefComplaint)
+                </div>
+            </div>
+
+            <!-- 4. PRESENT HISTORY -->
+            <div class="assessment-section">
+                <div class="assessment-section-title">
+                    <i class="bi bi-activity"></i>
+                    <span>PRESENT HISTORY</span>
+                </div>
+                <div class="assessment-present-list">
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Onset of symptoms:</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.OnsetOfSymptoms) ? "text-muted" : "")" id="view-onset">
+                            @FormatVal(assessment.OnsetOfSymptoms)
+                        </span>
+                    </div>
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Duration of symptoms:</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.DurationOfSymptoms) ? "text-muted" : "")" id="view-duration">
+                            @FormatVal(assessment.DurationOfSymptoms)
+                        </span>
+                    </div>
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Course of symptoms:</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.CourseOfSymptoms) ? "text-muted" : "")" id="view-course">
+                            @FormatVal(assessment.CourseOfSymptoms)
+                        </span>
+                    </div>
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Mechanism of injury:</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.MechanismOfInjury) ? "text-muted" : "")" id="view-mechanism">
+                            @FormatVal(assessment.MechanismOfInjury)
+                        </span>
+                    </div>
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Diagnostic imaging / Laboratory Test:</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.DiagnosticImagingAndLab) ? "text-muted" : "")" id="view-imaging">
+                            @FormatVal(assessment.DiagnosticImagingAndLab)
+                        </span>
+                    </div>
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Previous treatment (Medical/Physical Therapy):</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.PreviousTreatment) ? "text-muted" : "")" id="view-previous-treatment">
+                            @FormatVal(assessment.PreviousTreatment)
+                        </span>
+                    </div>
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Date of admission (if admitted):</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.DateOfAdmission) ? "text-muted" : "")" id="view-admission">
+                            @FormatVal(assessment.DateOfAdmission)
+                        </span>
+                    </div>
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Date and type of surgery:</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.DateAndTypeOfSurgery) ? "text-muted" : "")" id="view-surgery">
+                            @FormatVal(assessment.DateAndTypeOfSurgery)
+                        </span>
+                    </div>
+                    <div class="assessment-present-item">
+                        <span class="assessment-present-label">Special precautions:</span>
+                        <span class="assessment-present-val @(IsEmpty(assessment.SpecialPrecautions) ? "text-muted" : "")" id="view-precautions">
+                            @FormatVal(assessment.SpecialPrecautions)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. MEDICAL HISTORY -->
+            <div class="assessment-section">
+                <div class="assessment-section-title">
+                    <i class="bi bi-heart-pulse"></i>
+                    <span>MEDICAL HISTORY</span>
+                </div>
+                <div class="assessment-note-block @(IsEmpty(assessment.MedicalHistory) ? "is-empty" : "")" id="view-medical-history">
+                    @FormatVal(assessment.MedicalHistory)
+                </div>
+            </div>
+
+            <!-- 6. FAMILY HISTORY -->
+            <div class="assessment-section">
+                <div class="assessment-section-title">
+                    <i class="bi bi-people"></i>
+                    <span>FAMILY HISTORY</span>
+                </div>
+                <div class="assessment-note-block @(IsEmpty(assessment.FamilyHistory) ? "is-empty" : "")" id="view-family-history">
+                    @FormatVal(assessment.FamilyHistory)
+                </div>
+            </div>
+
+            <!-- 7. TREATMENT PLAN (Placed directly under Family History as requested!) -->
+            <div class="assessment-section">
+                <div class="assessment-treatment-plan-card">
+                    <div class="assessment-section-title">
+                        <i class="bi bi-capsule"></i>
+                        <span>TREATMENT PLAN</span>
+                    </div>
+
+                    <div class="assessment-treatment-grid">
+                        <div class="assessment-treatment-item-full">
+                            <div class="assessment-treatment-item-title">
+                                <i class="bi bi-journal-medical"></i> الخطة العلاجية والبروتوكول (General Treatment Plan)
+                            </div>
+                            <p class="assessment-treatment-item-desc @(IsEmpty(assessment.TreatmentPlan) ? "text-muted" : "")" id="view-plan">
+                                @FormatVal(assessment.TreatmentPlan)
+                            </p>
+                        </div>
+
+                        <div class="assessment-treatment-item">
+                            <div class="assessment-treatment-item-title">
+                                <i class="bi bi-prescription"></i> الأدوية والعقاقير (Medications)
+                            </div>
+                            <p class="assessment-treatment-item-desc @(IsEmpty(assessment.Medications) ? "text-muted" : "")" id="view-medications">
+                                @FormatVal(assessment.Medications)
+                            </p>
+                        </div>
+
+                        <div class="assessment-treatment-item">
+                            <div class="assessment-treatment-item-title">
+                                <i class="bi bi-bandaid"></i> العلاج الطبيعي والتأهيل (Physical Therapy)
+                            </div>
+                            <p class="assessment-treatment-item-desc @(IsEmpty(assessment.PhysicalTherapy) ? "text-muted" : "")" id="view-pt">
+                                @FormatVal(assessment.PhysicalTherapy)
+                            </p>
+                        </div>
+
+                        <div class="assessment-treatment-item">
+                            <div class="assessment-treatment-item-title">
+                                <i class="bi bi-clock-history"></i> مدة العلاج المقررة (Duration)
+                            </div>
+                            <p class="assessment-treatment-item-desc @(IsEmpty(assessment.TreatmentDuration) ? "text-muted" : "")" id="view-plan-duration">
+                                @FormatVal(assessment.TreatmentDuration)
+                            </p>
+                        </div>
+
+                        <div class="assessment-treatment-item">
+                            <div class="assessment-treatment-item-title">
+                                <i class="bi bi-bookmark-check"></i> المتابعة والتوصيات (Follow-up & Notes)
+                            </div>
+                            <p class="assessment-treatment-item-desc @(IsEmpty(assessment.FollowUpNotes) ? "text-muted" : "")" id="view-notes">
+                                @FormatVal(assessment.FollowUpNotes)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Previous Visits History Timeline (collapsible section) -->
+    <div class="assessment-visits-card">
+        <div class="assessment-visits-header" data-bs-toggle="collapse" data-bs-target="#visitsCollapse" aria-expanded="false">
+            <h5>
+                <i class="bi bi-calendar-week"></i>
+                <span>سجل الزيارات والمواعيد السابقة</span>
+            </h5>
+            <span class="badge badge-info">@history.Count زيارة</span>
+        </div>
+        <div class="collapse show" id="visitsCollapse">
+            <div class="detail-body">
                 @if (history.Count == 0)
                 {
-                    <tr>
-                        <td colspan="6" class="table-empty">لا توجد زيارات سابقة لهذا المريض</td>
-                    </tr>
+                    <div class="empty-state">
+                        <i class="bi bi-inbox fs-2 text-secondary"></i>
+                        <p class="empty-title">لا توجد زيارات سابقة مسجلة لهذا المريض</p>
+                        <p class="form-hint mb-0">عند حضور المريض لأي موعد عيادة أو كشف منزلي سيظهر هنا في السجل الزمني.</p>
+                    </div>
                 }
-                @foreach (var item in history)
+                else
                 {
-                    <tr>
-                        <td>@item.AppointmentDate</td>
-                        <td>@TimeRange(item.StartTime, item.EndTime)</td>
-                        <td>@TypeLabel(item.AppointmentType)</td>
-                        <td>@(string.IsNullOrWhiteSpace(item.Complaint) ? "—" : item.Complaint)</td>
-                        <td>@(string.IsNullOrWhiteSpace(item.ChronicDiseases) ? "—" : item.ChronicDiseases)</td>
-                        <td><span class="badge @StatusClass(item.Status)">@StatusLabel(item.Status)</span></td>
-                    </tr>
+                    <div class="timeline">
+                        @foreach (var item in history)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker @StatusMarker(item.Status)"></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">@item.AppointmentDate &middot; @TimeRange(item.StartTime, item.EndTime)</span>
+                                    <span class="timeline-text">@TypeLabel(item.AppointmentType)</span>
+                                    <span class="timeline-text">@(string.IsNullOrWhiteSpace(item.Complaint) ? "—" : item.Complaint)</span>
+                                    @if (!string.IsNullOrWhiteSpace(item.ChronicDiseases))
+                                    {
+                                        <span class="timeline-text">@item.ChronicDiseases</span>
+                                    }
+                                    <span class="badge @StatusClass(item.Status)">@StatusLabel(item.Status)</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 }
-            </tbody>
-        </table>
+            </div>
+        </div>
     </div>
-    <partial name="_Pagination" />
 </div>
 
-<div class="mt-4">
-    <a class="btn btn-outline-secondary" href="@Url.Action("Patients")">
-        <i class="bi bi-arrow-right"></i> العودة لقائمة المرضى
-    </a>
+<!-- Modal: Edit Assessment & Treatment Plan -->
+<div class="modal fade" id="editAssessmentModal" tabindex="-1" aria-labelledby="editAssessmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAssessmentModalLabel">
+                    <i class="bi bi-pencil-square me-1"></i> تسجيل وتعديل تقييم المريض وخطة العلاج
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="assessmentForm">
+                    <input type="hidden" id="form-id" value="@assessment.Id" />
+                    <input type="hidden" id="form-patient-id" value="@assessment.PatientId" />
+                    <input type="hidden" id="form-doctor-id" value="@assessment.DoctorId" />
+                    <input type="hidden" id="form-clinic-id" value="@assessment.ClinicId" />
+                    <input type="hidden" id="form-appointment-id" value="@assessment.AppointmentId" />
+
+                    <!-- Section: Personal History -->
+                    <div class="settings-section mb-4">
+                        <h6 class="settings-section-title">
+                            <i class="bi bi-person-badge"></i> البيانات الشخصية (PERSONAL HISTORY)
+                        </h6>
+                        <div class="assessment-form-grid">
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-name">الاسم (Name)</label>
+                                <input type="text" class="form-control" id="inp-name" value="@assessment.PatientName" required />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-age">العمر (Age)</label>
+                                <input type="number" class="form-control" id="inp-age" value="@assessment.Age" min="0" max="150" />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-date">التاريخ (Date)</label>
+                                <input type="date" class="form-control" id="inp-date" value="@assessment.AssessmentDate" />
+                            </div>
+
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-gender">الجنس (Sex)</label>
+                                <select class="form-select" id="inp-gender">
+                                    <option value="">— اختر الجنس —</option>
+                                    <option value="0" selected="@(assessment.Gender == 0)">ذكر (Male)</option>
+                                    <option value="1" selected="@(assessment.Gender == 1)">أنثى (Female)</option>
+                                </select>
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-occupation">المهنة (Occupation)</label>
+                                <input type="text" class="form-control" id="inp-occupation" value="@assessment.Occupation" />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-handedness">اليد المستخدمة (Handedness)</label>
+                                <select class="form-select" id="inp-handedness">
+                                    <option value="">— اختر —</option>
+                                    <option value="Right" selected="@(assessment.Handedness == "Right")">أيمن (Right)</option>
+                                    <option value="Left" selected="@(assessment.Handedness == "Left")">أعسر (Left)</option>
+                                    <option value="Ambidextrous" selected="@(assessment.Handedness == "Ambidextrous")">كلتا اليدين (Ambidextrous)</option>
+                                </select>
+                            </div>
+
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-habits">العادات الخاصة (Special Habits)</label>
+                                <input type="text" class="form-control" id="inp-habits" value="@assessment.SpecialHabits" placeholder="تدخين، رياضة، عادات أخرى..." />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-contact">رقم الاتصال (Contact No.)</label>
+                                <input type="tel" class="form-control" id="inp-contact" value="@assessment.ContactNumber" />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-address">العنوان (Address)</label>
+                                <input type="text" class="form-control" id="inp-address" value="@assessment.Address" />
+                            </div>
+
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-height">الطول (Height cm)</label>
+                                <input type="number" step="0.1" class="form-control" id="inp-height" value="@assessment.HeightCm" oninput="calcBmi()" />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-weight">الوزن (Weight kg)</label>
+                                <input type="number" step="0.1" class="form-control" id="inp-weight" value="@assessment.WeightKg" oninput="calcBmi()" />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-bmi">مؤشر كتلة الجسم (BMI kg/m²)</label>
+                                <input type="number" step="0.1" class="form-control" id="inp-bmi" value="@assessment.Bmi" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Diagnosis & Complaint -->
+                    <div class="settings-section mb-4">
+                        <h6 class="settings-section-title">
+                            <i class="bi bi-clipboard2-pulse"></i> التشخيص والشكوى
+                        </h6>
+                        <div class="assessment-form-grid">
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-diagnosis">التشخيص الطبي (DIAGNOSIS)</label>
+                                <textarea class="form-control" id="inp-diagnosis" rows="2" placeholder="أدخل التشخيص الطبي الدقيق...">@assessment.Diagnosis</textarea>
+                            </div>
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-complaint">الشكوى الرئيسية (CHIEF COMPLAIN)</label>
+                                <textarea class="form-control" id="inp-complaint" rows="2" placeholder="شكوى المريض وسبب الزيارة...">@assessment.ChiefComplaint</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Present History -->
+                    <div class="settings-section mb-4">
+                        <h6 class="settings-section-title">
+                            <i class="bi bi-activity"></i> التاريخ المرضي الحالي (PRESENT HISTORY)
+                        </h6>
+                        <div class="assessment-form-grid">
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-onset">Onset of symptoms</label>
+                                <input type="text" class="form-control" id="inp-onset" value="@assessment.OnsetOfSymptoms" placeholder="Acute, Gradual, etc." />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-duration">Duration of symptoms</label>
+                                <input type="text" class="form-control" id="inp-duration" value="@assessment.DurationOfSymptoms" placeholder="Days, weeks, months..." />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-course">Course of symptoms</label>
+                                <input type="text" class="form-control" id="inp-course" value="@assessment.CourseOfSymptoms" placeholder="Progressive, Stationary, etc." />
+                            </div>
+
+                            <div class="assessment-form-col-2">
+                                <label class="form-label" for="inp-mechanism">Mechanism of injury</label>
+                                <input type="text" class="form-control" id="inp-mechanism" value="@assessment.MechanismOfInjury" placeholder="سقوط، حادث سير، إجهاد رياضي..." />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-admission">Date of admission (if admitted)</label>
+                                <input type="date" class="form-control" id="inp-admission" value="@assessment.DateOfAdmission" />
+                            </div>
+
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-imaging">Diagnostic imaging / Laboratory Test</label>
+                                <textarea class="form-control" id="inp-imaging" rows="2" placeholder="نتائج الأشعة السينية، الرنين، الفحوص المخبرية...">@assessment.DiagnosticImagingAndLab</textarea>
+                            </div>
+
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-previous-treatment">Previous treatment (Medical/Physical Therapy)</label>
+                                <textarea class="form-control" id="inp-previous-treatment" rows="2" placeholder="العلاجات السابقة التي تلقاها المريض...">@assessment.PreviousTreatment</textarea>
+                            </div>
+
+                            <div class="assessment-form-col-2">
+                                <label class="form-label" for="inp-surgery">Date and type of surgery</label>
+                                <input type="text" class="form-control" id="inp-surgery" value="@assessment.DateAndTypeOfSurgery" placeholder="تاريخ ونوع العمليات السابقة إن وجدت..." />
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-precautions">Special precautions</label>
+                                <input type="text" class="form-control" id="inp-precautions" value="@assessment.SpecialPrecautions" placeholder="حساسية، موانع..." />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Medical & Family History -->
+                    <div class="settings-section mb-4">
+                        <h6 class="settings-section-title">
+                            <i class="bi bi-heart-pulse"></i> التاريخ الطبي والعائلي (MEDICAL & FAMILY HISTORY)
+                        </h6>
+                        <div class="assessment-form-grid">
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-medical-history">التاريخ المرضي السابق (MEDICAL HISTORY)</label>
+                                <textarea class="form-control" id="inp-medical-history" rows="2" placeholder="الأمراض المزمنة، ضغط، سكري، أمراض سابقة...">@assessment.MedicalHistory</textarea>
+                            </div>
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-family-history">التاريخ المرضي العائلي (FAMILY HISTORY)</label>
+                                <textarea class="form-control" id="inp-family-history" rows="2" placeholder="الأمراض الوراثية والعائلية المشتركة...">@assessment.FamilyHistory</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Treatment Plan (under Family History) -->
+                    <div class="settings-section mb-2">
+                        <h6 class="settings-section-title text-success">
+                            <i class="bi bi-capsule"></i> خطة العلاج (TREATMENT PLAN)
+                        </h6>
+                        <div class="assessment-form-grid">
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-treatment-plan">الخطة العلاجية الشاملة (Treatment Plan)</label>
+                                <textarea class="form-control" id="inp-treatment-plan" rows="3" placeholder="تفاصيل الخطة العلاجية والبروتوكول الطبي المتبع...">@assessment.TreatmentPlan</textarea>
+                            </div>
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-medications">الأدوية والجرعات (Medications)</label>
+                                <textarea class="form-control" id="inp-medications" rows="2" placeholder="الأدوية الموصوفة والجرعات ومواعيد تناولها...">@assessment.Medications</textarea>
+                            </div>
+                            <div class="assessment-form-col-2">
+                                <label class="form-label" for="inp-pt">برنامج العلاج الطبيعي والتأهيل (Physical Therapy)</label>
+                                <textarea class="form-control" id="inp-pt" rows="2" placeholder="الجلسات المطلوبة، التمارين والتوصيات...">@assessment.PhysicalTherapy</textarea>
+                            </div>
+                            <div class="assessment-form-col-1">
+                                <label class="form-label" for="inp-plan-duration">مدة العلاج (Duration)</label>
+                                <input type="text" class="form-control" id="inp-plan-duration" value="@assessment.TreatmentDuration" placeholder="مثال: 4 أسابيع، 3 شهور..." />
+                            </div>
+                            <div class="assessment-form-col-3">
+                                <label class="form-label" for="inp-notes">ملاحظات وتوصيات المتابعة (Follow-up & Notes)</label>
+                                <textarea class="form-control" id="inp-notes" rows="2" placeholder="موعد المراجعة القادمة، تحذيرات، ملاحظات...">@assessment.FollowUpNotes</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="btnSaveAssessment" onclick="saveAssessment()">
+                    <i class="bi bi-check-circle"></i> حفظ التقييم وخطة العلاج
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+<script>
+    function calcBmi() {
+        var h = parseFloat(document.getElementById('inp-height').value);
+        var w = parseFloat(document.getElementById('inp-weight').value);
+        if (h > 0 && w > 0) {
+            var hM = h / 100.0;
+            var bmi = (w / (hM * hM)).toFixed(1);
+            document.getElementById('inp-bmi').value = bmi;
+        }
+    }
+
+    async function saveAssessment() {
+        var btn = document.getElementById('btnSaveAssessment');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> جاري الحفظ...';
+
+        var idVal = document.getElementById('form-id').value;
+        var dto = {
+            id: idVal ? idVal : null,
+            patientId: document.getElementById('form-patient-id').value,
+            doctorId: document.getElementById('form-doctor-id').value || null,
+            clinicId: document.getElementById('form-clinic-id').value || null,
+            appointmentId: document.getElementById('form-appointment-id').value || null,
+            assessmentDate: document.getElementById('inp-date').value || new Date().toISOString().substring(0, 10),
+            patientName: document.getElementById('inp-name').value,
+            age: document.getElementById('inp-age').value ? parseInt(document.getElementById('inp-age').value) : null,
+            gender: document.getElementById('inp-gender').value !== '' ? parseInt(document.getElementById('inp-gender').value) : null,
+            occupation: document.getElementById('inp-occupation').value || null,
+            handedness: document.getElementById('inp-handedness').value || null,
+            specialHabits: document.getElementById('inp-habits').value || null,
+            contactNumber: document.getElementById('inp-contact').value || null,
+            address: document.getElementById('inp-address').value || null,
+            heightCm: document.getElementById('inp-height').value ? parseFloat(document.getElementById('inp-height').value) : null,
+            weightKg: document.getElementById('inp-weight').value ? parseFloat(document.getElementById('inp-weight').value) : null,
+            bmi: document.getElementById('inp-bmi').value ? parseFloat(document.getElementById('inp-bmi').value) : null,
+            diagnosis: document.getElementById('inp-diagnosis').value || null,
+            chiefComplaint: document.getElementById('inp-complaint').value || null,
+            onsetOfSymptoms: document.getElementById('inp-onset').value || null,
+            durationOfSymptoms: document.getElementById('inp-duration').value || null,
+            courseOfSymptoms: document.getElementById('inp-course').value || null,
+            mechanismOfInjury: document.getElementById('inp-mechanism').value || null,
+            diagnosticImagingAndLab: document.getElementById('inp-imaging').value || null,
+            previousTreatment: document.getElementById('inp-previous-treatment').value || null,
+            dateOfAdmission: document.getElementById('inp-admission').value || null,
+            dateAndTypeOfSurgery: document.getElementById('inp-surgery').value || null,
+            specialPrecautions: document.getElementById('inp-precautions').value || null,
+            medicalHistory: document.getElementById('inp-medical-history').value || null,
+            familyHistory: document.getElementById('inp-family-history').value || null,
+            treatmentPlan: document.getElementById('inp-treatment-plan').value || null,
+            medications: document.getElementById('inp-medications').value || null,
+            physicalTherapy: document.getElementById('inp-pt').value || null,
+            treatmentDuration: document.getElementById('inp-plan-duration').value || null,
+            followUpNotes: document.getElementById('inp-notes').value || null
+        };
+
+        var patientIdParam = '@patientProtectedId';
+
+        try {
+            var response = await fetch('@Url.Action("SavePatientAssessment", "Doctor")?patientId=' + encodeURIComponent(patientIdParam), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dto)
+            });
+
+            var result = await response.json();
+            if (result.success) {
+                if (typeof showToast === 'function') {
+                    showToast('success', result.message || 'تم حفظ التقييم وخطة العلاج بنجاح');
+                } else {
+                    alert(result.message || 'تم حفظ التقييم بنجاح');
+                }
+                setTimeout(function() {
+                    window.location.reload();
+                }, 700);
+            } else {
+                alert(result.message || 'تعذر حفظ التقييم');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> حفظ التقييم وخطة العلاج';
+            }
+        } catch (e) {
+            alert('حدث خطأ أثناء الاتصال بالخادم: ' + e.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> حفظ التقييم وخطة العلاج';
+        }
+    }
+</script>
+}

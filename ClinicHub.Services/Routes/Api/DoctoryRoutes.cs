@@ -360,6 +360,7 @@ namespace ClinicHub.Services.Routes.Api
             public string CompleteAppointment(Guid id) => $"{_baseRoute}/appointments/{id}/complete";
             public string Patients => $"{_baseRoute}/patients";
             public string PatientHistory(Guid patientId) => $"{_baseRoute}/patients/{patientId}/history";
+            public string PatientAssessment(Guid patientId) => $"{_baseRoute}/patients/{patientId}/assessment";
         }
 
         public class ClinicDashboardRoutes

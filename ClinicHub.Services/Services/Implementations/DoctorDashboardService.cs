@@ -231,5 +231,44 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
             }
         }
+
+        public async Task<PatientAssessmentDto?> GetPatientAssessmentAsync(Guid patientId)
+        {
+            try
+            {
+                var url = DoctoryRoutes.DoctorDashboard.PatientAssessment(patientId);
+                var response = await _httpClient.GetAsync(url);
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                var obj = JsonConvert.DeserializeObject<JObject>(body);
+                var dataToken = obj?["data"] ?? obj?["Data"];
+                var dataJson = dataToken?.ToString() ?? body;
+                return JsonConvert.DeserializeObject<PatientAssessmentDto>(dataJson, _jsonSettings);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> SavePatientAssessmentAsync(Guid patientId, PatientAssessmentDto assessment)
+        {
+            try
+            {
+                var url = DoctoryRoutes.DoctorDashboard.PatientAssessment(patientId);
+                var content = new StringContent(JsonConvert.SerializeObject(assessment, _jsonSettings), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(url, content);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

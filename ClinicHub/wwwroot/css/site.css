@@ -11263,3 +11263,408 @@ button:focus:not(:focus-visible),
     min-width: 44px;
   }
 }
+
+/* ============================================================
+   Orthopedic Patient Assessment Form Styles
+   Strictly token-driven, medical clinical stationery theme
+   ============================================================ */
+
+.assessment-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.assessment-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.assessment-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.assessment-sheet {
+  background: var(--clr-surface);
+  border: 2px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: 0 4px 16px rgba(13, 95, 78, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.assessment-watermark {
+  position: absolute;
+  top: 48%;
+  left: 45%;
+  transform: translate(-50%, -50%) rotate(-35deg);
+  font-size: 52px;
+  font-weight: 700;
+  color: rgba(13, 95, 78, 0.035);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 2px;
+  z-index: 0;
+}
+
+.assessment-content-layer {
+  position: relative;
+  z-index: 1;
+}
+
+.assessment-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 2px solid var(--clr-border);
+}
+
+.assessment-main-title {
+  font-family: var(--ff-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--clr-text);
+  letter-spacing: 0.5px;
+  margin: 0 0 var(--space-1);
+}
+
+.assessment-sub-title {
+  font-size: var(--fs-md);
+  color: var(--clr-text-secondary);
+  margin: 0;
+}
+
+.assessment-section {
+  margin-bottom: var(--space-5);
+}
+
+.assessment-section-title {
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--clr-text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.assessment-section-title i {
+  color: var(--clr-primary);
+  font-size: var(--fs-lg);
+  text-decoration: none;
+}
+
+/* 3-Column Personal History Grid */
+.assessment-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3) var(--space-5);
+  background: var(--clr-surface-subtle);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--clr-border);
+}
+
+.assessment-field-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-height: 28px;
+}
+
+.assessment-field-label {
+  font-weight: 600;
+  color: var(--clr-text);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.assessment-field-value {
+  color: var(--clr-text);
+  font-size: var(--fs-sm);
+  flex-grow: 1;
+  border-bottom: 1px dashed var(--clr-border);
+  padding-bottom: 2px;
+  word-break: break-word;
+}
+
+.assessment-field-value.is-empty {
+  color: var(--clr-text-faint);
+  font-style: italic;
+}
+
+.assessment-bmi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--clr-primary-soft);
+  color: var(--clr-primary);
+}
+
+/* Text Content Blocks */
+.assessment-note-block {
+  background: var(--clr-surface-subtle);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  min-height: 52px;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-md);
+  color: var(--clr-text);
+  white-space: pre-line;
+}
+
+.assessment-note-block.is-empty {
+  color: var(--clr-text-faint);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+}
+
+/* Present History Structured List */
+.assessment-present-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--clr-surface-subtle);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.assessment-present-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  border-bottom: 1px dashed rgba(220, 228, 224, 0.7);
+}
+
+.assessment-present-item:last-child {
+  border-bottom: none;
+}
+
+.assessment-present-label {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--clr-text);
+  min-width: 250px;
+  flex-shrink: 0;
+}
+
+.assessment-present-val {
+  font-size: var(--fs-sm);
+  color: var(--clr-text);
+  flex-grow: 1;
+}
+
+/* Treatment Plan Special Card */
+.assessment-treatment-plan-card {
+  background: linear-gradient(180deg, #F9FCFB 0%, #FFFFFF 100%);
+  border: 2px solid var(--clr-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: 0 2px 8px rgba(13, 95, 78, 0.06);
+}
+
+.assessment-treatment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.assessment-treatment-item {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.assessment-treatment-item-full {
+  grid-column: 1 / -1;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.assessment-treatment-item-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--clr-primary);
+  margin-bottom: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.assessment-treatment-item-desc {
+  font-size: var(--fs-sm);
+  color: var(--clr-text);
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* History Visits Section Collapsible */
+.assessment-visits-card {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-5);
+  overflow: hidden;
+}
+
+.assessment-visits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--clr-surface-subtle);
+  border-bottom: 1px solid var(--clr-border);
+  cursor: pointer;
+  user-select: none;
+}
+
+.assessment-visits-header h5 {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--clr-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Edit Modal Layout */
+.assessment-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.assessment-form-col-1 {
+  grid-column: span 1;
+}
+
+.assessment-form-col-2 {
+  grid-column: span 2;
+}
+
+.assessment-form-col-3 {
+  grid-column: 1 / -1;
+}
+
+/* Print Optimization */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  .sidebar,
+  .main-header,
+  .mobile-nav,
+  .assessment-toolbar,
+  .assessment-visits-card,
+  .btn,
+  #toast-container,
+  .modal {
+    display: none !important;
+  }
+
+  .main-content,
+  .content-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .assessment-sheet {
+    border: 1px solid #333333 !important;
+    box-shadow: none !important;
+    padding: 12mm 15mm !important;
+    margin: 0 !important;
+    page-break-after: avoid;
+  }
+
+  .assessment-section-title {
+    color: #000000 !important;
+    text-decoration: underline !important;
+  }
+
+  .assessment-grid-3,
+  .assessment-note-block,
+  .assessment-present-list,
+  .assessment-treatment-plan-card,
+  .assessment-treatment-item,
+  .assessment-treatment-item-full {
+    background: transparent !important;
+    border-color: #555555 !important;
+  }
+
+  .assessment-field-value {
+    border-bottom: 1px dashed #666666 !important;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .assessment-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .assessment-treatment-grid {
+    grid-template-columns: 1fr;
+  }
+  .assessment-present-label {
+    min-width: 180px;
+  }
+  .assessment-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .assessment-form-col-1,
+  .assessment-form-col-2 {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 576px) {
+  .assessment-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .assessment-present-item {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .assessment-present-label {
+    min-width: 100%;
+  }
+  .assessment-sheet {
+    padding: var(--space-4);
+  }
+}

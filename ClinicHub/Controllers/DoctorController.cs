@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ClinicHub.Data;
@@ -317,6 +317,7 @@ namespace ClinicHub.Controllers
         {
             var realPatientId = IdProtector.UnprotectGuid(patientId);
             ViewBag.PatientId = realPatientId;
+            ViewBag.PatientProtectedId = patientId;
             ViewBag.PatientName = string.IsNullOrWhiteSpace(name) ? "مريض" : name;
 
             try
@@ -324,22 +325,60 @@ namespace ClinicHub.Controllers
                 var data = await _doctorDashboardService.GetPatientHistoryAsync(realPatientId, pageNumber, pageSize);
                 ViewBag.History = data.Items;
                 ViewBag.Pagination = data;
+
+                var assessment = await _doctorDashboardService.GetPatientAssessmentAsync(realPatientId);
+                if (assessment == null)
+                {
+                    var firstItem = data.Items.FirstOrDefault();
+                    assessment = firstItem?.Assessment ?? new PatientAssessmentDto
+                    {
+                        PatientId = realPatientId,
+                        PatientName = string.IsNullOrWhiteSpace(name) ? "مريض" : name,
+                        AssessmentDate = DateTime.Today.ToString("yyyy-MM-dd"),
+                        ChiefComplaint = firstItem?.Complaint,
+                        MedicalHistory = firstItem?.ChronicDiseases
+                    };
+                }
+                ViewBag.Assessment = assessment;
             }
             catch (ApiException ex)
             {
                 TempData["Error"] = ex.Message;
                 ViewBag.History = new List<PatientHistoryDto>();
                 ViewBag.Pagination = null;
+                ViewBag.Assessment = new PatientAssessmentDto
+                {
+                    PatientId = realPatientId,
+                    PatientName = string.IsNullOrWhiteSpace(name) ? "مريض" : name,
+                    AssessmentDate = DateTime.Today.ToString("yyyy-MM-dd")
+                };
             }
             catch (Exception ex)
             {
                 TempData["Error"] = $"حدث خطأ غير متوقع: {ex.Message}";
                 ViewBag.History = new List<PatientHistoryDto>();
                 ViewBag.Pagination = null;
+                ViewBag.Assessment = new PatientAssessmentDto
+                {
+                    PatientId = realPatientId,
+                    PatientName = string.IsNullOrWhiteSpace(name) ? "مريض" : name,
+                    AssessmentDate = DateTime.Today.ToString("yyyy-MM-dd")
+                };
             }
             return View();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SavePatientAssessment(string patientId, [FromBody] PatientAssessmentDto assessment)
+        {
+            var realPatientId = IdProtector.UnprotectGuid(patientId);
+            var success = await _doctorDashboardService.SavePatientAssessmentAsync(realPatientId, assessment);
+            if (success)
+            {
+                return Json(new { success = true, message = "تم حفظ تقييم المريض وخطة العلاج بنجاح" });
+            }
+            return Json(new { success = false, message = "تعذر حفظ التقييم، يرجى المحاولة لاحقاً" });
+        }
         [HttpPut]
         public async Task<IActionResult> UpdateAppointmentStatus(Guid appointmentId, [FromBody] JsonElement body)
         {

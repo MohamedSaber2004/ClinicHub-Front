@@ -11,5 +11,6 @@ namespace ClinicHub.Services.ReponseModels
         public string Complaint { get; set; } = null!;
         public string? ChronicDiseases { get; set; }
         public string? CancellationReason { get; set; }
+        public PatientAssessmentDto? Assessment { get; set; }
     }
 }
