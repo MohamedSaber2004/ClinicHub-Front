@@ -25,6 +25,7 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly string _myUrl;
         private readonly string _initiateUrl;
         private readonly string _cancelUrl;
+        private readonly string _cancellationQuoteUrl;
         private readonly string _registerUrl;
         private readonly string _verifyLatestPaymentUrl;
 
@@ -36,6 +37,7 @@ namespace ClinicHub.Services.Services.Implementations
             _myUrl = DoctoryRoutes.Subscriptions.My;
             _initiateUrl = DoctoryRoutes.Subscriptions.InitiatePayment;
             _cancelUrl = DoctoryRoutes.Subscriptions.Cancel;
+            _cancellationQuoteUrl = DoctoryRoutes.Subscriptions.CancellationQuote;
             _registerUrl = DoctoryRoutes.Clinics.Register;
             _verifyLatestPaymentUrl = DoctoryRoutes.Subscriptions.VerifyLatestSubscriptionPayment;
         }
@@ -124,9 +126,30 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
-        public async Task<string> CancelMySubscriptionAsync()
+        public async Task<SubscriptionCancellationQuoteDto> GetMyCancellationQuoteAsync()
         {
-            var response = await _httpClient.PostAsync(_cancelUrl, null);
+            var response = await _httpClient.GetAsync(_cancellationQuoteUrl);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessages = ApiErrorExtractor.ExtractErrors(responseBody);
+                var combined = string.Join(" ", errorMessages);
+                throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في جلب تفاصيل إلغاء الاشتراك" : combined);
+            }
+
+            if (string.IsNullOrWhiteSpace(responseBody))
+                throw new ApiException(500, "استجابة فارغة من الخادم");
+
+            return DeserializeData<SubscriptionCancellationQuoteDto>(responseBody);
+        }
+
+        private async Task<string> CancelInternalAsync(string? reason)
+        {
+            var payload = JsonConvert.SerializeObject(new { reason }, _jsonSettings);
+            var content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(_cancelUrl, content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -136,9 +159,39 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException((int)response.StatusCode, string.IsNullOrWhiteSpace(combined) ? "حدث خطأ في إلغاء الاشتراك" : combined);
             }
 
-            var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"] ?? obj?["message"] ?? obj?["Message"];
-            return dataToken?.ToString() ?? "تم إلغاء الاشتراك بنجاح";
+            return responseBody;
+        }
+
+        public async Task<CancelSubscriptionResponseDto> CancelMySubscriptionAsync(string? reason = null)
+        {
+            var responseBody = await CancelInternalAsync(reason);
+
+            var dto = TryDeserializeData<CancelSubscriptionResponseDto>(responseBody);
+            // Older backends answered with a bare `true`/message instead of the DTO.
+            // The cancellation still succeeded, so return an empty-but-valid result
+            // rather than failing the flow over an unreadable refund summary.
+            return dto ?? new CancelSubscriptionResponseDto { CancelledAt = DateTime.UtcNow };
+        }
+
+        private static T? TryDeserializeData<T>(string responseBody) where T : class
+        {
+            if (string.IsNullOrWhiteSpace(responseBody)) return null;
+
+            try
+            {
+                var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
+                var dataToken = obj?["data"] ?? obj?["Data"];
+                if (dataToken is JObject dataObject)
+                {
+                    return JsonConvert.DeserializeObject<T>(dataObject.ToString(), _jsonSettings);
+                }
+            }
+            catch
+            {
+                // Not a JSON object wrapper — nothing to extract.
+            }
+
+            return null;
         }
 
         public async Task<RegisterClinicResponseDto> RegisterClinicAsync(RegisterClinicRequest request)

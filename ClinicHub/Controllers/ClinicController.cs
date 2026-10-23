@@ -9,6 +9,7 @@ using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.Options;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.RequestModels;
+using ClinicHub.Services.Utilities;
 using ClinicHub.Routes;
 
 namespace ClinicHub.Controllers
@@ -1245,6 +1246,21 @@ namespace ClinicHub.Controllers
                 ViewBag.Plans = new List<Services.ReponseModels.PlanDto>();
             }
 
+            // Pro-rated cancellation preview. Absent when the clinic has no subscription
+            // or the backend predates the endpoint — the view then falls back to a plain
+            // confirmation without a refund summary.
+            if (ViewBag.Subscription is SubscriptionDto sub && sub.IsActive)
+            {
+                try
+                {
+                    ViewBag.CancellationQuote = await _subscriptionService.GetMyCancellationQuoteAsync();
+                }
+                catch (ApiException)
+                {
+                    ViewBag.CancellationQuote = null;
+                }
+            }
+
             return View("MySubscription");
         }
 
@@ -1388,14 +1404,25 @@ namespace ClinicHub.Controllers
             }
         }
 
+        /// <summary>Optional body for <see cref="CancelSubscription"/>; the request may also be empty.</summary>
+        public class CancelSubscriptionBody
+        {
+            public string? Reason { get; set; }
+        }
+
         [Route("Clinic/CancelSubscription")]
         [HttpPost]
-        public async Task<IActionResult> CancelSubscription()
+        public async Task<IActionResult> CancelSubscription([FromBody] CancelSubscriptionBody? request)
         {
             try
             {
-                var message = await _subscriptionService.CancelMySubscriptionAsync();
-                return Json(new { success = true, message });
+                var result = await _subscriptionService.CancelMySubscriptionAsync(request?.Reason);
+                return Json(new
+                {
+                    success = true,
+                    message = CancellationMessages.ForResult(result),
+                    data = result
+                });
             }
             catch (ApiException ex)
             {

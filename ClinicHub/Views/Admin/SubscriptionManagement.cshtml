@@ -1,4 +1,5 @@
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Utilities
 @{
     ViewData["Title"] = "إدارة الاشتراكات";
     Layout = "_AdminLayout";
@@ -58,8 +59,8 @@
                 {
                     foreach (var sub in subscriptions)
                     {
-                        var statusText = sub.Status switch { 0 => "نشط", 1 => "ملغي", 2 => "منتهي", 3 => "ملغي من الإدارة", _ => "غير معروف" };
-                        var statusClass = sub.Status switch { 0 => "badge-success", 1 => "badge-warning", 2 => "badge-danger", 3 => "badge-danger", _ => "badge-info" };
+                        var statusText = sub.Status switch { 0 => "نشط", 1 => "منتهي", 2 => "ملغي", 3 => "ملغي من الإدارة", _ => "غير معروف" };
+                        var statusClass = sub.Status switch { 0 => "badge-success", 1 => "badge-danger", 2 => "badge-warning", 3 => "badge-danger", _ => "badge-info" };
                         var periodText = sub.Period == 0 ? "شهري" : "سنوي";
                         var currentPlan = plans.FirstOrDefault(p => p.Id == sub.PlanId);
                         var planNameText = !string.IsNullOrWhiteSpace(currentPlan?.NameAr) ? currentPlan.NameAr : sub.PlanName;
@@ -70,11 +71,25 @@
                             <td class="text-md">@sub.Amount.ToString("N0") ج.م</td>
                             <td class="text-md">@sub.StartDate.ToString("yyyy-MM-dd")</td>
                             <td class="text-md">@sub.EndDate.ToString("yyyy-MM-dd")</td>
-                            <td><span class="badge @statusClass">@statusText</span></td>
+                            <td>
+                                <span class="badge @statusClass">@statusText</span>
+                                @if (sub.CancelledAt.HasValue)
+                                {
+                                    <span class="cell-sub">أُلغي: @sub.CancelledAt.Value.ToString("yyyy-MM-dd")</span>
+                                }
+                                @if (sub.RefundAmount is > 0)
+                                {
+                                    <span class="cell-sub">استرداد: @sub.RefundAmount.Value.ToString("N2") ج.م — @RefundDisplay.StatusText(sub.RefundStatus ?? 0)</span>
+                                }
+                            </td>
                             <td>
                                 @if (sub.Status == 0)
                                 {
-                                    <button class="btn btn-sm btn-danger" onclick="revokeSubscription('@sub.Id', '@sub.ClinicName', this)">
+                                    <button class="btn btn-sm btn-danger"
+                                            data-revoke-id="@sub.Id"
+                                            data-revoke-clinic="@sub.ClinicName"
+                                            data-revoke-amount="@sub.Amount.ToString("0.##")"
+                                            onclick="openRevokeModal(this)">
                                         إلغاء الاشتراك
                                     </button>
                                 }
@@ -175,6 +190,38 @@
     </div>
 </div>
 
+<!-- Revoke Subscription Modal -->
+<div class="modal fade" id="revokeSubscriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إلغاء الاشتراك</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-md text-muted mb-4">
+                    سيتم إلغاء اشتراك <strong id="revokeClinicName"></strong> فوراً، ويُرد المبلغ غير المستخدم
+                    تلقائياً للعيادة عبر قناة الدفع الأصلية بعد حساب قيمة الأيام المستخدمة.
+                </p>
+                <div class="form-group">
+                    <label class="form-label" for="revokeRefundAmount">مبلغ الاسترداد (اختياري)</label>
+                    <input type="number" id="revokeRefundAmount" class="form-input" min="0" step="0.01"
+                           dir="ltr" placeholder="اتركه فارغاً للمبلغ المحسوب تلقائياً" />
+                    <small class="text-muted">اتركه فارغاً للاسترداد المحسوب، أو اكتب 0 لإلغاء الاشتراك دون استرداد (اشتراك مدفوع نقداً).</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="revokeReason">سبب الإلغاء (اختياري)</label>
+                    <textarea id="revokeReason" class="form-textarea" rows="3" maxlength="500" placeholder="سبب الإلغاء..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+                <button type="button" class="btn btn-danger" id="revokeSubmitBtn">تأكيد الإلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         function updateSubPrice() {
@@ -239,39 +286,79 @@
             }
         });
 
-        function revokeSubscription(id, clinicName, btnElement) {
-            showConfirmModal('هل أنت متأكد من إلغاء اشتراك "' + clinicName + '"؟', function(confirmed) {
-                if (!confirmed) return;
+        var revokeTarget = null;
 
-                var btn = btnElement;
-                if (!btn) return;
-                btn.disabled = true;
-                btn.textContent = 'جاري الإلغاء...';
+        function openRevokeModal(btn) {
+            revokeTarget = {
+                id: btn.getAttribute('data-revoke-id'),
+                clinic: btn.getAttribute('data-revoke-clinic') || '',
+                paid: btn.getAttribute('data-revoke-amount') || '0'
+            };
+
+            document.getElementById('revokeClinicName').textContent = revokeTarget.clinic;
+
+            var amountInput = document.getElementById('revokeRefundAmount');
+            amountInput.value = '';
+            amountInput.placeholder = 'اتركه فارغاً للمبلغ المحسوب تلقائياً (المدفوع: ' + revokeTarget.paid + ' ج.م)';
+
+            document.getElementById('revokeReason').value = '';
+
+            var modalEl = document.getElementById('revokeSubscriptionModal');
+            (bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl)).show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var submitBtn = document.getElementById('revokeSubmitBtn');
+            if (!submitBtn) return;
+
+            submitBtn.addEventListener('click', function () {
+                if (!revokeTarget || !revokeTarget.id) return;
+
+                var rawAmount = document.getElementById('revokeRefundAmount').value.trim();
+                var refundAmount = null;
+                if (rawAmount !== '') {
+                    refundAmount = parseFloat(rawAmount);
+                    if (isNaN(refundAmount) || refundAmount < 0) {
+                        showErrorModal('مبلغ الاسترداد يجب أن يكون رقماً صفراً أو أكبر');
+                        return;
+                    }
+                }
+
+                var reason = document.getElementById('revokeReason').value.trim();
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'جاري الإلغاء...';
 
                 fetch('/Admin/SubscriptionManagement/Revoke', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subscriptionId: id })
+                    body: JSON.stringify({
+                        subscriptionId: revokeTarget.id,
+                        refundAmount: refundAmount,
+                        reason: reason === '' ? null : reason
+                    })
                 })
-                .then(function(r) { return r.json(); })
-                .then(function(result) {
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
                     if (result.success) {
-                        var row = btn.closest('tr');
-                        row.querySelector('td:nth-child(7)').innerHTML = '<span class="badge badge-danger">ملغي من الإدارة</span>';
-                        btn.outerHTML = '<span class="text-muted">—</span>';
+                        var modalEl = document.getElementById('revokeSubscriptionModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+
                         showSuccessModal(result.message || 'تم إلغاء الاشتراك بنجاح');
+                        setTimeout(function () { location.reload(); }, 2200);
                     } else {
-                        btn.disabled = false;
-                        btn.textContent = 'إلغاء الاشتراك';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'تأكيد الإلغاء';
                         showErrorModal(result.message || 'حدث خطأ');
                     }
                 })
-                .catch(function() {
-                    btn.disabled = false;
-                    btn.textContent = 'إلغاء الاشتراك';
+                .catch(function () {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'تأكيد الإلغاء';
                     showErrorModal('عذراً، حدث خطأ أثناء إلغاء الاشتراك.');
                 });
             });
-        }
+        });
     </script>
 }

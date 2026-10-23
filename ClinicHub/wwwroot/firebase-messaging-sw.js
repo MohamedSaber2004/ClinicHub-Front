@@ -26,7 +26,7 @@ messaging.onBackgroundMessage((payload) => {
 
 const APPOINTMENT_TYPES = ["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
 const CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
-const NOTIFICATION_TYPES = ["SubscriptionExpiring", "AdExpiring"];
+const NOTIFICATION_TYPES = ["SubscriptionExpiring", "AdExpiring", "SubscriptionCancelled"];
 const NAV_CACHE = "ch-nav";
 const NAV_KEY_APPOINTMENTS = "/__ch_nav_appointments__";
 const NAV_KEY_NOTIFICATIONS = "/__ch_nav_notifications__";

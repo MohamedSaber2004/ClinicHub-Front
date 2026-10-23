@@ -12,6 +12,7 @@ namespace ClinicHub.Services.Enums
         ClinicRejected = 15,
         PaymentReceived = 17,
         RevenueIncreased = 18,
-        AppointmentAccepted = 19
+        AppointmentAccepted = 19,
+        SubscriptionCancelled = 22
     }
 }

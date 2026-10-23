@@ -1,9 +1,11 @@
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Utilities
 @{
     Layout = "_ClinicLayout";
     ViewData["Title"] = "اشتراكي - Doctory";
     var subscription = ViewBag.Subscription as SubscriptionDto;
     var plans = ViewBag.Plans as List<PlanDto> ?? new();
+    var quote = ViewBag.CancellationQuote as SubscriptionCancellationQuoteDto;
 }
 
 <div class="page-header">
@@ -39,8 +41,8 @@ else if (subscription == null)
 }
 else
 {
-    var statusText = subscription.Status switch { 0 => "نشط", 1 => "ملغي", 2 => "منتهي", 3 => "ملغي من الإدارة", _ => "غير معروف" };
-    var statusClass = subscription.Status switch { 0 => "badge-success", 1 => "badge-warning", 2 => "badge-danger", 3 => "badge-danger", _ => "badge-info" };
+    var statusText = subscription.Status switch { 0 => "نشط", 1 => "منتهي", 2 => "ملغي", 3 => "ملغي من الإدارة", _ => "غير معروف" };
+    var statusClass = subscription.Status switch { 0 => "badge-success", 1 => "badge-danger", 2 => "badge-warning", 3 => "badge-danger", _ => "badge-info" };
     var periodText = subscription.Period == 0 ? "شهري" : "سنوي";
     var currentPlan = plans.FirstOrDefault(p => p.Id == subscription.PlanId);
     var planNameText = !string.IsNullOrWhiteSpace(currentPlan?.NameAr) ? currentPlan.NameAr : subscription.PlanName;
@@ -80,11 +82,34 @@ else
                                 <span class="subs-detail-value">@subscription.PaidAt.Value.ToString("yyyy-MM-dd")</span>
                             </div>
                         }
+                        @if (subscription.CancelledAt.HasValue || (subscription.RefundAmount ?? 0) > 0)
+                        {
+                            <div class="subs-detail-row">
+                                <span class="subs-detail-label">تاريخ الإلغاء</span>
+                                <span class="subs-detail-value">@(subscription.CancelledAt?.ToString("yyyy-MM-dd") ?? "—")</span>
+                            </div>
+                            <div class="subs-detail-row">
+                                <span class="subs-detail-label">طريقة الإلغاء</span>
+                                <span class="subs-detail-value">@RefundDisplay.SourceText(subscription.CancellationSource)</span>
+                            </div>
+                            <div class="subs-detail-row">
+                                <span class="subs-detail-label">المبلغ المسترد</span>
+                                <span class="subs-detail-value">@((subscription.RefundAmount ?? 0).ToString("N2")) ج.م</span>
+                            </div>
+                            <div class="subs-detail-row">
+                                <span class="subs-detail-label">حالة الاسترداد</span>
+                                <span class="subs-detail-value">
+                                    <span class="badge @RefundDisplay.StatusClass(subscription.RefundStatus ?? 0)">
+                                        @RefundDisplay.StatusText(subscription.RefundStatus ?? 0)
+                                    </span>
+                                </span>
+                            </div>
+                        }
                     </div>
                     @if (subscription.IsActive)
                     {
                         <div class="subs-detail-footer">
-                            <button class="btn btn-danger" onclick="cancelSubscription()">إلغاء الاشتراك</button>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal">إلغاء الاشتراك</button>
                         </div>
                     }
                     else
@@ -204,6 +229,74 @@ else
     </div>
 </div>
 
+@if (subscription != null && subscription.IsActive)
+{
+    var canCancel = quote == null || quote.Eligible;
+
+    <!-- Cancel Subscription Modal -->
+    <div class="modal fade" id="cancelSubscriptionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-custom">
+                <div class="modal-header-custom">
+                    <h5 class="modal-title">تأكيد إلغاء الاشتراك</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+                <div class="modal-body-custom">
+                    @if (quote == null)
+                    {
+                        <p class="text-md text-muted mb-4">
+                            سيتم إلغاء الاشتراك فوراً. تُحتسب قيمة الأيام المستخدمة ويُرد المبلغ المتبقي
+                            عبر قناة الدفع الأصلية.
+                        </p>
+                    }
+                    else if (!quote.Eligible)
+                    {
+                        <div class="alert alert-warning mb-4">
+                            <p class="mb-0">@(string.IsNullOrWhiteSpace(quote.Reason) ? "هذا الاشتراك غير مؤهل للإلغاء حالياً." : quote.Reason)</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="subs-detail-card mb-4">
+                            <div class="subs-detail-body">
+                                <div class="subs-detail-row">
+                                    <span class="subs-detail-label">الباقة</span>
+                                    <span class="subs-detail-value">@(string.IsNullOrWhiteSpace(quote.PlanName) ? subscription.PlanName : quote.PlanName)</span>
+                                </div>
+                                <div class="subs-detail-row">
+                                    <span class="subs-detail-label">الأيام المستخدمة</span>
+                                    <span class="subs-detail-value">@quote.UsedDays من @quote.TotalDays يوم</span>
+                                </div>
+                                <div class="subs-detail-row">
+                                    <span class="subs-detail-label">المبلغ المدفوع</span>
+                                    <span class="subs-detail-value">@quote.AmountPaid.ToString("N2") @quote.Currency</span>
+                                </div>
+                                <div class="subs-detail-row">
+                                    <span class="subs-detail-label">قيمة الأيام المستخدمة</span>
+                                    <span class="subs-detail-value">@quote.ChargeAmount.ToString("N2") @quote.Currency</span>
+                                </div>
+                                <div class="subs-detail-row">
+                                    <span class="subs-detail-label">المبلغ المسترد</span>
+                                    <span class="subs-detail-value">@quote.RefundAmount.ToString("N2") @quote.Currency</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-md text-muted">سيتم الاسترداد إلى بطاقتك أو محفظتك عبر Paymob بعد تأكيد الإلغاء.</p>
+                    }
+                    <div class="form-group mb-0">
+                        <label class="form-label" for="cancelSubReason">سبب الإلغاء (اختياري)</label>
+                        <textarea id="cancelSubReason" class="form-textarea" rows="3" maxlength="500" placeholder="لماذا تلغي الاشتراك؟"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
+                    <button type="button" class="btn btn-danger" id="cancelSubscriptionBtn" disabled="@(!canCancel)">تأكيد الإلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 <style>
     .subscription-empty-state {
         text-align: center;
@@ -311,29 +404,51 @@ else
 
 @section Scripts {
     <script>
-        function cancelSubscription() {
-            showConfirmModal('هل أنت متأكد من إلغاء الاشتراك؟ لن يتم استرداد المبلغ المدفوع.', function(confirmed) {
-                if (!confirmed) return;
+        document.addEventListener('DOMContentLoaded', function () {
+            var cancelBtn = document.getElementById('cancelSubscriptionBtn');
+            if (!cancelBtn) return;
+
+            cancelBtn.addEventListener('click', function () {
+                var reasonInput = document.getElementById('cancelSubReason');
+                var reason = reasonInput ? reasonInput.value.trim() : '';
+
+                cancelBtn.disabled = true;
+                cancelBtn.textContent = 'جاري الإلغاء...';
+
                 fetch('@ClinicRoutes.Pages.CancelSubscription()', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                }).then(function(r) { return r.json(); })
-                  .then(function(data) {
-                      if (data.success) {
-                          localStorage.removeItem('accessToken');
-                          localStorage.removeItem('refreshToken');
-                          localStorage.removeItem('userId');
-                          localStorage.removeItem('role');
-                          localStorage.removeItem('clinicId');
-                          window.location.href = '@HomeRoutes.Pages.SubscriptionRequired()';
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: reason === '' ? null : reason })
+                }).then(function (r) { return r.json(); })
+                  .then(function (data) {
+                      if (data && data.success) {
+                          var leave = function () {
+                              localStorage.removeItem('accessToken');
+                              localStorage.removeItem('refreshToken');
+                              localStorage.removeItem('userId');
+                              localStorage.removeItem('role');
+                              localStorage.removeItem('clinicId');
+                              window.location.href = '@HomeRoutes.Pages.SubscriptionRequired()';
+                          };
+
+                          if (typeof showSuccessModal === 'function') {
+                              showSuccessModal(data.message || 'تم إلغاء الاشتراك بنجاح');
+                              setTimeout(leave, 2800);
+                          } else {
+                              leave();
+                          }
                       } else {
+                          cancelBtn.disabled = false;
+                          cancelBtn.textContent = 'تأكيد الإلغاء';
                           showBackendErrors(JSON.stringify(data));
                       }
-                  }).catch(function() {
+                  }).catch(function () {
+                      cancelBtn.disabled = false;
+                      cancelBtn.textContent = 'تأكيد الإلغاء';
                       showBackendErrors(null);
                   });
             });
-        }
+        });
 
         (function () {
             var pendingSub = null;

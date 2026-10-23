@@ -7,7 +7,7 @@ namespace ClinicHub.Services.Contracts
     {
         Task<PagginatedResult<SubscriptionDto>> GetSubscriptionsAsync(GetPaginatedSubscriptionsRequest request);
         Task<SubscriptionDto> CreateSubscriptionAsync(CreateSubscriptionRequest request);
-        Task<string> RevokeSubscriptionAsync(RevokeSubscriptionRequest request);
+        Task<CancelSubscriptionResponseDto> RevokeSubscriptionAsync(RevokeSubscriptionRequest request);
         Task<List<PlanDto>> GetAllPlansAsync();
         Task<PlanDto> CreatePlanAsync(PlanDto plan);
         Task<PlanDto> UpdatePlanAsync(Guid id, PlanDto plan);

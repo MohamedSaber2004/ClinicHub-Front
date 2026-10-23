@@ -25,5 +25,9 @@ namespace ClinicHub.Services.ReponseModels
         public DateTime Date { get; set; }
         public string Notes { get; set; } = "";
         public List<PaymentTimelineEntryDto> Timeline { get; set; } = new();
+
+        // Refund state. RefundStatus: 0=None 1=Pending 2=Processing 3=Completed 4=Failed 5=NeedsReview.
+        public decimal RefundedAmount { get; set; }
+        public int RefundStatus { get; set; }
     }
 }

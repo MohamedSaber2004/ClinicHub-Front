@@ -1,4 +1,5 @@
 @using ClinicHub.Services.ReponseModels
+@using ClinicHub.Services.Utilities
 @{
     ViewData["Title"] = "تفاصيل المعاملة";
     Layout = "_AdminLayout";
@@ -23,8 +24,11 @@
     @{
         var typeText = d.Type switch { 0 => "موعد مريض", 1 => "اشتراك عيادة", 2 => "خدمة إعلانية", _ => "غير معروف" };
         var typeClass = d.Type switch { 0 => "badge-info", 1 => "badge-primary", 2 => "badge-warning", _ => "badge-info" };
-        var statusText = d.Status switch { 0 => "معلق", 1 => "ناجح", 2 => "فاشل", 3 => "مسترد", _ => "غير معروف" };
-        var statusClass = d.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", _ => "badge-info" };
+        var statusText = d.Status switch { 0 => "معلق", 1 => "ناجح", 2 => "فاشل", 3 => "مسترد", 4 => "قيد المعالجة", 5 => "مسترد جزئياً", 6 => "استرداد معلق", 7 => "فشل الاسترداد", _ => "غير معروف" };
+        var statusClass = d.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", 4 => "badge-info", 5 => "badge-warning", 6 => "badge-warning", 7 => "badge-danger", _ => "badge-info" };
+        var refundStatusText = RefundDisplay.StatusText(d.RefundStatus);
+        var refundStatusClass = RefundDisplay.StatusClass(d.RefundStatus);
+        var refundableAmount = Math.Max(0, d.Amount - d.RefundedAmount);
         var methodText = d.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة إلكترونية", 2 => "Paymob - بطاقة ائتمانية", _ => "غير معروف" };
         var payerTypeText = d.PayerType == "Clinic" ? "عيادة" : "مريض";
     }
@@ -112,6 +116,17 @@
                     <span class="detail-info-label">تاريخ الإنشاء</span>
                     <span class="detail-info-value">@d.Date.ToString("yyyy-MM-dd HH:mm")</span>
                 </div>
+                @if (d.RefundedAmount > 0 || d.RefundStatus != 0)
+                {
+                    <div class="detail-info-row">
+                        <span class="detail-info-label">المبلغ المسترد</span>
+                        <span class="detail-info-value amount-cell">@d.RefundedAmount.ToString("N2") ج.م</span>
+                    </div>
+                    <div class="detail-info-row">
+                        <span class="detail-info-label">حالة الاسترداد</span>
+                        <span class="detail-info-value"><span class="badge @refundStatusClass">@refundStatusText</span></span>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -197,13 +212,19 @@
     </div>
 
     <!-- Refund Action -->
-    @if (d.Status == 1)
+    @if ((d.Status == 1 || d.Status == 5) && refundableAmount > 0)
     {
         <div class="detail-card mt-4">
             <div class="detail-section-header">
                 <h3 class="detail-card-title">استرداد المبلغ</h3>
             </div>
-            <p class="text-md text-muted mb-4">يمكنك استرداد المبلغ للدافع. سيتم إعادة المبلغ عبر قناة الدفع الأصلية.</p>
+            @if (d.RefundStatus == 4 || d.RefundStatus == 5)
+            {
+                <div class="alert alert-warning">
+                    <p class="mb-0">محاولة استرداد سابقة لم تكتمل — الحالة: @refundStatusText. المبلغ المتبقي للاسترداد: @refundableAmount.ToString("N2") ج.م.</p>
+                </div>
+            }
+            <p class="text-md text-muted mb-4">يمكنك استرداد المبلغ المتبقي للدافع (@refundableAmount.ToString("N2") ج.م). سيتم إعادة المبلغ عبر قناة الدفع الأصلية.</p>
             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#refundModal">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
@@ -227,7 +248,7 @@
                     <label class="form-label">سبب الاسترداد</label>
                     <textarea id="refundReason" class="form-textarea" maxlength="500" placeholder="أدخل سبب الاسترداد..." rows="3"></textarea>
                 </div>
-                <p class="text-md text-danger mt-3">سيتم استرداد مبلغ @d.Amount.ToString("N2") ج.م. هذا الإجراء لا يمكن التراجع عنه.</p>
+                <p class="text-md text-danger mt-3">سيتم استرداد مبلغ @refundableAmount.ToString("N2") ج.م. هذا الإجراء لا يمكن التراجع عنه.</p>
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>

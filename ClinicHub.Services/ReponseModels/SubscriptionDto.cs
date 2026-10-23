@@ -14,5 +14,13 @@ namespace ClinicHub.Services.ReponseModels
         public decimal Amount { get; set; }
         public DateTime? PaidAt { get; set; }
         public bool IsActive { get; set; }
+
+        // Cancellation + refund state (numbers on the wire).
+        // CancellationSource: 0=ClinicOwner 1=Admin 2=System
+        // RefundStatus: 0=None 1=Pending 2=Processing 3=Completed 4=Failed 5=NeedsReview
+        public DateTime? CancelledAt { get; set; }
+        public int? CancellationSource { get; set; }
+        public decimal? RefundAmount { get; set; }
+        public int? RefundStatus { get; set; }
     }
 }

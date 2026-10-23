@@ -268,7 +268,8 @@
         "15": "ClinicRejected",
         "17": "PaymentReceived",
         "18": "RevenueIncreased",
-        "19": "AppointmentAccepted"
+        "19": "AppointmentAccepted",
+        "22": "SubscriptionCancelled"
     };
 
     function typeName(value) {
@@ -281,7 +282,7 @@
     // has no appointment-detail or chat pages.
     var APPOINTMENT_TYPES = ["AppointmentOutsideAvailability", "AppointmentOutsideWorkingHours", "NewBookingRequest", "PaymentReceived", "RevenueIncreased", "AppointmentAccepted"];
     var CLINIC_TYPES = ["ClinicRegistered", "ClinicApproved", "ClinicRejected"];
-    var NOTIFICATION_TYPES = ["SubscriptionExpiring", "AdExpiring"];
+    var NOTIFICATION_TYPES = ["SubscriptionExpiring", "AdExpiring", "SubscriptionCancelled"];
 
     function clinicsPath() {
         var role = (localStorage.getItem("role") || "").toLowerCase();

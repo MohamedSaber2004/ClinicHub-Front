@@ -89,10 +89,15 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
-        public async Task<string> RevokeSubscriptionAsync(RevokeSubscriptionRequest request)
+        public async Task<CancelSubscriptionResponseDto> RevokeSubscriptionAsync(RevokeSubscriptionRequest request)
         {
             var url = DoctoryRoutes.AdminSubscriptions.RevokeSubscription(request.SubscriptionId);
-            var response = await _httpClient.PostAsync(url, null);
+            var payload = JsonConvert.SerializeObject(
+                new { refundAmount = request.RefundAmount, reason = request.Reason },
+                _jsonSettings);
+            var content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(url, content);
             var responseBody = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
@@ -103,8 +108,19 @@ namespace ClinicHub.Services.Services.Implementations
             }
 
             var obj = JsonConvert.DeserializeObject<JObject>(responseBody);
-            var dataToken = obj?["data"] ?? obj?["Data"] ?? obj?["message"] ?? obj?["Message"];
-            return dataToken?.ToString() ?? "تم إلغاء الاشتراك بنجاح";
+            var dataToken = obj?["data"] ?? obj?["Data"];
+            if (dataToken is JObject dataObject)
+            {
+                var dto = JsonConvert.DeserializeObject<CancelSubscriptionResponseDto>(dataObject.ToString(), _jsonSettings);
+                if (dto != null) return dto;
+            }
+
+            // Older backends answered with a bare `true`; the revoke still succeeded.
+            return new CancelSubscriptionResponseDto
+            {
+                SubscriptionId = request.SubscriptionId,
+                CancelledAt = DateTime.UtcNow
+            };
         }
 
         public async Task<List<PlanDto>> GetAllPlansAsync()

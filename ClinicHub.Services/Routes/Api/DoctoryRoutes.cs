@@ -284,6 +284,7 @@ namespace ClinicHub.Services.Routes.Api
             public string My => $"{BaseRoute}/my";
             public string InitiatePayment => $"{BaseRoute}/initiate-payment";
             public string Cancel => $"{BaseRoute}/my/cancel";
+            public string CancellationQuote => $"{BaseRoute}/my/cancellation-quote";
             public string VerifyLatestSubscriptionPayment => $"{PaymentsRoot}/verify-latest-subscription";
         }
         public class AdminSubscriptionRoutes

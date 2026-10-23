@@ -14,5 +14,10 @@ namespace ClinicHub.Services.ReponseModels
         public string RefNumber { get; set; } = "";
         public decimal PlatformFee { get; set; }
         public decimal ClinicNetAmount { get; set; }
+
+        // Refund state. RefundedAmount is the portion already sent back to the payer;
+        // RefundStatus: 0=None 1=Pending 2=Processing 3=Completed 4=Failed 5=NeedsReview.
+        public decimal RefundedAmount { get; set; }
+        public int RefundStatus { get; set; }
     }
 }

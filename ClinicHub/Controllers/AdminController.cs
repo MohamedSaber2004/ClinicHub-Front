@@ -12,6 +12,7 @@ using ClinicHub.Services.Options;
 using ClinicHub.Services.ReponseModels;
 using ClinicHub.Services.Enums;
 using ClinicHub.Services.RequestModels;
+using ClinicHub.Services.Utilities;
 using Microsoft.Extensions.Options;
 
 namespace ClinicHub.Controllers
@@ -858,13 +859,29 @@ namespace ClinicHub.Controllers
         {
             try
             {
-                var message = await _adminSubscriptionService.RevokeSubscriptionAsync(request);
-                return Json(new { success = true, message });
+                if (request == null || request.SubscriptionId == Guid.Empty)
+                    return Json(new { success = false, message = "معرّف الاشتراك غير صالح" });
+
+                if (request.RefundAmount is < 0)
+                    return Json(new { success = false, message = "مبلغ الاسترداد لا يمكن أن يكون سالباً" });
+
+                var result = await _adminSubscriptionService.RevokeSubscriptionAsync(request);
+                return Json(new
+                {
+                    success = true,
+                    message = CancellationMessages.ForResult(result),
+                    data = result
+                });
             }
             catch (ApiException ex)
             {
                 Response.StatusCode = ex.StatusCode;
                 return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
             }
         }
 

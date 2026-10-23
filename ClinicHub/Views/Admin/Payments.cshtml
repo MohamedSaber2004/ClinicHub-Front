@@ -274,6 +274,9 @@
         <option value="1" selected="@(statusFilter == "1")">ناجح</option>
         <option value="2" selected="@(statusFilter == "2")">فاشل</option>
         <option value="3" selected="@(statusFilter == "3")">مسترد</option>
+        <option value="5" selected="@(statusFilter == "5")">مسترد جزئياً</option>
+        <option value="6" selected="@(statusFilter == "6")">استرداد معلق</option>
+        <option value="7" selected="@(statusFilter == "7")">فشل الاسترداد</option>
     </select>
     <input type="date" name="fromDate" class="form-input" value="@fromDateFilter" title="من تاريخ" />
     <input type="date" name="toDate" class="form-input" value="@toDateFilter" title="إلى تاريخ" />
@@ -320,8 +323,8 @@
                     {
                         var typeText = p.Type switch { 0 => "موعد مريض", 1 => "اشتراك عيادة", 2 => "خدمة إعلانية", _ => "غير معروف" };
                         var typeClass = p.Type switch { 0 => "badge-info", 1 => "badge-primary", 2 => "badge-warning", _ => "badge-info" };
-                        var statusText = p.Status switch { 0 => "معلق", 1 => "ناجح", 2 => "فاشل", 3 => "مسترد", _ => "غير معروف" };
-                        var statusClass = p.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", _ => "badge-info" };
+                        var statusText = p.Status switch { 0 => "معلق", 1 => "ناجح", 2 => "فاشل", 3 => "مسترد", 4 => "قيد المعالجة", 5 => "مسترد جزئياً", 6 => "استرداد معلق", 7 => "فشل الاسترداد", _ => "غير معروف" };
+                        var statusClass = p.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", 4 => "badge-info", 5 => "badge-warning", 6 => "badge-warning", 7 => "badge-danger", _ => "badge-info" };
                         var methodText = p.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة", 2 => "Paymob - بطاقة", _ => "غير معروف" };
                         <tr>
                             <td class="text-md">@p.Code</td>
@@ -338,7 +341,13 @@
                             <td class="text-md">@p.PlatformFee.ToString("N2") ج.م</td>
                             <td class="text-md">@p.ClinicNetAmount.ToString("N2") ج.م</td>
                             <td class="text-md">@methodText</td>
-                            <td><span class="badge @statusClass">@statusText</span></td>
+                            <td>
+                                <span class="badge @statusClass">@statusText</span>
+                                @if (p.RefundedAmount > 0)
+                                {
+                                    <span class="cell-sub">مسترد: @p.RefundedAmount.ToString("N2") ج.م</span>
+                                }
+                            </td>
                             <td class="text-md">@p.Date.ToString("yyyy-MM-dd HH:mm")</td>
                             <td class="ref-number">@p.RefNumber</td>
                             <td>
