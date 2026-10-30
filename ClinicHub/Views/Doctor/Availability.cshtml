@@ -3,17 +3,31 @@
     var stats = ViewBag.Stats as List<StatCardDto> ?? new();
     var typicalDuration = (int)(ViewBag.TypicalDuration ?? 30);
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
+
+    string StatModifier(string? label) => label switch
+    {
+        "ساعات العمل أسبوعياً" => "stat-card--info",
+        "مدة الحجز (ثابتة)" => "stat-card--neutral",
+        _ => ""
+    };
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-            <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-    </span>
-    أوقات العمل المتاحة
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            أوقات العمل المتاحة
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <span class="badge badge-info" id="typicalDurationBadge">مدة الحجز: 30 دقيقة (ثابتة)</span>
+    </div>
+</div>
 
 @if (hasError)
 {
@@ -22,12 +36,12 @@
     </div>
 }
 
-<div class="stats-grid">
+<div class="stats-grid stagger">
     @foreach (var stat in stats)
     {
-        <div class="stat-card">
+        <div class="stat-card @StatModifier(stat.Label)">
             <div class="stat-info">
-                <span class="stat-value" @(stat.Label == "مدة الحجز (ثابتة)" ? "id=\"statDurationValue\"" : "")>@stat.Value</span>
+                <span class="stat-value tabular" @(stat.Label == "مدة الحجز (ثابتة)" ? "id=\"statDurationValue\"" : "")>@stat.Value</span>
                 <span class="stat-label">@stat.Label</span>
             </div>
             <div class="icon-wrapper icon-wrapper--@stat.IconColor">
@@ -39,22 +53,28 @@
     }
 </div>
 
-<div class="detail-card">
-    <div class="detail-section-header">
-        <h5>جدول العمل الأسبوعي</h5>
-        <span class="badge badge-info" id="typicalDurationBadge">مدة الحجز: 30 دقيقة (ثابتة)</span>
+<div class="surface ds-panel ds-availability-panel">
+    <div class="section-head ds-assess-panel-head">
+        <h5 class="section-head-title ds-panel-title">
+            <i class="bi bi-calendar-week"></i>
+            جدول العمل الأسبوعي
+        </h5>
     </div>
     <p class="form-hint mb-3">حدد أيام ومواعيد تواجدك في العيادة. اترك الوقت فارغاً ليكون اليوم عطلة. مدة الموعد مثبتة على 30 دقيقة لجميع الأيام ولا يمكن تغييرها.</p>
-    <div id="availabilityContainer"></div>
-    <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn mt-2">
+    <div id="availabilityContainer" class="ds-availability"></div>
+    <button type="button" id="addAvailabilityBtn" class="btn btn-sm btn-secondary add-availability-btn mt-2">
         <i class="bi bi-plus-circle"></i> إضافة يوم
     </button>
-    <div class="mt-4">
+    <div class="ds-form-actions ds-form-actions--sticky">
         <button type="button" class="btn btn-primary" id="saveAvailabilityBtn">
             <i class="bi bi-check2"></i> حفظ أوقات العمل
         </button>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     <script>

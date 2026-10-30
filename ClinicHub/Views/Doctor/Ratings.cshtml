@@ -6,14 +6,21 @@
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" stroke="currentColor" stroke-width="2"/>
-        </svg>
-    </span>
-    التقييمات
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </span>
+            التقييمات
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <span class="badge badge-primary">@totalRatings تقييم</span>
+    </div>
+</div>
 
 @if (hasError)
 {
@@ -22,13 +29,12 @@
     </div>
 }
 
-<div class="detail-card">
-    <div class="detail-section-header">
-        <h5>
+<div class="surface ds-panel ds-ratings">
+    <div class="section-head ds-assess-panel-head">
+        <h5 class="section-head-title ds-panel-title">
             <i class="bi bi-star-fill"></i>
             تقييم الطبيب
         </h5>
-        <span class="badge badge-primary">@totalRatings تقييم</span>
     </div>
 
     @if (ratings.Count == 0 && !hasError)
@@ -42,27 +48,27 @@
     }
     else if (ratings.Count > 0)
     {
-        <div class="ratings-header-card ratings-header-card--inline">
-            <div class="rhc-score">
-                <span class="rhc-number">@averageRating.ToString("F1")</span>
+        <div class="ds-ratings-summary">
+            <div class="ds-ratings-score rhc-score">
+                <span class="ds-ratings-number rhc-number">@averageRating.ToString("F1")</span>
                 <partial name="_StarRating" model="new { Value = averageRating, Size = 18 }" />
             </div>
         </div>
-        <div class="ratings-list">
+        <div class="ds-rating-list ratings-list">
             @foreach (var r in ratings)
             {
                 var initial = !string.IsNullOrEmpty(r.UserName) ? System.Globalization.StringInfo.GetNextTextElement(r.UserName) : "م";
-                <div class="rating-full-card">
-                    <div class="rfc-avatar">@initial</div>
-                    <div class="rfc-content">
-                        <div class="rfc-header">
-                            <span class="rfc-name">@r.UserName</span>
-                            <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
+                <div class="rating-full-card ds-rating-card lift">
+                    <div class="rfc-avatar ds-rating-avatar">@initial</div>
+                    <div class="rfc-content ds-rating-body">
+                        <div class="rfc-header ds-rating-head">
+                            <span class="rfc-name ds-rating-name">@r.UserName</span>
+                            <span class="rfc-date ds-rating-date tabular">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
                         </div>
                         <partial name="_StarRating" model="new { Value = r.Value, Size = 14 }" />
                         @if (!string.IsNullOrEmpty(r.Review))
                         {
-                            <p class="rfc-comment">@r.Review</p>
+                            <p class="rfc-comment ds-rating-comment">@r.Review</p>
                         }
                     </div>
                 </div>
@@ -70,3 +76,7 @@
         </div>
     }
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}

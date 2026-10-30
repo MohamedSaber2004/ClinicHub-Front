@@ -8,14 +8,20 @@
     var subscriptions = ViewBag.Subscriptions as List<SubscriptionDto> ?? new List<SubscriptionDto>();
     var clinics = ViewBag.Clinics as IReadOnlyCollection<ClinicLookupDto> ?? new List<ClinicLookupDto>();
 }
-<div class="admin-ads-subs-page">
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-finance.css?v=20261027_redesign_v2" />
+}
+<div class="admin-ads-subs-page af-page">
 <div class="page-header">
-    <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-        </span>
-        نظرة عامة على الاشتراكات والإعلانات
-    </h2>
+    <div class="af-head-main">
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            </span>
+            نظرة عامة على الاشتراكات والإعلانات
+        </h2>
+    </div>
     <div class="page-header-actions">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#manualAdSubModal">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -36,7 +42,7 @@
     </div>
     <div class="ads-toolbar-meta">
         <span class="badge badge-info" id="adsGlobalCount">@(plans.Count + packages.Count + clinicAdSettings.Count + subscriptions.Count) عنصر</span>
-        <span class="text-muted" style="font-size:12px">الضغط <kbd>Ctrl</kbd>+<kbd>K</kbd> للتركيز</span>
+        <span class="af-toolbar-hint">الضغط <span class="af-kbd">Ctrl</span>+<span class="af-kbd">K</span> للتركيز</span>
     </div>
 </div>
 
@@ -47,9 +53,9 @@
 
 <!-- Plans -->
 <div class="table-card" data-table="plans">
-    <div class="table-card-header">
+    <div class="table-card-header af-card-header">
         <h3 class="table-card-title">باقات تشغيل العيادات <span class="badge badge-secondary table-count" data-count-for="plans">@plans.Count</span></h3>
-        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="table-card-actions af-card-actions">
             <div class="ads-table-search">
                 <input type="text" class="form-input form-input-sm ads-table-filter" data-target="plans" aria-label="بحث في الباقات" placeholder="بحث في الباقات..." />
             </div>
@@ -71,7 +77,7 @@
             <tbody>
             @if (plans.Count == 0)
             {
-                <tr><td colspan="6" class="text-center text-muted">لا توجد باقات</td></tr>
+                <tr><td colspan="6"><div class="af-empty-cell"><p class="mb-0">لا توجد باقات</p></div></td></tr>
             }
             else
             {
@@ -79,11 +85,11 @@
                 {
                     <tr>
                         <td class="text-md-medium">@(p.NameAr ?? p.Name)</td>
-                        <td class="text-md">@p.PriceMonthly.ToString("N0") ج.م</td>
-                        <td class="text-md">@p.PriceYearly.ToString("N0") ج.م</td>
-                        <td class="text-md">@(p.MaxDoctors?.ToString() ?? "غير محدود")</td>
-                        <td class="text-md">@(p.MaxStaff?.ToString() ?? "غير محدود")</td>
-                        <td><span class="badge @(p.IsActive ? "badge-success" : "badge-secondary")">@(p.IsActive ? "نشطة (في الموقع)" : "معطلة")</span></td>
+                        <td class="text-md amount-cell">@p.PriceMonthly.ToString("N0") ج.م</td>
+                        <td class="text-md amount-cell">@p.PriceYearly.ToString("N0") ج.م</td>
+                        <td class="text-md tabular">@(p.MaxDoctors?.ToString() ?? "غير محدود")</td>
+                        <td class="text-md tabular">@(p.MaxStaff?.ToString() ?? "غير محدود")</td>
+                        <td><span class="badge badge--dot @(p.IsActive ? "badge-success" : "badge-secondary")">@(p.IsActive ? "نشطة (في الموقع)" : "معطلة")</span></td>
                     </tr>
                 }
             }
@@ -94,9 +100,9 @@
 
 <!-- Ad Packages -->
 <div class="table-card" data-table="packages">
-    <div class="table-card-header">
+    <div class="table-card-header af-card-header">
         <h3 class="table-card-title">باقات الإعلانات والترويج <span class="badge badge-secondary table-count" data-count-for="packages">@packages.Count</span></h3>
-        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="table-card-actions af-card-actions">
             <div class="ads-table-search">
                 <input type="text" class="form-input form-input-sm ads-table-filter" data-target="packages" aria-label="بحث في حزم الإعلانات" placeholder="بحث في الباقات الإعلانية..." />
             </div>
@@ -118,7 +124,7 @@
             <tbody>
             @if (packages.Count == 0)
             {
-                <tr><td colspan="6" class="text-center text-muted">لا توجد باقات إعلانية</td></tr>
+                <tr><td colspan="6"><div class="af-empty-cell"><p class="mb-0">لا توجد باقات إعلانية</p></div></td></tr>
             }
             else
             {
@@ -126,11 +132,11 @@
                 {
                     <tr>
                         <td class="text-md-medium">@(pkg.NameAr ?? pkg.Name)</td>
-                        <td class="text-md">@pkg.DurationDays يوم</td>
-                        <td class="text-md">@pkg.Price.ToString("N2") ج.م</td>
-                        <td class="text-md">@(pkg.MaxAds > 0 ? pkg.MaxAds.ToString() : "غير محدود")</td>
-                        <td class="text-md">@(pkg.MaxImpressions > 0 ? pkg.MaxImpressions.ToString("N0") : "غير محدود")</td>
-                        <td><span class="badge @(pkg.IsActive ? "badge-success" : "badge-secondary")">@(pkg.IsActive ? "نشطة" : "معطلة")</span></td>
+                        <td class="text-md tabular">@pkg.DurationDays يوم</td>
+                        <td class="text-md amount-cell">@pkg.Price.ToString("N2") ج.م</td>
+                        <td class="text-md tabular">@(pkg.MaxAds > 0 ? pkg.MaxAds.ToString() : "غير محدود")</td>
+                        <td class="text-md tabular">@(pkg.MaxImpressions > 0 ? pkg.MaxImpressions.ToString("N0") : "غير محدود")</td>
+                        <td><span class="badge badge--dot @(pkg.IsActive ? "badge-success" : "badge-secondary")">@(pkg.IsActive ? "نشطة" : "معطلة")</span></td>
                     </tr>
                 }
             }
@@ -141,9 +147,9 @@
 
 <!-- Clinic Ad Settings -->
 <div class="table-card" data-table="clinics">
-    <div class="table-card-header">
+    <div class="table-card-header af-card-header">
         <h3 class="table-card-title">حدود وإعدادات الإعلانات لكل عيادة <span class="badge badge-secondary table-count" data-count-for="clinics">@clinicAdSettings.Count</span></h3>
-        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="table-card-actions af-card-actions">
             <div class="ads-table-search">
                 <input type="text" class="form-input form-input-sm ads-table-filter" data-target="clinics" aria-label="بحث عن عيادة" placeholder="بحث باسم العيادة..." />
             </div>
@@ -184,9 +190,9 @@
 
 <!-- Recent Subscriptions -->
 <div class="table-card" data-table="subs">
-    <div class="table-card-header">
+    <div class="table-card-header af-card-header">
         <h3 class="table-card-title">أحدث الاشتراكات <span class="badge badge-secondary table-count" data-count-for="subs">@subscriptions.Count</span></h3>
-        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="table-card-actions af-card-actions">
             <div class="ads-table-search">
                 <input type="text" class="form-input form-input-sm ads-table-filter" data-target="subs" aria-label="بحث عن مشترك" placeholder="بحث باسم العيادة أو الباقة..." />
             </div>

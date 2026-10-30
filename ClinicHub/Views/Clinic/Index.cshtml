@@ -7,187 +7,227 @@
     var dashStats = ViewBag.DashboardStats as ClinicDashboardStatsDto;
 }
 
-<div class="page-header">
-    <h2 class="page-title mb-0">لوحة إدارة وتشغيل العيادات اليومي</h2>
-    <span class="text-muted"><i class="bi bi-clock-history me-1"></i> آخر تحديث: @DateTime.Now.ToString("hh:mm tt")</span>
-</div>
+<div class="co-page">
+    <div class="page-header co-page-head">
+        <div>
+            <h2 class="page-title">
+                <span class="page-title-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                </span>
+                لوحة إدارة وتشغيل العيادات اليومي
+            </h2>
+            <p class="page-header-subtitle">نظرة تشغيلية على زيارات العيادة وإيراداتها خلال الفترة الحالية</p>
+        </div>
+        <div class="page-header-actions">
+            <span class="co-live"><i class="bi bi-clock-history"></i> آخر تحديث: @DateTime.Now.ToString("hh:mm tt")</span>
+            <a href="@ClinicRoutes.Pages.Reports()" class="btn btn-primary">
+                <i class="bi bi-bar-chart-line"></i> التقارير التشغيلية
+            </a>
+        </div>
+    </div>
 
-@if (_user != null)
-{
-    <div class="plan-info-bar">
-        <div class="plan-info-item">
-            <span class="plan-info-label">الباقة</span>
-            <span class="plan-info-value">@_user.PlanName</span>
-        </div>
-        <div class="plan-info-item">
-            <span class="plan-info-label">الأطباء</span>
-            <span class="plan-info-value">@(_user.MaxDoctors.HasValue ? $"الحد الأقصى: {_user.MaxDoctors}" : "غير محدود")</span>
-        </div>
-        <div class="plan-info-item">
-            <span class="plan-info-label">الموظفين</span>
-            <span class="plan-info-value">@(_user.MaxStaff.HasValue ? $"الحد الأقصى: {_user.MaxStaff}" : "غير محدود")</span>
-        </div>
-        @if (_user.HasFeature(PlanFeature.PrioritySupport))
-        {
+    @if (_user != null)
+    {
+        <div class="plan-info-bar co-plan">
             <div class="plan-info-item">
-                <span class="badge badge-info">دعم ذو أولوية</span>
+                <span class="plan-info-label">الباقة</span>
+                <span class="plan-info-value">@_user.PlanName</span>
             </div>
-        }
-        <a href="/Clinic/MySubscription" class="plan-info-link">تفاصيل الاشتراك <i class="bi bi-arrow-left"></i></a>
+            <div class="plan-info-item">
+                <span class="plan-info-label">الأطباء</span>
+                <span class="plan-info-value">@(_user.MaxDoctors.HasValue ? $"الحد الأقصى: {_user.MaxDoctors}" : "غير محدود")</span>
+            </div>
+            <div class="plan-info-item">
+                <span class="plan-info-label">الموظفين</span>
+                <span class="plan-info-value">@(_user.MaxStaff.HasValue ? $"الحد الأقصى: {_user.MaxStaff}" : "غير محدود")</span>
+            </div>
+            @if (_user.HasFeature(PlanFeature.PrioritySupport))
+            {
+                <div class="plan-info-item">
+                    <span class="badge badge-info">دعم ذو أولوية</span>
+                </div>
+            }
+            <a href="/Clinic/MySubscription" class="plan-info-link">تفاصيل الاشتراك <i class="bi bi-arrow-left"></i></a>
+        </div>
+    }
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid co-stats stagger">
+        <div class="stat-card co-stat lift">
+            <div class="stat-info co-stat-info">
+                <span class="stat-value">@(dashStats?.TodayVisits ?? 0)</span>
+                <span class="stat-label">زيارات اليوم</span>
+            </div>
+            <div class="stat-icon-wrapper icon-wrapper icon-wrapper--primary">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                    <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                    <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="stat-card co-stat stat-card--info lift">
+            <div class="stat-info co-stat-info">
+                <span class="stat-value">@(dashStats?.WeeklyVisits ?? 0)</span>
+                <span class="stat-label">زيارات الأسبوع</span>
+            </div>
+            <div class="stat-icon-wrapper icon-wrapper icon-wrapper--blue">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z" fill="currentColor"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="stat-card co-stat stat-card--neutral lift">
+            <div class="stat-info co-stat-info">
+                <span class="stat-value">@(dashStats?.MonthlyVisits ?? 0)</span>
+                <span class="stat-label">زيارات الشهر</span>
+            </div>
+            <div class="stat-icon-wrapper icon-wrapper icon-wrapper--amber">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="stat-card co-stat stat-card--brass lift">
+            <div class="stat-info co-stat-info">
+                <span class="stat-value">@(dashStats?.MonthlyNetIncome.ToString("N0") ?? "0") ج.م</span>
+                <span class="stat-label">صافي إيرادات الشهر</span>
+            </div>
+            <div class="stat-icon-wrapper icon-wrapper icon-wrapper--brass">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    <path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                </svg>
+            </div>
+        </div>
     </div>
+
+    <!-- Charts Grid -->
+    <div class="co-note">
+        <i class="bi bi-info-circle"></i>
+        <span>جميع المبالغ المعروضة هي صافي العيادة فقط من الحجوزات (بدون رسوم المنصة).</span>
+    </div>
+
+    <div class="charts-grid co-charts">
+        <div class="chart-card chart-card--wide co-chart lift">
+            <h4 class="chart-title">تطور صافي الإيرادات - آخر 30 يوماً</h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="revenueTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card co-chart lift">
+            <h4 class="chart-title">ملخص الزيارات</h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="appointmentsSummaryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard grid: Today's overview -->
+    <div class="dashboard-tables-grid co-tables">
+        <!-- Today's Stats Summary -->
+        <div class="table-card co-roster">
+            <div class="table-card-header co-roster-head">
+                <h3 class="table-card-title mb-0">ملخص صافي الإيرادات</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>الفترة</th>
+                            <th>الزيارات</th>
+                            <th>صافي العيادة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>اليوم</strong></td>
+                            <td class="co-data tabular">@(dashStats?.TodayVisits ?? 0)</td>
+                            <td class="co-data tabular">@(dashStats?.TodayNetIncome.ToString("N0") ?? "0") ج.م</td>
+                        </tr>
+                        <tr>
+                            <td><strong>الأسبوع</strong></td>
+                            <td class="co-data tabular">@(dashStats?.WeeklyVisits ?? 0)</td>
+                            <td class="co-data tabular">@(dashStats?.WeeklyNetIncome.ToString("N0") ?? "0") ج.م</td>
+                        </tr>
+                        <tr>
+                            <td><strong>الشهر</strong></td>
+                            <td class="co-data tabular">@(dashStats?.MonthlyVisits ?? 0)</td>
+                            <td class="co-data tabular">@(dashStats?.MonthlyNetIncome.ToString("N0") ?? "0") ج.م</td>
+                        </tr>
+                        <tr>
+                            <td><strong>السنة</strong></td>
+                            <td class="co-data tabular">@(dashStats?.YearlyVisits ?? 0)</td>
+                            <td class="co-data tabular">@(dashStats?.YearlyNetIncome.ToString("N0") ?? "0") ج.م</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="table-card co-roster">
+            <div class="table-card-header co-roster-head">
+                <h3 class="table-card-title mb-0">روابط سريعة</h3>
+            </div>
+            <div class="co-link-list">
+                <a href="@ClinicRoutes.Pages.Doctors()" class="co-link">
+                    <i class="bi bi-person-badge"></i> إدارة الأطباء
+                    <i class="bi bi-arrow-left co-link-arrow"></i>
+                </a>
+                <a href="@ClinicRoutes.Pages.Staff()" class="co-link">
+                    <i class="bi bi-people"></i> إدارة الموظفين
+                    <i class="bi bi-arrow-left co-link-arrow"></i>
+                </a>
+                <a href="@ClinicRoutes.Pages.Settings()" class="co-link">
+                    <i class="bi bi-gear"></i> إعدادات العيادة
+                    <i class="bi bi-arrow-left co-link-arrow"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
 }
-
-<!-- Statistics Grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-info">
-            <span class="stat-value">@(dashStats?.TodayVisits ?? 0)</span>
-            <span class="stat-label">زيارات اليوم</span>
-        </div>
-        <div class="stat-icon-wrapper icon-wrapper icon-wrapper--blue">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
-                <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
-                <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
-            </svg>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-info">
-            <span class="stat-value">@(dashStats?.WeeklyVisits ?? 0)</span>
-            <span class="stat-label">زيارات الأسبوع</span>
-        </div>
-        <div class="stat-icon-wrapper icon-wrapper icon-wrapper--primary">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z" fill="currentColor"/>
-            </svg>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-info">
-            <span class="stat-value">@(dashStats?.MonthlyVisits ?? 0)</span>
-            <span class="stat-label">زيارات الشهر</span>
-        </div>
-        <div class="stat-icon-wrapper icon-wrapper icon-wrapper--amber">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-info">
-            <span class="stat-value">@(dashStats?.MonthlyNetIncome.ToString("N0") ?? "0") ج.م</span>
-            <span class="stat-label">صافي إيرادات الشهر</span>
-        </div>
-        <div class="stat-icon-wrapper icon-wrapper icon-wrapper--green">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-                <path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </svg>
-        </div>
-    </div>
-</div>
-
-<!-- Charts Grid -->
-<p class="text-md text-muted">جميع المبالغ المعروضة هي صافي العيادة فقط من الحجوزات (بدون رسوم المنصة).</p>
-<div class="charts-grid">
-    <div class="chart-card chart-card--wide">
-        <h4 class="chart-title">تطور صافي الإيرادات - آخر 30 يوماً</h4>
-        <div class="chart-canvas-wrap">
-            <canvas id="revenueTrendChart"></canvas>
-        </div>
-    </div>
-
-    <div class="chart-card">
-        <h4 class="chart-title">ملخص الزيارات</h4>
-        <div class="chart-canvas-wrap">
-            <canvas id="appointmentsSummaryChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<!-- Dashboard grid: Today's overview -->
-<div class="dashboard-tables-grid">
-    <!-- Today's Stats Summary -->
-    <div class="table-card">
-        <div class="table-card-header">
-            <h3 class="table-card-title mb-0">ملخص صافي الإيرادات</h3>
-        </div>
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>الفترة</th>
-                        <th>الزيارات</th>
-                        <th>صافي العيادة</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>اليوم</strong></td>
-                        <td>@(dashStats?.TodayVisits ?? 0)</td>
-                        <td>@(dashStats?.TodayNetIncome.ToString("N0") ?? "0") ج.م</td>
-                    </tr>
-                    <tr>
-                        <td><strong>الأسبوع</strong></td>
-                        <td>@(dashStats?.WeeklyVisits ?? 0)</td>
-                        <td>@(dashStats?.WeeklyNetIncome.ToString("N0") ?? "0") ج.م</td>
-                    </tr>
-                    <tr>
-                        <td><strong>الشهر</strong></td>
-                        <td>@(dashStats?.MonthlyVisits ?? 0)</td>
-                        <td>@(dashStats?.MonthlyNetIncome.ToString("N0") ?? "0") ج.م</td>
-                    </tr>
-                    <tr>
-                        <td><strong>السنة</strong></td>
-                        <td>@(dashStats?.YearlyVisits ?? 0)</td>
-                        <td>@(dashStats?.YearlyNetIncome.ToString("N0") ?? "0") ج.م</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="table-card">
-        <div class="table-card-header">
-            <h3 class="table-card-title mb-0">روابط سريعة</h3>
-        </div>
-        <div class="p-3">
-            <a href="@ClinicRoutes.Pages.Doctors()" class="btn btn-secondary btn-sm mb-2 w-100">
-                <i class="bi bi-person-badge me-1"></i> إدارة الأطباء
-            </a>
-            <a href="@ClinicRoutes.Pages.Staff()" class="btn btn-secondary btn-sm mb-2 w-100">
-                <i class="bi bi-people me-1"></i> إدارة الموظفين
-            </a>
-            <a href="@ClinicRoutes.Pages.Settings()" class="btn btn-secondary btn-sm w-100">
-                <i class="bi bi-gear me-1"></i> إعدادات العيادة
-            </a>
-        </div>
-    </div>
-</div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
     <script>
         (function () {
+            // Read the chart palette from the design tokens; the literal
+            // colours below are only fallbacks for when the token layer
+            // has not loaded yet.
+            var rootStyles = getComputedStyle(document.documentElement);
+            function token(name, fallback) {
+                var value = rootStyles.getPropertyValue(name);
+                return value && value.trim() ? value.trim() : fallback;
+            }
+
             var palettes = {
-                primary: '#0D5F4E',
-                primarySoft: 'rgba(13, 95, 78, 0.14)',
-                green: '#1E8A5A',
-                amber: '#D08A1E',
-                danger: '#B13B32',
-                blue: '#2F6FB2'
+                primary: token('--chart-1', '#0D5F4E'),
+                primarySoft: token('--clr-primary-light', 'rgba(13, 95, 78, 0.14)'),
+                green: token('--chart-2', '#1E8A5A'),
+                blue: token('--chart-3', '#2F6FB2'),
+                brass: token('--chart-4', '#B78A3C'),
+                amber: token('--chart-5', '#D08A1E'),
+                danger: token('--chart-6', '#B13B32'),
+                grid: token('--chart-grid', 'rgba(90,107,102,0.10)'),
+                axis: token('--chart-axis', '#5A6B64')
             };
 
             Chart.defaults.font.family = "'Cairo', sans-serif";
             Chart.defaults.font.size = 12;
-            Chart.defaults.color = '#5A6B66';
+            Chart.defaults.color = palettes.axis;
             Chart.defaults.plugins.legend.rtl = true;
             Chart.defaults.plugins.legend.textDirection = 'rtl';
             Chart.defaults.plugins.tooltip.rtl = true;
@@ -200,7 +240,7 @@
                     interaction: { intersect: false, mode: 'index' },
                     scales: {
                         x: { grid: { display: false } },
-                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(90,107,102,0.10)' } }
+                        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: palettes.grid } }
                     },
                     plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } }
                 };
@@ -245,7 +285,7 @@
                         { label: 'ملغاة', data: (appts || []).map(function (r) { return r.cancelledCount; }), backgroundColor: palettes.danger, borderRadius: 4 }
                     ]
                 },
-                options: baseOptions({ scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(90,107,102,0.10)' } } } })
+                options: baseOptions({ scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: palettes.grid } } } })
             });
         })();
     </script>

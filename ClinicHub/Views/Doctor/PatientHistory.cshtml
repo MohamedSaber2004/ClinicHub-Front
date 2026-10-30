@@ -364,7 +364,7 @@
     </div>
 
     <!-- 8. Previous Visits History Timeline (collapsible section) -->
-    <div class="assessment-visits-card">
+    <div class="assessment-visits-card ds-history-card">
         <div class="assessment-visits-header" data-bs-toggle="collapse" data-bs-target="#visitsCollapse" aria-expanded="false">
             <h5>
                 <i class="bi bi-calendar-week"></i>
@@ -384,7 +384,7 @@
                 }
                 else
                 {
-                    <div class="timeline">
+                    <div class="timeline ds-timeline">
                         @foreach (var item in history)
                         {
                             <div class="timeline-item">
@@ -617,6 +617,10 @@
         </div>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
 <script>

@@ -8,6 +8,7 @@ namespace ClinicHub.Routes
         {
             public static string Index() => $"{Base}/Index";
             public static string AppointmentRevenue() => $"{Base}/AppointmentRevenue";
+            public static string Payouts() => $"{Base}/Payouts";
             public static string MedicalRecords() => $"{Base}/MedicalRecords";
             public static string PatientPortal() => $"{Base}/PatientPortal";
             public static string Staff() => $"{Base}/Staff";

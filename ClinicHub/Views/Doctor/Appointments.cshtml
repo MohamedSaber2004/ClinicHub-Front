@@ -44,29 +44,50 @@
         if (!TimeSpan.TryParse(app.StartTime, out var startTime)) return false;
         return date.Date.Add(startTime) <= DateTime.Now;
     }
+
+    var statusChips = new (string Value, string Label)[]
+    {
+        ("", "جميع الحالات"),
+        ("0", "قيد الانتظار"),
+        ("6", "بانتظار الدفع"),
+        ("1", "مؤكد"),
+        ("3", "مكتمل"),
+        ("2", "ملغى"),
+        ("7", "مرفوض")
+    };
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-calendar3"></i>
-    </span>
-    جميع المواعيد
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <i class="bi bi-calendar3"></i>
+            </span>
+            جميع المواعيد
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("Availability")">
+            <i class="bi bi-clock-history"></i>
+            أوقات العمل المتاحة
+        </a>
+    </div>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(currentDoctorName))
 {
-    <div class="table-hint appointment-scope-hint">
+    <div class="ds-scope-note table-hint appointment-scope-hint">
         <i class="bi bi-person-check"></i>
         تُعرض مواعيد حسابك فقط: د. @currentDoctorName
     </div>
 }
 
-<div class="table-card">
+<div class="table-card ds-table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">قائمة المواعيد</h3>
     </div>
-    <form method="get" action="@Url.Action("Appointments")" class="filter-bar table-filter-bar">
-        <select name="status" class="form-select">
+    <form method="get" action="@Url.Action("Appointments")" class="filter-bar table-filter-bar ds-filter">
+        <select name="status" class="form-select ds-sr-field" tabindex="-1" aria-hidden="true">
             <option value="">جميع الحالات</option>
             <option value="0" selected="@(ViewBag.StatusFilter == "0")">قيد الانتظار</option>
             <option value="6" selected="@(ViewBag.StatusFilter == "6")">بانتظار الدفع</option>
@@ -75,14 +96,35 @@
             <option value="2" selected="@(ViewBag.StatusFilter == "2")">ملغى</option>
             <option value="7" selected="@(ViewBag.StatusFilter == "7")">مرفوض</option>
         </select>
-        <input type="date" name="startDate" aria-label="من تاريخ" class="form-input" value="@ViewBag.StartDate" title="من تاريخ" />
-        <input type="date" name="endDate" aria-label="إلى تاريخ" class="form-input" value="@ViewBag.EndDate" title="إلى تاريخ" />
-        <input type="text" name="searchTerm" aria-label="بحث في المواعيد" class="form-input" placeholder="اسم المريض أو الهاتف..." value="@ViewBag.SearchTerm" />
+        <div class="form-field ds-filter-search">
+            <span class="form-field-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <input type="text" name="searchTerm" aria-label="بحث في المواعيد" class="form-input" placeholder="اسم المريض أو الهاتف..." value="@ViewBag.SearchTerm" />
+        </div>
+        <div class="segmented ds-date-scope">
+            <input type="date" name="startDate" aria-label="من تاريخ" class="form-input" value="@ViewBag.StartDate" title="من تاريخ" />
+            <span class="ds-date-sep" aria-hidden="true">—</span>
+            <input type="date" name="endDate" aria-label="إلى تاريخ" class="form-input" value="@ViewBag.EndDate" title="إلى تاريخ" />
+        </div>
         <button type="submit" class="btn btn-primary btn-sm">بحث</button>
-        <a href="@Url.Action("Appointments")" class="btn btn-outline-secondary btn-sm">مسح</a>
+        <a href="@Url.Action("Appointments")" class="btn btn-ghost btn-sm">مسح</a>
     </form>
+    <div class="ds-chips">
+        <span class="ds-chips-label">الحالة</span>
+        @foreach (var chip in statusChips)
+        {
+            var chipValue = chip.Value;
+            var isActiveChip = string.Equals(ViewBag.StatusFilter as string ?? "", chipValue, StringComparison.Ordinal);
+            <a class="chip @(isActiveChip ? "active" : "")"
+               href="@Url.Action("Appointments", new { status = chipValue, startDate = ViewBag.StartDate, endDate = ViewBag.EndDate, searchTerm = ViewBag.SearchTerm })">@chip.Label</a>
+        }
+    </div>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table ds-table">
             <thead>
                 <tr>
                     <th>المريض</th>
@@ -107,29 +149,36 @@
                 @foreach (var app in appointments)
                 {
                     var patientName = !string.IsNullOrWhiteSpace(app.PatientFullName) ? app.PatientFullName : (app.BookedByUserName ?? "مريض");
+                    var patientPhone = !string.IsNullOrWhiteSpace(app.PatientPhoneNumber) ? app.PatientPhoneNumber : app.BookedByUserPhone;
                     <tr data-id="@app.Id">
                         <td>
-                            <div class="table-user">
-                                <span class="table-avatar">@Initial(patientName)</span>
-                                <span class="table-user-name">@patientName</span>
+                            <div class="ds-patient">
+                                <span class="avatar">@Initial(patientName)</span>
+                                <span class="ds-patient-meta">
+                                    <span class="ds-patient-name">@patientName</span>
+                                    @if (!string.IsNullOrWhiteSpace(patientPhone))
+                                    {
+                                        <span class="ds-patient-phone">@patientPhone</span>
+                                    }
+                                </span>
                             </div>
                         </td>
                         @if (hasDoctorInfo)
                         {
                             <td>@app.DoctorName</td>
                         }
-                        <td>@app.AppointmentDate</td>
-                        <td>@TimeOnly(app.StartTime)</td>
+                        <td class="tabular">@app.AppointmentDate</td>
+                        <td class="tabular">@TimeOnly(app.StartTime)</td>
                         <td>@TypeLabel(app.AppointmentType)</td>
-                        <td><span class="badge @StatusClass(app.Status)">@StatusLabel(app.Status)</span></td>
+                        <td class="ds-status-cell"><span class="badge badge--dot @StatusClass(app.Status)">@StatusLabel(app.Status)</span></td>
                         <td>
                             @if (app.Status == 0)
                             {
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-outline-success" onclick="acceptAppointment('@app.Id')">
+                                    <button class="btn btn-sm ds-action ds-action--success" onclick="acceptAppointment('@app.Id')">
                                         <i class="bi bi-check-lg"></i> قبول
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('@app.Id', 2)">
+                                    <button class="btn btn-sm ds-action ds-action--danger" onclick="updateStatus('@app.Id', 2)">
                                         <i class="bi bi-x-lg"></i> رفض
                                     </button>
                                 </div>
@@ -140,9 +189,11 @@
                             }
                             else if (app.Status == 1 && SlotStarted(app))
                             {
-                                <button class="btn btn-sm btn-outline-primary" onclick="updateStatus('@app.Id', 3)">
-                                    <i class="bi bi-check2-circle"></i> إكمال
-                                </button>
+                                <div class="table-actions">
+                                    <button class="btn btn-sm ds-action ds-action--neutral" onclick="updateStatus('@app.Id', 3)">
+                                        <i class="bi bi-check2-circle"></i> إكمال
+                                    </button>
+                                </div>
                             }
                             else if (app.Status == 1)
                             {
@@ -160,6 +211,10 @@
     </div>
     <partial name="_Pagination" />
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     <script>

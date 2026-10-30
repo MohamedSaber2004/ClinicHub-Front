@@ -1,0 +1,489 @@
+@using ClinicHub.Services.ReponseModels
+@{
+    ViewData["Title"] = "مستحقاتي والتحويلات - Doctory";
+    Layout = "_ClinicLayout";
+
+    var summary = ViewBag.Summary as ClinicPayoutSummaryDto ?? new ClinicPayoutSummaryDto();
+    var account = ViewBag.Account as ClinicPayoutAccountDto;
+    var history = ViewBag.History as PagginatedResult<PayoutItemDto> ?? new PagginatedResult<PayoutItemDto>(new List<PayoutItemDto>(), 0);
+
+    string ItemStatusLabel(int status) => status switch
+    {
+        0 => "بانتظار الإرسال",
+        1 => "أُرسل إلى بايمن",
+        2 => "تم الصرف",
+        3 => "فشل",
+        4 => "ملغي",
+        _ => "غير معروفة"
+    };
+    string ItemStatusClass(int status) => status switch
+    {
+        0 => "badge-secondary",
+        1 => "badge-primary",
+        2 => "badge-success",
+        3 => "badge-danger",
+        4 => "badge-secondary",
+        _ => "badge-secondary"
+    };
+
+    string AccountStatusLabel(int? status) => status switch
+    {
+        0 => "بانتظار اعتماد الإدارة",
+        1 => "معتمد",
+        2 => "مرفوض",
+        3 => "موقوف",
+        _ => "لا يوجد حساب بنكي"
+    };
+    string AccountStatusClass(int? status) => status switch
+    {
+        0 => "badge-warning",
+        1 => "badge-success",
+        2 => "badge-danger",
+        3 => "badge-secondary",
+        _ => "badge-secondary"
+    };
+    string TransactionTypeLabel(string? type) => type switch
+    {
+        "cash_transfer" => "تحويل نقدي",
+        "salary" => "تحويل راتب",
+        "credit_card" => "بطاقة ائتمان",
+        "prepaid_card" => "بطاقة مسبقة الدفع",
+        _ => "تحويل نقدي"
+    };
+    string BankName(string code) => code switch
+    {
+        "CIB" => "البنك التجاري الدولي",
+        "NBE" => "البنك الأهلي المصري",
+        "MISR" => "بنك مصر",
+        "QNB" => "QNB الأهلي",
+        "HSBC" => "HSBC",
+        "CAE" => "بنك القاهرة",
+        "AAIB" => "البنك العربي الأفريقي الدولي",
+        "ADIB" => "بنك أبوظبي الإسلامي",
+        "ADCB" => "بنك أبوظبي التجاري",
+        "ENBD" => "بنك الإمارات دبي الوطني",
+        "SAIB" => "بنك الاستثمار العربي",
+        "NBK" => "بنك الكويت الوطني",
+        "BLOM" => "بنك لبنان والمهجر",
+        "FAB" => "بنك أبوظبي الأول",
+        "ABC" => "البنك العربي",
+        "AUB" => "البنك الأهلي المتحد",
+        "EGB" => "البنك المصري الخليجي",
+        "HDB" => "بنك التنمية الصناعية",
+        "ARAB" => "البنك العربي",
+        "ABRK" => "بنك البركة",
+        "POST" => "البريد المصري",
+        "NSB" => "بنك ناصر الاجتماعي",
+        "SCB" => "ستاندرد تشارترد",
+        "MASH" => "بنك المشرق",
+        "NBG" => "البنك الأهلي اليوناني",
+        "CBE" => "البنك المركزي المصري",
+        _ => code
+    };
+
+    var bankCodes = new[]
+    {
+        "AUB", "MIDB", "BDC", "HSBC", "CAE", "EGB", "UB", "QNB", "ARAB", "ENBD",
+        "ABK", "NBK", "ABC", "FAB", "ADIB", "CIB", "HDB", "MISR", "AAIB", "EALB",
+        "EDBE", "FAIB", "BLOM", "ADCB", "BOA", "SAIB", "NBE", "ABRK", "POST", "NSB",
+        "IDB", "SCB", "MASH", "AIB", "GASC", "ARIB", "PDAC", "NBG", "CBE", "BBE"
+    };
+
+    var hasAccount = account != null;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
+
+<div class="page-header cm-page-head">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" fill="currentColor"/>
+                </svg>
+            </span>
+            مستحقاتي والتحويلات
+        </h2>
+        <p class="page-header-subtitle">يتم تحويل <strong>صافي قيمة الحجوزات فقط</strong> إلى حسابك البنكي. رسوم المنصة تُخصم من كل حجز وتظل ملكاً للمنصة ولا تُحوَّل للعيادة.</p>
+    </div>
+</div>
+
+<div class="cm-withdraw-panel">
+    <div class="cm-withdraw-state">
+        <span class="cm-withdraw-label">متاح للتحويل</span>
+        @if (summary.AvailableBalance > 0)
+        {
+            <span class="cm-withdraw-amount cm-money">@summary.AvailableBalance.ToString("N2") @summary.Currency</span>
+        }
+        else
+        {
+            <span class="cm-withdraw-amount cm-money">—</span>
+        }
+        <span class="cm-withdraw-meta">الحد الأدنى للتحويل: <span class="cm-money">@summary.MinimumPayoutAmount.ToString("N2") @summary.Currency</span></span>
+    </div>
+    <div class="cm-withdraw-aside">
+        <span class="badge badge--dot @AccountStatusClass(account?.Status ?? summary.AccountStatus)">@AccountStatusLabel(account?.Status ?? summary.AccountStatus)</span>
+        <a href="#payoutAccountForm" class="btn btn-outline btn-sm">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+            </svg>
+            @(hasAccount ? "تحديث بيانات الحساب" : "إضافة حساب بنكي")
+        </a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card stat-card--warning">
+        <div class="stat-info">
+            <span class="stat-value cm-money">@summary.PendingBalance.ToString("N2") @summary.Currency</span>
+            <span class="stat-label">قيد فترة السماح</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--amber">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card stat-card--neutral">
+        <div class="stat-info">
+            <span class="stat-value cm-money">@summary.ReservedBalance.ToString("N2") @summary.Currency</span>
+            <span class="stat-label">محجوز في تحويل قيد التنفيذ</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card stat-card--brass">
+        <div class="stat-info">
+            <span class="stat-value cm-money">@summary.PaidTotal.ToString("N2") @summary.Currency</span>
+            <span class="stat-label">إجمالي ما تم تحويله</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--brass">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card stat-card--info">
+        <div class="stat-info">
+            <span class="stat-value cm-money">@history.TotalCount.ToString("N0")</span>
+            <span class="stat-label">إجمالي دفعات التحويل</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--blue">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<div class="detail-card settings-card cm-card">
+    <div class="cm-card-head">
+        <h5 class="cm-card-title">
+            <span class="subtitle-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z"/>
+                </svg>
+            </span>
+            الحساب البنكي للتحويل
+        </h5>
+        <span class="badge badge--dot @AccountStatusClass(account?.Status ?? summary.AccountStatus)">@AccountStatusLabel(account?.Status ?? summary.AccountStatus)</span>
+    </div>
+
+    @if (!hasAccount)
+    {
+        <p class="cm-note">لم يتم تسجيل حساب بنكي بعد. أدخل بيانات الحساب ليتم اعتماده من الإدارة قبل بدء التحويلات.</p>
+    }
+    else
+    {
+        <div class="cm-bank-grid">
+            <div class="cm-bank-item">
+                <span class="cm-bank-label">اسم صاحب الحساب</span>
+                <span class="cm-bank-value">@account!.HolderName</span>
+            </div>
+            <div class="cm-bank-item">
+                <span class="cm-bank-label">البنك</span>
+                <span class="cm-bank-value">@BankName(account.BankCode) <span class="cm-id">@account.BankCode</span></span>
+            </div>
+            <div class="cm-bank-item">
+                <span class="cm-bank-label">رقم الحساب</span>
+                <span class="cm-bank-value cm-money">@account.MaskedAccountNumber</span>
+            </div>
+            <div class="cm-bank-item">
+                <span class="cm-bank-label">الرقم القومي</span>
+                <span class="cm-bank-value cm-money">@account.MaskedNationalId</span>
+            </div>
+            <div class="cm-bank-item">
+                <span class="cm-bank-label">نوع التحويل</span>
+                <span class="cm-bank-value">@TransactionTypeLabel(account.BankTransactionType)</span>
+            </div>
+        </div>
+
+        @if (account.VerifiedAt.HasValue)
+        {
+            <p class="form-hint">تم اعتماد الحساب بتاريخ @account.VerifiedAt.Value.ToString("yyyy-MM-dd")</p>
+        }
+
+        @if (account.Status == 2 && !string.IsNullOrWhiteSpace(account.RejectionReason))
+        {
+            <p class="field-error">سبب الرفض: @account.RejectionReason</p>
+        }
+    }
+</div>
+
+<div class="detail-card settings-card cm-card">
+    <div class="cm-card-head">
+        <h5 class="cm-card-title">
+            <span class="subtitle-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+            </span>
+            @(hasAccount ? "تحديث بيانات الحساب" : "إضافة حساب بنكي")
+        </h5>
+    </div>
+
+    <form id="payoutAccountForm" class="cm-form-shell" novalidate>
+        <div class="cm-form-grid">
+            <div class="form-group">
+                <label class="form-label" for="payoutHolderName">اسم صاحب الحساب <span class="req">*</span></label>
+                <input type="text" class="form-input" id="payoutHolderName" maxlength="200" value="@account?.HolderName" placeholder="الاسم كما هو مسجل في البنك" />
+                <p class="field-error" id="payoutHolderNameError"></p>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="payoutNationalId">الرقم القومي <span class="req">*</span></label>
+                <input type="text" class="form-input cm-money" id="payoutNationalId" inputmode="numeric" maxlength="14"
+                       placeholder="@(hasAccount ? "أعد إدخال الرقم القومي كاملاً لتحديثه" : "14 رقماً")" />
+                <p class="field-error" id="payoutNationalIdError"></p>
+                <p class="form-hint">إلزامي: بايمن ترفض أي تحويل بدونه. يُحفظ مشفّراً ولا يُعرض بعد الحفظ.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="payoutBankCode">البنك <span class="req">*</span></label>
+                <select class="form-select" id="payoutBankCode">
+                    <option value="">اختر البنك</option>
+                    @foreach (var code in bankCodes)
+                    {
+                        <option value="@code" selected="@(account?.BankCode == code)">@BankName(code) — @code</option>
+                    }
+                </select>
+                <p class="field-error" id="payoutBankCodeError"></p>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="payoutAccountNumber">رقم الحساب <span class="req">*</span></label>
+                <input type="text" class="form-input cm-money" id="payoutAccountNumber" maxlength="34"
+                       placeholder="@(hasAccount ? "أعد إدخال رقم الحساب كاملاً لتحديثه" : "رقم الحساب أو الـ IBAN")" />
+                <p class="field-error" id="payoutAccountNumberError"></p>
+                <p class="form-hint">رقم الحساب أو IBAN كما أصدره البنك (حروف وأرقام، 8 إلى 34). مشفّر ولا يمكن عرضه بعد الحفظ؛ لذلك يجب إعادة إدخاله عند التحديث.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="payoutTransactionType">نوع التحويل</label>
+                <select class="form-select" id="payoutTransactionType">
+                    <option value="cash_transfer" selected="@(string.IsNullOrWhiteSpace(account?.BankTransactionType) || account?.BankTransactionType == "cash_transfer")">تحويل نقدي</option>
+                    <option value="salary" selected="@(account?.BankTransactionType == "salary")">تحويل راتب</option>
+                    <option value="credit_card" selected="@(account?.BankTransactionType == "credit_card")">بطاقة ائتمان</option>
+                    <option value="prepaid_card" selected="@(account?.BankTransactionType == "prepaid_card")">بطاقة مسبقة الدفع</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="cm-form-foot">
+            <button type="submit" class="btn btn-primary" id="payoutSaveBtn">@(hasAccount ? "تحديث الحساب" : "حفظ الحساب")</button>
+            <span class="cm-note">الحد الأدنى للتحويل: <span class="cm-money">@summary.MinimumPayoutAmount.ToString("N2") @summary.Currency</span></span>
+        </div>
+    </form>
+</div>
+
+<div class="table-card cm-list-card">
+    <div class="table-card-header cm-ledger-head">
+        <h3 class="table-card-title">كشف التحويلات</h3>
+        <div class="table-card-actions">
+            @if (history.TotalCount > 0)
+            {
+                <span class="badge badge-info">@history.TotalCount دفعة</span>
+            }
+            else
+            {
+                <span class="badge badge-secondary">—</span>
+            }
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>الدفعة</th>
+                    <th>المبلغ</th>
+                    <th>الحساب البنكي</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الإرسال</th>
+                    <th>تاريخ الصرف</th>
+                    <th>معاملة بايمن</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (history.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state cm-empty-row">
+                                <p>لم يتم تحويل أي مبالغ للعيادة بعد</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @foreach (var line in history.Items)
+                {
+                    <tr>
+                        <td class="text-md-medium cm-id">@line.BatchCode</td>
+                        <td class="text-md-medium cm-money">@line.Amount.ToString("N2") @line.Currency</td>
+                        <td class="text-md"><span class="cm-money">@line.MaskedAccountNumber</span> <span class="cm-id">@line.BankCode</span></td>
+                        <td>
+                            <div class="cm-status-cell">
+                                <span class="badge badge--dot @ItemStatusClass(line.Status)">@ItemStatusLabel(line.Status)</span>
+                                @if (!string.IsNullOrWhiteSpace(line.LastError))
+                                {
+                                    <span class="cell-sub">@line.LastError</span>
+                                }
+                            </div>
+                        </td>
+                        <td class="text-md cm-money">@(line.SentAt?.ToString("yyyy-MM-dd") ?? "—")</td>
+                        <td class="text-md cm-money">@(line.SettledAt?.ToString("yyyy-MM-dd") ?? "—")</td>
+                        <td class="text-md">
+                            @if (string.IsNullOrWhiteSpace(line.PaymobTransactionId))
+                            {
+                                <span>—</span>
+                            }
+                            else
+                            {
+                                <span class="cm-id">@line.PaymobTransactionId</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (history.TotalPages > 1)
+    {
+        <div class="cm-pager">
+            @for (var historyNumber = 1; historyNumber <= history.TotalPages; historyNumber++)
+            {
+                <a class="btn btn-sm @(historyNumber == history.PageNumber ? "btn-primary" : "btn-outline-secondary") cm-pager-btn"
+                   href="@Url.Action("Payouts", new { historyPage = historyNumber })">@historyNumber</a>
+            }
+        </div>
+    }
+</div>
+
+<p class="cm-foot-note">ملاحظة: رصيد التحويل يتكوّن من صافي الحجوزات بعد خصم رسوم المنصة فقط. المبالغ داخل فترة السماح لا تكون قابلة للتحويل حتى انتهائها.</p>
+
+@section Scripts {
+    <script>
+        (function () {
+            var form = document.getElementById('payoutAccountForm');
+            if (!form) return;
+
+            // Inline field feedback (visual layer only — the messages and the
+            // submit payload are unchanged).
+            function setError(fieldId, message) {
+                var field = document.getElementById(fieldId);
+                var box = document.getElementById(fieldId + 'Error');
+                if (!field) return;
+                if (message) {
+                    field.classList.add('input-invalid');
+                    if (box) box.textContent = message;
+                } else {
+                    field.classList.remove('input-invalid');
+                    if (box) box.textContent = '';
+                }
+            }
+
+            function clearErrors() {
+                setError('payoutHolderName', '');
+                setError('payoutNationalId', '');
+                setError('payoutBankCode', '');
+                setError('payoutAccountNumber', '');
+            }
+
+            ['payoutHolderName', 'payoutNationalId', 'payoutBankCode', 'payoutAccountNumber'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                var evt = el.tagName === 'SELECT' ? 'change' : 'input';
+                el.addEventListener(evt, function () { setError(id, ''); });
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                clearErrors();
+
+                var holderName = document.getElementById('payoutHolderName').value.trim();
+                var nationalId = document.getElementById('payoutNationalId').value.trim();
+                var bankCode = document.getElementById('payoutBankCode').value;
+                var accountNumber = document.getElementById('payoutAccountNumber').value.trim();
+                var transactionType = document.getElementById('payoutTransactionType').value;
+
+                if (!holderName) {
+                    setError('payoutHolderName', 'يرجى إدخال اسم صاحب الحساب.');
+                    showErrorModal('يرجى إدخال اسم صاحب الحساب.');
+                    return;
+                }
+
+                if (!/^\d{14}$/.test(nationalId.replace(/\s/g, ''))) {
+                    setError('payoutNationalId', 'الرقم القومي يجب أن يكون 14 رقماً.');
+                    showErrorModal('الرقم القومي يجب أن يكون 14 رقماً؛ بدونه ترفض بايمن التحويل.');
+                    return;
+                }
+                if (!bankCode) {
+                    setError('payoutBankCode', 'يرجى اختيار البنك.');
+                    showErrorModal('يرجى اختيار البنك.');
+                    return;
+                }
+
+                var destination = accountNumber.replace(/\s|-/g, '');
+                if (!/^[A-Za-z0-9]{8,34}$/.test(destination)) {
+                    setError('payoutAccountNumber', 'رقم الحساب أو الـ IBAN يجب أن يكون من 8 إلى 34 حرفاً ورقماً بدون رموز أخرى.');
+                    showErrorModal('رقم الحساب أو الـ IBAN يجب أن يكون من 8 إلى 34 حرفاً ورقماً بدون رموز أخرى.');
+                    return;
+                }
+
+                var btn = document.getElementById('payoutSaveBtn');
+                btn.disabled = true;
+                btn.textContent = 'جارٍ الحفظ...';
+
+                fetch('/Clinic/SavePayoutAccount', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        holderName: holderName,
+                        nationalId: nationalId.replace(/\s/g, ''),
+                        bankCode: bankCode,
+                        accountNumber: destination,
+                        bankTransactionType: transactionType
+                    })
+                })
+                .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+                .then(function (result) {
+                    if (result.ok && result.data && result.data.success) {
+                        showInfoToast(result.data.message || 'تم حفظ الحساب البنكي بنجاح.');
+                        setTimeout(function () { window.location.reload(); }, 1200);
+                    } else {
+                        showErrorModal((result.data && result.data.message) || 'تعذر حفظ الحساب البنكي.');
+                    }
+                })
+                .catch(function () {
+                    showErrorModal('عذراً، حدث خطأ أثناء حفظ الحساب البنكي.');
+                })
+                .finally(function () {
+                    btn.disabled = false;
+                    btn.textContent = @(hasAccount ? "'تحديث الحساب'" : "'حفظ الحساب'");
+                });
+            });
+        })();
+    </script>
+}

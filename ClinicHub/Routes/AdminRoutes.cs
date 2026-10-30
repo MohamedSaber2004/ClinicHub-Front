@@ -11,6 +11,7 @@ namespace ClinicHub.Routes
             public static string Clinics() => $"{Base}/Clinics";
             public static string Doctors() => $"{Base}/Doctors";
             public static string Payments() => $"{Base}/Payments";
+            public static string Payouts() => $"{Base}/Payouts";
             public static string PaymentsDetails(Guid id) => $"{Base}/PaymentsDetails/{IdProtector.Protect(id)}";
             public static string PaymentsDetails(string token) => $"{Base}/PaymentsDetails/{token}";
             public static string Users() => $"{Base}/Users";

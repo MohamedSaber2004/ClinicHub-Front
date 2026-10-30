@@ -19,7 +19,10 @@
     <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" /></noscript>
 
     <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css?v=20260910_skeleton_v3" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app-shell.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/overlays.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <a class="skip-link" href="#main-content">تخطَّ إلى المحتوى الرئيسي</a>
@@ -158,6 +161,10 @@
                         <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "AppointmentRevenue") ? "active" : "")" href="@ClinicRoutes.Pages.AppointmentRevenue()">
                             <i class="bi bi-wallet2"></i>
                             <span>إيرادات المواعيد</span>
+                        </a>
+                        <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "Payouts") ? "active" : "")" href="@ClinicRoutes.Pages.Payouts()">
+                            <i class="bi bi-bank"></i>
+                            <span>مستحقاتي والتحويلات</span>
                         </a>
                         <div class="sidebar-section">الإعدادات</div>
                         <a class="sidebar-item sidebar-item--sub @(IsActive("Clinic", "ClinicAvailability") ? "active" : "")" href="/Clinic/ClinicAvailability">

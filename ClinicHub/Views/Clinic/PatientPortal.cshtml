@@ -3,102 +3,118 @@
     Layout = "_ClinicLayout";
 }
 
-<div class="page-header">
-    <h2 class="page-title mb-0">بوابة المرضى وإدارتها (Patient Portal Admin)</h2>
-    <span class="badge badge-success badge-lg">
-        <i class="bi bi-check-circle-fill me-1"></i> الحالة العامة للمنصة: نشط
-    </span>
-</div>
+<div class="co-page">
+    <div class="page-header co-page-head">
+        <div>
+            <h2 class="page-title">
+                <span class="page-title-icon">
+                    <i class="bi bi-window-chat"></i>
+                </span>
+                بوابة المرضى وإدارتها (Patient Portal Admin)
+            </h2>
+            <p class="page-header-subtitle">الرسائل المباشرة والإحصائيات وخدمات البوابة المتاحة للمرضى</p>
+        </div>
+        <div class="page-header-actions">
+            <span class="badge badge-success badge-lg badge--dot">
+                <i class="bi bi-check-circle-fill me-1"></i> الحالة العامة للمنصة: نشط
+            </span>
+        </div>
+    </div>
 
-<div class="row g-4">
-    <!-- Chats & Communications -->
-    <div class="col-lg-7">
-        <div class="table-card p-4">
-            <div class="table-card-header">
-                <h3 class="table-card-title">الرسائل والدردشات النشطة مع المرضى</h3>
+    <div class="co-cols">
+        <!-- Chats & Communications -->
+        <div class="co-doc lift">
+            <div class="co-doc-head">
+                <h3 class="co-doc-title"><i class="bi bi-chat-dots"></i> الرسائل والدردشات النشطة مع المرضى</h3>
             </div>
 
-            <div class="portal-chat-list">
-                <div class="portal-chat-item">
-                    <div class="d-flex justify-content-between mb-1">
+            <div class="portal-chat-list co-chat">
+                <div class="portal-chat-item co-chat-item">
+                    <div class="co-chat-who">
                         <strong>سليمان أحمد (مريض)</strong>
-                        <span class="portal-chat-time"><i class="bi bi-clock me-1"></i> منذ 10 دقائق</span>
+                        <span class="portal-chat-time"><i class="bi bi-clock"></i> منذ 10 دقائق</span>
                     </div>
                     <p class="portal-chat-message">"السلام عليكم دكتور، هل يمكنني الاستفسار عن مواعيد عيادة القلب للغد؟"</p>
                     <div class="portal-chat-reply">
-                        <input type="text" class="form-input form-input-sm flex-grow-1" aria-label="اكتب رسالتك" placeholder="اكتب ردك هنا..." />
-                        <button class="btn btn-primary btn-sm flex-shrink-0">
-                            <i class="bi bi-send me-1"></i> إرسال
+                        <input type="text" class="form-input form-input-sm" aria-label="اكتب رسالتك" placeholder="اكتب ردك هنا..." />
+                        <button class="btn btn-primary btn-sm">
+                            <i class="bi bi-send"></i> إرسال
                         </button>
                     </div>
                 </div>
 
-                <div class="portal-chat-item">
-                    <div class="d-flex justify-content-between mb-1">
+                <div class="portal-chat-item co-chat-item">
+                    <div class="co-chat-who">
                         <strong>هدى عمر (مريض)</strong>
-                        <span class="portal-chat-time"><i class="bi bi-clock me-1"></i> منذ ساعتين</span>
+                        <span class="portal-chat-time"><i class="bi bi-clock"></i> منذ ساعتين</span>
                     </div>
                     <p class="portal-chat-message">"لقد تم إرسال ملف التحاليل الخاصة بي عبر البوابة، أرجو تأكيد الاستلام."</p>
                     <div class="portal-chat-reply">
-                        <input type="text" class="form-input form-input-sm flex-grow-1" aria-label="اكتب رسالتك" placeholder="اكتب ردك هنا..." />
-                        <button class="btn btn-primary btn-sm flex-shrink-0">
-                            <i class="bi bi-send me-1"></i> إرسال
+                        <input type="text" class="form-input form-input-sm" aria-label="اكتب رسالتك" placeholder="اكتب ردك هنا..." />
+                        <button class="btn btn-primary btn-sm">
+                            <i class="bi bi-send"></i> إرسال
                         </button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Portal Settings & Stats -->
-    <div class="col-lg-5">
-        <div class="table-card p-4 mb-4">
-            <div class="table-card-header">
-                <h3 class="table-card-title">إحصائيات استخدام البوابة</h3>
-            </div>
-
-            <div class="portal-stat-row">
-                <span class="portal-stat-label"><i class="bi bi-people me-1"></i> المرضى النشطين على التطبيق</span>
-                <strong class="portal-stat-value">1,240 مريض</strong>
-            </div>
-            <div class="portal-stat-row">
-                <span class="portal-stat-label"><i class="bi bi-file-earmark-arrow-up me-1"></i> التحاليل المرفوعة الكترونياً</span>
-                <strong class="portal-stat-value">348 ملف</strong>
-            </div>
-            <div class="portal-stat-row mb-0">
-                <span class="portal-stat-label"><i class="bi bi-star me-1"></i> التقييمات الإيجابية للخدمة</span>
-                <strong class="portal-stat-value text-success">94.2%</strong>
-            </div>
-        </div>
-
-        <div class="table-card p-4">
-            <div class="table-card-header">
-                <h3 class="table-card-title">تفعيل خدمات البوابة للمرضى</h3>
-            </div>
-
-            <div class="portal-toggle-list">
-                <div class="portal-toggle-row">
-                    <span>تفعيل عرض الروشتات الطبية الإلكترونية</span>
-                    <label class="form-toggle mb-0">
-                        <input type="checkbox" checked />
-                        <span class="toggle-track"></span>
-                    </label>
+        <!-- Portal Settings & Stats -->
+        <div class="co-side">
+            <div class="co-doc lift">
+                <div class="co-doc-head">
+                    <h3 class="co-doc-title"><i class="bi bi-bar-chart"></i> إحصائيات استخدام البوابة</h3>
                 </div>
-                <div class="portal-toggle-row">
-                    <span>تفعيل المحادثات المباشرة مع العيادات</span>
-                    <label class="form-toggle mb-0">
-                        <input type="checkbox" checked />
-                        <span class="toggle-track"></span>
-                    </label>
+
+                <div class="co-kv-list">
+                    <div class="co-kv">
+                        <span class="co-kv-label"><i class="bi bi-people"></i> المرضى النشطين على التطبيق</span>
+                        <strong class="co-kv-value portal-stat-value">1,240 مريض</strong>
+                    </div>
+                    <div class="co-kv">
+                        <span class="co-kv-label"><i class="bi bi-file-earmark-arrow-up"></i> التحاليل المرفوعة الكترونياً</span>
+                        <strong class="co-kv-value portal-stat-value">348 ملف</strong>
+                    </div>
+                    <div class="co-kv">
+                        <span class="co-kv-label"><i class="bi bi-star"></i> التقييمات الإيجابية للخدمة</span>
+                        <strong class="co-kv-value portal-stat-value text-success">94.2%</strong>
+                    </div>
                 </div>
-                <div class="portal-toggle-row">
-                    <span>السماح للمريض بتحميل نتائج المعامل والأشعة</span>
-                    <label class="form-toggle mb-0">
-                        <input type="checkbox" checked />
-                        <span class="toggle-track"></span>
-                    </label>
+            </div>
+
+            <div class="co-doc lift">
+                <div class="co-doc-head">
+                    <h3 class="co-doc-title"><i class="bi bi-toggles"></i> تفعيل خدمات البوابة للمرضى</h3>
+                </div>
+
+                <div class="portal-toggle-list">
+                    <div class="portal-toggle-row">
+                        <span>تفعيل عرض الروشتات الطبية الإلكترونية</span>
+                        <label class="form-toggle mb-0">
+                            <input type="checkbox" checked />
+                            <span class="toggle-track"></span>
+                        </label>
+                    </div>
+                    <div class="portal-toggle-row">
+                        <span>تفعيل المحادثات المباشرة مع العيادات</span>
+                        <label class="form-toggle mb-0">
+                            <input type="checkbox" checked />
+                            <span class="toggle-track"></span>
+                        </label>
+                    </div>
+                    <div class="portal-toggle-row">
+                        <span>السماح للمريض بتحميل نتائج المعامل والأشعة</span>
+                        <label class="form-toggle mb-0">
+                            <input type="checkbox" checked />
+                            <span class="toggle-track"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+}

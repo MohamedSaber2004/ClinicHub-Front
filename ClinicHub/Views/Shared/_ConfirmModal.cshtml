@@ -1,17 +1,18 @@
 <div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-content-custom">
+        <div class="modal-content modal-content-custom" role="alertdialog" aria-labelledby="globalConfirmTitle" aria-describedby="globalConfirmMsg">
             <div class="modal-body text-center">
                 <div class="icon-wrapper icon-wrapper--amber modal-icon-circle">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-                    </svg>
+                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
                 </div>
-                <h3 class="modal-heading">تأكيد</h3>
+                <h3 class="modal-heading" id="globalConfirmTitle">تأكيد</h3>
                 <div id="globalConfirmMsg" class="modal-copy"></div>
-                <div class="d-flex gap-3 justify-content-center">
-                    <button type="button" class="btn btn-secondary" id="confirmModalCancelBtn">إلغاء</button>
-                    <button type="button" class="btn btn-primary" id="confirmModalConfirmBtn">تأكيد</button>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-ghost" id="confirmModalCancelBtn">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="confirmModalConfirmBtn">
+                        <i class="bi bi-check2" aria-hidden="true"></i>
+                        تأكيد
+                    </button>
                 </div>
             </div>
         </div>

@@ -49,301 +49,304 @@
     }
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-    <div>
-        <h2 class="page-title mb-1">
-            <span class="page-title-icon">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </span>
-            أوقات عمل العيادة
-        </h2>
-        <p class="text-muted mb-0">إدارة مواعيد وأيام عمل @clinicName وجدول الفتح والإغلاق الأسبوعي</p>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-        <span class="badge badge-success" id="clinicOpenStatusBadge">مفتوح الآن</span>
-        <span class="text-muted text-sm" id="clinicLiveClock"></span>
-    </div>
-</div>
-
-@if (hasError)
-{
-    <div class="alert alert-danger" role="alert">
-        <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
-    </div>
-}
-
-<!-- Stats Grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-info">
-            <span class="stat-value" id="statActiveDays">@workingDays.Count أيام</span>
-            <span class="stat-label">أيام العمل الأسبوعية</span>
-        </div>
-        <div class="icon-wrapper icon-wrapper--green">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
-            </svg>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-info">
-            <span class="stat-value" id="statDailyHours">—</span>
-            <span class="stat-label">فترة الدوام القياسية</span>
-        </div>
-        <div class="icon-wrapper icon-wrapper--blue">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
-            </svg>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-info">
-            <span class="stat-value" id="statTotalWeeklyHours">—</span>
-            <span class="stat-label">إجمالي الساعات الأسبوعية</span>
-        </div>
-        <div class="icon-wrapper icon-wrapper--primary">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
-            </svg>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-info">
-            <span class="stat-value">30 دقيقة</span>
-            <span class="stat-label">مدة الموعد (ثابتة)</span>
-        </div>
-        <div class="icon-wrapper icon-wrapper--amber">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-            </svg>
-        </div>
-    </div>
-</div>
-
-<!-- Main Availability Editor -->
-<div class="detail-card">
-    <div class="detail-section-header flex-wrap gap-2">
+<div class="co-page">
+    <div class="page-header co-page-head">
         <div>
-            <h5>الجدول الأسبوعي لمواعيد العيادة</h5>
-            <p class="form-hint mb-0">حدد أيام عمل العيادة وساعات الفتح والإغلاق لكل يوم من أيام الأسبوع.</p>
+            <h2 class="page-title">
+                <span class="page-title-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                أوقات عمل العيادة
+            </h2>
+            <p class="page-header-subtitle">إدارة مواعيد وأيام عمل @clinicName وجدول الفتح والإغلاق الأسبوعي</p>
         </div>
-        <div class="schedule-quick-actions">
-            <button type="button" class="btn btn-sm btn-outline-primary" id="presetSatThuBtn">
-                <i class="bi bi-calendar-check"></i> السبت - الخميس
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-primary" id="presetAllDaysBtn">
-                <i class="bi bi-calendar-week"></i> طوال الأسبوع
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="presetFullShiftBtn" title="دوام كامل: من 9:00 ص حتى 9:00 م">
-                <i class="bi bi-clock"></i> دوام كامل (9 ص - 9 م)
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="presetMorningShiftBtn" title="دوام صباحي: من 8:00 ص حتى 2:00 م">
-                <i class="bi bi-sun"></i> صباحي (8 ص - 2 م)
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="presetEveningShiftBtn" title="دوام مسائي: من 4:00 م حتى 10:00 م">
-                <i class="bi bi-moon-stars"></i> مسائي (4 م - 10 م)
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="applyTimesToAllBtn" title="تطبيق مواعيد السبت على كافة الأيام">
-                <i class="bi bi-arrow-down-square"></i> تطبيق توقيت السبت على الكل
-            </button>
+        <div class="page-header-actions">
+            <span class="badge badge-success" id="clinicOpenStatusBadge">مفتوح الآن</span>
+            <span class="co-live" id="clinicLiveClock"></span>
         </div>
     </div>
 
-    <!-- AM / PM Distinction Legend & Tips -->
-    <div class="schedule-legend-bar mb-3">
-        <div class="legend-periods">
-            <span class="legend-period-item legend-period--am">
-                <span class="period-pill period-pill--am"><i class="bi bi-sun-fill"></i> ص</span>
-                <span class="period-title">صباحاً (AM):</span>
-                <span class="period-desc">من 12:00 منتصف الليل حتى 11:59 ظهراً</span>
-            </span>
-            <span class="legend-period-item legend-period--pm">
-                <span class="period-pill period-pill--pm"><i class="bi bi-moon-stars-fill"></i> م</span>
-                <span class="period-title">مساءً (PM):</span>
-                <span class="period-desc">من 12:00 ظهراً حتى 11:59 مساءً</span>
-            </span>
+    @if (hasError)
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
         </div>
-        <div class="legend-tip">
-            <i class="bi bi-info-circle text-primary"></i>
-            <span>اضغط مباشرة على زري <strong>ص</strong> أو <strong>م</strong> للتحويل الفوري، أو اختر وردية جاهزة لكل يوم.</span>
-        </div>
-    </div>
-
-    <!-- Weekly Schedule Overview Ribbon -->
-    @{
-        var todayDow = (int)DateTime.Now.DayOfWeek;
     }
-    <div class="schedule-week-ribbon" id="scheduleWeekRibbon">
-        @foreach (var day in daysDef)
-        {
-            var isDayActive = workingDays.Contains(day.id);
-            var isToday = (day.id == todayDow);
-            <a href="javascript:void(0)" class="week-ribbon-day @(isDayActive ? "" : "is-off") @(isToday ? "is-today" : "")" data-day-id="@day.id" id="ribbonDay_@day.id" title="الانتقال السريع إلى يوم @day.name">
-                @if (isToday)
+
+    <!-- Stats Grid -->
+    <div class="stats-grid co-stats stagger">
+        <div class="stat-card co-stat lift">
+            <div class="stat-info co-stat-info">
+                <span class="stat-value" id="statActiveDays">@workingDays.Count أيام</span>
+                <span class="stat-label">أيام العمل الأسبوعية</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--green">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="stat-card co-stat stat-card--info lift">
+            <div class="stat-info co-stat-info">
+                <span class="stat-value" id="statDailyHours">—</span>
+                <span class="stat-label">فترة الدوام القياسية</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--blue">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="stat-card co-stat lift">
+            <div class="stat-info co-stat-info">
+                <span class="stat-value" id="statTotalWeeklyHours">—</span>
+                <span class="stat-label">إجمالي الساعات الأسبوعية</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--primary">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="stat-card co-stat stat-card--brass lift">
+            <div class="stat-info co-stat-info">
+                <span class="stat-value">30 دقيقة</span>
+                <span class="stat-label">مدة الموعد (ثابتة)</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--brass">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Availability Editor -->
+    <div class="surface co-panel co-panel--flush">
+        <div class="section-head co-panel-head">
+            <div>
+                <h3 class="section-head-title">الجدول الأسبوعي لمواعيد العيادة</h3>
+                <p class="co-hint">حدد أيام عمل العيادة وساعات الفتح والإغلاق لكل يوم من أيام الأسبوع.</p>
+            </div>
+        </div>
+
+        <div class="co-panel-body">
+            <!-- Bulk rules: preset shifts + apply-to-all -->
+            <div class="schedule-quick-actions co-bulk-bar">
+                <span class="co-bulk-label"><i class="bi bi-lightning-charge-fill"></i> قواعد جماعية</span>
+                <button type="button" class="btn btn-sm btn-outline" id="presetSatThuBtn">
+                    <i class="bi bi-calendar-check"></i> السبت - الخميس
+                </button>
+                <button type="button" class="btn btn-sm btn-outline" id="presetAllDaysBtn">
+                    <i class="bi bi-calendar-week"></i> طوال الأسبوع
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="presetFullShiftBtn" title="دوام كامل: من 9:00 ص حتى 9:00 م">
+                    <i class="bi bi-clock"></i> دوام كامل (9 ص - 9 م)
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="presetMorningShiftBtn" title="دوام صباحي: من 8:00 ص حتى 2:00 م">
+                    <i class="bi bi-sun"></i> صباحي (8 ص - 2 م)
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="presetEveningShiftBtn" title="دوام مسائي: من 4:00 م حتى 10:00 م">
+                    <i class="bi bi-moon-stars"></i> مسائي (4 م - 10 م)
+                </button>
+                <button type="button" class="btn btn-sm btn-ghost" id="applyTimesToAllBtn" title="تطبيق مواعيد السبت على كافة الأيام">
+                    <i class="bi bi-arrow-down-square"></i> تطبيق توقيت السبت على الكل
+                </button>
+            </div>
+
+            <!-- AM / PM Distinction Legend & Tips -->
+            <div class="schedule-legend-bar co-legend">
+                <div class="legend-periods">
+                    <span class="legend-period-item legend-period--am">
+                        <span class="period-pill period-pill--am"><i class="bi bi-sun-fill"></i> ص</span>
+                        <span class="period-title">صباحاً (AM):</span>
+                        <span class="period-desc">من 12:00 منتصف الليل حتى 11:59 ظهراً</span>
+                    </span>
+                    <span class="legend-period-item legend-period--pm">
+                        <span class="period-pill period-pill--pm"><i class="bi bi-moon-stars-fill"></i> م</span>
+                        <span class="period-title">مساءً (PM):</span>
+                        <span class="period-desc">من 12:00 ظهراً حتى 11:59 مساءً</span>
+                    </span>
+                </div>
+                <div class="legend-tip">
+                    <i class="bi bi-info-circle text-primary"></i>
+                    <span>اضغط مباشرة على زري <strong>ص</strong> أو <strong>م</strong> للتحويل الفوري، أو اختر وردية جاهزة لكل يوم.</span>
+                </div>
+            </div>
+
+            <!-- Weekly Schedule Overview Ribbon (day tabs) -->
+            @{
+                var todayDow = (int)DateTime.Now.DayOfWeek;
+            }
+            <div class="schedule-week-ribbon co-week-strip" id="scheduleWeekRibbon">
+                @foreach (var day in daysDef)
                 {
-                    <span class="week-ribbon-today-tag">اليوم</span>
+                    var isDayActive = workingDays.Contains(day.id);
+                    var isToday = (day.id == todayDow);
+                    <a href="javascript:void(0)" class="week-ribbon-day co-week-tab @(isDayActive ? "" : "is-off") @(isToday ? "is-today" : "")" data-day-id="@day.id" id="ribbonDay_@day.id" title="الانتقال السريع إلى يوم @day.name">
+                        @if (isToday)
+                        {
+                            <span class="week-ribbon-today-tag">اليوم</span>
+                        }
+                        <span class="week-ribbon-name">@day.name</span>
+                        <span class="week-ribbon-status-dot" id="ribbonDot_@day.id"></span>
+                        <span class="week-ribbon-hours" id="ribbonHours_@day.id">@(isDayActive ? "9:00 ص - 9:00 م" : "عطلة")</span>
+                    </a>
                 }
-                <span class="week-ribbon-name">@day.name</span>
-                <span class="week-ribbon-status-dot" id="ribbonDot_@day.id"></span>
-                <span class="week-ribbon-hours" id="ribbonHours_@day.id">@(isDayActive ? "9:00 ص - 9:00 م" : "عطلة")</span>
-            </a>
-        }
-    </div>
-
-    <!-- Cards Container for Days -->
-    <div class="schedule-days-container" id="clinicScheduleList">
-        @foreach (var day in daysDef)
-        {
-            var isDayActive = workingDays.Contains(day.id);
-            var isToday = (day.id == todayDow);
-            var isStartAm = IsAmRazor(startHours);
-            var isEndAm = IsAmRazor(endHours);
-            <div class="schedule-day-card @(isDayActive ? "is-active" : "is-off")" data-day-id="@day.id" id="scheduleCard_@day.id">
-                <div class="schedule-day-header">
-                    <div class="schedule-day-main-info">
-                        <label class="form-toggle mb-0" title="@(isDayActive ? "تعطيل هذا اليوم" : "تفعيل هذا اليوم")">
-                            <input type="checkbox" class="day-active-toggle" data-day-id="@day.id" @(isDayActive ? "checked" : "") />
-                            <span class="toggle-track"></span>
-                        </label>
-                        <div class="schedule-day-title-box">
-                            <h6 class="schedule-day-title">@day.name</h6>
-                            @if (isToday)
-                            {
-                                <span class="schedule-today-pill"><i class="bi bi-clock"></i> اليوم</span>
-                            }
-                            <span class="badge @(isDayActive ? "badge-success" : "badge-secondary") day-status-badge" id="statusBadge_@day.id">
-                                @(isDayActive ? "يوم عمل" : "عطلة أسبوعية")
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="schedule-day-header-actions">
-                        <span class="badge badge-info day-hours-badge" id="hoursBadge_@day.id">12 ساعة</span>
-                        <button type="button" class="schedule-copy-btn" title="نسخ توقيت @day.name إلى باقي الأيام" data-day-id="@day.id">
-                            <i class="bi bi-copy"></i>
-                            <span>نسخ للكل</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Active Working Body -->
-                <div class="schedule-day-body is-working-body">
-                    <div class="schedule-time-row">
-                        <div class="schedule-time-box" data-time-type="start">
-                            <div class="d-flex align-items-center justify-content-between mb-1">
-                                <label class="schedule-time-sublabel mb-0" for="startTime_@day.id">من الساعة (البدء)</label>
-                                <span class="schedule-period-badge @(isStartAm ? "badge-am" : "badge-pm")" id="startPeriodBadge_@day.id">
-                                    <i class="bi @(isStartAm ? "bi-sun-fill" : "bi-moon-stars-fill")"></i>
-                                    <span>@(isStartAm ? "صباحاً" : "مساءً")</span>
-                                </span>
-                            </div>
-                            <div class="schedule-time-picker-box">
-                                <input type="time" class="schedule-time-input day-start-time" id="startTime_@day.id" data-day-id="@day.id" value="@startHours" @(isDayActive ? "" : "disabled") />
-                                <div class="time-period-switcher" role="group" aria-label="تحديد صباحاً أو مساءً">
-                                    <button type="button" class="time-period-btn period-btn--am @(isStartAm ? "is-active" : "")" data-day-id="@day.id" data-type="start" data-period="am" title="صباحاً (ص / AM)" @(isDayActive ? "" : "disabled")>
-                                        <i class="bi bi-sun-fill"></i> ص
-                                    </button>
-                                    <button type="button" class="time-period-btn period-btn--pm @(!isStartAm ? "is-active" : "")" data-day-id="@day.id" data-type="start" data-period="pm" title="مساءً (م / PM)" @(isDayActive ? "" : "disabled")>
-                                        <i class="bi bi-moon-stars-fill"></i> م
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="schedule-time-preview" id="startPreview_@day.id">
-                                <span class="preview-12h">@FormatTime12Razor(startHours)</span>
-                            </div>
-                        </div>
-
-                        <div class="schedule-time-separator-wrap">
-                            <span class="schedule-time-separator">إلى</span>
-                            <i class="bi bi-arrow-left schedule-time-arrow"></i>
-                        </div>
-
-                        <div class="schedule-time-box" data-time-type="end">
-                            <div class="d-flex align-items-center justify-content-between mb-1">
-                                <label class="schedule-time-sublabel mb-0" for="endTime_@day.id">إلى الساعة (الإغلاق)</label>
-                                <span class="schedule-period-badge @(isEndAm ? "badge-am" : "badge-pm")" id="endPeriodBadge_@day.id">
-                                    <i class="bi @(isEndAm ? "bi-sun-fill" : "bi-moon-stars-fill")"></i>
-                                    <span>@(isEndAm ? "صباحاً" : "مساءً")</span>
-                                </span>
-                            </div>
-                            <div class="schedule-time-picker-box">
-                                <input type="time" class="schedule-time-input day-end-time" id="endTime_@day.id" data-day-id="@day.id" value="@endHours" @(isDayActive ? "" : "disabled") />
-                                <div class="time-period-switcher" role="group" aria-label="تحديد صباحاً أو مساءً">
-                                    <button type="button" class="time-period-btn period-btn--am @(isEndAm ? "is-active" : "")" data-day-id="@day.id" data-type="end" data-period="am" title="صباحاً (ص / AM)" @(isDayActive ? "" : "disabled")>
-                                        <i class="bi bi-sun-fill"></i> ص
-                                    </button>
-                                    <button type="button" class="time-period-btn period-btn--pm @(!isEndAm ? "is-active" : "")" data-day-id="@day.id" data-type="end" data-period="pm" title="مساءً (م / PM)" @(isDayActive ? "" : "disabled")>
-                                        <i class="bi bi-moon-stars-fill"></i> م
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="schedule-time-preview" id="endPreview_@day.id">
-                                <span class="preview-12h">@FormatTime12Razor(endHours)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Inline warning if end time is before start time -->
-                    <div class="schedule-time-warning" id="timeWarning_@day.id">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                        <span>تنبيه: وقت الإغلاق يجب أن يكون بعد وقت البدء. تأكد من تحديد (م) لوقت الإغلاق إذا كان مسائياً.</span>
-                    </div>
-
-                    <!-- Per-Day Quick Shift Chips -->
-                    <div class="schedule-day-shifts">
-                        <span class="schedule-shift-label"><i class="bi bi-lightning-charge"></i> ورديات سريعة:</span>
-                        <button type="button" class="schedule-shift-chip" data-day-id="@day.id" data-start="09:00" data-end="21:00" title="9:00 ص إلى 9:00 م">
-                            9:00 ص - 9:00 م (كامل)
-                        </button>
-                        <button type="button" class="schedule-shift-chip" data-day-id="@day.id" data-start="08:00" data-end="14:00" title="8:00 ص إلى 2:00 م">
-                            8:00 ص - 2:00 م (صباحي)
-                        </button>
-                        <button type="button" class="schedule-shift-chip" data-day-id="@day.id" data-start="16:00" data-end="22:00" title="4:00 م إلى 10:00 م">
-                            4:00 م - 10:00 م (مسائي)
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Off Day Body -->
-                <div class="schedule-day-body is-off-body">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-calendar-x text-muted"></i>
-                        <span>العيادة مغلقة طوال هذا اليوم (عطلة رسمية). لا يمكن حجز مواعيد للمرضى.</span>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary enable-day-btn" data-day-id="@day.id">
-                        <i class="bi bi-check-circle"></i> تفعيل يوم العمل
-                    </button>
-                </div>
-            </div>
-        }
-    </div>
-
-    <!-- General Working Hours Summary & Patient Simulator Section -->
-    <div class="mt-4 pt-3 border-top">
-        <div class="row g-3">
-            <div class="col-lg-7">
-                <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
-                    <div>
-                        <h6 class="mb-1">النص التعريفي لأوقات العمل العامة</h6>
-                        <p class="form-hint mb-0">هذا النص يظهر في بطاقة العيادة ونتائج البحث لتقديم نبذة سريعة للمرضى.</p>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="autoGenerateSummaryBtn">
-                        <i class="bi bi-magic"></i> توليد ذكي من الجدول
-                    </button>
-                </div>
-                <div class="form-group mb-0">
-                    <input type="text" class="form-input" id="workingHoursSummaryInput" aria-label="ملخص أوقات العمل" value="@hoursText" placeholder="مثال: السبت - الخميس: 9:00 ص - 9:00 م | الجمعة: عطلة" />
-                </div>
             </div>
 
-            <div class="col-lg-5">
-                <div class="patient-simulator-card">
+            <!-- Cards Container for Days -->
+            <div class="schedule-days-container co-days" id="clinicScheduleList">
+                @foreach (var day in daysDef)
+                {
+                    var isDayActive = workingDays.Contains(day.id);
+                    var isToday = (day.id == todayDow);
+                    var isStartAm = IsAmRazor(startHours);
+                    var isEndAm = IsAmRazor(endHours);
+                    <div class="schedule-day-card co-day @(isDayActive ? "is-active" : "is-off")" data-day-id="@day.id" id="scheduleCard_@day.id">
+                        <div class="schedule-day-header co-day-head">
+                            <div class="schedule-day-main-info">
+                                <label class="form-toggle mb-0" title="@(isDayActive ? "تعطيل هذا اليوم" : "تفعيل هذا اليوم")">
+                                    <input type="checkbox" class="day-active-toggle" data-day-id="@day.id" @(isDayActive ? "checked" : "") />
+                                    <span class="toggle-track"></span>
+                                </label>
+                                <div class="schedule-day-title-box">
+                                    <h6 class="schedule-day-title co-day-title">@day.name</h6>
+                                    @if (isToday)
+                                    {
+                                        <span class="schedule-today-pill"><i class="bi bi-clock"></i> اليوم</span>
+                                    }
+                                    <span class="badge @(isDayActive ? "badge-success" : "badge-secondary") day-status-badge" id="statusBadge_@day.id">
+                                        @(isDayActive ? "يوم عمل" : "عطلة أسبوعية")
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="schedule-day-header-actions">
+                                <span class="badge badge-info day-hours-badge" id="hoursBadge_@day.id">12 ساعة</span>
+                                <button type="button" class="schedule-copy-btn" title="نسخ توقيت @day.name إلى باقي الأيام" data-day-id="@day.id">
+                                    <i class="bi bi-copy"></i>
+                                    <span>نسخ للكل</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Working Body -->
+                        <div class="schedule-day-body co-day-body is-working-body">
+                            <div class="schedule-time-row co-slot">
+                                <div class="schedule-time-box co-slot-field" data-time-type="start">
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <label class="schedule-time-sublabel mb-0" for="startTime_@day.id">من الساعة (البدء)</label>
+                                        <span class="schedule-period-badge @(isStartAm ? "badge-am" : "badge-pm")" id="startPeriodBadge_@day.id">
+                                            <i class="bi @(isStartAm ? "bi-sun-fill" : "bi-moon-stars-fill")"></i>
+                                            <span>@(isStartAm ? "صباحاً" : "مساءً")</span>
+                                        </span>
+                                    </div>
+                                    <div class="schedule-time-picker-box co-slot-box">
+                                        <input type="time" class="schedule-time-input day-start-time" id="startTime_@day.id" data-day-id="@day.id" value="@startHours" @(isDayActive ? "" : "disabled") />
+                                        <div class="time-period-switcher" role="group" aria-label="تحديد صباحاً أو مساءً">
+                                            <button type="button" class="time-period-btn period-btn--am @(isStartAm ? "is-active" : "")" data-day-id="@day.id" data-type="start" data-period="am" title="صباحاً (ص / AM)" @(isDayActive ? "" : "disabled")>
+                                                <i class="bi bi-sun-fill"></i> ص
+                                            </button>
+                                            <button type="button" class="time-period-btn period-btn--pm @(!isStartAm ? "is-active" : "")" data-day-id="@day.id" data-type="start" data-period="pm" title="مساءً (م / PM)" @(isDayActive ? "" : "disabled")>
+                                                <i class="bi bi-moon-stars-fill"></i> م
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="schedule-time-preview" id="startPreview_@day.id">
+                                        <span class="preview-12h">@FormatTime12Razor(startHours)</span>
+                                    </div>
+                                </div>
+
+                                <div class="schedule-time-separator-wrap">
+                                    <span class="schedule-time-separator">إلى</span>
+                                    <i class="bi bi-arrow-left schedule-time-arrow"></i>
+                                </div>
+
+                                <div class="schedule-time-box co-slot-field" data-time-type="end">
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <label class="schedule-time-sublabel mb-0" for="endTime_@day.id">إلى الساعة (الإغلاق)</label>
+                                        <span class="schedule-period-badge @(isEndAm ? "badge-am" : "badge-pm")" id="endPeriodBadge_@day.id">
+                                            <i class="bi @(isEndAm ? "bi-sun-fill" : "bi-moon-stars-fill")"></i>
+                                            <span>@(isEndAm ? "صباحاً" : "مساءً")</span>
+                                        </span>
+                                    </div>
+                                    <div class="schedule-time-picker-box co-slot-box">
+                                        <input type="time" class="schedule-time-input day-end-time" id="endTime_@day.id" data-day-id="@day.id" value="@endHours" @(isDayActive ? "" : "disabled") />
+                                        <div class="time-period-switcher" role="group" aria-label="تحديد صباحاً أو مساءً">
+                                            <button type="button" class="time-period-btn period-btn--am @(isEndAm ? "is-active" : "")" data-day-id="@day.id" data-type="end" data-period="am" title="صباحاً (ص / AM)" @(isDayActive ? "" : "disabled")>
+                                                <i class="bi bi-sun-fill"></i> ص
+                                            </button>
+                                            <button type="button" class="time-period-btn period-btn--pm @(!isEndAm ? "is-active" : "")" data-day-id="@day.id" data-type="end" data-period="pm" title="مساءً (م / PM)" @(isDayActive ? "" : "disabled")>
+                                                <i class="bi bi-moon-stars-fill"></i> م
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="schedule-time-preview" id="endPreview_@day.id">
+                                        <span class="preview-12h">@FormatTime12Razor(endHours)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Inline warning if end time is before start time -->
+                            <div class="schedule-time-warning" id="timeWarning_@day.id">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span>تنبيه: وقت الإغلاق يجب أن يكون بعد وقت البدء. تأكد من تحديد (م) لوقت الإغلاق إذا كان مسائياً.</span>
+                            </div>
+
+                            <!-- Per-Day Quick Shift Chips -->
+                            <div class="schedule-day-shifts">
+                                <span class="schedule-shift-label"><i class="bi bi-lightning-charge"></i> ورديات سريعة:</span>
+                                <button type="button" class="schedule-shift-chip" data-day-id="@day.id" data-start="09:00" data-end="21:00" title="9:00 ص إلى 9:00 م">
+                                    9:00 ص - 9:00 م (كامل)
+                                </button>
+                                <button type="button" class="schedule-shift-chip" data-day-id="@day.id" data-start="08:00" data-end="14:00" title="8:00 ص إلى 2:00 م">
+                                    8:00 ص - 2:00 م (صباحي)
+                                </button>
+                                <button type="button" class="schedule-shift-chip" data-day-id="@day.id" data-start="16:00" data-end="22:00" title="4:00 م إلى 10:00 م">
+                                    4:00 م - 10:00 م (مسائي)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Off Day Body -->
+                        <div class="schedule-day-body co-day-body is-off-body">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-calendar-x text-muted"></i>
+                                <span>العيادة مغلقة طوال هذا اليوم (عطلة رسمية). لا يمكن حجز مواعيد للمرضى.</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline enable-day-btn" data-day-id="@day.id">
+                                <i class="bi bi-check-circle"></i> تفعيل يوم العمل
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- General Working Hours Summary & Patient Simulator Section -->
+            <div class="co-foot">
+                <div class="co-foot-col">
+                    <div class="co-foot-title">
+                        <div>
+                            <h6>النص التعريفي لأوقات العمل العامة</h6>
+                            <p class="form-hint mb-0">هذا النص يظهر في بطاقة العيادة ونتائج البحث لتقديم نبذة سريعة للمرضى.</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline" id="autoGenerateSummaryBtn">
+                            <i class="bi bi-magic"></i> توليد ذكي من الجدول
+                        </button>
+                    </div>
+                    <div class="form-group mb-0">
+                        <input type="text" class="form-input" id="workingHoursSummaryInput" aria-label="ملخص أوقات العمل" value="@hoursText" placeholder="مثال: السبت - الخميس: 9:00 ص - 9:00 م | الجمعة: عطلة" />
+                    </div>
+                </div>
+
+                <div class="patient-simulator-card co-sim">
                     <div class="simulator-header">
                         <span class="simulator-header-title">
                             <i class="bi bi-eye"></i> معاينة بطاقة المريض
@@ -356,36 +359,40 @@
                             <span class="badge badge-primary">معتمد</span>
                         </div>
                         <div class="simulator-hours-pill">
-                            <i class="bi bi-clock me-1 text-primary"></i>
+                            <i class="bi bi-clock text-primary"></i>
                             <span id="summaryPreviewText">@hoursText</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Sticky Floating Action Bar -->
-    <div class="schedule-sticky-bar">
-        <div class="schedule-sticky-info">
-            <span class="unsaved-badge" id="unsavedChangesBadge">
-                <span class="unsaved-dot"></span>
-                <span>تعديلات غير محفوظة</span>
-            </span>
-            <span class="schedule-sticky-summary" id="scheduleStickySummary">
-                الجدول: @workingDays.Count أيام عمل • — ساعة أسبوعياً
-            </span>
-        </div>
-        <div class="schedule-sticky-btns">
-            <button type="button" class="btn btn-secondary" id="resetClinicAvailabilityBtn">
-                <i class="bi bi-arrow-counterclockwise"></i> إلغاء التغييرات
-            </button>
-            <button type="button" class="btn btn-primary" id="saveClinicAvailabilityBtn">
-                <i class="bi bi-check2"></i> حفظ أوقات عمل العيادة
-            </button>
+            <!-- Sticky Floating Action Bar -->
+            <div class="co-save-bar">
+                <div class="co-save-info">
+                    <span class="unsaved-badge" id="unsavedChangesBadge">
+                        <span class="unsaved-dot"></span>
+                        <span>تعديلات غير محفوظة</span>
+                    </span>
+                    <span class="co-save-summary schedule-sticky-summary" id="scheduleStickySummary">
+                        الجدول: @workingDays.Count أيام عمل • — ساعة أسبوعياً
+                    </span>
+                </div>
+                <div class="co-save-btns">
+                    <button type="button" class="btn btn-secondary press" id="resetClinicAvailabilityBtn">
+                        <i class="bi bi-arrow-counterclockwise"></i> إلغاء التغييرات
+                    </button>
+                    <button type="button" class="btn btn-primary" id="saveClinicAvailabilityBtn">
+                        <i class="bi bi-check2"></i> حفظ أوقات عمل العيادة
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     <script>

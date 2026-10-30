@@ -1,0 +1,426 @@
+/* ============================================================
+   Public surface — marketing header/footer, status pages and
+   result screens. Loaded by _Layout.cshtml only.
+   Layer order: design-system → site → app-shell → overlays → this
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Sticky glass header
+   ------------------------------------------------------------ */
+
+.public-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.public-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    height: 72px;
+}
+
+.public-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.public-header .logo-text {
+    font-family: var(--ff-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-bold);
+    color: var(--clr-primary);
+    letter-spacing: var(--ls-tight);
+}
+
+.public-nav {
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.public-nav .nav-link {
+    position: relative;
+    padding: 8px var(--space-3);
+    border-radius: var(--radius-pill);
+    color: var(--clr-text);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-medium);
+    transition:
+        color var(--dur-fs) var(--ease-standard),
+        background-color var(--dur-fs) var(--ease-standard);
+}
+
+.public-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--space-3);
+    bottom: 2px;
+    height: 2px;
+    border-radius: var(--radius-pill);
+    background: var(--grad-brass);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform var(--dur-sm) var(--ease-spring);
+}
+
+.public-nav .nav-link:hover {
+    color: var(--clr-primary-strong);
+    background: var(--clr-primary-light);
+}
+
+.public-nav .nav-link:hover::after {
+    transform: scaleX(1);
+}
+
+.public-nav .nav-link.active {
+    color: var(--clr-primary-strong);
+    font-weight: var(--fw-semibold);
+    background: var(--clr-primary-bg);
+}
+
+.public-nav .nav-link.active::after {
+    transform: scaleX(1);
+}
+
+.public-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.public-nav-toggle .bi {
+    font-size: 20px;
+}
+
+.public-nav-collapse {
+    border-top: 1px solid var(--clr-border-subtle);
+    background: var(--clr-surface);
+}
+
+.public-nav-links .nav-link.active {
+    color: var(--clr-primary-strong);
+    background: var(--clr-primary-bg);
+}
+
+/* ------------------------------------------------------------
+   Footer
+   ------------------------------------------------------------ */
+
+.public-footer-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    text-align: center;
+}
+
+.public-footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.public-footer-brand .brand-logo-img {
+    width: 40px;
+    height: 40px;
+}
+
+.public-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2) var(--space-5);
+    font-size: var(--fs-sm);
+}
+
+.public-footer-links a {
+    position: relative;
+    padding-bottom: 2px;
+}
+
+.public-footer-links a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.public-footer-copy {
+    font-family: var(--ff-data);
+    font-size: var(--fs-xs);
+    letter-spacing: var(--ls-label);
+}
+
+/* ------------------------------------------------------------
+   Status pages (subscription required / pending / submitted)
+   ------------------------------------------------------------ */
+
+.subscription-required-card,
+.submitted-card {
+    position: relative;
+    padding: var(--space-8) var(--space-6);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    background:
+        radial-gradient(90% 60% at 50% 0%, var(--clr-primary-bg) 0%, transparent 62%),
+        var(--clr-surface);
+    box-shadow: var(--shadow-lg);
+    animation: ch-rise var(--dur-lg) var(--ease-spring) both;
+}
+
+.required-icon-circle {
+    width: 78px;
+    height: 78px;
+    border-radius: var(--radius-full);
+    background: var(--grad-primary);
+    box-shadow: var(--shadow-primary);
+    color: #fff;
+    font-size: 34px;
+}
+
+.required-icon-circle--info {
+    background: var(--grad-brass);
+    box-shadow: 0 8px 22px rgba(183, 138, 60, 0.32);
+}
+
+.required-plan-info {
+    border-radius: var(--radius-pill);
+    background: var(--clr-surface-sunken);
+    border: 1px solid var(--clr-border-subtle);
+}
+
+.required-actions,
+.submitted-actions {
+    gap: var(--space-3);
+}
+
+.submitted-steps {
+    gap: var(--space-4);
+}
+
+.submitted-step {
+    padding: var(--space-4);
+    border: 1px solid var(--clr-border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--clr-surface);
+    transition:
+        border-color var(--dur-sm) var(--ease-standard),
+        box-shadow var(--dur-sm) var(--ease-standard),
+        transform var(--dur-sm) var(--ease-spring);
+}
+
+.submitted-step:hover {
+    border-color: var(--clr-border-strong);
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(var(--motion-lift));
+}
+
+.submitted-step-active {
+    background: var(--grad-primary);
+    color: #fff;
+    box-shadow: var(--shadow-primary);
+}
+
+.submitted-step-pending {
+    background: var(--clr-surface-sunken);
+    color: var(--clr-text-faint);
+    box-shadow: inset 0 0 0 1px var(--clr-border);
+}
+
+.submitted-step-icon .bi {
+    font-size: 17px;
+}
+
+.submitted-step-content h4 {
+    font-family: var(--ff-display);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-semibold);
+    color: var(--clr-text);
+}
+
+.submitted-step-content p {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+}
+
+/* ------------------------------------------------------------
+   Payment result
+   ------------------------------------------------------------ */
+
+.result-icon-circle {
+    width: 82px;
+    height: 82px;
+    border-radius: var(--radius-full);
+    font-size: 36px;
+    color: #fff;
+    animation: ch-pop var(--dur-md) var(--ease-spring) both;
+}
+
+.result-success {
+    background: var(--grad-primary);
+    box-shadow: var(--shadow-primary);
+}
+
+.result-fail {
+    background: linear-gradient(135deg, var(--clr-danger), var(--clr-danger-text));
+    box-shadow: 0 8px 22px rgba(177, 59, 50, 0.28);
+}
+
+.result-desc {
+    font-size: var(--fs-md);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+}
+
+.result-redirect-notice {
+    border-radius: var(--radius-pill);
+    background: var(--clr-surface-sunken);
+    border: 1px dashed var(--clr-border-strong);
+    font-family: var(--ff-data);
+    font-size: var(--fs-sm);
+}
+
+.result-actions {
+    gap: var(--space-3);
+}
+
+/* ------------------------------------------------------------
+   Auth flow (login / forgot / verify / reset share one shell)
+   ------------------------------------------------------------ */
+
+.auth-wrapper {
+    padding: var(--space-8) 0 var(--space-9);
+}
+
+.auth-card {
+    animation: ch-rise var(--dur-lg) var(--ease-spring) both;
+}
+
+.auth-input-group {
+    position: relative;
+}
+
+.auth-input-icon {
+    position: absolute;
+    inset-inline-start: 16px;
+    inset-inline-end: auto;
+    inset-block-end: 0;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--clr-text-faint);
+    font-size: 15px;
+    pointer-events: none;
+    transition: color var(--dur-fs) var(--ease-standard);
+}
+
+.auth-input-group:focus-within .auth-input-icon {
+    color: var(--clr-primary);
+}
+
+.auth-input-group .auth-form-control {
+    padding-inline-start: 44px;
+    padding-inline-end: 16px;
+}
+
+.auth-code-input {
+    padding-inline-end: var(--space-4);
+    letter-spacing: .5em;
+    text-align: center;
+    font-family: var(--ff-data);
+}
+
+.auth-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    font-size: var(--fs-xs);
+    color: var(--clr-text-faint);
+}
+
+.auth-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--clr-surface-sunken);
+    white-space: nowrap;
+}
+
+.auth-step::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--clr-border-strong);
+}
+
+.auth-step.is-current {
+    background: var(--clr-primary-bg);
+    color: var(--clr-primary-strong);
+    font-weight: var(--fw-semibold);
+}
+
+.auth-step.is-current::before {
+    background: var(--clr-primary);
+    box-shadow: 0 0 0 3px var(--clr-primary-light);
+}
+
+.auth-step.is-done {
+    color: var(--clr-success-text);
+}
+
+.auth-step.is-done::before {
+    background: var(--clr-success);
+}
+
+/* ------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------ */
+
+@media (max-width: 991px) {
+    .public-header-inner {
+        height: 64px;
+    }
+}
+
+@media (max-width: 575px) {
+    .public-footer-links {
+        gap: var(--space-2) var(--space-4);
+    }
+
+    .subscription-required-card,
+    .submitted-card {
+        padding: var(--space-6) var(--space-4);
+        border-radius: var(--radius-lg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .subscription-required-card,
+    .submitted-card,
+    .result-icon-circle {
+        animation: none;
+    }
+
+    .public-nav .nav-link::after {
+        transition: none;
+    }
+
+    .submitted-step:hover {
+        transform: none;
+    }
+}

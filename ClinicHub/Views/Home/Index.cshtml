@@ -5,202 +5,227 @@
     var activeAdPackages = adPackages.Where(p => p.IsActive).ToList();
 }
 
-<!-- Hero Section -->
-<section class="hero-section">
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/public-home.css?v=20261027_redesign_v2" asp-append-version="false" />
+}
+
+<!-- Hero -->
+<section class="ph-hero">
     <div class="container">
-        <div class="hero-grid">
-            <div class="hero-copy">
-                <span class="hero-eyebrow">منصة تشغيل العيادات</span>
-                <h1 class="hero-title">نظام إدارة وتشغيل العيادات الطبي الموحد</h1>
-                <p class="hero-lead">
-                    أهلاً بكم في منصة Doctory - المنصة التشغيلية والوسيطة المتكاملة لربط مدراء النظام بملاك العيادات. نعمل كحلقة وصل إدارية متقدمة لتنظيم العمل الطبي بكافة تفاصيله.
-                </p>
-                <div class="hero-cta">
-                    <a href="@HomeRoutes.Account.Login()" class="btn btn-primary btn-lg">تسجيل الدخول</a>
-                    <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-secondary btn-lg">اشترك في الخدمة</a>
-                </div>
+        <div class="ph-hero-inner stagger">
+            <span class="badge badge-primary badge--dot ph-eyebrow">منصة تشغيل العيادات</span>
+            <h1 class="ph-hero-title">نظام إدارة وتشغيل العيادات الطبي الموحد</h1>
+            <p class="ph-hero-lead">
+                أهلاً بكم في منصة Doctory - المنصة التشغيلية والوسيطة المتكاملة لربط مدراء النظام بملاك العيادات. نعمل كحلقة وصل إدارية متقدمة لتنظيم العمل الطبي بكافة تفاصيله.
+            </p>
+            <div class="ph-hero-cta">
+                <a href="@HomeRoutes.Account.Login()" class="btn btn-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-left" aria-hidden="true"></i>
+                    تسجيل الدخول
+                </a>
+                <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-hospital" aria-hidden="true"></i>
+                    اشترك في الخدمة
+                </a>
             </div>
         </div>
+
+        <ul class="ph-trust stagger">
+            <li class="ph-trust-item" data-scroll>
+                <div class="ph-trust-head">
+                    <span class="icon-wrapper icon-wrapper--sm icon-wrapper--primary">
+                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                    </span>
+                    <h2 class="ph-trust-title">اتصالات مشفّرة بالكامل</h2>
+                </div>
+                <p class="ph-trust-sub">HTTPS وتشفير SSL/TLS بين المتصفح والخوادم.</p>
+            </li>
+            <li class="ph-trust-item ph-trust-item--accent" data-scroll>
+                <div class="ph-trust-head">
+                    <span class="icon-wrapper icon-wrapper--sm icon-wrapper--brass">
+                        <i class="bi bi-layers" aria-hidden="true"></i>
+                    </span>
+                    <h2 class="ph-trust-title">عزل بيانات كل عيادة</h2>
+                </div>
+                <p class="ph-trust-sub">نظام عزل صارم يفصل بيانات كل منشأة عن غيرها.</p>
+            </li>
+            <li class="ph-trust-item" data-scroll>
+                <div class="ph-trust-head">
+                    <span class="icon-wrapper icon-wrapper--sm icon-wrapper--primary">
+                        <i class="bi bi-person-badge" aria-hidden="true"></i>
+                    </span>
+                    <h2 class="ph-trust-title">صلاحيات مبنية على الأدوار</h2>
+                </div>
+                <p class="ph-trust-sub">يرى كل مستخدم ما يخص دوره فقط داخل النظام.</p>
+            </li>
+            <li class="ph-trust-item" data-scroll>
+                <div class="ph-trust-head">
+                    <span class="icon-wrapper icon-wrapper--sm icon-wrapper--primary">
+                        <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
+                    </span>
+                    <h2 class="ph-trust-title">نسخ احتياطي يومي</h2>
+                </div>
+                <p class="ph-trust-sub">حفظ تلقائي في خوادم مشفرة ومنعزلة جغرافياً.</p>
+            </li>
+        </ul>
     </div>
 </section>
 
-
-<!-- Services Section -->
-<section id="services" class="services-section">
+<!-- Services -->
+<section id="services" class="ph-band">
     <div class="container">
-        <div class="section-head">
-            <span class="hero-eyebrow">خدماتنا</span>
-            <h2 class="section-head-title">الخدمات والحلول الإدارية المتكاملة</h2>
-            <p class="section-head-lead">نظام وسيط ذكي لتسهيل إدارة العيادات وتشغيلها بكفاءة لربط ملاك العيادات بالمدير العام.</p>
-        </div>
+        <header class="ph-head">
+            <span class="badge badge-primary badge--dot ph-eyebrow">خدماتنا</span>
+            <h2 class="ph-head-title">الخدمات والحلول الإدارية المتكاملة</h2>
+            <p class="ph-head-lead">نظام وسيط ذكي لتسهيل إدارة العيادات وتشغيلها بكفاءة لربط ملاك العيادات بالمدير العام.</p>
+        </header>
 
-        <div class="row g-4">
-            <!-- Staff Management -->
-            <div class="col-lg-3 col-md-6">
-                <div class="service-card">
-                    <div class="icon-wrapper icon-wrapper--primary">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <h4 class="service-card-title">إدارة الأطباء والكادر</h4>
-                    <p class="service-card-desc">تسجيل ملفات الأطباء، تحديد التخصصات، وإسناد الجداول اليومية للعمل داخل العيادات.</p>
-                </div>
-            </div>
+        <div class="ph-grid ph-grid--services">
+            <article class="ph-card" data-scroll>
+                <span class="icon-wrapper icon-wrapper--primary ph-card-icon">
+                    <i class="bi bi-people" aria-hidden="true"></i>
+                </span>
+                <h3 class="ph-card-title">إدارة الأطباء والكادر</h3>
+                <p class="ph-card-desc">تسجيل ملفات الأطباء، تحديد التخصصات، وإسناد الجداول اليومية للعمل داخل العيادات.</p>
+            </article>
 
-            <!-- Appointments Management -->
-            <div class="col-lg-3 col-md-6">
-                <div class="service-card">
-                    <div class="icon-wrapper icon-wrapper--amber">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <h4 class="service-card-title">إدارة المواعيد والحجوزات</h4>
-                    <p class="service-card-desc">جدولة مواعيد المرضى مع الأطباء، ومتابعة الجدول اليومي للعيادات لحظة بلحظة.</p>
-                </div>
-            </div>
+            <article class="ph-card" data-scroll>
+                <span class="icon-wrapper icon-wrapper--primary ph-card-icon">
+                    <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                </span>
+                <h3 class="ph-card-title">إدارة المواعيد والحجوزات</h3>
+                <p class="ph-card-desc">جدولة مواعيد المرضى مع الأطباء، ومتابعة الجدول اليومي للعيادات لحظة بلحظة.</p>
+            </article>
 
-            <!-- Queue & Patients -->
-            <div class="col-lg-3 col-md-6">
-                <div class="service-card">
-                    <div class="icon-wrapper icon-wrapper--green">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <h4 class="service-card-title">إدارة قوائم الانتظار</h4>
-                    <p class="service-card-desc">تنظيم حضور المرضى لحظة بلحظة، وترتيب أدوارهم في صالات الانتظار بشكل رقمي بالكامل.</p>
-                </div>
-            </div>
+            <article class="ph-card" data-scroll>
+                <span class="icon-wrapper icon-wrapper--primary ph-card-icon">
+                    <i class="bi bi-list-ol" aria-hidden="true"></i>
+                </span>
+                <h3 class="ph-card-title">إدارة قوائم الانتظار</h3>
+                <p class="ph-card-desc">تنظيم حضور المرضى لحظة بلحظة، وترتيب أدوارهم في صالات الانتظار بشكل رقمي بالكامل.</p>
+            </article>
 
-            <!-- Monitoring & Analytics -->
-            <div class="col-lg-3 col-md-6">
-                <div class="service-card">
-                    <div class="icon-wrapper icon-wrapper--brass">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM9 17H7V10H9V17ZM13 17H11V7H13V17ZM17 17H15V12H17V17Z" fill="currentColor"/>
-                        </svg>
-                    </div>
-                    <h4 class="service-card-title">مراقبة الأداء والتحليل</h4>
-                    <p class="service-card-desc">مراقبة الكفاءة التشغيلية، وحساب متوسط فترات الانتظار، واستخراج تقارير إدارية متقدمة.</p>
-                </div>
-            </div>
+            <article class="ph-card" data-scroll>
+                <span class="icon-wrapper icon-wrapper--primary ph-card-icon">
+                    <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
+                </span>
+                <h3 class="ph-card-title">مراقبة الأداء والتحليل</h3>
+                <p class="ph-card-desc">مراقبة الكفاءة التشغيلية، وحساب متوسط فترات الانتظار، واستخراج تقارير إدارية متقدمة.</p>
+            </article>
         </div>
     </div>
 </section>
 
 @if (activeAdPackages.Count > 0)
 {
-    <!-- Ad Plans Section on Landing Page -->
-    <section id="ads-plans" class="subscription-section">
+    <!-- Ad packages -->
+    <section id="ads-plans" class="ph-band ph-band--tinted">
         <div class="container">
-            <div class="section-head text-center">
-                <span class="hero-eyebrow">الترويج والإعلانات</span>
-                <h2 class="section-head-title">باقات الإعلانات المتاحة للعيادات</h2>
-                <p class="section-head-lead">روّج لعيادتك واظهر كأول الخيارات للمرضى في تطبيق Doctory للجوال لزيادة عدد الحجوزات</p>
-            </div>
+            <header class="ph-head">
+                <span class="badge badge-primary badge--dot ph-eyebrow">
+                    <i class="bi bi-megaphone" aria-hidden="true"></i>
+                    الترويج والإعلانات
+                </span>
+                <h2 class="ph-head-title">باقات الإعلانات المتاحة للعيادات</h2>
+                <p class="ph-head-lead">روّج لعيادتك واظهر كأول الخيارات للمرضى في تطبيق Doctory للجوال لزيادة عدد الحجوزات</p>
+            </header>
 
-            <div class="subscription-plans">
+            <div class="ph-grid ph-grid--plans">
                 @foreach (var pkg in activeAdPackages)
                 {
-                    <div class="plan-card plan-premium">
-                        <span class="plan-badge">باقة إعلانية</span>
-                        <div class="plan-header">
-                            <h3 class="plan-name">@(pkg.NameAr ?? pkg.Name)</h3>
-                            <p class="plan-desc">@(pkg.DescriptionAr ?? pkg.Description)</p>
-                            <p class="plan-price">
-                                <span>@pkg.Price.ToString("N0")</span>
-                                <span class="plan-currency">ج.م</span>
+                    <article class="ph-card ph-plan" data-scroll>
+                        <span class="ph-plan-badge">باقة إعلانية</span>
+                        <div class="ph-plan-head">
+                            <h3 class="ph-plan-name">@(pkg.NameAr ?? pkg.Name)</h3>
+                            <p class="ph-plan-desc">@(pkg.DescriptionAr ?? pkg.Description)</p>
+                            <p class="ph-plan-price">
+                                <span class="ph-plan-amount">@pkg.Price.ToString("N0")</span>
+                                <span class="ph-plan-currency">ج.م</span>
                             </p>
-                            <p class="plan-period-label">
+                            <p class="ph-plan-period">
+                                <i class="bi bi-clock" aria-hidden="true"></i>
                                 <span>لمدة @pkg.DurationDays يوم</span>
                             </p>
                         </div>
-                        <div class="plan-body">
-                            <div class="plan-limits">
-                                <span>@(pkg.MaxAds > 0 ? $"حتى {pkg.MaxAds} إعلانات نشطة" : "إعلانات غير محدودة")</span>
-                                <span>@(pkg.MaxImpressions > 0 ? $"{pkg.MaxImpressions:N0} مشاهدة مؤكدة" : "مشاهدات غير محدودة")</span>
+                        <div class="ph-plan-body">
+                            <div class="ph-plan-limits">
+                                <span class="ph-plan-limit">@(pkg.MaxAds > 0 ? $"حتى {pkg.MaxAds} إعلانات نشطة" : "إعلانات غير محدودة")</span>
+                                <span class="ph-plan-limit">@(pkg.MaxImpressions > 0 ? $"{pkg.MaxImpressions:N0} مشاهدة مؤكدة" : "مشاهدات غير محدودة")</span>
                             </div>
-                            <ul class="plan-features">
-                                <li>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/></svg>
+                            <ul class="ph-plan-features">
+                                <li class="ph-plan-feature">
+                                    <i class="bi bi-check2" aria-hidden="true"></i>
                                     <span>ظهور مميز وشارة عيادة معتمدة في تطبيق المرضى</span>
                                 </li>
-                                <li>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/></svg>
+                                <li class="ph-plan-feature">
+                                    <i class="bi bi-check2" aria-hidden="true"></i>
                                     <span>استهداف المرضى حسب التخصص والموقع الجغرافي</span>
                                 </li>
-                                <li>
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/></svg>
+                                <li class="ph-plan-feature">
+                                    <i class="bi bi-check2" aria-hidden="true"></i>
                                     <span>تقارير مشاهدات تفاعلية وتفعيل فوري</span>
                                 </li>
                             </ul>
                         </div>
-                        <div class="plan-footer">
-                            <a href="@HomeRoutes.Pages.AdsPlans()" class="btn btn-primary btn-lg plan-cta-full">تفاصيل الباقة والاشتراك</a>
+                        <div class="ph-plan-footer">
+                            <a href="@HomeRoutes.Pages.AdsPlans()" class="btn btn-primary btn-lg ph-plan-cta">تفاصيل الباقة والاشتراك</a>
                         </div>
-                    </div>
+                    </article>
                 }
             </div>
 
-            <div class="text-center mt-4">
-                <a href="@HomeRoutes.Pages.AdsPlans()" class="btn btn-outline-primary">
+            <div class="ph-plans-more">
+                <a href="@HomeRoutes.Pages.AdsPlans()" class="btn btn-outline">
                     عرض جميع باقات وتفاصيل الإعلانات
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ms-1"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
                 </a>
             </div>
         </div>
     </section>
 }
 
-<!-- About Section -->
-<section id="about" class="about-section">
+<!-- Why Doctory -->
+<section id="about" class="ph-band">
     <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6">
-                <span class="hero-eyebrow">لماذا Doctory؟</span>
-                <h2 class="about-title">لماذا تختار منصة Doctory؟</h2>
-                <p class="about-lead">
+        <div class="ph-why-grid">
+            <div class="ph-split-copy">
+                <span class="badge badge-primary badge--dot ph-eyebrow">لماذا Doctory؟</span>
+                <h2 class="ph-head-title ph-head-title--start">لماذا تختار منصة Doctory؟</h2>
+                <p class="ph-why-lead">
                     نحن لسنا بوابة للمرضى؛ بل نمثل النظام الإداري الوسيط والذكي الأنسب للمنشآت والعيادات الطبية المتعددة. نمكن المشرفين الإداريين وملاك العيادات من التعاون معاً في مساحة رقمية واحدة لتنظيم وتشغيل العيادات بكفاءة غير مسبوقة.
                 </p>
-                <ul class="check-list">
-                    <li class="check-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
-                        </svg>
-                        <div>
-                            <p class="check-item-title">إدارة شاملة لملفات وتفاصيل الأطباء والممرضين والموظفين.</p>
-                        </div>
+                <ul class="ph-checks">
+                    <li class="ph-check">
+                        <span class="ph-check-icon">
+                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        </span>
+                        <p class="ph-check-text">إدارة شاملة لملفات وتفاصيل الأطباء والممرضين والموظفين.</p>
                     </li>
-                    <li class="check-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
-                        </svg>
-                        <div>
-                            <p class="check-item-title">سجلات طبية رقمية ومتابعة فورية لملفات المرضى داخل العيادة.</p>
-                        </div>
+                    <li class="ph-check">
+                        <span class="ph-check-icon">
+                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        </span>
+                        <p class="ph-check-text">سجلات طبية رقمية ومتابعة فورية لملفات المرضى داخل العيادة.</p>
                     </li>
-                    <li class="check-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
-                        </svg>
-                        <div>
-                            <p class="check-item-title">بوابة وسيطة تربط المشرفين بملاك العيادات وإداراتهم الطبية.</p>
-                        </div>
+                    <li class="ph-check">
+                        <span class="ph-check-icon">
+                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                        </span>
+                        <p class="ph-check-text">بوابة وسيطة تربط المشرفين بملاك العيادات وإداراتهم الطبية.</p>
                     </li>
                 </ul>
             </div>
-            <!-- Interactive Visual Card -->
-            <div class="col-lg-6">
-                <div class="portal-card">
-                    <h3 class="portal-card-title">بوابة الإدارة الرقمية</h3>
-                    <p class="portal-card-desc">يمكنك الدخول إلى حسابك للبدء في إدارة تشغيل العيادات والموظفين فوراً.</p>
-                    <div class="d-grid">
-                        <a href="@HomeRoutes.Account.Login()" class="btn btn-primary">تسجيل الدخول</a>
-                    </div>
+
+            <aside class="ph-portal" data-scroll>
+                <span class="icon-wrapper icon-wrapper--lg icon-wrapper--solid">
+                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                </span>
+                <h3 class="ph-portal-title">بوابة الإدارة الرقمية</h3>
+                <p class="ph-portal-desc">يمكنك الدخول إلى حسابك للبدء في إدارة تشغيل العيادات والموظفين فوراً.</p>
+                <div class="ph-portal-actions">
+                    <a href="@HomeRoutes.Account.Login()" class="btn btn-primary btn-block">تسجيل الدخول</a>
                 </div>
-            </div>
+            </aside>
         </div>
     </div>
 </section>

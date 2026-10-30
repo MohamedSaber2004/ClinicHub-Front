@@ -36,8 +36,9 @@ namespace ClinicHub.Controllers
         private readonly INotificationService _notificationService;
         private readonly IPlatformSettingService _platformSettingService;
         private readonly IClinicDoctorService _clinicDoctorService;
+        private readonly IAdminPayoutService _adminPayoutService;
 
-        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService, INotificationService notificationService, IPlatformSettingService platformSettingService, IClinicDoctorService clinicDoctorService)
+        public AdminController(ISpecializationService specializationService, IAttachmentUrlResolver attachmentUrlResolver, IUserVerificationService userVerificationService, IUserService userService, IDoctorService doctorService, IClinicService clinicService, IAttachmentService attachmentService, IOptions<GoogleMapsOptions> googleMapsOptions, IPlanService planService, IAdminSubscriptionService adminSubscriptionService, IAdminDashboardService adminDashboardService, IAuthService authService, IAdminPaymentService adminPaymentService, IAdService adService, INotificationService notificationService, IPlatformSettingService platformSettingService, IClinicDoctorService clinicDoctorService, IAdminPayoutService adminPayoutService)
         {
             _specializationService = specializationService;
             _attachmentUrlResolver = attachmentUrlResolver;
@@ -56,6 +57,7 @@ namespace ClinicHub.Controllers
             _notificationService = notificationService;
             _platformSettingService = platformSettingService;
             _clinicDoctorService = clinicDoctorService;
+            _adminPayoutService = adminPayoutService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -922,6 +924,206 @@ namespace ClinicHub.Controllers
             {
                 Response.StatusCode = ex.StatusCode;
                 return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public async Task<IActionResult> Payouts(int? status = null, string? search = null, int batchPage = 1, int? batchStatus = null)
+        {
+            ViewBag.Preview = new PayoutPreviewDto();
+            ViewBag.Accounts = new List<PayoutAccountAdminDto>();
+            ViewBag.Batches = new PagginatedResult<PayoutBatchDto>(new List<PayoutBatchDto>(), 0, batchPage, 10);
+
+            try
+            {
+                ViewBag.Preview = await _adminPayoutService.GetPreviewAsync();
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = ex.Message;
+            }
+            catch (Exception)
+            {
+                ViewBag.ErrorMessage = "حدث خطأ غير متوقع أثناء تحميل مستحقات العيادات.";
+            }
+
+            try
+            {
+                ViewBag.Accounts = await _adminPayoutService.GetAccountsAsync(status, search);
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = (ViewBag.ErrorMessage as string) ?? ex.Message;
+            }
+            catch (Exception)
+            {
+                // Preview already surfaced an error if the API is unreachable.
+            }
+
+            try
+            {
+                // The batch list is a local read; the Paymob float balance is only fetched on
+                // an explicit click because that endpoint is throttled to five requests/minute.
+                ViewBag.Batches = await _adminPayoutService.GetBatchesAsync(batchPage, 10, batchStatus);
+            }
+            catch (ApiException ex)
+            {
+                ViewBag.ErrorMessage = (ViewBag.ErrorMessage as string) ?? ex.Message;
+            }
+            catch (Exception)
+            {
+            }
+
+            ViewBag.StatusFilter = status;
+            ViewBag.Search = search;
+            ViewBag.BatchStatusFilter = batchStatus;
+            return View();
+        }
+
+        [HttpGet]
+        [Route("Admin/Payouts/Budget")]
+        public async Task<IActionResult> GetPayoutBudget()
+        {
+            try
+            {
+                var budget = await _adminPayoutService.GetBudgetAsync();
+                return Json(new { success = budget.Success, balance = budget.Balance, currency = budget.Currency, message = budget.StatusDescription });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/Payouts/CreateBatch")]
+        public async Task<IActionResult> CreatePayoutBatch([FromBody] CreatePayoutBatchRequest request)
+        {
+            try
+            {
+                var batch = await _adminPayoutService.CreateBatchAsync(request);
+                return Json(new { success = true, message = $"تم إنشاء دفعة {batch.Code} بمبلغ {batch.TotalAmount:N2} لعدد {batch.ItemsCount} عيادات.", data = batch });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/Payouts/ApproveBatch")]
+        public async Task<IActionResult> ApprovePayoutBatch([FromBody] PayoutBatchActionRequest request) =>
+            await BatchActionAsync(request.Id, _adminPayoutService.ApproveBatchAsync, "تم اعتماد الدفعة.");
+
+        [HttpPost]
+        [Route("Admin/Payouts/ExecuteBatch")]
+        public async Task<IActionResult> ExecutePayoutBatch([FromBody] PayoutBatchActionRequest request) =>
+            await BatchActionAsync(request.Id, _adminPayoutService.ExecuteBatchAsync, "تم جدولة تنفيذ الدفعة، والتحويلات تُرسل في الخلفية.");
+
+        [HttpPost]
+        [Route("Admin/Payouts/CancelBatch")]
+        public async Task<IActionResult> CancelPayoutBatch([FromBody] PayoutBatchActionRequest request) =>
+            await BatchActionAsync(request.Id, _adminPayoutService.CancelBatchAsync, "تم إلغاء الدفعة وإرجاع المبالغ المحجوزة للعيادات.");
+
+        [HttpPost]
+        [Route("Admin/Payouts/RetryItem")]
+        public async Task<IActionResult> RetryPayoutItem([FromBody] PayoutBatchActionRequest request)
+        {
+            try
+            {
+                await _adminPayoutService.RetryItemAsync(request.Id);
+                return Json(new { success = true, message = "تمت إعادة المحاولة، والتحويل أُرسل للخلفية." });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        private async Task<IActionResult> BatchActionAsync(
+            Guid batchId,
+            Func<Guid, Task<PayoutBatchDto>> action,
+            string successMessage)
+        {
+            try
+            {
+                var batch = await action(batchId);
+                return Json(new { success = true, message = $"{successMessage} ({batch.Code})" });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/Payouts/Verify")]
+        public async Task<IActionResult> VerifyPayoutAccount([FromBody] PayoutAccountActionRequest request)
+        {
+            try
+            {
+                var account = await _adminPayoutService.VerifyAccountAsync(request.Id);
+                return Json(new { success = true, message = "تم اعتماد الحساب البنكي بنجاح.", data = account });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/Payouts/Reject")]
+        public async Task<IActionResult> RejectPayoutAccount([FromBody] RejectPayoutAccountRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Reason))
+            {
+                Response.StatusCode = 400;
+                return Json(new { success = false, message = "يرجى إدخال سبب الرفض." });
+            }
+
+            try
+            {
+                var account = await _adminPayoutService.RejectAccountAsync(request.Id, request.Reason.Trim());
+                return Json(new { success = true, message = "تم رفض الحساب البنكي وإشعار العيادة بالسبب.", data = account });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
             }
         }
 

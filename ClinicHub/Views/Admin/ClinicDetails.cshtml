@@ -5,30 +5,9 @@
     var clinic = clinicDetails ?? (ViewBag.Clinic as ClinicManagmentDto);
 }
 
-<style>
-    .edit-field { display: none; }
-    .edit-mode .edit-field { display: block; }
-    .edit-mode .view-field { display: none; }
-    .form-actions { margin-top: var(--space-4); display: flex; gap: var(--space-2); }
-    .working-days-checkboxes { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-    .working-days-checkboxes .checkbox-inline { display: flex; align-items: center; gap: 4px; font-size: var(--fs-sm); cursor: pointer; }
-    .working-days-checkboxes .checkbox-inline input { width: auto; }
-    .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: var(--space-4); }
-    .staff-card { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--radius-sm); padding: var(--space-5); display: flex; align-items: flex-start; gap: var(--space-4); transition: box-shadow var(--transition-base); }
-    .staff-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-    .staff-card-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--clr-primary-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; color: var(--clr-primary); }
-    .staff-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .staff-card-initial { font-size: 20px; font-weight: 800; line-height: 1; }
-    .staff-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-    .staff-card-name { font-size: var(--fs-lg); font-weight: 700; color: var(--clr-text); margin: 0; }
-    .staff-card-role { font-size: 13px; color: var(--clr-text-secondary); }
-    .staff-card-contact { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
-    .staff-contact-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--clr-text-secondary); text-decoration: none; transition: color var(--transition-base); }
-    .staff-contact-link:hover { color: var(--clr-primary); }
-    .staff-contact-link svg { flex-shrink: 0; opacity: 0.6; }
-    .staff-card-exp { flex-shrink: 0; align-self: center; }
-    .staff-exp-badge { background: var(--clr-primary-light); color: var(--clr-primary); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-directory.css?v=20261027_redesign_v2" />
+}
 
 @if (clinic == null)
 {
@@ -55,428 +34,460 @@
     var recentRatings = clinicDetails?.RecentRatings ?? new List<RatingDto>();
 }
 
-<!-- Clinic Header -->
-<div class="clinic-detail-header">
-    <div class="cdh-image">
-        @if (!string.IsNullOrEmpty(clinic.Logo))
-        {
-            <img src="@clinic.Logo" alt="@clinicName" />
-        }
-        else
-        {
-            <div class="cdh-image-placeholder">
-                <svg viewBox="0 0 24 24" fill="var(--clr-primary)">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/>
-                </svg>
-            </div>
-        }
-    </div>
-    <div class="cdh-info">
-        <h2 class="cdh-name">@clinicName</h2>
-        @if (!string.IsNullOrEmpty(clinicSpec))
-        {
-            <div class="cdh-specs">
-                <span class="spec-pill">@clinicSpec</span>
-            </div>
-        }
-        <div class="cdh-meta">
-            <div class="cdh-rating">
-                <div class="stars-inline">
-                    @for (int i = 0; i < fullStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                    @if (hasHalf) { <svg width="14" height="14" viewBox="0 0 24 24"><defs><clipPath id="h"><rect x="0" y="0" width="7" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#h)"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB" clip-path="url(#h)"/></svg> }
-                    @for (int i = 0; i < emptyStars; i++) { <svg width="14" height="14" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                </div>
-                <span>@avgRating.ToString("F1")</span>
-            </div>
-            <span class="cdh-status">
-                @if (clinic.IsActive) { <span class="badge badge-success">نشط</span> }
-                else { <span class="badge badge-danger">غير نشط</span> }
-            </span>
-        </div>
-        @if (!string.IsNullOrEmpty(clinicDesc))
-        {
-            <p class="cdh-desc">@clinicDesc</p>
-        }
-        <div class="cdh-contact">
-            <span>@(clinic.AddressAr ?? clinic.Address)</span>
-            <span>@clinic.Phone</span>
-            <span>@clinic.Email</span>
-            <span>المدير: @clinic.OwnerName</span>
-            <span>البريد: @clinic.OwnerEmail</span>
-        </div>
-    </div>
-    <div class="cdh-actions">
-        <a href="@AdminRoutes.Pages.Clinics()" class="btn btn-outline-secondary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-            العودة
-        </a>
-        <button id="editClinicBtn" class="btn btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-            تعديل
-        </button>
-        <button id="cancelEditBtn" class="btn btn-outline-secondary form-group-hidden">
-            إلغاء
-        </button>
-        <button id="saveClinicBtn" class="btn btn-success form-group-hidden">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-            حفظ التغييرات
-        </button>
-        <button id="toggleClinicStatusBtn" class="btn @(clinic.IsActive ? "btn-outline-danger" : "btn-outline-success")" data-clinic-id="@clinic.Id" data-is-active="@clinic.IsActive.ToString().ToLower()">
-            @if (clinic.IsActive)
+<div class="ad-page">
+    <!-- Clinic Header -->
+    <div class="clinic-detail-header ad-hero">
+        <div class="cdh-image">
+            @if (!string.IsNullOrEmpty(clinic.Logo))
             {
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                <span>إلغاء التفعيل</span>
+                <img src="@clinic.Logo" alt="@clinicName" />
             }
             else
             {
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                <span>تفعيل</span>
+                <div class="cdh-image-placeholder">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-7-2h2v-4h4v-2h-4V7h-2v4H8v2h4z"/>
+                    </svg>
+                </div>
             }
-        </button>
-    </div>
-</div>
-
-<!-- Tabs -->
-<div class="detail-tabs mt-3">
-    <ul class="nav nav-tabs" id="clinicTabs" role="tablist">
-        <li class="nav-item"><button class="nav-link active" id="ov-tab" data-bs-toggle="tab" data-bs-target="#ov" type="button" role="tab">نظرة عامة</button></li>
-        <li class="nav-item"><button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs" type="button" role="tab">الأطباء</button></li>
-        <li class="nav-item"><button class="nav-link" id="stf-tab" data-bs-toggle="tab" data-bs-target="#stf" type="button" role="tab">الموظفين</button></li>
-        <li class="nav-item"><button class="nav-link" id="ratings-tab" data-bs-toggle="tab" data-bs-target="#ratings" type="button" role="tab">التقييمات</button></li>
-    </ul>
-    <div class="tab-content" id="clinicTabContent">
-
-        <!-- ======== OVERVIEW TAB ======== -->
-        <div class="tab-pane fade show active" id="ov" role="tabpanel">
-            <div class="clinic-stats-row">
-                <div class="clinic-stat-card">
-                    <span class="clinic-stat-value">@avgRating.ToString("F1")</span>
-                    <span class="clinic-stat-label">متوسط التقييم</span>
+        </div>
+        <div class="cdh-info">
+            <h2 class="cdh-name">@clinicName</h2>
+            @if (!string.IsNullOrEmpty(clinicSpec))
+            {
+                <div class="cdh-specs">
+                    <span class="spec-pill">@clinicSpec</span>
                 </div>
-                <div class="clinic-stat-card">
-                    <span class="clinic-stat-value">@totalRatings</span>
-                    <span class="clinic-stat-label">إجمالي التقييمات</span>
+            }
+            <div class="cdh-meta">
+                <div class="cdh-rating">
+                    <div class="stars-inline">
+                        @for (int i = 0; i < fullStars; i++) { <svg class="ad-star ad-star--on" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                        @if (hasHalf) { <svg class="ad-star" width="14" height="14" viewBox="0 0 24 24"><defs><clipPath id="h"><rect x="0" y="0" width="7" height="24"/></clipPath></defs><path class="ad-star--on" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor" clip-path="url(#h)"/><path class="ad-star--off" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor" clip-path="url(#h)"/></svg> }
+                        @for (int i = 0; i < emptyStars; i++) { <svg class="ad-star ad-star--off" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                    </div>
+                    <span dir="ltr">@avgRating.ToString("F1")</span>
                 </div>
-                <div class="clinic-stat-card">
-                    <span class="clinic-stat-value">@doctors.Count</span>
-                    <span class="clinic-stat-label">الأطباء</span>
-                </div>
-                <div class="clinic-stat-card">
-                    <span class="clinic-stat-value">@staffList.Count</span>
-                    <span class="clinic-stat-label">الموظفين</span>
-                </div>
+                <span class="cdh-status">
+                    @if (clinic.IsActive) { <span class="badge badge--dot badge-success">نشط</span> }
+                    else { <span class="badge badge--dot badge-danger">غير نشط</span> }
+                </span>
             </div>
             @if (!string.IsNullOrEmpty(clinicDesc))
             {
-                <div class="detail-card">
-                    <div class="detail-section-header"><h5>الوصف</h5></div>
-                    <p>@clinicDesc</p>
-                </div>
+                <p class="cdh-desc">@clinicDesc</p>
             }
-            <div class="detail-card">
-                <div class="detail-section-header"><h5>الموقع</h5></div>
-                <p class="text-muted mb-3">
-                    @(clinic.AddressAr ?? clinic.Address)
-                </p>
-                <input type="hidden" id="clinicDetailLat" value="@(clinic.Lat?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.0409")" />
-                <input type="hidden" id="clinicDetailLng" value="@(clinic.Lng?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.3785")" />
-                <div class="map-search-row">
-                    <label class="sr-only" for="clinicDetailPlaceSearch">ابحث عن مكان أو عنوان لتحديد موقع العيادة</label>
-                    <input type="text" id="clinicDetailPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" aria-describedby="clinicDetailMapHint" />
-                    <button type="button" class="btn btn-primary btn-sm map-search-btn" id="clinicDetailPlaceSearchBtn">بحث</button>
-                </div>
-                <div class="form-hint" id="clinicDetailMapHint">اسحب الدبوس أو ابحث لتحديد موقع العيادة بدقة</div>
-                <div id="clinicDetailMap" class="register-map-container" role="application" aria-label="خريطة موقع العيادة" aria-describedby="clinicDetailMapHint"></div>
-                <div class="settings-map-tools">
-                    <span class="text-muted settings-coords-display" id="clinicDetailCoordsDisplay" dir="ltr"></span>
-                </div>
+            <div class="cdh-contact">
+                <span>@(clinic.AddressAr ?? clinic.Address)</span>
+                <span dir="ltr">@clinic.Phone</span>
+                <span dir="ltr">@clinic.Email</span>
+                <span>المدير: @clinic.OwnerName</span>
+                <span>البريد: <span dir="ltr">@clinic.OwnerEmail</span></span>
             </div>
-            @if (clinic.WorkingDays != null && clinic.WorkingDays.Any())
-            {
-                <div class="detail-card">
-                    <div class="detail-section-header"><h5>أيام ومواعيد العمل</h5></div>
-                    <div class="wh-table">
-                        <div class="table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>اليوم</th>
-                                        <th>بداية</th>
-                                        <th>نهاية</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var wd in clinic.WorkingDays)
-                                    {
+        </div>
+        <div class="cdh-actions">
+            <a href="@AdminRoutes.Pages.Clinics()" class="btn btn-outline-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                العودة
+            </a>
+            <button id="editClinicBtn" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                تعديل
+            </button>
+            <button id="cancelEditBtn" class="btn btn-outline-secondary form-group-hidden">
+                إلغاء
+            </button>
+            <button id="saveClinicBtn" class="btn btn-success form-group-hidden">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                حفظ التغييرات
+            </button>
+            <button id="toggleClinicStatusBtn" class="btn @(clinic.IsActive ? "btn-outline-danger" : "btn-outline-success")" data-clinic-id="@clinic.Id" data-is-active="@clinic.IsActive.ToString().ToLower()">
+                @if (clinic.IsActive)
+                {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    <span>إلغاء التفعيل</span>
+                }
+                else
+                {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <span>تفعيل</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="detail-tabs">
+        <ul class="nav nav-tabs ad-tabs" id="clinicTabs" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="ov-tab" data-bs-toggle="tab" data-bs-target="#ov" type="button" role="tab">نظرة عامة</button></li>
+            <li class="nav-item"><button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs" type="button" role="tab">الأطباء</button></li>
+            <li class="nav-item"><button class="nav-link" id="stf-tab" data-bs-toggle="tab" data-bs-target="#stf" type="button" role="tab">الموظفين</button></li>
+            <li class="nav-item"><button class="nav-link" id="ratings-tab" data-bs-toggle="tab" data-bs-target="#ratings" type="button" role="tab">التقييمات</button></li>
+        </ul>
+        <div class="tab-content ad-tabs-panel" id="clinicTabContent">
+
+            <!-- ======== OVERVIEW TAB ======== -->
+            <div class="tab-pane fade show active" id="ov" role="tabpanel">
+                <div class="ad-tabs-panel">
+                    <div class="stats-grid stagger">
+                        <div class="stat-card stat-card--brass">
+                            <div class="stat-info">
+                                <span class="stat-value" dir="ltr">@avgRating.ToString("F1")</span>
+                                <span class="stat-label">متوسط التقييم</span>
+                            </div>
+                            <div class="icon-wrapper icon-wrapper--brass">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--info">
+                            <div class="stat-info">
+                                <span class="stat-value" dir="ltr">@totalRatings</span>
+                                <span class="stat-label">إجمالي التقييمات</span>
+                            </div>
+                            <div class="icon-wrapper icon-wrapper--blue">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.6 2.4l9.1 9.1c.8.8.8 2 0 2.8l-6.4 6.4c-.8.8-2 .8-2.8 0l-9.1-9.1c-.8-.8-.8-2 0-2.8l6.4-6.4c.8-.8 2-.8 2.8 0zM7.5 11.9a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 0 0-3.2 0z"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <span class="stat-value" dir="ltr">@doctors.Count</span>
+                                <span class="stat-label">الأطباء</span>
+                            </div>
+                            <div class="icon-wrapper icon-wrapper--primary">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-card--neutral">
+                            <div class="stat-info">
+                                <span class="stat-value" dir="ltr">@staffList.Count</span>
+                                <span class="stat-label">الموظفين</span>
+                            </div>
+                            <div class="icon-wrapper icon-wrapper--green">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-8 2-8 4.5V21h16v-2.5C20 16 16 14 12 14z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(clinicDesc))
+                    {
+                        <div class="ad-panel">
+                            <div class="section-head">
+                                <h3 class="section-head-title">الوصف</h3>
+                            </div>
+                            <p class="ad-panel-body">@clinicDesc</p>
+                        </div>
+                    }
+
+                    <div class="ad-panel">
+                        <div class="section-head">
+                            <h3 class="section-head-title">الموقع</h3>
+                        </div>
+                        <p class="text-muted mb-3">
+                            @(clinic.AddressAr ?? clinic.Address)
+                        </p>
+                        <input type="hidden" id="clinicDetailLat" value="@(clinic.Lat?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.0409")" />
+                        <input type="hidden" id="clinicDetailLng" value="@(clinic.Lng?.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) ?? "31.3785")" />
+                        <div class="map-search-row">
+                            <label class="sr-only" for="clinicDetailPlaceSearch">ابحث عن مكان أو عنوان لتحديد موقع العيادة</label>
+                            <input type="text" id="clinicDetailPlaceSearch" class="form-input register-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" aria-describedby="clinicDetailMapHint" />
+                            <button type="button" class="btn btn-primary btn-sm map-search-btn" id="clinicDetailPlaceSearchBtn">بحث</button>
+                        </div>
+                        <div class="form-hint" id="clinicDetailMapHint">اسحب الدبوس أو ابحث لتحديد موقع العيادة بدقة</div>
+                        <div id="clinicDetailMap" class="register-map-container" role="application" aria-label="خريطة موقع العيادة" aria-describedby="clinicDetailMapHint"></div>
+                        <div class="settings-map-tools">
+                            <span class="text-muted settings-coords-display" id="clinicDetailCoordsDisplay" dir="ltr"></span>
+                        </div>
+                    </div>
+
+                    @if (clinic.WorkingDays != null && clinic.WorkingDays.Any())
+                    {
+                        <div class="ad-panel ad-panel--flush">
+                            <div class="table-card-header">
+                                <h3 class="table-card-title">أيام ومواعيد العمل</h3>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="custom-table">
+                                    <thead>
                                         <tr>
-                                            <td>@wd.DayOfWeek</td>
-                                            <td>@wd.StartTime.ToString("h:mm tt", new System.Globalization.CultureInfo("ar-SA"))</td>
-                                            <td>@wd.EndTime.ToString("h:mm tt", new System.Globalization.CultureInfo("ar-SA"))</td>
+                                            <th>اليوم</th>
+                                            <th>بداية</th>
+                                            <th>نهاية</th>
                                         </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            }
-            <form id="updateClinicForm">
-            <div class="detail-card">
-                <div class="detail-section-header"><h5>معلومات العيادة</h5></div>
-                <div id="updateClinicErrors" class="validation-summary form-group-hidden"></div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="form-label" for="nameAr">اسم العيادة</label>
-                            <input id="nameAr" type="text" name="nameAr" class="form-input" value="@clinic.NameAr" disabled />
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="specializationId">التخصص الرئيسي</label>
-                            <select id="specializationId" name="specializationId" class="form-select" disabled>
-                                <option value="">اختر التخصص</option>
-                                @if (ViewBag.Specializations != null)
-                                {
-                                    foreach (var s in ViewBag.Specializations)
-                                    {
-                                        <option value="@s.Id" selected="@(s.Id == clinic.SpecializationId ? true : null)">@(s.ArName ?? s.Name)</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="email">البريد الإلكتروني</label>
-                            <input id="email" type="email" name="email" class="form-input" value="@clinic.Email" disabled />
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="form-label" for="arDescription">الوصف</label>
-                            <textarea id="arDescription" name="arDescription" class="form-input form-textarea" rows="2" disabled>@clinic.ArDescription</textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="addressAr">العنوان</label>
-                            <input id="addressAr" type="text" name="addressAr" class="form-input" value="@clinic.AddressAr" disabled />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="phone">رقم الهاتف</label>
-                            <input id="phone" type="text" name="phone" class="form-input" value="@clinic.Phone" disabled />
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label" for="website">الموقع الإلكتروني</label>
-                            <input id="website" type="url" name="website" class="form-input" value="@clinic.Website" disabled />
-                        </div>
-                    </div>
-                    <div class="col-md-6 edit-field">
-                        <div class="form-group">
-                            <label class="form-label" for="workingHours">مواعيد العمل (نص)</label>
-                            <input id="workingHours" type="text" name="workingHours" class="form-input" value="@clinic.WorkingHours" placeholder="مثال: 9:00 ص - 5:00 م" disabled />
-                        </div>
-                    </div>
-                </div>
-                <div class="row edit-field">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label" for="workingHoursStart">وقت البدء</label>
-                            <input id="workingHoursStart" type="time" name="workingHoursStart" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.StartTime.ToString("HH:mm"))" disabled />
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label" for="workingHoursEnd">وقت الانتهاء</label>
-                            <input id="workingHoursEnd" type="time" name="workingHoursEnd" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.EndTime.ToString("HH:mm"))" disabled />
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">أيام العمل</label>
-                            <div class="working-days-checkboxes">
-                                @{
-                                    var workingDayNames = new Dictionary<DayOfWeek, string>
-                                    {
-                                        { DayOfWeek.Saturday, "السبت" },
-                                        { DayOfWeek.Sunday, "الأحد" },
-                                        { DayOfWeek.Monday, "الإثنين" },
-                                        { DayOfWeek.Tuesday, "الثلاثاء" },
-                                        { DayOfWeek.Wednesday, "الأربعاء" },
-                                        { DayOfWeek.Thursday, "الخميس" },
-                                        { DayOfWeek.Friday, "الجمعة" }
-                                    };
-                                    var existingDays = clinic.WorkingDays?.Select(d => d.DayOfWeek).ToList() ?? new List<string>();
-                                }
-                                @foreach (var day in workingDayNames)
-                                {
-                                    <label class="checkbox-inline">
-                                        <input type="checkbox" name="workingDays" value="@((int)day.Key)" @(existingDays.Contains(day.Key.ToString()) ? "checked" : "") disabled />
-                                        @day.Value
-                                    </label>
-                                }
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var wd in clinic.WorkingDays)
+                                        {
+                                            <tr>
+                                                <td>@wd.DayOfWeek</td>
+                                                <td dir="ltr">@wd.StartTime.ToString("h:mm tt", new System.Globalization.CultureInfo("ar-SA"))</td>
+                                                <td dir="ltr">@wd.EndTime.ToString("h:mm tt", new System.Globalization.CultureInfo("ar-SA"))</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                    </div>
+                    }
+
+                    <form id="updateClinicForm">
+                        <div class="ad-panel">
+                            <div class="section-head">
+                                <h3 class="section-head-title">معلومات العيادة</h3>
+                            </div>
+                            <div id="updateClinicErrors" class="validation-summary form-group-hidden"></div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label" for="nameAr">اسم العيادة</label>
+                                        <input id="nameAr" type="text" name="nameAr" class="form-input" value="@clinic.NameAr" disabled />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="specializationId">التخصص الرئيسي</label>
+                                        <select id="specializationId" name="specializationId" class="form-select" disabled>
+                                            <option value="">اختر التخصص</option>
+                                            @if (ViewBag.Specializations != null)
+                                            {
+                                                foreach (var s in ViewBag.Specializations)
+                                                {
+                                                    <option value="@s.Id" selected="@(s.Id == clinic.SpecializationId ? true : null)">@(s.ArName ?? s.Name)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="email">البريد الإلكتروني</label>
+                                        <input id="email" type="email" name="email" class="form-input" value="@clinic.Email" disabled />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label" for="arDescription">الوصف</label>
+                                        <textarea id="arDescription" name="arDescription" class="form-input form-textarea" rows="2" disabled>@clinic.ArDescription</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="addressAr">العنوان</label>
+                                        <input id="addressAr" type="text" name="addressAr" class="form-input" value="@clinic.AddressAr" disabled />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="phone">رقم الهاتف</label>
+                                        <input id="phone" type="text" name="phone" class="form-input" value="@clinic.Phone" disabled />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="website">الموقع الإلكتروني</label>
+                                        <input id="website" type="url" name="website" class="form-input" value="@clinic.Website" disabled />
+                                    </div>
+                                </div>
+                                <div class="col-md-6 edit-field">
+                                    <div class="form-group">
+                                        <label class="form-label" for="workingHours">مواعيد العمل (نص)</label>
+                                        <input id="workingHours" type="text" name="workingHours" class="form-input" value="@clinic.WorkingHours" placeholder="مثال: 9:00 ص - 5:00 م" disabled />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row edit-field">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="workingHoursStart">وقت البدء</label>
+                                        <input id="workingHoursStart" type="time" name="workingHoursStart" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.StartTime.ToString("HH:mm"))" disabled />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="workingHoursEnd">وقت الانتهاء</label>
+                                        <input id="workingHoursEnd" type="time" name="workingHoursEnd" class="form-input" value="@(clinic.WorkingDays?.FirstOrDefault()?.EndTime.ToString("HH:mm"))" disabled />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">أيام العمل</label>
+                                        <div class="working-days-checkboxes ad-working-days">
+                                            @{
+                                                var workingDayNames = new Dictionary<DayOfWeek, string>
+                                                {
+                                                    { DayOfWeek.Saturday, "السبت" },
+                                                    { DayOfWeek.Sunday, "الأحد" },
+                                                    { DayOfWeek.Monday, "الإثنين" },
+                                                    { DayOfWeek.Tuesday, "الثلاثاء" },
+                                                    { DayOfWeek.Wednesday, "الأربعاء" },
+                                                    { DayOfWeek.Thursday, "الخميس" },
+                                                    { DayOfWeek.Friday, "الجمعة" }
+                                                };
+                                                var existingDays = clinic.WorkingDays?.Select(d => d.DayOfWeek).ToList() ?? new List<string>();
+                                            }
+                                            @foreach (var day in workingDayNames)
+                                            {
+                                                <label class="checkbox-inline ad-day-chk">
+                                                    <input type="checkbox" name="workingDays" value="@((int)day.Key)" @(existingDays.Contains(day.Key.ToString()) ? "checked" : "") disabled />
+                                                    @day.Value
+                                                </label>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-                
             </div>
-            </form>
-        </div>
 
-        <!-- ======== DOCTORS TAB ======== -->
-        <div class="tab-pane fade" id="docs" role="tabpanel">
-            @if (doctors.Count == 0)
-            {
-                <div class="empty-state"><p>لا يوجد أطباء في هذه العيادة بعد.</p></div>
-            }
-            else
-            {
-                <div class="staff-grid">
-                    @foreach (var doc in doctors)
-                    {
-                        <div class="staff-card">
-                            <div class="staff-card-avatar">
-                                @if (!string.IsNullOrEmpty(doc.Image))
+            <!-- ======== DOCTORS TAB ======== -->
+            <div class="tab-pane fade" id="docs" role="tabpanel">
+                @if (doctors.Count == 0)
+                {
+                    <div class="empty-state"><p>لا يوجد أطباء في هذه العيادة بعد.</p></div>
+                }
+                else
+                {
+                    <div class="staff-grid">
+                        @foreach (var doc in doctors)
+                        {
+                            <div class="staff-card">
+                                <div class="staff-card-avatar">
+                                    @if (!string.IsNullOrEmpty(doc.Image))
+                                    {
+                                        <img src="@doc.Image" alt="@doc.Name" loading="lazy" decoding="async" />
+                                    }
+                                    else
+                                    {
+                                        <span class="staff-card-initial">@(doc.Name?.Length > 0 ? doc.Name[0].ToString() : "ط")</span>
+                                    }
+                                </div>
+                                <div class="staff-card-body">
+                                    <h4 class="staff-card-name">@doc.Name</h4>
+                                    <span class="staff-card-role">@(doc.SpecializationArName ?? doc.SpecializationEnName)</span>
+                                    <div class="staff-card-contact">
+                                        @if (!string.IsNullOrEmpty(doc.Email))
+                                        {
+                                            <a href="mailto:@doc.Email" class="staff-contact-link">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                                                <span dir="ltr">@doc.Email</span>
+                                            </a>
+                                        }
+                                        @if (!string.IsNullOrEmpty(doc.Phone))
+                                        {
+                                            <a href="tel:@doc.Phone" class="staff-contact-link">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                                                <span dir="ltr">@doc.Phone</span>
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                                @if (doc.YearsOfExperience > 0)
                                 {
-                                    <img src="@doc.Image" alt="@doc.Name" loading="lazy" decoding="async" />
-                                }
-                                else
-                                {
-                                    <span class="staff-card-initial">@(doc.Name?.Length > 0 ? doc.Name[0].ToString() : "ط")</span>
+                                    <div class="staff-card-exp">
+                                        <span class="staff-exp-badge">@doc.YearsOfExperience+ سنوات</span>
+                                    </div>
                                 }
                             </div>
-                            <div class="staff-card-body">
-                                <h4 class="staff-card-name">@doc.Name</h4>
-                                <span class="staff-card-role">@(doc.SpecializationArName ?? doc.SpecializationEnName)</span>
-                                <div class="staff-card-contact">
-                                    @if (!string.IsNullOrEmpty(doc.Email))
-                                    {
-                                        <a href="mailto:@doc.Email" class="staff-contact-link">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                                            @doc.Email
-                                        </a>
-                                    }
-                                    @if (!string.IsNullOrEmpty(doc.Phone))
-                                    {
-                                        <a href="tel:@doc.Phone" class="staff-contact-link">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-                                            @doc.Phone
-                                        </a>
-                                    }
-                                </div>
-                            </div>
-                            @if (doc.YearsOfExperience > 0)
-                            {
-                                <div class="staff-card-exp">
-                                    <span class="staff-exp-badge">@doc.YearsOfExperience+ سنوات</span>
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-
-        <!-- ======== STAFF TAB ======== -->
-        <div class="tab-pane fade" id="stf" role="tabpanel">
-            @if (staffList.Count == 0)
-            {
-                <div class="empty-state"><p>لا يوجد موظفين.</p></div>
-            }
-            else
-            {
-                <div class="staff-grid">
-                    @foreach (var s in staffList)
-                    {
-                        <div class="staff-card">
-                            <div class="staff-card-avatar">
-                                <span class="staff-card-initial">@(s.FullName?.Length > 0 ? s.FullName[0].ToString() : "م")</span>
-                            </div>
-                            <div class="staff-card-body">
-                                <h4 class="staff-card-name">@s.FullName</h4>
-                                <div class="staff-card-contact">
-                                    @if (!string.IsNullOrEmpty(s.Email))
-                                    {
-                                        <a href="mailto:@s.Email" class="staff-contact-link">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                                            @s.Email
-                                        </a>
-                                    }
-                                    @if (!string.IsNullOrEmpty(s.PhoneNumber))
-                                    {
-                                        <a href="tel:@s.PhoneNumber" class="staff-contact-link">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-                                            @s.PhoneNumber
-                                        </a>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-
-        <!-- ======== RATINGS TAB ======== -->
-        <div class="tab-pane fade" id="ratings" role="tabpanel">
-            @if (recentRatings.Count == 0)
-            {
-                <div class="empty-state"><p>لا توجد تقييمات بعد.</p></div>
-            }
-            else
-            {
-                <div class="ratings-header-card">
-                    <div class="rhc-score">
-                        <span class="rhc-number">@avgRating.ToString("F1")</span>
-                        <div class="stars-inline">
-                            @for (int i = 0; i < fullStars; i++) { <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                            @if (hasHalf) { <svg width="16" height="16" viewBox="0 0 24 24"><defs><clipPath id="rhcHalf"><rect x="0" y="0" width="8" height="24"/></clipPath></defs><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#F59E0B" clip-path="url(#rhcHalf)"/><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#D2D5DB" clip-path="url(#rhcHalf)"/></svg> }
-                            @for (int i = 0; i < emptyStars; i++) { <svg width="16" height="16" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                        </div>
-                        <span class="rhc-count">@totalRatings تقييم</span>
+                        }
                     </div>
-                </div>
-                <div class="ratings-list">
-                    @foreach (var r in recentRatings)
-                    {
-                        var rFullStars = r.Value;
-                        var rEmptyStars = 5 - rFullStars;
-                        var initial = r.UserName?.Length > 0 ? r.UserName[0].ToString() : "م";
-                        <div class="rating-full-card">
-                            <div class="rfc-avatar">@initial</div>
-                            <div class="rfc-content">
-                                <div class="rfc-header">
-                                    <span class="rfc-name">@r.UserName</span>
-                                    <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
+                }
+            </div>
+
+            <!-- ======== STAFF TAB ======== -->
+            <div class="tab-pane fade" id="stf" role="tabpanel">
+                @if (staffList.Count == 0)
+                {
+                    <div class="empty-state"><p>لا يوجد موظفين.</p></div>
+                }
+                else
+                {
+                    <div class="staff-grid">
+                        @foreach (var s in staffList)
+                        {
+                            <div class="staff-card">
+                                <div class="staff-card-avatar">
+                                    <span class="staff-card-initial">@(s.FullName?.Length > 0 ? s.FullName[0].ToString() : "م")</span>
                                 </div>
-                                <div>
-                                    @for (int i = 0; i < rFullStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
-                                    @for (int i = 0; i < rEmptyStars; i++) { <svg width="12" height="12" viewBox="0 0 24 24" fill="#D2D5DB"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                <div class="staff-card-body">
+                                    <h4 class="staff-card-name">@s.FullName</h4>
+                                    <div class="staff-card-contact">
+                                        @if (!string.IsNullOrEmpty(s.Email))
+                                        {
+                                            <a href="mailto:@s.Email" class="staff-contact-link">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                                                <span dir="ltr">@s.Email</span>
+                                            </a>
+                                        }
+                                        @if (!string.IsNullOrEmpty(s.PhoneNumber))
+                                        {
+                                            <a href="tel:@s.PhoneNumber" class="staff-contact-link">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                                                <span dir="ltr">@s.PhoneNumber</span>
+                                            </a>
+                                        }
+                                    </div>
                                 </div>
-                                @if (!string.IsNullOrEmpty(r.Review))
-                                {
-                                    <p class="rfc-comment">@r.Review</p>
-                                }
                             </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- ======== RATINGS TAB ======== -->
+            <div class="tab-pane fade" id="ratings" role="tabpanel">
+                @if (recentRatings.Count == 0)
+                {
+                    <div class="empty-state"><p>لا توجد تقييمات بعد.</p></div>
+                }
+                else
+                {
+                    <div class="ad-score">
+                        <span class="ad-score-num" dir="ltr">@avgRating.ToString("F1")</span>
+                        <div class="ad-score-meta">
+                            <div class="stars-inline">
+                                @for (int i = 0; i < fullStars; i++) { <svg class="ad-star ad-star--on" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                @if (hasHalf) { <svg class="ad-star" width="16" height="16" viewBox="0 0 24 24"><defs><clipPath id="rhcHalf"><rect x="0" y="0" width="8" height="24"/></clipPath></defs><path class="ad-star--on" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor" clip-path="url(#rhcHalf)"/><path class="ad-star--off" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor" clip-path="url(#rhcHalf)"/></svg> }
+                                @for (int i = 0; i < emptyStars; i++) { <svg class="ad-star ad-star--off" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                            </div>
+                            <span>@totalRatings تقييم</span>
                         </div>
-                    }
-                </div>
-            }
-        </div>
+                    </div>
+                    <div class="timeline ad-timeline">
+                        @foreach (var r in recentRatings)
+                        {
+                            var rFullStars = r.Value;
+                            var rEmptyStars = 5 - rFullStars;
+                            var initial = r.UserName?.Length > 0 ? r.UserName[0].ToString() : "م";
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <div class="ad-timeline-head">
+                                        <span class="ad-timeline-name">@r.UserName</span>
+                                        <span class="ad-timeline-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
+                                    </div>
+                                    <div class="stars-inline">
+                                        @for (int i = 0; i < rFullStars; i++) { <svg class="ad-star ad-star--on" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                        @for (int i = 0; i < rEmptyStars; i++) { <svg class="ad-star ad-star--off" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(r.Review))
+                                    {
+                                        <p class="ad-timeline-text">@r.Review</p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
 
         </div>
     </div>

@@ -43,6 +43,8 @@ namespace ClinicHub.Services.Routes.Api
             Ratings = new RatingsRoutes(BaseRoute);
             AppointmentPayments = new AppointmentPaymentRoutes(BaseRoute);
             PlatformSettings = new PlatformSettingRoutes(BaseRoute);
+            ClinicPayouts = new ClinicPayoutRoutes(BaseRoute);
+            AdminPayouts = new AdminPayoutRoutes(BaseRoute);
         }
 
         public static StaffDashboardRoutes StaffDashboard { get; private set; } = null!;
@@ -67,6 +69,43 @@ namespace ClinicHub.Services.Routes.Api
         public static RatingsRoutes Ratings { get; private set; } = null!;
         public static AppointmentPaymentRoutes AppointmentPayments { get; private set; } = null!;
         public static PlatformSettingRoutes PlatformSettings { get; private set; } = null!;
+        public static ClinicPayoutRoutes ClinicPayouts { get; private set; } = null!;
+        public static AdminPayoutRoutes AdminPayouts { get; private set; } = null!;
+
+        public class ClinicPayoutRoutes
+        {
+            private readonly string _baseRoute;
+            public ClinicPayoutRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/clinic";
+            }
+
+            public string Account => $"{_baseRoute}/payout-account";
+            public string Summary => $"{_baseRoute}/payouts/summary";
+            public string History => $"{_baseRoute}/payouts/history";
+        }
+
+        public class AdminPayoutRoutes
+        {
+            private readonly string _baseRoute;
+            public AdminPayoutRoutes(string baseRoute)
+            {
+                _baseRoute = $"{baseRoute}/admin";
+            }
+
+            public string Preview => $"{_baseRoute}/payouts/preview";
+            public string Budget => $"{_baseRoute}/payouts/budget";
+            public string Accounts => $"{_baseRoute}/payout-accounts";
+            public string Verify(Guid id) => $"{Accounts}/{id}/verify";
+            public string Reject(Guid id) => $"{Accounts}/{id}/reject";
+
+            public string Batches => $"{_baseRoute}/payout-batches";
+            public string Batch(Guid id) => $"{Batches}/{id}";
+            public string Approve(Guid id) => $"{Batch(id)}/approve";
+            public string Execute(Guid id) => $"{Batch(id)}/execute";
+            public string Cancel(Guid id) => $"{Batch(id)}/cancel";
+            public string RetryItem(Guid id) => $"{_baseRoute}/payout-items/{id}/retry";
+        }
 
         public class AppointmentPaymentRoutes
         {

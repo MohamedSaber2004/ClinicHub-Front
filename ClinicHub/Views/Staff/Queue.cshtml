@@ -8,24 +8,131 @@
     var queueItems = ViewBag.QueueItems as List<StaffQueueItemDto> ?? new List<StaffQueueItemDto>();
     var doctors = ViewBag.Doctors as List<StaffDoctorDto> ?? new List<StaffDoctorDto>();
     string QueueTargetId(StaffQueueItemDto item) => string.IsNullOrWhiteSpace(item.AppointmentId) ? item.Id : item.AppointmentId;
+
+    var statusChips = new (string Value, string Label)[]
+    {
+        ("", "كل الحالات"),
+        ("confirmed", "مدفوع - بانتظار القدوم"),
+        ("registered", "تم التسجيل"),
+        ("waiting", "في الانتظار"),
+        ("in-progress", "قيد الكشف"),
+        ("completed", "مكتمل")
+    };
+
+    var nowServing = queueItems.FirstOrDefault(i => i.Status == "in-progress");
+    var nextUp = queueItems.FirstOrDefault(i =>
+        i.Status == "waiting" || i.Status == "registered" || i.Status == "confirmed");
+    var heroTicket = nowServing ?? nextUp ?? queueItems.FirstOrDefault();
+    var waitingCount = queueItems.Count(i =>
+        i.Status == "waiting" || i.Status == "registered" || i.Status == "confirmed");
+
+    string RowState(StaffQueueItemDto item) => item.Status switch
+    {
+        "in-progress" => "ds-queue-row--live",
+        "completed" => "ds-queue-row--done",
+        _ => ""
+    };
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-people"></i>
-    </span>
-    طابور المرضى
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <i class="bi bi-people"></i>
+            </span>
+            طابور المرضى
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <span class="ds-live-pill">
+            <span class="dot-live" aria-hidden="true"></span>
+            <span class="tabular">@queueItems.Count</span>
+        </span>
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("RegisterPatient")">
+            <i class="bi bi-person-plus"></i>
+            تسجيل مريض وافد
+        </a>
+    </div>
+</div>
 
-<div class="table-card">
-    <div class="table-card-header">
-        <h3 class="table-card-title">
+<section class="surface ds-queue-hero ds-queue-hero--single">
+    <div class="section-head">
+        <h3 class="section-head-title">
             <span class="subtitle-icon"><i class="bi bi-people"></i></span>
             طابور الانتظار الحالي
         </h3>
+        <span class="badge badge-warning badge--dot">
+            <span class="tabular">@waitingCount</span>
+        </span>
     </div>
-    <form method="get" action="@Url.Action("Queue")" class="filter-bar table-filter-bar">
-        <select name="status" class="form-select">
+
+    @if (heroTicket != null)
+    {
+        <div class="ds-queue-hero ds-queue-hero--split">
+            <div class="ds-ticket-hero">
+                <div class="ticket ticket-print">
+                    <div class="ticket-body">
+                        <span class="ticket-label">طابور الانتظار الحالي</span>
+                        <span class="ticket-number">@heroTicket.QueueNumber</span>
+                        @if (!string.IsNullOrWhiteSpace(heroTicket.Patient?.Name))
+                        {
+                            <span class="ticket-imprint">@heroTicket.Patient.Name</span>
+                        }
+                    </div>
+                    <div class="ticket-perf" aria-hidden="true"></div>
+                    <div class="ticket-body">
+                        @if (!string.IsNullOrWhiteSpace(heroTicket.Doctor?.Name))
+                        {
+                            <span class="ticket-label">@heroTicket.Doctor.Name</span>
+                        }
+                        <span class="ticket-label tabular">@heroTicket.Time</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-now-serving">
+                <div class="ds-now-serving-head">
+                    <h4 class="ds-now-serving-title">
+                        <span class="dot-live" aria-hidden="true"></span>
+                        @(nowServing != null ? "قيد الكشف" : "في الانتظار")
+                    </h4>
+                    <span class="badge badge--dot @(nowServing?.StatusClass ?? heroTicket.StatusClass)">
+                        @(nowServing?.StatusLabel ?? heroTicket.StatusLabel)
+                    </span>
+                </div>
+                <div class="ds-now-serving-body">
+                    <span class="ds-now-serving-num">@heroTicket.QueueNumber</span>
+                    <div class="ds-queue-row-body">
+                        <span class="ds-now-serving-name">@(string.IsNullOrWhiteSpace(heroTicket.Patient?.Name) ? "—" : heroTicket.Patient.Name)</span>
+                        <div class="ds-now-serving-meta">
+                            @if (!string.IsNullOrWhiteSpace(heroTicket.Doctor?.Name))
+                            {
+                                <span><i class="bi bi-person-badge"></i> @heroTicket.Doctor.Name</span>
+                            }
+                            <span class="tabular"><i class="bi bi-clock"></i> @heroTicket.Time</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="ds-queue-row-actions">
+                    @if (heroTicket.Status == "confirmed")
+                    {
+                        <button class="btn btn-sm ds-action ds-action--neutral btn-q-checkin" data-id="@QueueTargetId(heroTicket)" title="تسجيل وصول المريض">
+                            <i class="bi bi-box-arrow-in-right"></i> تسجيل وصول
+                        </button>
+                    }
+                    else if (heroTicket.Status == "in-progress")
+                    {
+                        <button class="btn btn-sm ds-action ds-action--success btn-q-complete" data-id="@QueueTargetId(heroTicket)" title="إنهاء الكشف">
+                            <i class="bi bi-check-lg"></i> إنهاء
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <form method="get" action="@Url.Action("Queue")" class="filter-bar table-filter-bar ds-filter">
+        <select name="status" class="form-select ds-sr-field" tabindex="-1" aria-hidden="true">
             <option value="">كل الحالات</option>
             <option value="confirmed" selected="@(ViewBag.StatusFilter == "confirmed")">مدفوع - بانتظار القدوم</option>
             <option value="registered" selected="@(ViewBag.StatusFilter == "registered")">تم التسجيل</option>
@@ -33,71 +140,81 @@
             <option value="in-progress" selected="@(ViewBag.StatusFilter == "in-progress")">قيد الكشف</option>
             <option value="completed" selected="@(ViewBag.StatusFilter == "completed")">مكتمل</option>
         </select>
+        <div class="ds-chips ds-chips--inline">
+            <span class="ds-chips-label">الحالة</span>
+            @foreach (var chip in statusChips)
+            {
+                var chipValue = chip.Value;
+                var isActiveChip = string.Equals(ViewBag.StatusFilter as string ?? "", chipValue, StringComparison.Ordinal);
+                <a class="chip @(isActiveChip ? "active" : "")"
+                   href="@Url.Action("Queue", new { status = chipValue })">@chip.Label</a>
+            }
+        </div>
         <button type="submit" class="btn btn-primary btn-sm">تصفية</button>
-        <a href="@Url.Action("Queue")" class="btn btn-outline-secondary btn-sm">مسح</a>
+        <a href="@Url.Action("Queue")" class="btn btn-ghost btn-sm">مسح</a>
     </form>
-    <div class="table-responsive">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>المريض</th>
-                    <th>الطبيب</th>
-                    <th>الوقت</th>
-                    <th>الحالة</th>
-                    <th>الإجراء</th>
-                </tr>
-            </thead>
-            <tbody id="queueBody">
-                @if (queueItems.Count == 0)
-                {
-                    <tr>
-                        <td colspan="6" class="table-empty">لا يوجد مرضى في الطابور</td>
-                    </tr>
-                }
-                @foreach (var item in queueItems)
-                {
-                    var targetId = QueueTargetId(item);
-                    <tr>
-                        <td><span class="queue-number">@item.QueueNumber</span></td>
-                        <td>
-                            <div class="table-user">
-                                <span class="table-avatar">@item.Patient?.Initial</span>
-                                <span class="table-user-name">@item.Patient?.Name</span>
-                            </div>
-                        </td>
-                        <td>@item.Doctor?.Name</td>
-                        <td>@item.Time</td>
-                        <td><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
-                        <td class="table-actions">
-                            @if (item.Status == "confirmed")
+
+    @if (queueItems.Count == 0)
+    {
+        <div class="empty-state ds-queue-empty">
+            <div class="icon-wrapper icon-wrapper--primary">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <p>لا يوجد مرضى في الطابور</p>
+        </div>
+    }
+    else
+    {
+        <div class="ds-queue-list" id="queueBody">
+            @foreach (var item in queueItems)
+            {
+                var targetId = QueueTargetId(item);
+                <div class="ds-queue-row @RowState(item)">
+                    <span class="ds-queue-row-num">@item.QueueNumber</span>
+                    <div class="ds-queue-row-body">
+                        <span class="ds-queue-row-name">@(string.IsNullOrWhiteSpace(item.Patient?.Name) ? "—" : item.Patient.Name)</span>
+                        <div class="ds-queue-row-sub">
+                            @if (!string.IsNullOrWhiteSpace(item.Doctor?.Name))
                             {
-                                <button class="btn btn-sm btn-outline-primary btn-q-checkin" data-id="@targetId" title="تسجيل وصول المريض">
-                                    <i class="bi bi-box-arrow-in-right"></i> تسجيل وصول
-                                </button>
+                                <span><i class="bi bi-person-badge"></i> @item.Doctor.Name</span>
                             }
-                            else if (item.Status == "in-progress")
-                            {
-                                <button class="btn btn-sm btn-outline-success btn-q-complete" data-id="@targetId" title="إنهاء الكشف">
-                                    <i class="bi bi-check-lg"></i> إنهاء
-                                </button>
-                            }
-                            else if (item.Status == "completed")
-                            {
-                                <span class="badge badge-success">مكتمل</span>
-                            }
-                            else if (item.Status == "registered" || item.Status == "waiting")
-                            {
-                                <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار التأكيد</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                            <span class="tabular"><i class="bi bi-clock"></i> @item.Time</span>
+                        </div>
+                    </div>
+                    <span class="ds-queue-row-status badge badge--dot @item.StatusClass">@item.StatusLabel</span>
+                    <div class="ds-queue-row-actions">
+                        @if (item.Status == "confirmed")
+                        {
+                            <button class="btn btn-sm ds-action ds-action--neutral btn-q-checkin" data-id="@targetId" title="تسجيل وصول المريض">
+                                <i class="bi bi-box-arrow-in-right"></i> تسجيل وصول
+                            </button>
+                        }
+                        else if (item.Status == "in-progress")
+                        {
+                            <button class="btn btn-sm ds-action ds-action--success btn-q-complete" data-id="@targetId" title="إنهاء الكشف">
+                                <i class="bi bi-check-lg"></i> إنهاء
+                            </button>
+                        }
+                        else if (item.Status == "completed")
+                        {
+                            <span class="badge badge-success">مكتمل</span>
+                        }
+                        else if (item.Status == "registered" || item.Status == "waiting")
+                        {
+                            <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار التأكيد</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
     <partial name="_Pagination" />
-</div>
+</section>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     <script>

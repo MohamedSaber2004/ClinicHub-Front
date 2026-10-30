@@ -67,9 +67,13 @@
     }
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
+
 <div class="assessment-wrapper">
     <!-- Top Action Toolbar -->
-    <div class="assessment-toolbar">
+    <div class="assessment-toolbar page-header cm-page-head">
         <div>
             <h2 class="page-title mb-0">
                 <span class="page-title-icon">
@@ -78,7 +82,7 @@
                 تقييم وفحص المريض: @patientName
             </h2>
         </div>
-        <div class="assessment-toolbar-actions">
+        <div class="assessment-toolbar-actions page-header-actions">
             <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
                 <i class="bi bi-printer"></i> طباعة النموذج
             </button>
@@ -103,7 +107,7 @@
             </div>
 
             <!-- 1. PERSONAL HISTORY -->
-            <div class="assessment-section">
+            <div class="assessment-section cm-sheet-section">
                 <div class="assessment-section-title">
                     <i class="bi bi-person-vcard"></i>
                     <span>PERSONAL HISTORY</span>
@@ -198,7 +202,7 @@
             </div>
 
             <!-- 2. DIAGNOSIS -->
-            <div class="assessment-section">
+            <div class="assessment-section cm-sheet-section">
                 <div class="assessment-section-title">
                     <i class="bi bi-clipboard2-pulse"></i>
                     <span>DIAGNOSIS</span>
@@ -209,7 +213,7 @@
             </div>
 
             <!-- 3. CHIEF COMPLAIN -->
-            <div class="assessment-section">
+            <div class="assessment-section cm-sheet-section">
                 <div class="assessment-section-title">
                     <i class="bi bi-chat-square-text"></i>
                     <span>CHIEF COMPLAIN</span>
@@ -220,7 +224,7 @@
             </div>
 
             <!-- 4. PRESENT HISTORY -->
-            <div class="assessment-section">
+            <div class="assessment-section cm-sheet-section">
                 <div class="assessment-section-title">
                     <i class="bi bi-activity"></i>
                     <span>PRESENT HISTORY</span>
@@ -284,7 +288,7 @@
             </div>
 
             <!-- 5. MEDICAL HISTORY -->
-            <div class="assessment-section">
+            <div class="assessment-section cm-sheet-section">
                 <div class="assessment-section-title">
                     <i class="bi bi-heart-pulse"></i>
                     <span>MEDICAL HISTORY</span>
@@ -295,7 +299,7 @@
             </div>
 
             <!-- 6. FAMILY HISTORY -->
-            <div class="assessment-section">
+            <div class="assessment-section cm-sheet-section">
                 <div class="assessment-section-title">
                     <i class="bi bi-people"></i>
                     <span>FAMILY HISTORY</span>
@@ -306,7 +310,7 @@
             </div>
 
             <!-- 7. TREATMENT PLAN (Placed directly under Family History as requested!) -->
-            <div class="assessment-section">
+            <div class="assessment-section cm-sheet-section">
                 <div class="assessment-treatment-plan-card">
                     <div class="assessment-section-title">
                         <i class="bi bi-capsule"></i>

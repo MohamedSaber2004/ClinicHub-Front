@@ -1,0 +1,802 @@
+@using ClinicHub.Services.ReponseModels
+@{
+    ViewData["Title"] = "تحويلات العيادات";
+    Layout = "_AdminLayout";
+
+    var preview = ViewBag.Preview as PayoutPreviewDto ?? new PayoutPreviewDto();
+    var accounts = ViewBag.Accounts as IReadOnlyCollection<PayoutAccountAdminDto> ?? new List<PayoutAccountAdminDto>();
+    var batches = ViewBag.Batches as PagginatedResult<PayoutBatchDto> ?? new PagginatedResult<PayoutBatchDto>(new List<PayoutBatchDto>(), 0);
+    var statusFilter = ViewBag.StatusFilter as int?;
+    var batchStatusFilter = ViewBag.BatchStatusFilter as int?;
+    var search = ViewBag.Search as string;
+
+    var eligibleItems = preview.Items.Where(i => i.Eligible).ToList();
+    var pendingAccounts = accounts.Count(a => a.Status == 0);
+
+    string StatusLabel(int? status) => status switch
+    {
+        0 => "بانتظار الاعتماد",
+        1 => "معتمد",
+        2 => "مرفوض",
+        3 => "موقوف",
+        _ => "لا يوجد حساب"
+    };
+    string BatchStatusLabel(int status) => status switch
+    {
+        0 => "مسودة",
+        1 => "معتمدة بانتظار التنفيذ",
+        2 => "قيد التنفيذ",
+        3 => "مكتملة",
+        4 => "نجحت جزئياً",
+        5 => "فاشلة",
+        6 => "ملغاة",
+        _ => "غير معروفة"
+    };
+    string BatchStatusClass(int status) => status switch
+    {
+        0 => "badge-secondary",
+        1 => "badge-warning",
+        2 => "badge-primary",
+        3 => "badge-success",
+        4 => "badge-warning",
+        5 => "badge-danger",
+        6 => "badge-secondary",
+        _ => "badge-secondary"
+    };
+    string ItemStatusLabel(int status) => status switch
+    {
+        0 => "بانتظار الإرسال",
+        1 => "أُرسلت لبايمن",
+        2 => "تم الصرف",
+        3 => "فشل",
+        4 => "ملغي",
+        _ => "غير معروفة"
+    };
+    string ItemStatusClass(int status) => status switch
+    {
+        0 => "badge-secondary",
+        1 => "badge-primary",
+        2 => "badge-success",
+        3 => "badge-danger",
+        4 => "badge-secondary",
+        _ => "badge-secondary"
+    };
+    string StatusClass(int? status) => status switch
+    {
+        0 => "badge-warning",
+        1 => "badge-success",
+        2 => "badge-danger",
+        3 => "badge-secondary",
+        _ => "badge-secondary"
+    };
+    string TransactionTypeLabel(string? type) => type switch
+    {
+        "cash_transfer" => "تحويل نقدي",
+        "salary" => "تحويل راتب",
+        "credit_card" => "بطاقة ائتمان",
+        "prepaid_card" => "بطاقة مسبقة الدفع",
+        _ => "تحويل نقدي"
+    };
+    string BankName(string code) => code switch
+    {
+        "CIB" => "البنك التجاري الدولي",
+        "NBE" => "البنك الأهلي المصري",
+        "MISR" => "بنك مصر",
+        "QNB" => "QNB الأهلي",
+        "HSBC" => "HSBC",
+        "CAE" => "بنك القاهرة",
+        "AAIB" => "البنك العربي الأفريقي الدولي",
+        "ADIB" => "بنك أبوظبي الإسلامي",
+        "ADCB" => "بنك أبوظبي التجاري",
+        "ENBD" => "بنك الإمارات دبي الوطني",
+        "SAIB" => "بنك الاستثمار العربي",
+        "NBK" => "بنك الكويت الوطني",
+        "BLOM" => "بنك لبنان والمهجر",
+        "FAB" => "بنك أبوظبي الأول",
+        "ABC" => "البنك العربي",
+        "AUB" => "البنك الأهلي المتحد",
+        "EGB" => "البنك المصري الخليجي",
+        "HDB" => "بنك التنمية الصناعية",
+        "ARAB" => "البنك العربي",
+        "ABRK" => "بنك البركة",
+        "POST" => "البريد المصري",
+        "NSB" => "بنك ناصر الاجتماعي",
+        "SCB" => "ستاندرد تشارترد",
+        "MASH" => "بنك المشرق",
+        "NBG" => "البنك الأهلي اليوناني",
+        "CBE" => "البنك المركزي المصري",
+        _ => code
+    };
+
+    // Bucketed share (0..100 step 10) so split bars need no inline style.
+    int SplitStep(decimal part, decimal total)
+    {
+        if (total <= 0) return 0;
+        var pct = part / total * 100m;
+        if (pct < 0) pct = 0;
+        if (pct > 100) pct = 100;
+        return (int)Math.Round(pct / 10m, MidpointRounding.AwayFromZero) * 10;
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-finance.css?v=20261027_redesign_v2" />
+}
+
+<div class="af-page">
+<div class="page-header">
+    <div class="af-head-main">
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.55 3.55-3.55 0-2.84-2.43-3.81-4.7-4.4z" fill="currentColor"/>
+                </svg>
+            </span>
+            تحويلات العيادات
+        </h2>
+        <p class="page-header-subtitle af-header-note">المبالغ القابلة للتحويل هي <strong>صافي الحجوزات فقط</strong> بعد خصم رسوم المنصة. رسوم المنصة تظل إيرادات للمنصة ولا تُحوَّل للعيادات.</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage as string))
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
+<div class="stats-grid stagger">
+    <div class="stat-card stat-card--info lift">
+        <div class="stat-info">
+            <span class="stat-value af-stat-money">@preview.TotalEligible.ToString("N2") ج.م</span>
+            <span class="stat-label">إجمالي الصافي القابل للتحويل</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--green">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card stat-card--brass lift">
+        <div class="stat-info">
+            <span class="stat-value tabular">@eligibleItems.Count</span>
+            <span class="stat-label">عيادات مؤهلة للتحويل</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--primary">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card stat-card--warning lift">
+        <div class="stat-info">
+            <span class="stat-value tabular">@pendingAccounts</span>
+            <span class="stat-label">حسابات بانتظار الاعتماد</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--amber">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+        </div>
+    </div>
+    <div class="stat-card stat-card--neutral lift">
+        <div class="stat-info">
+            <span class="stat-value af-stat-money">@preview.MinimumAmount.ToString("N2") ج.م</span>
+            <span class="stat-label">الحد الأدنى للتحويل</span>
+        </div>
+        <div class="icon-wrapper icon-wrapper--blue">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-card-header af-card-header">
+        <h3 class="table-card-title mb-0">مستحقات العيادات القابلة للتحويل</h3>
+        <div class="table-card-actions af-card-actions">
+            <span class="badge badge-secondary tabular">@preview.Items.Count</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>العيادة</th>
+                    <th>الصافي المتاح</th>
+                    <th>الحساب البنكي</th>
+                    <th>حالة التحويل</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (preview.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="4">
+                            <div class="af-empty-cell">
+                                <p class="mb-0">لا توجد مستحقات مسجلة للعيادات حالياً</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @foreach (var item in preview.Items)
+                {
+                    <tr>
+                        <td class="text-md-medium">@item.ClinicName</td>
+                        <td class="text-md-medium amount-cell tabular">@item.AvailableBalance.ToString("N2") ج.م</td>
+                        <td class="af-status-cell">
+                            @if (!string.IsNullOrWhiteSpace(item.AccountLast4))
+                            {
+                                <span class="text-md-medium af-money tabular">**** @item.AccountLast4</span>
+                                <span class="badge badge--dot @StatusClass(item.AccountStatus)">@StatusLabel(item.AccountStatus)</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge--dot badge-secondary">لا يوجد حساب</span>
+                            }
+                        </td>
+                        <td class="af-status-cell">
+                            @if (item.Eligible)
+                            {
+                                <span class="badge badge--dot badge-success">مؤهل للتحويل</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge--dot badge-warning">غير مؤهل</span>
+                                @if (!string.IsNullOrWhiteSpace(item.IneligibilityReason))
+                                {
+                                    <div class="text-md text-muted">@item.IneligibilityReason</div>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-card-header af-card-header">
+        <h3 class="table-card-title mb-0">دفعات التحويل</h3>
+        <div class="table-card-actions af-card-actions">
+            <div class="af-action-pair">
+                <button type="button" class="btn btn-outline-primary btn-sm" id="payoutBudgetBtn">رصيد منصة الدفع</button>
+                <span class="badge badge-secondary af-budget-chip" id="payoutBudgetValue">غير محسوب</span>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="payoutCreateBtn">إنشاء دفعة من المستحقات المؤهلة</button>
+        </div>
+    </div>
+
+    <form method="get" action="@Url.Action("Payouts")" class="filter-bar table-filter-bar">
+        <div class="af-filter-group">
+            <span class="af-filter-label" id="batchStatusLabel">حالة الدفعة</span>
+            <select class="form-select" name="batchStatus" aria-labelledby="batchStatusLabel" onchange="this.form.submit()">
+                <option value="">جميع الدفعات</option>
+                <option value="0" selected="@(batchStatusFilter == 0)">مسودة</option>
+                <option value="1" selected="@(batchStatusFilter == 1)">معتمدة</option>
+                <option value="2" selected="@(batchStatusFilter == 2)">قيد التنفيذ</option>
+                <option value="3" selected="@(batchStatusFilter == 3)">مكتملة</option>
+                <option value="4" selected="@(batchStatusFilter == 4)">نجحت جزئياً</option>
+                <option value="5" selected="@(batchStatusFilter == 5)">فاشلة</option>
+                <option value="6" selected="@(batchStatusFilter == 6)">ملغاة</option>
+            </select>
+        </div>
+        <input type="hidden" name="status" value="@(statusFilter?.ToString() ?? "")" />
+        <input type="hidden" name="search" value="@search" />
+    </form>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>الدفعة</th>
+                    <th>الفترة</th>
+                    <th>إجمالي المبلغ</th>
+                    <th>العيادات</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (batches.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6">
+                            <div class="af-empty-cell">
+                                <p class="mb-0">لا توجد دفعات تحويل بعد</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @foreach (var batch in batches.Items)
+                {
+                    var okStep = SplitStep(batch.SuccessAmount, batch.TotalAmount);
+                    var failStep = SplitStep(batch.FailedAmount, batch.TotalAmount);
+                    <tr>
+                        <td class="text-md-medium ref-number">@batch.Code</td>
+                        <td class="text-md af-money tabular">@batch.PeriodFrom.ToString("yyyy-MM-dd") — @batch.PeriodTo.ToString("yyyy-MM-dd")</td>
+                        <td class="af-status-cell">
+                            <span class="text-md-medium amount-cell tabular">@batch.TotalAmount.ToString("N2") @batch.Currency</span>
+                            <div class="af-split">
+                                <div class="af-split-track">
+                                    <span class="af-split-seg af-split-seg--ok af-split-seg--p@okStep"></span>
+                                    <span class="af-split-seg af-split-seg--fail af-split-seg--p@failStep"></span>
+                                </div>
+                                <div class="af-split-legend">
+                                    <span class="af-legend-item"><span class="af-legend-dot af-legend-dot--ok"></span>نجح <span class="af-legend-value">@batch.SuccessAmount.ToString("N2")</span></span>
+                                    <span class="af-legend-item"><span class="af-legend-dot af-legend-dot--fail"></span>فشل <span class="af-legend-value">@batch.FailedAmount.ToString("N2")</span></span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-md tabular">@batch.ItemsCount <span class="text-muted">(متبقٍ @batch.PendingCount)</span></td>
+                        <td class="af-status-cell">
+                            <span class="badge badge--dot @(batch.Status == 2 ? "badge--live" : "") @BatchStatusClass(batch.Status)">@BatchStatusLabel(batch.Status)</span>
+                            @if (!string.IsNullOrWhiteSpace(batch.FailureNotes))
+                            {
+                                <div class="text-md text-muted">@batch.FailureNotes</div>
+                            }
+                        </td>
+                        <td class="table-actions">
+                            <div class="af-action-pair">
+                                @if (batch.Status == 0)
+                                {
+                                    <button type="button" class="btn btn-primary btn-sm payout-approve-btn" data-batch-id="@batch.Id">اعتماد</button>
+                                    <button type="button" class="btn btn-danger btn-sm payout-cancel-btn" data-batch-id="@batch.Id">إلغاء</button>
+                                }
+                                @if (batch.Status == 1)
+                                {
+                                    <button type="button" class="btn btn-primary btn-sm payout-execute-btn" data-batch-id="@batch.Id">تنفيذ التحويلات</button>
+                                    <button type="button" class="btn btn-danger btn-sm payout-cancel-btn" data-batch-id="@batch.Id">إلغاء</button>
+                                }
+                                <button type="button" class="btn btn-ghost btn-sm payout-details-btn" data-batch-id="@batch.Id" aria-expanded="false">تفاصيل</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="payout-details-row" data-batch-id="@batch.Id" data-open="false">
+                        <td colspan="6">
+                            <div class="af-batch-detail">
+                                <div class="af-batch-detail-head">
+                                    <h4 class="af-batch-detail-title">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 7h2v2h-2V7zm0 4h2v6h-2v-6zm1-9a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>
+                                        @batch.Code
+                                    </h4>
+                                    <span class="badge badge-secondary tabular">@batch.Items.Count</span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="custom-table af-sub-table">
+                                        <thead>
+                                            <tr>
+                                                <th>العيادة</th>
+                                                <th>المبلغ</th>
+                                                <th>الحساب</th>
+                                                <th>الحالة</th>
+                                                <th>معاملة بايمن</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var line in batch.Items)
+                                            {
+                                                <tr>
+                                                    <td class="text-md-medium">@line.ClinicName</td>
+                                                    <td class="text-md amount-cell tabular">@line.Amount.ToString("N2") @line.Currency</td>
+                                                    <td class="text-md af-money tabular">@line.MaskedAccountNumber <span class="text-muted">@line.BankCode</span></td>
+                                                    <td class="af-status-cell">
+                                                        <span class="badge badge--dot @ItemStatusClass(line.Status)">@ItemStatusLabel(line.Status)</span>
+                                                        @if (!string.IsNullOrWhiteSpace(line.LastError))
+                                                        {
+                                                            <div class="text-md text-muted">@line.LastError</div>
+                                                        }
+                                                        <div class="text-md text-muted tabular">محاولات: @line.Attempts</div>
+                                                    </td>
+                                                    <td class="text-md af-id-cell">
+                                                        @if (string.IsNullOrWhiteSpace(line.PaymobTransactionId))
+                                                        {
+                                                            <span class="text-muted">—</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="af-money tabular">@line.PaymobTransactionId</span>
+                                                            <div class="text-md text-muted">@line.DisbursementStatus</div>
+                                                        }
+                                                    </td>
+                                                    <td class="table-actions">
+                                                        @if (line.CanRetry)
+                                                        {
+                                                            <button type="button" class="btn btn-outline-primary btn-sm payout-retry-btn" data-item-id="@line.Id">إعادة محاولة</button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-md text-muted">—</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (batches.TotalPages > 1)
+    {
+        <div class="af-table-foot">
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                @for (var batchNumber = 1; batchNumber <= batches.TotalPages; batchNumber++)
+                {
+                    <a class="btn btn-sm @(batchNumber == batches.PageNumber ? "btn-primary" : "btn-outline-secondary")"
+                       href="@Url.Action("Payouts", new { batchPage = batchNumber, batchStatus = batchStatusFilter, status = statusFilter, search = search })">@batchNumber</a>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<div class="table-card">
+    <div class="table-card-header af-card-header">
+        <h3 class="table-card-title mb-0">حسابات العيادات البنكية</h3>
+        <div class="table-card-actions af-card-actions">
+            <span class="badge badge-secondary tabular">@accounts.Count</span>
+        </div>
+    </div>
+
+    <form method="get" action="@Url.Action("Payouts")" class="filter-bar table-filter-bar">
+        <div class="af-filter-group">
+            <span class="af-filter-label" id="accountStatusLabel">حالة الحساب</span>
+            <select class="form-select" name="status" aria-labelledby="accountStatusLabel" onchange="this.form.submit()">
+                <option value="">جميع الحالات</option>
+                <option value="0" selected="@(statusFilter == 0)">بانتظار الاعتماد</option>
+                <option value="1" selected="@(statusFilter == 1)">معتمد</option>
+                <option value="2" selected="@(statusFilter == 2)">مرفوض</option>
+                <option value="3" selected="@(statusFilter == 3)">موقوف</option>
+            </select>
+        </div>
+        <div class="filter-bar-spacer"></div>
+        <input type="text" class="form-input" name="search" value="@search" placeholder="ابحث باسم العيادة أو صاحب الحساب" />
+        <button type="submit" class="btn btn-primary btn-sm">بحث</button>
+        <a href="@Url.Action("Payouts")" class="btn btn-ghost btn-sm">مسح</a>
+    </form>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>العيادة</th>
+                    <th>صاحب الحساب</th>
+                    <th>البنك</th>
+                    <th>رقم الحساب</th>
+                    <th>الرقم القومي</th>
+                    <th>نوع التحويل</th>
+                    <th>تاريخ التقديم</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (accounts.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9">
+                            <div class="af-empty-cell">
+                                <p class="mb-0">لا توجد حسابات بنكية مطابقة للفلاتر المحددة</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @foreach (var acc in accounts)
+                {
+                    <tr>
+                        <td class="text-md-medium">@acc.ClinicName</td>
+                        <td class="text-md">@acc.HolderName</td>
+                        <td class="text-md">@BankName(acc.BankCode) <span class="text-muted af-money">@acc.BankCode</span></td>
+                        <td class="text-md af-money tabular">@acc.MaskedAccountNumber</td>
+                        <td class="text-md af-money tabular">@acc.MaskedNationalId</td>
+                        <td class="text-md">@TransactionTypeLabel(acc.BankTransactionType)</td>
+                        <td class="text-md af-money tabular">@acc.SubmittedAt.ToString("yyyy-MM-dd")</td>
+                        <td class="af-status-cell">
+                            <span class="badge badge--dot @StatusClass(acc.Status)">@StatusLabel(acc.Status)</span>
+                            @if (acc.Status == 2 && !string.IsNullOrWhiteSpace(acc.RejectionReason))
+                            {
+                                <div class="text-md text-muted">@acc.RejectionReason</div>
+                            }
+                        </td>
+                        <td class="table-actions">
+                            @if (acc.Status == 0 || acc.Status == 2)
+                            {
+                                <div class="af-action-pair">
+                                    <button type="button" class="btn btn-primary btn-sm payout-verify-btn"
+                                            data-account-id="@acc.Id"
+                                            data-clinic-name="@acc.ClinicName">اعتماد</button>
+                                    <button type="button" class="btn btn-danger btn-sm payout-reject-btn"
+                                            data-account-id="@acc.Id"
+                                            data-clinic-name="@acc.ClinicName">رفض</button>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-md text-muted">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</div><!-- /af-page -->
+
+<div class="modal fade" id="payoutRejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">رفض الحساب البنكي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-md" id="payoutRejectClinicName"></p>
+                <div class="form-group">
+                    <label class="form-label" for="payoutRejectReason">سبب الرفض</label>
+                    <textarea id="payoutRejectReason" class="form-input form-textarea" rows="3" placeholder="اكتب سبب رفض الحساب البنكي..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger-solid" id="payoutRejectConfirmBtn">تأكيد الرفض</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="payoutCreateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إنشاء دفعة تحويل</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-md">تُجمَّع المستحقات المؤهلة الحالية في دفعة واحدة وتُحجز من أرصدة العيادات. لا يُرسل أي مال قبل اعتماد الدفعة من شخص آخر ثم تنفيذها.</p>
+                <div class="form-group">
+                    <label class="form-label" for="payoutCreateMinimum">الحد الأدنى للمبلغ (اختياري)</label>
+                    <input type="number" step="0.01" min="112" id="payoutCreateMinimum" class="form-input"
+                           value="@preview.MinimumAmount.ToString("0.00")" />
+                    <div class="text-md text-muted mt-1">لا يقل عن 112 ج.م — الحد الأدنى الذي تقبله بايمن لكل تحويل.</div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="payoutCreateConfirmBtn">تأكيد الإنشاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="payoutConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title" id="payoutConfirmTitle">تأكيد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-md" id="payoutConfirmMessage"></p>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="payoutConfirmYes">تأكيد</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var rejectModalEl = document.getElementById('payoutRejectModal');
+            var rejectModal = rejectModalEl ? new bootstrap.Modal(rejectModalEl) : null;
+            var createModalEl = document.getElementById('payoutCreateModal');
+            var createModal = createModalEl ? new bootstrap.Modal(createModalEl) : null;
+            var rejectAccountId = null;
+
+            function postJson(url, body) {
+                return fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                }).then(function (res) {
+                    return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+                });
+            }
+
+            document.querySelectorAll('.payout-verify-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var id = btn.getAttribute('data-account-id');
+                    btn.disabled = true;
+
+                    postJson('/Admin/Payouts/Verify', { id: id })
+                        .then(function (result) {
+                            if (result.ok && result.data && result.data.success) {
+                                showSuccessModal(result.data.message || 'تم اعتماد الحساب البنكي.');
+                                setTimeout(function () { window.location.reload(); }, 1200);
+                            } else {
+                                showErrorModal((result.data && result.data.message) || 'تعذر اعتماد الحساب البنكي.');
+                                btn.disabled = false;
+                            }
+                        })
+                        .catch(function () {
+                            showErrorModal('عذراً، حدث خطأ أثناء اعتماد الحساب البنكي.');
+                            btn.disabled = false;
+                        });
+                });
+            });
+
+            document.querySelectorAll('.payout-reject-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    rejectAccountId = btn.getAttribute('data-account-id');
+                    document.getElementById('payoutRejectClinicName').textContent =
+                        'العيادة: ' + (btn.getAttribute('data-clinic-name') || '');
+                    document.getElementById('payoutRejectReason').value = '';
+                    if (rejectModal) rejectModal.show();
+                });
+            });
+
+            document.getElementById('payoutRejectConfirmBtn').addEventListener('click', function () {
+                var reason = document.getElementById('payoutRejectReason').value.trim();
+                if (!reason) {
+                    showErrorModal('يرجى إدخال سبب الرفض.');
+                    return;
+                }
+
+                var confirmBtn = this;
+                confirmBtn.disabled = true;
+
+                postJson('/Admin/Payouts/Reject', { id: rejectAccountId, reason: reason })
+                    .then(function (result) {
+                        if (result.ok && result.data && result.data.success) {
+                            if (rejectModal) rejectModal.hide();
+                            showSuccessModal(result.data.message || 'تم رفض الحساب البنكي.');
+                            setTimeout(function () { window.location.reload(); }, 1200);
+                        } else {
+                            showErrorModal((result.data && result.data.message) || 'تعذر رفض الحساب البنكي.');
+                        }
+                    })
+                    .catch(function () {
+                        showErrorModal('عذراً، حدث خطأ أثناء رفض الحساب البنكي.');
+                    })
+                    .finally(function () {
+                        confirmBtn.disabled = false;
+                    });
+            });
+
+            var confirmModalEl = document.getElementById('payoutConfirmModal');
+            var confirmModal = confirmModalEl ? new bootstrap.Modal(confirmModalEl) : null;
+            var confirmAction = null;
+
+            function askConfirm(message, onYes) {
+                document.getElementById('payoutConfirmMessage').textContent = message;
+                confirmAction = onYes;
+                if (confirmModal) confirmModal.show();
+            }
+
+            document.getElementById('payoutConfirmYes').addEventListener('click', function () {
+                var action = confirmAction;
+                confirmAction = null;
+                if (confirmModal) confirmModal.hide();
+                if (action) action();
+            });
+
+            function runBatchAction(url, id, btn, successMessage) {
+                btn.disabled = true;
+                postJson(url, { id: id })
+                    .then(function (result) {
+                        if (result.ok && result.data && result.data.success) {
+                            showSuccessModal(result.data.message || successMessage);
+                            setTimeout(function () { window.location.reload(); }, 1500);
+                        } else {
+                            showErrorModal((result.data && result.data.message) || 'تعذر تنفيذ الإجراء على الدفعة.');
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(function () {
+                        showErrorModal('عذراً، حدث خطأ أثناء تنفيذ الإجراء على الدفعة.');
+                        btn.disabled = false;
+                    });
+            }
+
+            document.getElementById('payoutCreateBtn').addEventListener('click', function () {
+                if (createModal) createModal.show();
+            });
+
+            document.getElementById('payoutCreateConfirmBtn').addEventListener('click', function () {
+                var raw = document.getElementById('payoutCreateMinimum').value.trim();
+                var minimum = raw === '' ? null : Number(raw);
+                var btn = this;
+
+                btn.disabled = true;
+                postJson('/Admin/Payouts/CreateBatch', { minimumAmount: minimum })
+                    .then(function (result) {
+                        if (result.ok && result.data && result.data.success) {
+                            if (createModal) createModal.hide();
+                            showSuccessModal(result.data.message || 'تم إنشاء الدفعة.');
+                            setTimeout(function () { window.location.reload(); }, 1500);
+                        } else {
+                            showErrorModal((result.data && result.data.message) || 'تعذر إنشاء الدفعة.');
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(function () {
+                        showErrorModal('عذراً، حدث خطأ أثناء إنشاء الدفعة.');
+                        btn.disabled = false;
+                    });
+            });
+
+            document.getElementById('payoutBudgetBtn').addEventListener('click', function () {
+                var btn = this;
+                var target = document.getElementById('payoutBudgetValue');
+                btn.disabled = true;
+                target.textContent = 'جارٍ الحساب...';
+
+                fetch('/Admin/Payouts/Budget', { headers: { 'Accept': 'application/json' } })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        target.textContent = data && data.success
+                            ? Number(data.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + (data.currency || 'EGP')
+                            : 'غير متاح';
+                        if (!data || !data.success) showErrorModal((data && data.message) || 'تعذر قراءة رصيد منصة الدفع.');
+                    })
+                    .catch(function () {
+                        target.textContent = 'غير متاح';
+                        showErrorModal('عذراً، حدث خطأ أثناء قراءة رصيد منصة الدفع.');
+                    })
+                    .finally(function () { btn.disabled = false; });
+            });
+
+            document.querySelectorAll('.payout-details-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var id = btn.getAttribute('data-batch-id');
+                    var row = document.querySelector('.payout-details-row[data-batch-id="' + id + '"]');
+                    if (!row) return;
+                    var isOpen = row.getAttribute('data-open') === 'true';
+                    row.setAttribute('data-open', isOpen ? 'false' : 'true');
+                    btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+                });
+            });
+
+            document.querySelectorAll('.payout-approve-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    runBatchAction('/Admin/Payouts/ApproveBatch', btn.getAttribute('data-batch-id'), btn, 'تم اعتماد الدفعة.');
+                });
+            });
+
+            document.querySelectorAll('.payout-cancel-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    askConfirm('إلغاء هذه الدفعة؟ ستُعاد المبالغ المحجوزة إلى أرصدة العيادات.', function () {
+                        runBatchAction('/Admin/Payouts/CancelBatch', btn.getAttribute('data-batch-id'), btn, 'تم إلغاء الدفعة.');
+                    });
+                });
+            });
+
+            document.querySelectorAll('.payout-execute-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    askConfirm('تنفيذ الدفعة يرسل أموالاً حقيقية لحسابات العيادات عبر بايمن. هل تريد المتابعة؟', function () {
+                        runBatchAction('/Admin/Payouts/ExecuteBatch', btn.getAttribute('data-batch-id'), btn, 'تم جدولة تنفيذ الدفعة.');
+                    });
+                });
+            });
+
+            document.querySelectorAll('.payout-retry-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    askConfirm('إعادة المحاولة تُرسل التحويل نفسه مرة أخرى بعد التحقق من أنه لم يصل إلى بايمن. متابعة؟', function () {
+                        runBatchAction('/Admin/Payouts/RetryItem', btn.getAttribute('data-item-id'), btn, 'تمت إعادة المحاولة.');
+                    });
+                });
+            });
+        })();
+    </script>
+}

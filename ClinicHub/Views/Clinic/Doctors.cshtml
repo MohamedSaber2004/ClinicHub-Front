@@ -14,188 +14,223 @@
     var attachmentBaseUrl = _attachmentUrlResolver.Resolve("x").Replace("/files/x", "");
 }
 
-<div class="page-header">
-    <h2 class="page-title mb-0">إدارة الأطباء</h2>
-    <button class="btn btn-primary" id="addDoctorBtn">
-        <i class="bi bi-person-plus me-1"></i> إضافة طبيب
-    </button>
-</div>
-
-@if (_user?.MaxDoctors.HasValue == true)
-{
-    <div class="plan-info-bar">
-        <div class="plan-info-item">
-            <span class="plan-info-label">الحد الأقصى للأطباء في باقتك</span>
-            <span class="plan-info-value">@_user.MaxDoctors طبيب</span>
+<div class="co-page">
+    <div class="page-header co-page-head">
+        <div>
+            <h2 class="page-title">
+                <span class="page-title-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                </span>
+                إدارة الأطباء
+            </h2>
+            <p class="page-header-subtitle">أطباء العيادة وتخصصاتهم وبيانات الدخول وأوقات العمل الأسبوعية</p>
         </div>
-        <span class="small text-muted">لزيادة الحد الأقصى، قم بترقية باقتك.</span>
-        <a href="/Clinic/MySubscription" class="plan-info-link">ترقية الباقة <i class="bi bi-arrow-left"></i></a>
-    </div>
-}
-
-<div class="table-card p-4 mb-4">
-    <form method="get" action="@Url.Action("Doctors")" class="row g-3 align-items-end">
-        <div class="col-md-5">
-            <label class="form-label" for="searchTerm">بحث</label>
-            <input id="searchTerm" type="text" name="searchTerm" class="form-input form-input-sm w-100" placeholder="ابحث باسم الطبيب أو البريد الإلكتروني..." value="@searchTerm" />
-        </div>
-        <div class="col-md-4">
-            <label class="form-label" for="specializationId">التخصص</label>
-            <select id="specializationId" name="specializationId" class="form-select form-input-sm w-100">
-                <option value="">جميع التخصصات</option>
-                @foreach (var spec in specializations)
-                {
-                    <option value="@spec.Id" selected="@(selectedSpecId == spec.Id)">@spec.ArName</option>
-                }
-            </select>
-        </div>
-        <div class="col-md-3">
-            <button type="submit" class="btn btn-primary w-100">
-                <i class="bi bi-search me-1"></i> بحث
+        <div class="page-header-actions">
+            <button class="btn btn-primary" id="addDoctorBtn">
+                <i class="bi bi-person-plus"></i> إضافة طبيب
             </button>
         </div>
-    </form>
-</div>
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
-
-<div class="table-card p-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold mb-0">قائمة الأطباء</h4>
-        @if (pagination != null)
-        {
-            <span class="text-md">إجمالي: @pagination.TotalCount طبيب</span>
-        }
     </div>
 
-    @if (doctors.Count == 0)
+    @if (_user?.MaxDoctors.HasValue == true)
     {
-        <div class="empty-state">
-            <i class="bi bi-people empty-state-icon"></i>
-            <p class="empty-desc">لا يوجد أطباء مسجلون في العيادة</p>
+        <div class="plan-info-bar co-plan">
+            <div class="plan-info-item">
+                <span class="plan-info-label">الحد الأقصى للأطباء في باقتك</span>
+                <span class="plan-info-value">@_user.MaxDoctors طبيب</span>
+            </div>
+            <span class="co-muted">لزيادة الحد الأقصى، قم بترقية باقتك.</span>
+            <a href="/Clinic/MySubscription" class="plan-info-link">ترقية الباقة <i class="bi bi-arrow-left"></i></a>
         </div>
     }
-    else
-    {
-        <div class="table-responsive">
-            <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>الصورة</th>
-                        <th>الاسم</th>
-                        <th>البريد الإلكتروني</th>
-                        <th>التخصص</th>
-                        <th>سنوات الخبرة</th>
-                        <th>الحالة</th>
-                        <th>تاريخ الإضافة</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var doctor in doctors)
+
+    <div class="table-card co-filter-card">
+        <form method="get" action="@Url.Action("Doctors")" class="co-filter-form">
+            <div class="form-group mb-0">
+                <label class="form-label" for="searchTerm">بحث</label>
+                <input id="searchTerm" type="text" name="searchTerm" class="form-input w-100" placeholder="ابحث باسم الطبيب أو البريد الإلكتروني..." value="@searchTerm" />
+            </div>
+            <div class="form-group mb-0">
+                <label class="form-label" for="specializationId">التخصص</label>
+                <select id="specializationId" name="specializationId" class="form-select w-100">
+                    <option value="">جميع التخصصات</option>
+                    @foreach (var spec in specializations)
                     {
-                        var imgUrl = !string.IsNullOrEmpty(doctor.ProfilePictureUrl)
-                            ? _attachmentUrlResolver.Resolve(doctor.ProfilePictureUrl)
-                            : null;
-                        <tr>
-                            <td>
-                                @if (imgUrl != null)
-                                {
-                                    <img src="@imgUrl" alt="صورة" class="table-avatar table-avatar--md" loading="lazy" decoding="async" />
-                                }
-                                else
-                                {
-                                    <div class="table-avatar table-avatar--md">
-                                        <i class="bi bi-person"></i>
-                                    </div>
-                                }
-                            </td>
-                            <td><strong>@doctor.UserName</strong></td>
-                            <td class="text-md">@doctor.UserEmail</td>
-                            <td><span class="badge badge-info">@doctor.SpecializationName</span></td>
-                            <td>@doctor.YearsOfExperience سنة</td>
-                            <td>
-                                @if (doctor.IsActive)
-                                {
-                                    <span class="badge badge-success">نشط</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-danger">غير نشط</span>
-                                }
-                            </td>
-                            <td class="text-md">@doctor.CreatedAt.ToString("yyyy-MM-dd")</td>
-                            <td>
-                                <div class="table-actions">
-                                    <button class="btn btn-sm btn-secondary view-doctor-btn"
-                                            data-id="@doctor.Id"
-                                            title="عرض التفاصيل">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary edit-doctor-btn"
-                                            data-id="@doctor.Id"
-                                            title="تعديل">
-                                        <i class="bi bi-pencil me-1"></i> تعديل
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-secondary change-password-doctor-btn"
-                                            data-id="@doctor.Id"
-                                            data-userid="@doctor.UserId"
-                                            data-name="@doctor.UserName"
-                                            title="تغيير كلمة المرور">
-                                        <i class="bi bi-key me-1"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger delete-doctor-btn"
-                                            data-id="@doctor.Id"
-                                            data-name="@doctor.UserName">
-                                        <i class="bi bi-trash me-1"></i> حذف
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        <option value="@spec.Id" selected="@(selectedSpecId == spec.Id)">@spec.ArName</option>
                     }
-                </tbody>
-            </table>
+                </select>
+            </div>
+            <div class="form-group mb-0">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> بحث
+                </button>
+            </div>
+        </form>
+
+        <div class="co-chips">
+            <span class="co-label">تصفية سريعة</span>
+            <a href="@Url.Action("Doctors")" class="chip @(selectedSpecId == null ? "active" : "")">الجميع</a>
+            @foreach (var spec in specializations.Take(8))
+            {
+                <a href="@Url.Action("Doctors", new { specializationId = spec.Id })" class="chip @(selectedSpecId == spec.Id ? "active" : "")">@spec.ArName</a>
+            }
+            <span class="co-chip-spacer"></span>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="table-card co-roster">
+        <div class="table-card-header co-roster-head">
+            <h3 class="table-card-title mb-0">قائمة الأطباء</h3>
+            @if (pagination != null)
+            {
+                <span class="co-count"><i class="bi bi-people"></i> إجمالي: @pagination.TotalCount طبيب</span>
+            }
         </div>
 
-        if (pagination != null && pagination.TotalPages > 1)
+        @if (doctors.Count == 0)
         {
-            <nav class="pagination-nav mt-4">
-                <ul class="pagination-list">
-                    @if (pagination.HasPreviousPage)
-                    {
-                        <li class="pagination-item">
-                            <a class="pagination-link" href="@Url.Action("Doctors", new { pageNumber = pagination.PageNumber - 1, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg> السابق
-                            </a>
-                        </li>
-                    }
-                    @for (var i = 1; i <= pagination.TotalPages; i++)
-                    {
-                        <li class="pagination-item">
-                            <a class="pagination-link @(i == pagination.PageNumber ? "pagination-link--active" : "")"
-                               href="@Url.Action("Doctors", new { pageNumber = i, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">@i</a>
-                        </li>
-                    }
-                    @if (pagination.HasNextPage)
-                    {
-                        <li class="pagination-item">
-                            <a class="pagination-link" href="@Url.Action("Doctors", new { pageNumber = pagination.PageNumber + 1, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">
-                                التالي <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
-                            </a>
-                        </li>
-                    }
-                </ul>
-            </nav>
+            <div class="empty-state">
+                <div class="icon-wrapper icon-wrapper--primary">
+                    <i class="bi bi-people"></i>
+                </div>
+                <p class="empty-desc">لا يوجد أطباء مسجلون في العيادة</p>
+            </div>
         }
-    }
+        else
+        {
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>الطبيب</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>التخصص</th>
+                            <th>سنوات الخبرة</th>
+                            <th>الحالة</th>
+                            <th>تاريخ الإضافة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doctor in doctors)
+                        {
+                            var imgUrl = !string.IsNullOrEmpty(doctor.ProfilePictureUrl)
+                                ? _attachmentUrlResolver.Resolve(doctor.ProfilePictureUrl)
+                                : null;
+                            <tr>
+                                <td>
+                                    <div class="co-user">
+                                        @if (imgUrl != null)
+                                        {
+                                            <span class="avatar avatar--sm avatar--circle co-avatar">
+                                                <img src="@imgUrl" alt="صورة" loading="lazy" decoding="async" />
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="avatar avatar--sm avatar--circle co-avatar">@(string.IsNullOrWhiteSpace(doctor.UserName) ? "ط" : doctor.UserName.Substring(0, 1))</span>
+                                        }
+                                        <span class="co-user-body">
+                                            <span class="co-user-name">@doctor.UserName</span>
+                                            <span class="co-user-meta">@(string.IsNullOrWhiteSpace(doctor.SpecializationName) ? "طبيب العيادة" : doctor.SpecializationName)</span>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="co-data">@doctor.UserEmail</td>
+                                <td><span class="badge badge-info">@doctor.SpecializationName</span></td>
+                                <td class="co-data tabular">@doctor.YearsOfExperience سنة</td>
+                                <td>
+                                    @if (doctor.IsActive)
+                                    {
+                                        <span class="badge badge-success badge--dot">نشط</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger badge--dot">غير نشط</span>
+                                    }
+                                </td>
+                                <td class="co-data tabular">@doctor.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn-icon view-doctor-btn"
+                                                data-id="@doctor.Id"
+                                                title="عرض التفاصيل">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn-icon edit-doctor-btn"
+                                                data-id="@doctor.Id"
+                                                title="تعديل">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn-icon change-password-doctor-btn"
+                                                data-id="@doctor.Id"
+                                                data-userid="@doctor.UserId"
+                                                data-name="@doctor.UserName"
+                                                title="تغيير كلمة المرور">
+                                            <i class="bi bi-key"></i>
+                                        </button>
+                                        <button class="btn-icon btn-icon--danger delete-doctor-btn"
+                                                data-id="@doctor.Id"
+                                                data-name="@doctor.UserName"
+                                                title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (pagination != null && pagination.TotalPages > 1)
+            {
+                <nav class="pagination-nav">
+                    <ul class="pagination-list">
+                        @if (pagination.HasPreviousPage)
+                        {
+                            <li class="pagination-item">
+                                <a class="pagination-link" href="@Url.Action("Doctors", new { pageNumber = pagination.PageNumber - 1, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg> السابق
+                                </a>
+                            </li>
+                        }
+                        @for (var i = 1; i <= pagination.TotalPages; i++)
+                        {
+                            <li class="pagination-item">
+                                <a class="pagination-link @(i == pagination.PageNumber ? "pagination-link--active" : "")"
+                                   href="@Url.Action("Doctors", new { pageNumber = i, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">@i</a>
+                            </li>
+                        }
+                        @if (pagination.HasNextPage)
+                        {
+                            <li class="pagination-item">
+                                <a class="pagination-link" href="@Url.Action("Doctors", new { pageNumber = pagination.PageNumber + 1, pageSize = pagination.PageSize, searchTerm, specializationId = selectedSpecId })">
+                                    التالي <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+    </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+}
 
 <div class="modal fade" id="createDoctorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">

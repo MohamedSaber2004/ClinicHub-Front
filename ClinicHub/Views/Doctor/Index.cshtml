@@ -40,44 +40,64 @@
         if (!TimeSpan.TryParse(app.StartTime, out var startTime)) return false;
         return date.Date.Add(startTime) <= DateTime.Now;
     }
+
+    string RowState(DoctorAppointmentDto app) => app.Status switch
+    {
+        1 when SlotStarted(app) => "ds-row-live",
+        3 => "ds-row-past",
+        2 => "ds-row-past",
+        5 => "ds-row-past",
+        7 => "ds-row-past",
+        _ => ""
+    };
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-    </span>
-    لوحة تحكم الطبيب
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+            </span>
+            لوحة تحكم الطبيب
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("Appointments")">
+            <i class="bi bi-calendar3"></i>
+            مواعيدي
+        </a>
+    </div>
+</div>
 
 @if (stats != null)
 {
-    <div class="stats-grid">
-        <div class="stat-card">
+    <div class="stats-grid stagger">
+        <div class="stat-card stat-card--info">
             <div class="stat-info">
-                <span class="stat-value">@stats.TodayAppointmentsCount</span>
+                <span class="stat-value tabular">@stats.TodayAppointmentsCount</span>
                 <span class="stat-label">مواعيد اليوم</span>
             </div>
             <div class="icon-wrapper icon-wrapper--primary">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm-8 4H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card--neutral">
             <div class="stat-info">
-                <span class="stat-value">@stats.TotalPatientsCount</span>
+                <span class="stat-value tabular">@stats.TotalPatientsCount</span>
                 <span class="stat-label">إجمالي المرضى</span>
             </div>
             <div class="icon-wrapper icon-wrapper--blue">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card--warning">
             <div class="stat-info">
-                <span class="stat-value">@stats.PendingAppointmentsCount</span>
+                <span class="stat-value tabular">@stats.PendingAppointmentsCount</span>
                 <span class="stat-label">في الانتظار</span>
             </div>
             <div class="icon-wrapper icon-wrapper--amber">
@@ -86,7 +106,7 @@
         </div>
         <div class="stat-card">
             <div class="stat-info">
-                <span class="stat-value">@stats.CompletedAppointmentsCount</span>
+                <span class="stat-value tabular">@stats.CompletedAppointmentsCount</span>
                 <span class="stat-label">مكتملة</span>
             </div>
             <div class="icon-wrapper icon-wrapper--green">
@@ -96,7 +116,7 @@
     </div>
 }
 
-<div class="table-card">
+<div class="table-card ds-table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">
             <span class="subtitle-icon">
@@ -106,12 +126,12 @@
         </h3>
     </div>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table ds-table ds-agenda">
             <thead>
                 <tr>
+                    <th>الوقت</th>
                     <th>المريض</th>
                     <th>التاريخ</th>
-                    <th>الوقت</th>
                     <th>الحالة</th>
                     <th>الإجراء</th>
                 </tr>
@@ -126,24 +146,33 @@
                 @foreach (var app in recentAppointments)
                 {
                     var patientName = !string.IsNullOrWhiteSpace(app.PatientFullName) ? app.PatientFullName : (app.BookedByUserName ?? "مريض");
-                    <tr data-id="@app.Id">
+                    var patientPhone = !string.IsNullOrWhiteSpace(app.PatientPhoneNumber) ? app.PatientPhoneNumber : app.BookedByUserPhone;
+                    <tr data-id="@app.Id" class="@RowState(app)">
+                        <td class="ds-agenda-cell">
+                            <span class="ds-agenda-time">@TimeOnly(app.StartTime)</span>
+                        </td>
                         <td>
-                            <div class="table-user">
-                                <span class="table-avatar">@Initial(patientName)</span>
-                                <span class="table-user-name">@patientName</span>
+                            <div class="ds-patient">
+                                <span class="avatar">@Initial(patientName)</span>
+                                <span class="ds-patient-meta">
+                                    <span class="ds-patient-name">@patientName</span>
+                                    @if (!string.IsNullOrWhiteSpace(patientPhone))
+                                    {
+                                        <span class="ds-patient-phone">@patientPhone</span>
+                                    }
+                                </span>
                             </div>
                         </td>
-                        <td>@app.AppointmentDate</td>
-                        <td>@TimeOnly(app.StartTime)</td>
-                        <td><span class="badge @StatusClass(app.Status)">@StatusLabel(app.Status)</span></td>
+                        <td class="tabular">@app.AppointmentDate</td>
+                        <td class="ds-status-cell"><span class="badge badge--dot @StatusClass(app.Status)">@StatusLabel(app.Status)</span></td>
                         <td>
                             @if (app.Status == 0)
                             {
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-outline-success" onclick="acceptAppointment('@app.Id')">
+                                    <button class="btn btn-sm ds-action ds-action--success" onclick="acceptAppointment('@app.Id')">
                                         <i class="bi bi-check-lg"></i> قبول
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('@app.Id', 2)">
+                                    <button class="btn btn-sm ds-action ds-action--danger" onclick="updateStatus('@app.Id', 2)">
                                         <i class="bi bi-x-lg"></i> رفض
                                     </button>
                                 </div>
@@ -154,9 +183,11 @@
                             }
                             else if (app.Status == 1 && SlotStarted(app))
                             {
-                                <button class="btn btn-sm btn-outline-primary" onclick="updateStatus('@app.Id', 3)">
-                                    <i class="bi bi-check2-circle"></i> إكمال
-                                </button>
+                                <div class="table-actions">
+                                    <button class="btn btn-sm ds-action ds-action--neutral" onclick="updateStatus('@app.Id', 3)">
+                                        <i class="bi bi-check2-circle"></i> إكمال
+                                    </button>
+                                </div>
                             }
                             else if (app.Status == 1)
                             {
@@ -173,6 +204,10 @@
         </table>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     <script>

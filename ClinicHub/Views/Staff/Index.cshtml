@@ -11,60 +11,74 @@
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-    </span>
-    لوحة تحكم الموظف
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+            </span>
+            لوحة تحكم الموظف
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("Queue")">
+            <i class="bi bi-people"></i>
+            طابور المرضى
+        </a>
+        <a class="btn btn-primary btn-sm" href="@Url.Action("RegisterPatient")">
+            <i class="bi bi-person-plus"></i>
+            تسجيل مريض وافد
+        </a>
+    </div>
+</div>
 
-<div class="stats-grid" id="statsGrid">
+<div class="stats-grid stagger" id="statsGrid">
     @if (stats != null)
     {
         <div class="stat-card">
             <div class="stat-info">
-                <span class="stat-value">@stats.TotalAppointments</span>
+                <span class="stat-value tabular">@stats.TotalAppointments</span>
                 <span class="stat-label">مواعيد اليوم</span>
             </div>
             <div class="icon-wrapper icon-wrapper--primary">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card--success">
             <div class="stat-info">
-                <span class="stat-value">@stats.CheckedIn</span>
+                <span class="stat-value tabular">@stats.CheckedIn</span>
                 <span class="stat-label">تم تسجيل الوصول</span>
             </div>
             <div class="icon-wrapper icon-wrapper--green">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card--warning">
             <div class="stat-info">
-                <span class="stat-value">@stats.Waiting</span>
+                <span class="stat-value tabular">@stats.Waiting</span>
                 <span class="stat-label">قيد الانتظار</span>
             </div>
             <div class="icon-wrapper icon-wrapper--amber">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h-2v10l8.29 5.29 1-1.72L13 12.36V3zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card--info">
             <div class="stat-info">
-                <span class="stat-value">@stats.Completed</span>
+                <span class="stat-value tabular">@stats.Completed</span>
                 <span class="stat-label">تم الانتهاء</span>
             </div>
             <div class="icon-wrapper icon-wrapper--blue">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
             </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card--info">
             <div class="stat-info">
-                <span class="stat-value">@(ViewBag.ConfirmedCount ?? 0)</span>
+                <span class="stat-value tabular">@(ViewBag.ConfirmedCount ?? 0)</span>
                 <span class="stat-label">مدفوع - بانتظار القدوم</span>
             </div>
             <div class="icon-wrapper icon-wrapper--blue">
@@ -75,7 +89,7 @@
         {
             <div class="stat-card stat-card--highlight">
                 <div class="stat-info">
-                    <span class="stat-value">@stats.PendingRequests</span>
+                    <span class="stat-value tabular">@stats.PendingRequests</span>
                     <span class="stat-label">طلبات تنتظر القبول</span>
                 </div>
                 <div class="icon-wrapper icon-wrapper--amber">
@@ -89,17 +103,17 @@
 @* ---- Pending Appointment Requests ---- *@
 @if (pendingRequests.Count > 0)
 {
-    <div class="table-card" id="pendingRequestsCard">
+    <div class="table-card ds-table-card" id="pendingRequestsCard">
         <div class="table-card-header">
             <h3 class="table-card-title">
                 <span class="subtitle-icon"><i class="bi bi-bell-fill"></i></span>
                 طلبات الحجز المعلقة
-                <span class="badge badge-warning ms-2">@pendingRequests.Count</span>
+                <span class="badge badge-warning ms-2 badge-count">@pendingRequests.Count</span>
             </h3>
             <a href="@Url.Action("Appointments", new { status = "pending" })" class="btn btn-sm btn-secondary">عرض الكل</a>
         </div>
         <div class="table-responsive">
-            <table class="custom-table">
+            <table class="custom-table ds-table">
                 <thead>
                     <tr>
                         <th>المريض</th>
@@ -113,24 +127,32 @@
                 <tbody id="pendingRequestsBody">
                     @foreach (var req in pendingRequests)
                     {
-                        <tr id="req-@req.Id">
+                        <tr id="req-@req.Id" data-id="@req.Id">
                             <td>
-                                <div class="table-user">
-                                    <span class="table-avatar">@(string.IsNullOrWhiteSpace(req.Patient?.Initial) ? Initial(req.Patient?.Name) : req.Patient!.Initial)</span>
-                                    <span class="table-user-name">@req.Patient?.Name</span>
+                                <div class="ds-patient">
+                                    <span class="avatar">@(string.IsNullOrWhiteSpace(req.Patient?.Initial) ? Initial(req.Patient?.Name) : req.Patient!.Initial)</span>
+                                    <span class="ds-patient-meta">
+                                        <span class="ds-patient-name">@req.Patient?.Name</span>
+                                        @if (!string.IsNullOrWhiteSpace(req.Phone))
+                                        {
+                                            <span class="ds-patient-phone">@req.Phone</span>
+                                        }
+                                    </span>
                                 </div>
                             </td>
                             <td>@req.Doctor?.Name</td>
                             <td>@req.Specialty</td>
-                            <td>@req.Date</td>
-                            <td>@req.Time</td>
-                            <td class="table-actions">
-                                <button class="btn btn-sm btn-outline-success btn-approve-dash" data-id="@req.Id" title="قبول — سيتم إرسال رابط الدفع للمريض">
-                                    <i class="bi bi-check-lg"></i> قبول
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-reject-dash" data-id="@req.Id" title="رفض">
-                                    <i class="bi bi-x-lg"></i> رفض
-                                </button>
+                            <td class="tabular">@req.Date</td>
+                            <td class="tabular">@req.Time</td>
+                            <td>
+                                <div class="table-actions">
+                                    <button class="btn btn-sm btn-outline-success btn-approve-dash ds-action ds-action--success" data-id="@req.Id" title="قبول — سيتم إرسال رابط الدفع للمريض">
+                                        <i class="bi bi-check-lg"></i> قبول
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-reject-dash ds-action ds-action--danger" data-id="@req.Id" title="رفض">
+                                        <i class="bi bi-x-lg"></i> رفض
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -141,7 +163,7 @@
 }
 else if (stats != null)
 {
-    <div class="table-card">
+    <div class="table-card ds-table-card">
         <div class="table-card-header">
             <h3 class="table-card-title">
                 <span class="subtitle-icon"><i class="bi bi-bell"></i></span>
@@ -152,15 +174,16 @@ else if (stats != null)
     </div>
 }
 
-<div class="table-card">
+<div class="table-card ds-table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">
             <span class="subtitle-icon"><i class="bi bi-people"></i></span>
             طابور المرضى الحالي
         </h3>
+        <a href="@Url.Action("Queue")" class="btn btn-sm btn-ghost">عرض الكل</a>
     </div>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table ds-table">
             <thead>
                 <tr>
                     <th>#</th>
@@ -180,22 +203,28 @@ else if (stats != null)
                 @foreach (var item in queueItems)
                 {
                     <tr>
-                        <td><span class="queue-number">@item.QueueNumber</span></td>
+                        <td><span class="queue-number tabular">@item.QueueNumber</span></td>
                         <td>
-                            <div class="table-user">
-                                <span class="table-avatar">@item.Patient?.Initial</span>
-                                <span class="table-user-name">@item.Patient?.Name</span>
+                            <div class="ds-patient">
+                                <span class="avatar">@item.Patient?.Initial</span>
+                                <span class="ds-patient-meta">
+                                    <span class="ds-patient-name">@item.Patient?.Name</span>
+                                </span>
                             </div>
                         </td>
                         <td>@item.Doctor?.Name</td>
-                        <td>@item.Time</td>
-                        <td><span class="badge @item.StatusClass">@item.StatusLabel</span></td>
+                        <td class="tabular">@item.Time</td>
+                        <td class="ds-status-cell"><span class="badge badge--dot @item.StatusClass">@item.StatusLabel</span></td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     <script>

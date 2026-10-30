@@ -10,24 +10,42 @@
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-people"></i>
-    </span>
-    مرضاي
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <i class="bi bi-people"></i>
+            </span>
+            مرضاي
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("Appointments")">
+            <i class="bi bi-calendar3"></i>
+            مواعيدي
+        </a>
+    </div>
+</div>
 
-<div class="table-card">
+<div class="table-card ds-table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">قائمة المرضى</h3>
     </div>
-    <form method="get" action="@Url.Action("Patients")" class="filter-bar table-filter-bar">
-        <input type="text" name="searchTerm" aria-label="بحث عن مريض" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
+    <form method="get" action="@Url.Action("Patients")" class="filter-bar table-filter-bar ds-filter">
+        <div class="form-field ds-filter-search">
+            <span class="form-field-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <input type="text" name="searchTerm" aria-label="بحث عن مريض" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
+        </div>
         <button type="submit" class="btn btn-primary btn-sm">بحث</button>
-        <a href="@Url.Action("Patients")" class="btn btn-outline-secondary btn-sm">مسح</a>
+        <a href="@Url.Action("Patients")" class="btn btn-ghost btn-sm">مسح</a>
     </form>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table ds-table">
             <thead>
                 <tr>
                     <th>المريض</th>
@@ -48,18 +66,26 @@
                 {
                     <tr>
                         <td>
-                            <div class="table-user">
-                                <span class="table-avatar">@Initial(p.FullName)</span>
-                                <span class="table-user-name">@p.FullName</span>
+                            <div class="ds-patient">
+                                <span class="avatar">@Initial(p.FullName)</span>
+                                <span class="ds-patient-meta">
+                                    <span class="ds-patient-name">@p.FullName</span>
+                                    @if (!string.IsNullOrWhiteSpace(p.PhoneNumber))
+                                    {
+                                        <span class="ds-patient-phone">@p.PhoneNumber</span>
+                                    }
+                                </span>
                             </div>
                         </td>
                         <td>@AgeLabel(p.Age) / @GenderLabel(p.Gender)</td>
-                        <td><span class="badge badge-info">@p.TotalVisits</span></td>
-                        <td>@LastVisitLabel(p.LastVisitDate)</td>
+                        <td><span class="badge badge-info tabular">@p.TotalVisits</span></td>
+                        <td class="tabular">@LastVisitLabel(p.LastVisitDate)</td>
                         <td>
-                            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("PatientHistory", new { patientId = p.UserId, name = p.FullName })">
-                                <i class="bi bi-clock-history"></i> عرض التاريخ
-                            </a>
+                            <div class="table-actions">
+                                <a class="btn btn-sm ds-action ds-action--neutral" href="@Url.Action("PatientHistory", new { patientId = p.UserId, name = p.FullName })">
+                                    <i class="bi bi-clock-history"></i> عرض التاريخ
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -68,3 +94,7 @@
     </div>
     <partial name="_Pagination" />
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}

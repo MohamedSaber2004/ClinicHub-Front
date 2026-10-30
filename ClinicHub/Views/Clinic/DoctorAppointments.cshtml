@@ -45,18 +45,26 @@
     }
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-calendar3"></i>
-    </span>
-    مواعيد الأطباء
-</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
 
-<div class="table-card">
-    <div class="table-card-header">
+<div class="page-header cm-page-head">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <i class="bi bi-calendar3"></i>
+            </span>
+            مواعيد الأطباء
+        </h2>
+    </div>
+</div>
+
+<div class="table-card cm-list-card">
+    <div class="table-card-header cm-ledger-head">
         <h3 class="table-card-title">قائمة المواعيد</h3>
     </div>
-    <form method="get" action="@Url.Action("DoctorAppointments")" class="filter-bar table-filter-bar">
+    <form method="get" action="@Url.Action("DoctorAppointments")" class="filter-bar table-filter-bar cm-list-toolbar">
         <select name="status" class="form-select">
             <option value="">جميع الحالات</option>
             <option value="0" selected="@(ViewBag.StatusFilter == "0")">قيد الانتظار</option>
@@ -73,7 +81,7 @@
         <a href="@Url.Action("DoctorAppointments")" class="btn btn-outline-secondary btn-sm">مسح</a>
     </form>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table cm-ledger">
             <thead>
                 <tr>
                     <th>المريض</th>
@@ -92,7 +100,7 @@
                 @if (appointments.Count == 0)
                 {
                     <tr>
-                        <td colspan="@(hasDoctorInfo ? 7 : 6)" class="table-empty">لا توجد مواعيد مطابقة للبحث</td>
+                        <td colspan="@(hasDoctorInfo ? 7 : 6)" class="table-empty cm-empty-row">لا توجد مواعيد مطابقة للبحث</td>
                     </tr>
                 }
                 @foreach (var app in appointments)
@@ -100,7 +108,7 @@
                     var patientName = !string.IsNullOrWhiteSpace(app.PatientFullName) ? app.PatientFullName : (app.BookedByUserName ?? "مريض");
                     <tr data-id="@app.Id">
                         <td>
-                            <div class="table-user">
+                            <div class="table-user cm-user-cell">
                                 <span class="table-avatar">@Initial(patientName)</span>
                                 <span class="table-user-name">@patientName</span>
                             </div>
@@ -109,10 +117,10 @@
                         {
                             <td>@app.DoctorName</td>
                         }
-                        <td>@app.AppointmentDate</td>
-                        <td>@TimeOnly(app.StartTime)</td>
+                        <td class="cm-money">@app.AppointmentDate</td>
+                        <td class="cm-money">@TimeOnly(app.StartTime)</td>
                         <td>@TypeLabel(app.AppointmentType)</td>
-                        <td><span class="badge @StatusClass(app.Status)">@StatusLabel(app.Status)</span></td>
+                        <td class="cm-status-cell"><span class="badge badge--dot @StatusClass(app.Status)">@StatusLabel(app.Status)</span></td>
                         <td>
                             @if (app.Status == 0)
                             {
@@ -162,14 +170,13 @@
             if (!row) return;
             var statusFilter = document.querySelector('.filter-bar select[name="status"]');
             if (statusFilter && statusFilter.value !== '') {
-                row.style.transition = 'opacity .3s';
-                row.style.opacity = '0';
+                row.classList.add('cm-row-fading');
                 setTimeout(function () { row.remove(); }, 300);
                 return;
             }
             var badge = row.querySelector('.badge');
             if (badge) {
-                badge.className = 'badge ' + (_statusClasses[statusCode] || 'badge-secondary');
+                badge.className = 'badge badge--dot ' + (_statusClasses[statusCode] || 'badge-secondary');
                 badge.textContent = _statusLabels[statusCode] || 'غير معروف';
             }
             var actionsCell = row.lastElementChild;

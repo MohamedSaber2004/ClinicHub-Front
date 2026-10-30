@@ -28,21 +28,38 @@
         3 => "badge-danger",
         _ => "badge-info"
     };
+
+    // Bucketed usage width (0..100 step 10) so the split bar needs no inline style.
+    int UsageStep(int used, int limit)
+    {
+        if (limit <= 0) return 0;
+        var pct = (double)used / limit * 100d;
+        if (pct < 0) pct = 0;
+        if (pct > 100) pct = 100;
+        return (int)Math.Round(pct / 10d, MidpointRounding.AwayFromZero) * 10;
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-finance.css?v=20261027_redesign_v2" />
 }
 
 <div class="page-header">
-    <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
-            </svg>
-        </span>
-        إدارة الإعلانات والاشتراكات الإعلانية
-    </h2>
-    <div class="ads-search-wrap" style="margin-top:12px;max-width:400px">
-        <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" id="adsLocalSearch" class="form-input ads-global-input" aria-label="بحث في الإعلانات" placeholder="بحث سريع في الإعلانات والباقات..." autocomplete="off" />
-        <button type="button" id="adsLocalClear" class="ads-search-clear d-none" aria-label="مسح"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="af-head-main">
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+                </svg>
+            </span>
+            إدارة الإعلانات والاشتراكات الإعلانية
+        </h2>
+        <p class="page-header-subtitle af-header-note">المرضى يشاهدون الإعلانات النشطة كصور أو شارات في تطبيق الجوال. يمكنك معاينة شكل كل إعلان عبر زر العين، أو إضافة اشتراك يدوي لأي عيادة.</p>
+        <div class="ads-search-wrap af-ads-search-wrap">
+            <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="adsLocalSearch" class="form-input ads-global-input" aria-label="بحث في الإعلانات" placeholder="بحث سريع في الإعلانات والباقات..." autocomplete="off" />
+            <button type="button" id="adsLocalClear" class="ads-search-clear d-none" aria-label="مسح"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
     </div>
     <div class="page-header-actions">
         <button type="button" class="btn btn-secondary" id="addManualSubBtn" data-bs-toggle="modal" data-bs-target="#manualAdSubModal">
@@ -65,30 +82,36 @@
     <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
 }
 
-<ul class="nav nav-tabs mb-3" id="adsTabs" role="tablist">
-    <li class="nav-item"><button class="nav-link active" id="ads-tab" data-bs-toggle="tab" data-bs-target="#adsPane" type="button" role="tab">الإعلانات والاشتراكات</button></li>
-    <li class="nav-item"><button class="nav-link" id="packages-tab" data-bs-toggle="tab" data-bs-target="#packagesPane" type="button" role="tab">باقات الإعلانات</button></li>
-    <li class="nav-item"><button class="nav-link" id="clinic-settings-tab" data-bs-toggle="tab" data-bs-target="#clinicSettingsPane" type="button" role="tab">حدود وإعدادات العيادات</button></li>
-</ul>
+<div class="tabs-underline mb-3" id="adsTabs" role="tablist">
+    <button class="nav-link tab active" id="ads-tab" data-bs-toggle="tab" data-bs-target="#adsPane" type="button" role="tab">الإعلانات والاشتراكات</button>
+    <button class="nav-link tab" id="packages-tab" data-bs-toggle="tab" data-bs-target="#packagesPane" type="button" role="tab">باقات الإعلانات</button>
+    <button class="nav-link tab" id="clinic-settings-tab" data-bs-toggle="tab" data-bs-target="#clinicSettingsPane" type="button" role="tab">حدود وإعدادات العيادات</button>
+</div>
 
 <div class="tab-content">
     <!-- Ads Tab -->
     <div class="tab-pane fade show active" id="adsPane" role="tabpanel">
         <form class="filter-bar" method="get" action="@AdminRoutes.Pages.Ads()">
-            <select name="status" class="form-select">
-                <option value="" selected="@(string.IsNullOrEmpty(statusFilter))">جميع الحالات</option>
-                <option value="0" selected="@(statusFilter == "0")">معلق الدفع</option>
-                <option value="1" selected="@(statusFilter == "1")">نشط</option>
-                <option value="2" selected="@(statusFilter == "2")">منتهي</option>
-                <option value="3" selected="@(statusFilter == "3")">معطل</option>
-            </select>
-            <button type="submit" class="btn btn-primary">بحث</button>
-            <a href="@AdminRoutes.Pages.Ads()" class="btn btn-secondary">مسح</a>
+            <span class="af-filter-label">الحالة</span>
+            <div class="af-chips">
+                <button type="submit" name="status" value="" class="chip af-chip-submit @(string.IsNullOrEmpty(statusFilter) ? "active" : "")">جميع الحالات</button>
+                <button type="submit" name="status" value="0" class="chip af-chip-submit @(statusFilter == "0" ? "active" : "")">معلق الدفع</button>
+                <button type="submit" name="status" value="1" class="chip af-chip-submit @(statusFilter == "1" ? "active" : "")">نشط</button>
+                <button type="submit" name="status" value="2" class="chip af-chip-submit @(statusFilter == "2" ? "active" : "")">منتهي</button>
+                <button type="submit" name="status" value="3" class="chip af-chip-submit @(statusFilter == "3" ? "active" : "")">معطل</button>
+            </div>
+            <div class="filter-bar-spacer"></div>
+            <button type="submit" class="btn btn-secondary btn-sm">بحث</button>
+            <a href="@AdminRoutes.Pages.Ads()" class="btn btn-ghost btn-sm">مسح</a>
         </form>
 
-        <p class="ad-preview-hint">المرضى يشاهدون الإعلانات النشطة كصور أو شارات في تطبيق الجوال. يمكنك معاينة شكل كل إعلان عبر زر العين، أو إضافة اشتراك يدوي لأي عيادة.</p>
-
         <div class="table-card">
+            <div class="table-card-header af-card-header">
+                <h3 class="table-card-title">الإعلانات والاشتراكات</h3>
+                <div class="table-card-actions af-card-actions">
+                    <span class="badge badge-secondary tabular">@ads.Count</span>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="custom-table">
                     <thead>
@@ -107,8 +130,8 @@
                         {
                             <tr>
                                 <td colspan="7">
-                                    <div class="empty-state">
-                                        <p>لا توجد إعلانات مطابقة.</p>
+                                    <div class="af-empty-cell">
+                                        <p class="mb-0">لا توجد إعلانات مطابقة.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -120,10 +143,10 @@
                                 <tr>
                                     <td class="text-md-medium">@ad.ClinicName</td>
                                     <td class="text-md">@ad.PackageNameAr</td>
-                                    <td class="text-md">@ad.DurationDays يوم</td>
-                                    <td class="text-md">@ad.Amount.ToString("N2") ج.م</td>
-                                    <td class="text-md">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-") → @(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")</td>
-                                    <td><span class="badge @GetStatusClass(ad.Status)">@GetStatusText(ad.Status)</span></td>
+                                    <td class="text-md tabular af-money">@ad.DurationDays يوم</td>
+                                    <td class="text-md-medium amount-cell tabular">@ad.Amount.ToString("N2") ج.م</td>
+                                    <td class="text-md"><span class="tabular af-money">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-")</span> → <span class="tabular af-money">@(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")</span></td>
+                                    <td><span class="badge badge--dot @GetStatusClass(ad.Status)">@GetStatusText(ad.Status)</span></td>
                                     <td class="table-actions">
                                         @if (ad.Status == 1)
                                         {
@@ -146,15 +169,16 @@
                     </tbody>
                 </table>
             </div>
+            <div class="af-table-foot">
+                <partial name="_Pagination" />
+            </div>
         </div>
-
-        <partial name="_Pagination" />
     </div>
 
     <!-- Packages Tab -->
     <div class="tab-pane fade" id="packagesPane" role="tabpanel">
         <div class="table-card">
-            <div class="table-card-header">
+            <div class="table-card-header af-card-header">
                 <h3 class="table-card-title">
                     <span class="subtitle-icon">
                         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -163,6 +187,9 @@
                     </span>
                     باقات الإعلانات والأسعار
                 </h3>
+                <div class="table-card-actions af-card-actions">
+                    <span class="badge badge-secondary tabular">@packages.Count</span>
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="custom-table">
@@ -183,7 +210,7 @@
                         {
                             <tr>
                                 <td colspan="8">
-                                    <div class="empty-state">
+                                    <div class="af-empty-cell">
                                         <p>لا توجد باقات إعلانية. أضف باقة جديدة لبدء بيع الإعلانات.</p>
                                     </div>
                                 </td>
@@ -196,18 +223,18 @@
                                 <tr>
                                     <td class="text-md-medium">@(pkg.NameAr ?? pkg.Name)</td>
                                     <td class="text-md">@(pkg.DescriptionAr ?? pkg.Description)</td>
-                                    <td class="text-md">@pkg.Price.ToString("N2") ج.م</td>
-                                    <td class="text-md">@pkg.DurationDays يوم</td>
+                                    <td class="text-md-medium amount-cell tabular">@pkg.Price.ToString("N2") ج.م</td>
+                                    <td class="text-md tabular af-money">@pkg.DurationDays يوم</td>
                                     <td class="text-md">@(pkg.MaxAds > 0 ? pkg.MaxAds.ToString() + " إعلانات" : "غير محدود")</td>
                                     <td class="text-md">@(pkg.MaxImpressions > 0 ? pkg.MaxImpressions.ToString("N0") + " مشاهدة" : "غير محدود")</td>
-                                    <td>
+                                    <td class="af-status-cell">
                                         @if (pkg.IsActive)
                                         {
-                                            <span class="badge badge-success">نشطة (تظهر في الموقع)</span>
+                                            <span class="badge badge--dot badge-success">نشطة (تظهر في الموقع)</span>
                                         }
                                         else
                                         {
-                                            <span class="badge badge-danger">موقوفة (مخفية)</span>
+                                            <span class="badge badge--dot badge-danger">موقوفة (مخفية)</span>
                                         }
                                     </td>
                                     <td class="table-actions">
@@ -231,7 +258,7 @@
     <!-- Clinic Ad Settings Tab -->
     <div class="tab-pane fade" id="clinicSettingsPane" role="tabpanel">
         <div class="table-card">
-            <div class="table-card-header">
+            <div class="table-card-header af-card-header">
                 <h3 class="table-card-title">
                     <span class="subtitle-icon">
                         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -240,8 +267,11 @@
                     </span>
                     حدود وإعدادات الإعلانات لكل عيادة
                 </h3>
+                <div class="table-card-actions af-card-actions">
+                    <span class="badge badge-secondary tabular">@clinicAdSettings.Count</span>
+                </div>
             </div>
-            <p class="ad-preview-hint">تحكم في الحد الأقصى لعدد الإعلانات وعدد المشاهدات المسموح بها لكل عيادة بشكل مخصص ومرن.</p>
+            <p class="ad-preview-hint af-toolbar-hint">تحكم في الحد الأقصى لعدد الإعلانات وعدد المشاهدات المسموح بها لكل عيادة بشكل مخصص ومرن.</p>
             <div class="table-responsive">
                 <table class="custom-table">
                     <thead>
@@ -258,7 +288,7 @@
                         {
                             <tr>
                                 <td colspan="5">
-                                    <div class="empty-state">
+                                    <div class="af-empty-cell">
                                         <p>لا توجد إعدادات مخصصة — كل العيادات تستخدم الافتراضي أو حدود الباقات المشتركة بها.</p>
                                     </div>
                                 </td>
@@ -268,11 +298,28 @@
                         {
                             foreach (var clinic in clinicAdSettings)
                             {
+                                var usageStep = UsageStep(clinic.ActiveAdsCount, clinic.MaxAds);
                                 <tr>
                                     <td class="text-md-medium">@clinic.ClinicName</td>
                                     <td class="text-md">@(clinic.MaxAds > 0 ? clinic.MaxAds.ToString() + " إعلانات" : "غير محدود")</td>
                                     <td class="text-md">@(clinic.MaxImpressions > 0 ? clinic.MaxImpressions.ToString("N0") + " مشاهدة" : "غير محدود")</td>
-                                    <td class="text-md"><span class="badge badge-info">@clinic.ActiveAdsCount إعلان نشط</span></td>
+                                    <td class="af-status-cell">
+                                        @if (clinic.MaxAds > 0)
+                                        {
+                                            <div class="af-split">
+                                                <div class="af-split-track">
+                                                    <span class="af-split-seg af-split-seg--ok af-split-seg--p@usageStep"></span>
+                                                </div>
+                                                <div class="af-split-legend">
+                                                    <span class="af-legend-item"><span class="af-legend-dot af-legend-dot--ok"></span><span class="af-legend-value tabular">@clinic.ActiveAdsCount / @clinic.MaxAds</span></span>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge--dot badge-info">@clinic.ActiveAdsCount إعلان نشط</span>
+                                        }
+                                    </td>
                                     <td class="table-actions">
                                         <button type="button" class="btn btn-sm btn-primary" onclick="editClinicAdSettings('@clinic.ClinicId', '@(clinic.ClinicName.Replace("'", "\\'"))', @clinic.MaxAds, @clinic.MaxImpressions)">تعديل الحدود</button>
                                     </td>
@@ -438,7 +485,7 @@
             </div>
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">تراجع</button>
-                <button type="button" class="btn btn-danger" id="deactivateSubmitBtn">تأكيد الإلغاء</button>
+                <button type="button" class="btn btn-danger-solid" id="deactivateSubmitBtn">تأكيد الإلغاء</button>
             </div>
         </div>
     </div>

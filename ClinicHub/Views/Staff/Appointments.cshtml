@@ -7,16 +7,39 @@
 @{
     var appointments = ViewBag.Appointments as IReadOnlyCollection<StaffAppointmentDto> ?? new List<StaffAppointmentDto>();
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
+
+    var statusChips = new (string Value, string Label)[]
+    {
+        ("", "كل الحالات"),
+        ("pending", "قيد الانتظار"),
+        ("accepted", "مقبول - بانتظار الدفع"),
+        ("reserved", "محجوز - بانتظار الدفع"),
+        ("confirmed", "مؤكد - مدفوع"),
+        ("cancelled", "ملغي"),
+        ("completed", "منتهي"),
+        ("rejected", "مرفوض"),
+        ("noshow", "لم يحضر")
+    };
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-calendar3"></i>
-    </span>
-    إدارة المواعيد
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <i class="bi bi-calendar3"></i>
+            </span>
+            إدارة المواعيد
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("Queue")">
+            <i class="bi bi-list-ol"></i>
+            طابور المرضى
+        </a>
+    </div>
+</div>
 
-<div class="table-card">
+<div class="table-card ds-table-card">
     <div class="table-card-header">
         <h3 class="table-card-title">
             <span class="subtitle-icon">
@@ -25,25 +48,40 @@
             جميع المواعيد
         </h3>
     </div>
-    <form method="get" action="@Url.Action("Appointments")" class="filter-bar table-filter-bar">
-        <select name="status" class="form-select">
-            <option value="">كل الحالات</option>
-            <option value="pending" selected="@(ViewBag.StatusFilter == "pending")">قيد الانتظار</option>
-            <option value="accepted" selected="@(ViewBag.StatusFilter == "accepted")">مقبول - بانتظار الدفع</option>
-            <option value="reserved" selected="@(ViewBag.StatusFilter == "reserved")">محجوز - بانتظار الدفع</option>
-            <option value="confirmed" selected="@(ViewBag.StatusFilter == "confirmed")">مؤكد - مدفوع</option>
-            <option value="cancelled" selected="@(ViewBag.StatusFilter == "cancelled")">ملغي</option>
-            <option value="completed" selected="@(ViewBag.StatusFilter == "completed")">منتهي</option>
-            <option value="rejected" selected="@(ViewBag.StatusFilter == "rejected")">مرفوض</option>
-            <option value="noshow" selected="@(ViewBag.StatusFilter == "noshow")">لم يحضر</option>
+    <form method="get" action="@Url.Action("Appointments")" class="filter-bar table-filter-bar ds-filter">
+        <select name="status" class="form-select ds-sr-field" tabindex="-1" aria-hidden="true">
+            @foreach (var chip in statusChips)
+            {
+                <option value="@chip.Value" selected="@(ViewBag.StatusFilter == chip.Value)">@chip.Label</option>
+            }
         </select>
-        <input type="date" name="date" aria-label="تاريخ الموعد" class="form-input" value="@ViewBag.DateFilter" title="تاريخ الموعد" />
-        <input type="text" name="searchTerm" aria-label="بحث في المواعيد" class="form-input" placeholder="بحث باسم المريض..." value="@ViewBag.SearchTerm" />
+        <div class="form-field ds-filter-search">
+            <span class="form-field-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <input type="text" name="searchTerm" aria-label="بحث في المواعيد" class="form-input" placeholder="بحث باسم المريض..." value="@ViewBag.SearchTerm" />
+        </div>
+        <div class="segmented ds-date-scope ds-filter-dates">
+            <input type="date" name="date" aria-label="تاريخ الموعد" class="form-input" value="@ViewBag.DateFilter" title="تاريخ الموعد" />
+        </div>
         <button type="submit" class="btn btn-primary btn-sm">بحث</button>
-        <a href="@Url.Action("Appointments")" class="btn btn-outline-secondary btn-sm">مسح</a>
+        <a href="@Url.Action("Appointments")" class="btn btn-ghost btn-sm">مسح</a>
     </form>
+    <div class="ds-chips">
+        <span class="ds-chips-label">الحالة</span>
+        @foreach (var chip in statusChips)
+        {
+            var chipValue = chip.Value;
+            var isActiveChip = string.Equals(ViewBag.StatusFilter as string ?? "", chipValue, StringComparison.Ordinal);
+            <a class="chip @(isActiveChip ? "active" : "")"
+               href="@Url.Action("Appointments", new { status = chipValue, date = ViewBag.DateFilter, searchTerm = ViewBag.SearchTerm })">@chip.Label</a>
+        }
+    </div>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table ds-table">
             <thead>
                 <tr>
                     <th>المريض</th>
@@ -66,37 +104,47 @@
                 {
                     <tr data-id="@app.Id">
                         <td>
-                            <div class="table-user">
-                                <span class="table-avatar">@(string.IsNullOrWhiteSpace(app.Patient?.Initial) ? Initial(app.Patient?.Name) : app.Patient.Initial)</span>
-                                <span class="table-user-name">@app.Patient?.Name</span>
+                            <div class="ds-patient">
+                                <span class="avatar">@(string.IsNullOrWhiteSpace(app.Patient?.Initial) ? Initial(app.Patient?.Name) : app.Patient.Initial)</span>
+                                <span class="ds-patient-meta">
+                                    <span class="ds-patient-name">@app.Patient?.Name</span>
+                                    @if (!string.IsNullOrWhiteSpace(app.Phone))
+                                    {
+                                        <span class="ds-patient-phone">@app.Phone</span>
+                                    }
+                                </span>
                             </div>
                         </td>
                         <td>@app.Doctor?.Name</td>
                         <td>@app.Specialty</td>
-                        <td>@app.Date</td>
-                        <td>@app.Time</td>
-                        <td><span class="badge @app.StatusClass">@app.StatusLabel</span></td>
+                        <td class="tabular">@app.Date</td>
+                        <td class="tabular">@app.Time</td>
+                        <td class="ds-status-cell"><span class="badge badge--dot @app.StatusClass">@app.StatusLabel</span></td>
                         <td class="appointment-actions" data-id="@app.Id">
                             @if (app.Status == "pending" || app.Status == "reserved")
                             {
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-outline-success btn-approve" data-id="@app.Id" title="قبول — سيتم إرسال رابط الدفع للمريض"><i class="bi bi-check-lg"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger btn-reject" data-id="@app.Id" title="رفض"><i class="bi bi-x-lg"></i></button>
+                                    <button class="btn btn-sm btn-outline-success btn-approve ds-action ds-action--success" data-id="@app.Id" title="قبول — سيتم إرسال رابط الدفع للمريض"><i class="bi bi-check-lg"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger btn-reject ds-action ds-action--danger" data-id="@app.Id" title="رفض"><i class="bi bi-x-lg"></i></button>
                                 </div>
                             }
                             else if (app.Status == "confirmed" || app.Status == "accepted")
                             {
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary btn-checkin" data-id="@app.Id"><i class="bi bi-box-arrow-in-right"></i> تسجيل وصول</button>
+                                    <button class="btn btn-sm btn-outline-primary btn-checkin ds-action" data-id="@app.Id"><i class="bi bi-box-arrow-in-right"></i> تسجيل وصول</button>
                                     @if (app.Status == "accepted")
                                     {
-                                        <button class="btn btn-sm btn-outline-danger btn-reject" data-id="@app.Id" title="رفض"><i class="bi bi-x-lg"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger btn-reject ds-action ds-action--danger" data-id="@app.Id" title="رفض"><i class="bi bi-x-lg"></i></button>
                                     }
                                 </div>
                             }
                             else if (app.Status == "awaiting-payment")
                             {
                                 <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>
+                            }
+                            else
+                            {
+                                <span>—</span>
                             }
                         </td>
                     </tr>
@@ -106,6 +154,10 @@
     </div>
     <partial name="_Pagination" />
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     <script>

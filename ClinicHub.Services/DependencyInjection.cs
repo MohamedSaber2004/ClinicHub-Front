@@ -207,6 +207,23 @@ namespace ClinicHub.Services
             .AddHttpMessageHandler<ApiLoggingHandler>()
             .AddHttpMessageHandler<BearerTokenHandler>();
 
+            services.AddHttpClient<IClinicPayoutService, ClinicPayoutService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
+            .AddHttpMessageHandler<BearerTokenHandler>()
+            .AddHttpMessageHandler<ClinicHeaderHandler>();
+
+            services.AddHttpClient<IAdminPayoutService, AdminPayoutService>(client =>
+            {
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("ar");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            })
+            .AddHttpMessageHandler<ApiLoggingHandler>()
+            .AddHttpMessageHandler<BearerTokenHandler>();
+
             return services;
         }
     }

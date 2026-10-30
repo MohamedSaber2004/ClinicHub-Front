@@ -7,6 +7,8 @@
     int emptyStars = Math.Max(0, 5 - fullStars - (hasHalf ? 1 : 0));
     string label = value.ToString("0.#") + " من 5";
     string starPath = "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z";
+    // Several ratings render on one page — the clip path id must be unique per instance.
+    string clipId = "starHalfClip" + Guid.NewGuid().ToString("N").Substring(0, 8);
 }
 <div class="stars-inline" role="img" aria-label="@label">
     @for (int i = 0; i < fullStars; i++)
@@ -15,12 +17,12 @@
     }
     @if (hasHalf)
     {
-        <svg width="@size" height="@size" viewBox="0 0 24 24" aria-hidden="true">
+        <svg class="star-half" width="@size" height="@size" viewBox="0 0 24 24" aria-hidden="true">
             <defs>
-                <clipPath id="starHalfClip"><rect x="0" y="0" width="12" height="24"/></clipPath>
+                <clipPath id="@clipId"><rect x="0" y="0" width="12" height="24"/></clipPath>
             </defs>
             <path class="star-empty" fill="currentColor" d="@starPath"/>
-            <path class="star-filled" fill="currentColor" clip-path="url(#starHalfClip)" d="@starPath"/>
+            <path class="star-filled" fill="currentColor" clip-path="url(#@clipId)" d="@starPath"/>
         </svg>
     }
     @for (int i = 0; i < emptyStars; i++)

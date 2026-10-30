@@ -11,61 +11,88 @@
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-file-earmark-medical"></i>
-    </span>
-    السجل الطبي الإلكتروني (EMR)
-</h2>
+<div class="co-page">
+    <div class="page-header co-page-head">
+        <div>
+            <h2 class="page-title">
+                <span class="page-title-icon">
+                    <i class="bi bi-file-earmark-medical"></i>
+                </span>
+                السجل الطبي الإلكتروني (EMR)
+            </h2>
+            <p class="page-header-subtitle">ملفات المرضى والزيارات السابقة لكل مريض داخل العيادة</p>
+        </div>
+    </div>
 
-<div class="table-card">
-    <div class="table-card-header">
-        <h3 class="table-card-title">سجلات المرضى النشطة</h3>
+    <div class="table-card co-roster">
+        <div class="table-card-header co-roster-head">
+            <h3 class="table-card-title mb-0">سجلات المرضى النشطة</h3>
+            @if (patients.Count > 0)
+            {
+                <span class="co-count"><i class="bi bi-people"></i> إجمالي: @patients.Count سجل</span>
+            }
+        </div>
+
+        <form method="get" action="@Url.Action("MedicalRecords")" class="filter-bar table-filter-bar co-searchbar">
+            <input type="text" name="searchTerm" aria-label="بحث في السجلات الطبية" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
+            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i> بحث</button>
+            <a href="@Url.Action("MedicalRecords")" class="btn btn-sm btn-ghost"><i class="bi bi-x-lg"></i> مسح</a>
+        </form>
+
+        @if (patients.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="icon-wrapper icon-wrapper--primary">
+                    <i class="bi bi-file-earmark-medical"></i>
+                </div>
+                <p class="empty-desc">لا توجد سجلات مرضى مطابقة للبحث</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>المريض</th>
+                            <th>العمر / الجنس</th>
+                            <th>عدد الزيارات</th>
+                            <th>آخر زيارة</th>
+                            <th>الإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in patients)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="co-user">
+                                        <span class="avatar avatar--sm avatar--circle co-avatar">@Initial(p.FullName)</span>
+                                        <span class="co-user-body">
+                                            <span class="co-user-name">@p.FullName</span>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="co-muted">@AgeLabel(p.Age) / @GenderLabel(p.Gender)</td>
+                                <td><span class="badge badge-info">@p.TotalVisits</span></td>
+                                <td class="co-data tabular">@LastVisitLabel(p.LastVisitDate)</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a class="btn btn-sm btn-outline" href="@Url.Action("DoctorPatientHistory", new { patientId = p.UserId, name = p.FullName })">
+                                            <i class="bi bi-clock-history"></i> عرض التاريخ الطبي
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        <partial name="_Pagination" />
     </div>
-    <form method="get" action="@Url.Action("MedicalRecords")" class="filter-bar table-filter-bar">
-        <input type="text" name="searchTerm" aria-label="بحث في السجلات الطبية" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
-        <button type="submit" class="btn btn-primary btn-sm">بحث</button>
-        <a href="@Url.Action("MedicalRecords")" class="btn btn-outline-secondary btn-sm">مسح</a>
-    </form>
-    <div class="table-responsive">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>المريض</th>
-                    <th>العمر / الجنس</th>
-                    <th>عدد الزيارات</th>
-                    <th>آخر زيارة</th>
-                    <th>الإجراء</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (patients.Count == 0)
-                {
-                    <tr>
-                        <td colspan="5" class="table-empty">لا توجد سجلات مرضى مطابقة للبحث</td>
-                    </tr>
-                }
-                @foreach (var p in patients)
-                {
-                    <tr>
-                        <td>
-                            <div class="table-user">
-                                <span class="table-avatar">@Initial(p.FullName)</span>
-                                <span class="table-user-name">@p.FullName</span>
-                            </div>
-                        </td>
-                        <td>@AgeLabel(p.Age) / @GenderLabel(p.Gender)</td>
-                        <td><span class="badge badge-info">@p.TotalVisits</span></td>
-                        <td>@LastVisitLabel(p.LastVisitDate)</td>
-                        <td>
-                            <a class="btn btn-sm btn-outline-primary" href="@Url.Action("DoctorPatientHistory", new { patientId = p.UserId, name = p.FullName })">
-                                <i class="bi bi-clock-history"></i> عرض التاريخ الطبي
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <partial name="_Pagination" />
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+}

@@ -22,18 +22,38 @@
     var clinicsSummary = ViewBag.ClinicsSummary as PagginatedResult<ClinicPaymentsSummaryDto>;
     var summaryItems = clinicsSummary?.Items ?? new List<ClinicPaymentsSummaryDto>();
     var summarySearch = ViewBag.SummarySearch as string;
+
+    // Never invent money: a missing stats object renders "—" instead of a fake 0.00.
+    string Money(decimal? value) => value.HasValue ? value.Value.ToString("N2") + " ج.م" : "—";
+
+    // Bucketed share (0..100 step 10) so the net/fee bar needs no inline style.
+    int SplitStep(decimal part, decimal total)
+    {
+        if (total <= 0) return 0;
+        var pct = part / total * 100m;
+        if (pct < 0) pct = 0;
+        if (pct > 100) pct = 100;
+        return (int)Math.Round(pct / 10m, MidpointRounding.AwayFromZero) * 10;
+    }
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-finance.css?v=20261027_redesign_v2" />
+}
+
+<div class="af-page">
 <div class="page-header">
-    <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" fill="currentColor"/>
-                <circle cx="15.5" cy="13.5" r="2.5" fill="currentColor"/>
-            </svg>
-        </span>
-        المدفوعات والمعاملات المالية
-    </h2>
+    <div class="af-head-main">
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" fill="currentColor"/>
+                    <circle cx="15.5" cy="13.5" r="2.5" fill="currentColor"/>
+                </svg>
+            </span>
+            المدفوعات والمعاملات المالية
+        </h2>
+    </div>
     <div class="page-header-actions">
         <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#adsModal">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -64,37 +84,37 @@
 }
 
 <!-- Platform Fee Settings -->
-<div class="table-card mb-3">
-    <div class="table-card-header">
+<div class="table-card">
+    <div class="table-card-header af-card-header">
         <h3 class="table-card-title mb-0">رسوم المنصة على المواعيد</h3>
     </div>
-    <form method="post" action="/Admin/UpdatePlatformFee" class="p-3 d-flex align-items-end gap-3 flex-wrap">
+    <form method="post" action="/Admin/UpdatePlatformFee" class="af-form-inline">
         @Html.AntiForgeryToken()
-        <div>
-            <label for="platformFeeInput" class="form-label d-block mb-1">نسبة الرسم (% من سعر الكشف)</label>
+        <div class="af-form-inline-field">
+            <label for="platformFeeInput" class="form-label mb-1">نسبة الرسم (% من سعر الكشف)</label>
             <input type="number" step="0.01" min="0" max="100" name="appointmentFeePercent" id="platformFeeInput"
                    class="form-input" value="@(ViewBag.PlatformFee)" />
         </div>
         <button type="submit" class="btn btn-primary btn-sm">حفظ النسبة</button>
-        <span class="text-muted">
+        <p class="af-form-inline-hint">
             يُضاف هذا النسبة فوق سعر الكشف الخاص بالعيادة، ويدفعها المريض ضمن المبلغ الإجمالي دون تفصيلها.
-        </span>
+        </p>
     </form>
 </div>
 
 <!-- KPI Stat Cards -->
 <div class="stats-header">
     <h3 class="stats-title">إحصائيات الشهر</h3>
-    <form class="stats-month-form" method="get" action="@AdminRoutes.Pages.Payments()">
+    <form class="stats-month-form af-range" method="get" action="@AdminRoutes.Pages.Payments()">
         <label for="statsMonthInput" class="stats-month-label">الشهر</label>
         <input type="month" name="month" id="statsMonthInput" class="form-input" value="@month" title="اختر الشهر" />
         <input type="hidden" name="summarySearch" value="@summarySearch" />
     </form>
 </div>
-<div class="stats-grid">
-    <div class="stat-card">
+<div class="stats-grid stagger">
+    <div class="stat-card stat-card--info lift">
         <div class="stat-info">
-            <span class="stat-value">@(stats?.TodayRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-value af-stat-money">@Money(stats?.TodayRevenue)</span>
             <span class="stat-label">إيرادات الشهر</span>
         </div>
         <div class="icon-wrapper icon-wrapper--primary">
@@ -103,9 +123,9 @@
             </svg>
         </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card lift">
         <div class="stat-info">
-            <span class="stat-value">@(stats?.SubscriptionsRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-value af-stat-money">@Money(stats?.SubscriptionsRevenue)</span>
             <span class="stat-label">إيرادات الاشتراكات</span>
         </div>
         <div class="icon-wrapper icon-wrapper--blue">
@@ -114,12 +134,14 @@
             </svg>
         </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card--brass lift">
         <div class="stat-info">
-            <span class="stat-value">@(stats?.AppointmentsRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-value af-stat-money">@Money(stats?.AppointmentsRevenue)</span>
             <span class="stat-label">إيرادات المواعيد</span>
-            <span class="stat-label">رسوم المنصة: @(stats?.AppointmentsPlatformFees.ToString("N2") ?? "0.00") ج.م</span>
-            <span class="stat-label">صافي العيادات: @(stats?.AppointmentsNetRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="af-stat-lines">
+                <span class="af-stat-line">رسوم المنصة: <strong>@Money(stats?.AppointmentsPlatformFees)</strong></span>
+                <span class="af-stat-line">صافي العيادات: <strong>@Money(stats?.AppointmentsNetRevenue)</strong></span>
+            </span>
         </div>
         <div class="icon-wrapper icon-wrapper--green">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -127,9 +149,9 @@
             </svg>
         </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card lift">
         <div class="stat-info">
-            <span class="stat-value">@(stats?.AdsRevenue.ToString("N2") ?? "0.00") ج.م</span>
+            <span class="stat-value af-stat-money">@Money(stats?.AdsRevenue)</span>
             <span class="stat-label">إيرادات الإعلانات</span>
         </div>
         <div class="icon-wrapper icon-wrapper--amber">
@@ -141,9 +163,12 @@
 </div>
 
 <!-- Per-Clinic Monthly Summary -->
-<div class="table-card mb-3">
-    <div class="table-card-header">
+<div class="table-card">
+    <div class="table-card-header af-card-header">
         <h3 class="table-card-title mb-0">ملخص شهري لكل عيادة (@month)</h3>
+        <div class="table-card-actions af-card-actions">
+            <span class="badge badge-secondary tabular">@summaryItems.Count</span>
+        </div>
     </div>
     <form class="filter-bar" method="get" action="@AdminRoutes.Pages.Payments()">
         <input type="hidden" name="month" value="@month" />
@@ -156,7 +181,7 @@
         <input type="hidden" name="clinicId" value="@clinicIdFilter" />
         <input type="text" name="summarySearch" aria-label="بحث في المدفوعات" class="form-input" placeholder="بحث باسم العيادة في الملخص..." value="@summarySearch" />
         <button type="submit" class="btn btn-primary">بحث</button>
-        <a href="@Url.Action("Payments", new { month = month, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm, clinicId = clinicIdFilter })" class="btn btn-secondary">مسح</a>
+        <a href="@Url.Action("Payments", new { month = month, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm, clinicId = clinicIdFilter })" class="btn btn-ghost">مسح</a>
     </form>
     <div class="table-responsive">
         <table class="custom-table">
@@ -167,20 +192,23 @@
                     <th>إجمالي الإيرادات</th>
                     <th>رسوم المنصة</th>
                     <th>صافي العيادة</th>
+                    <th>التوزيع</th>
                 </tr>
             </thead>
             <tbody>
                 @if (summaryItems.Count == 0)
                 {
                     <tr>
-                        <td colspan="5">
-                            <div class="empty-state">
-                                <i class="bi bi-building empty-state-icon"></i>
-                                <p class="empty-title">@(string.IsNullOrWhiteSpace(summarySearch) ? "لا توجد عيادات مطابقة" : "لا توجد عيادات مطابقة للبحث")</p>
-                                @if (!string.IsNullOrWhiteSpace(summarySearch))
-                                {
-                                    <a href="@Url.Action("Payments", new { month = month, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm, clinicId = clinicIdFilter })" class="btn btn-secondary btn-sm">مسح بحث الملخص</a>
-                                }
+                        <td colspan="6">
+                            <div class="af-empty-cell">
+                                <div class="empty-state">
+                                    <i class="bi bi-building empty-state-icon"></i>
+                                    <p class="empty-title">@(string.IsNullOrWhiteSpace(summarySearch) ? "لا توجد عيادات مطابقة" : "لا توجد عيادات مطابقة للبحث")</p>
+                                    @if (!string.IsNullOrWhiteSpace(summarySearch))
+                                    {
+                                        <a href="@Url.Action("Payments", new { month = month, type = typeFilter, status = statusFilter, method = methodFilter, fromDate = fromDateFilter, toDate = toDateFilter, searchTerm = searchTerm, clinicId = clinicIdFilter })" class="btn btn-secondary btn-sm">مسح بحث الملخص</a>
+                                    }
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -189,14 +217,28 @@
                 {
                     foreach (var s in summaryItems)
                     {
+                        var netStep = SplitStep(s.NetRevenue, s.TotalRevenue);
+                        var feeStep = SplitStep(s.PlatformFees, s.TotalRevenue);
                         <tr>
                             <td class="text-md-medium">
                                 <a href="@Url.Action("Payments", new { month = month, clinicId = s.ClinicId, summarySearch = summarySearch })">@s.ClinicName</a>
                             </td>
-                            <td class="text-md">@s.PaymentsCount</td>
+                            <td class="text-md tabular">@s.PaymentsCount</td>
                             <td class="text-md-medium amount-cell">@s.TotalRevenue.ToString("N2") ج.م</td>
-                            <td class="text-md">@s.PlatformFees.ToString("N2") ج.م</td>
-                            <td class="text-md-medium">@s.NetRevenue.ToString("N2") ج.م</td>
+                            <td class="text-md amount-cell">@s.PlatformFees.ToString("N2") ج.م</td>
+                            <td class="text-md-medium amount-cell">@s.NetRevenue.ToString("N2") ج.م</td>
+                            <td>
+                                <div class="af-split">
+                                    <div class="af-split-track">
+                                        <span class="af-split-seg af-split-seg--net af-split-seg--p@netStep"></span>
+                                        <span class="af-split-seg af-split-seg--fee af-split-seg--p@feeStep"></span>
+                                    </div>
+                                    <div class="af-split-legend">
+                                        <span class="af-legend-item"><span class="af-legend-dot af-legend-dot--net"></span>صافي <span class="af-legend-value">@s.NetRevenue.ToString("N2")</span></span>
+                                        <span class="af-legend-item"><span class="af-legend-dot af-legend-dot--fee"></span>رسوم <span class="af-legend-value">@s.PlatformFees.ToString("N2")</span></span>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     }
                 }
@@ -209,7 +251,8 @@
         var st = clinicsSummary.TotalPages;
         var swFrom = Math.Max(1, sp - 2);
         var swTo = Math.Min(st, sp + 2);
-        <nav class="pagination-nav" aria-label="التنقل بين صفحات ملخص العيادات">
+        <div class="af-table-foot">
+            <nav class="pagination-nav" aria-label="التنقل بين صفحات ملخص العيادات">
             <ul class="pagination-list">
                 @if (clinicsSummary.HasPreviousPage)
                 {
@@ -241,6 +284,7 @@
                 }
             </ul>
         </nav>
+        </div>
     }
 </div>
 
@@ -249,43 +293,65 @@
     <input type="hidden" name="month" value="@month" />
     <input type="hidden" name="summarySearch" value="@summarySearch" />
     <input type="text" name="searchTerm" class="form-input" aria-label="بحث في المدفوعات" placeholder="بحث بالاسم أو الكود أو الرقم المرجعي..." value="@searchTerm" />
-    <select name="clinicId" class="form-select">
-        <option value="">جميع العيادات</option>
-        @foreach (var clinic in clinics)
-        {
-            <option value="@clinic.Id" selected="@(clinicIdFilter == clinic.Id)">@clinic.Name</option>
-        }
-    </select>
-    <select name="type" class="form-select">
-        <option value="" selected="@(string.IsNullOrEmpty(typeFilter))">جميع الأنواع</option>
-        <option value="0" selected="@(typeFilter == "0")">موعد مريض</option>
-        <option value="1" selected="@(typeFilter == "1")">اشتراك عيادة</option>
-        <option value="2" selected="@(typeFilter == "2")">خدمة إعلانية</option>
-    </select>
-    <select name="method" class="form-select">
-        <option value="" selected="@(string.IsNullOrEmpty(methodFilter))">جميع طرق الدفع</option>
-        <option value="0" selected="@(methodFilter == "0")">نقدي</option>
-        <option value="1" selected="@(methodFilter == "1")">Paymob - محفظة إلكترونية</option>
-        <option value="2" selected="@(methodFilter == "2")">Paymob - بطاقة ائتمانية</option>
-    </select>
-    <select name="status" class="form-select">
-        <option value="" selected="@(string.IsNullOrEmpty(statusFilter))">جميع الحالات</option>
-        <option value="0" selected="@(statusFilter == "0")">معلق</option>
-        <option value="1" selected="@(statusFilter == "1")">ناجح</option>
-        <option value="2" selected="@(statusFilter == "2")">فاشل</option>
-        <option value="3" selected="@(statusFilter == "3")">مسترد</option>
-        <option value="5" selected="@(statusFilter == "5")">مسترد جزئياً</option>
-        <option value="6" selected="@(statusFilter == "6")">استرداد معلق</option>
-        <option value="7" selected="@(statusFilter == "7")">فشل الاسترداد</option>
-    </select>
-    <input type="date" name="fromDate" aria-label="من تاريخ" class="form-input" value="@fromDateFilter" title="من تاريخ" />
-    <input type="date" name="toDate" aria-label="إلى تاريخ" class="form-input" value="@toDateFilter" title="إلى تاريخ" />
+    <div class="af-filter-group">
+        <span class="af-filter-label" id="payClinicLabel">العيادة</span>
+        <select name="clinicId" class="form-select" aria-labelledby="payClinicLabel">
+            <option value="">جميع العيادات</option>
+            @foreach (var clinic in clinics)
+            {
+                <option value="@clinic.Id" selected="@(clinicIdFilter == clinic.Id)">@clinic.Name</option>
+            }
+        </select>
+    </div>
+    <div class="af-filter-group">
+        <span class="af-filter-label" id="payTypeLabel">النوع</span>
+        <select name="type" class="form-select" aria-labelledby="payTypeLabel">
+            <option value="" selected="@(string.IsNullOrEmpty(typeFilter))">جميع الأنواع</option>
+            <option value="0" selected="@(typeFilter == "0")">موعد مريض</option>
+            <option value="1" selected="@(typeFilter == "1")">اشتراك عيادة</option>
+            <option value="2" selected="@(typeFilter == "2")">خدمة إعلانية</option>
+        </select>
+    </div>
+    <div class="af-filter-group">
+        <span class="af-filter-label" id="payMethodLabel">طريقة الدفع</span>
+        <select name="method" class="form-select" aria-labelledby="payMethodLabel">
+            <option value="" selected="@(string.IsNullOrEmpty(methodFilter))">جميع طرق الدفع</option>
+            <option value="0" selected="@(methodFilter == "0")">نقدي</option>
+            <option value="1" selected="@(methodFilter == "1")">Paymob - محفظة إلكترونية</option>
+            <option value="2" selected="@(methodFilter == "2")">Paymob - بطاقة ائتمانية</option>
+        </select>
+    </div>
+    <div class="af-filter-group af-range">
+        <span class="af-filter-label">الفترة</span>
+        <input type="date" name="fromDate" aria-label="من تاريخ" class="form-input" value="@fromDateFilter" title="من تاريخ" />
+        <span class="af-range-sep">—</span>
+        <input type="date" name="toDate" aria-label="إلى تاريخ" class="form-input" value="@toDateFilter" title="إلى تاريخ" />
+    </div>
+    <div class="filter-bar-spacer"></div>
     <button type="submit" class="btn btn-primary">بحث</button>
-    <a href="@AdminRoutes.Pages.Payments()" class="btn btn-secondary">مسح</a>
+    <a href="@AdminRoutes.Pages.Payments()" class="btn btn-ghost">مسح</a>
+
+    <div class="af-chips">
+        <span class="af-filter-label">الحالة</span>
+        <button type="submit" name="status" value="" class="chip af-chip-submit @(string.IsNullOrEmpty(statusFilter) ? "active" : "")">جميع الحالات</button>
+        <button type="submit" name="status" value="0" class="chip af-chip-submit @(statusFilter == "0" ? "active" : "")">معلق</button>
+        <button type="submit" name="status" value="1" class="chip af-chip-submit @(statusFilter == "1" ? "active" : "")">ناجح</button>
+        <button type="submit" name="status" value="2" class="chip af-chip-submit @(statusFilter == "2" ? "active" : "")">فاشل</button>
+        <button type="submit" name="status" value="3" class="chip af-chip-submit @(statusFilter == "3" ? "active" : "")">مسترد</button>
+        <button type="submit" name="status" value="5" class="chip af-chip-submit @(statusFilter == "5" ? "active" : "")">مسترد جزئياً</button>
+        <button type="submit" name="status" value="6" class="chip af-chip-submit @(statusFilter == "6" ? "active" : "")">استرداد معلق</button>
+        <button type="submit" name="status" value="7" class="chip af-chip-submit @(statusFilter == "7" ? "active" : "")">فشل الاسترداد</button>
+    </div>
 </form>
 
 <!-- Payments Table -->
 <div class="table-card">
+    <div class="table-card-header af-card-header">
+        <h3 class="table-card-title mb-0">@ViewData["Title"]</h3>
+        <div class="table-card-actions af-card-actions">
+            <span class="badge badge-secondary tabular">@payments.Count</span>
+        </div>
+    </div>
     <div class="table-responsive">
         <table class="custom-table payments-table">
             <thead>
@@ -308,11 +374,13 @@
                 {
                     <tr>
                         <td colspan="11">
-                            <div class="empty-state">
-                                <i class="bi bi-wallet2 empty-state-icon"></i>
-                                <p class="empty-title">لا توجد مدفوعات مطابقة</p>
-                                <p class="empty-desc">جرّب تعديل الفلاتر أو تغيير الشهر لعرض المدفوعات.</p>
-                                <a href="@AdminRoutes.Pages.Payments()" class="btn btn-secondary btn-sm">مسح الفلاتر</a>
+                            <div class="af-empty-cell">
+                                <div class="empty-state">
+                                    <i class="bi bi-wallet2 empty-state-icon"></i>
+                                    <p class="empty-title">لا توجد مدفوعات مطابقة</p>
+                                    <p class="empty-desc">جرّب تعديل الفلاتر أو تغيير الشهر لعرض المدفوعات.</p>
+                                    <a href="@AdminRoutes.Pages.Payments()" class="btn btn-secondary btn-sm">مسح الفلاتر</a>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -327,7 +395,7 @@
                         var statusClass = p.Status switch { 0 => "badge-warning", 1 => "badge-success", 2 => "badge-danger", 3 => "badge-info", 4 => "badge-info", 5 => "badge-warning", 6 => "badge-warning", 7 => "badge-danger", _ => "badge-info" };
                         var methodText = p.Method switch { 0 => "نقدي", 1 => "Paymob - محفظة", 2 => "Paymob - بطاقة", _ => "غير معروف" };
                         <tr>
-                            <td class="text-md">@p.Code</td>
+                            <td class="text-md tabular">@p.Code</td>
                             <td class="text-md-medium">
                                 <div class="table-user">
                                     <div class="table-avatar table-avatar--md">
@@ -336,21 +404,21 @@
                                     <span class="table-user-name">@p.Payer</span>
                                 </div>
                             </td>
-                            <td><span class="badge @typeClass">@typeText</span></td>
+                            <td><span class="badge badge--dot @typeClass">@typeText</span></td>
                             <td class="text-md-medium amount-cell">@p.Amount.ToString("N2") ج.م</td>
-                            <td class="text-md">@p.PlatformFee.ToString("N2") ج.م</td>
-                            <td class="text-md">@p.ClinicNetAmount.ToString("N2") ج.م</td>
+                            <td class="text-md amount-cell">@p.PlatformFee.ToString("N2") ج.م</td>
+                            <td class="text-md amount-cell">@p.ClinicNetAmount.ToString("N2") ج.م</td>
                             <td class="text-md">@methodText</td>
-                            <td>
-                                <span class="badge @statusClass">@statusText</span>
+                            <td class="af-status-cell">
+                                <span class="badge badge--dot @(p.Status == 4 ? "badge--live" : "") @statusClass">@statusText</span>
                                 @if (p.RefundedAmount > 0)
                                 {
                                     <span class="cell-sub">مسترد: @p.RefundedAmount.ToString("N2") ج.م</span>
                                 }
                             </td>
-                            <td class="text-md">@p.Date.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="text-md af-money">@p.Date.ToString("yyyy-MM-dd HH:mm")</td>
                             <td class="ref-number">@p.RefNumber</td>
-                            <td>
+                            <td class="table-actions">
                                 <a class="btn-icon" href="@AdminRoutes.Pages.PaymentsDetails(p.Id)" title="التفاصيل">
                                     <svg viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
@@ -365,9 +433,12 @@
     </div>
     @if (pagination != null)
     {
-        <partial name="_Pagination" model="pagination" />
+        <div class="af-table-foot">
+            <partial name="_Pagination" model="pagination" />
+        </div>
     }
 </div>
+</div><!-- /af-page -->
 
 <!-- Manual Payment Modal -->
 <div class="modal fade" id="manualPaymentModal" tabindex="-1" aria-hidden="true">

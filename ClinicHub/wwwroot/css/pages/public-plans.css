@@ -1,0 +1,1252 @@
+/* ============================================================
+   Public plans — Subscriptions · AdsPlans · PaymentResult · ClinicRegister
+   Layer order: design-system → site → app-shell → overlays →
+   pages/public → THIS FILE (plain source order wins, zero !important)
+   Token-driven only. No inline styles, no new hues: emerald ink,
+   brass accessory, paper surfaces.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. Public page hero (pricing + ads plans)
+   ------------------------------------------------------------ */
+
+.subscription-hero.plans-hero {
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-11) 0 var(--space-9);
+    background:
+        radial-gradient(110% 80% at 88% -10%, rgba(183, 138, 60, 0.14) 0%, transparent 58%),
+        linear-gradient(180deg, var(--clr-emerald-25) 0%, var(--clr-surface) 78%);
+    border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.subscription-hero.plans-hero::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    bottom: -1px;
+    width: 128px;
+    height: 3px;
+    border-radius: var(--radius-pill);
+    background: var(--grad-brass);
+}
+
+.plans-hero .text-h1 {
+    max-width: 760px;
+    margin: 0 auto var(--space-4);
+}
+
+.subscription-hero-desc {
+    max-width: 660px;
+}
+
+/* ------------------------------------------------------------
+   2. Pricing toolbar — search + billing period, sticky on phones
+   ------------------------------------------------------------ */
+
+.subscription-section.plans-section {
+    content-visibility: visible;
+    padding: var(--space-8) 0 var(--space-7);
+}
+
+.plans-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin: 0 auto var(--space-7);
+    padding: var(--space-3);
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    max-width: 880px;
+}
+
+.plans-toolbar .ads-search-wrap {
+    flex: 1 1 260px;
+    max-width: none;
+    margin: 0;
+}
+
+.plans-toolbar .ads-search-wrap .ads-search-icon {
+    color: var(--clr-text-faint);
+    font-size: 15px;
+    line-height: 1;
+}
+
+.plans-toolbar .ads-global-input {
+    min-height: 44px;
+    border: 1px solid var(--clr-field-border);
+    border-radius: var(--radius-pill);
+    background-color: var(--clr-surface-subtle);
+    font-size: var(--fs-md);
+}
+
+/* Billing period: the .segmented primitive, driven by the existing checkbox */
+.segmented.pricing-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 4px;
+    background: var(--clr-surface-sunken);
+    border: 1px solid var(--clr-border-subtle);
+    border-radius: var(--radius-pill);
+}
+
+.segmented.pricing-toggle .segmented-item.toggle-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--clr-text-secondary);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    white-space: nowrap;
+    transition:
+        background-color var(--dur-fs) var(--ease-standard),
+        color var(--dur-fs) var(--ease-standard),
+        box-shadow var(--dur-fs) var(--ease-standard);
+}
+
+/* The switch stays the control; the two labels read its state (CSS only) */
+.pricing-toggle:has(#periodToggle:checked) .segmented-item.toggle-label:last-of-type,
+.pricing-toggle:not(:has(#periodToggle:checked)) .segmented-item.toggle-label:first-of-type {
+    background: var(--clr-surface);
+    color: var(--clr-primary-strong);
+    font-weight: var(--fw-semibold);
+    box-shadow: var(--shadow-xs);
+}
+
+.pricing-toggle .form-toggle {
+    padding: 0 2px;
+}
+
+/* ------------------------------------------------------------
+   3. Plan cards — comparable grid, aligned price baseline
+   ------------------------------------------------------------ */
+
+.subscription-plans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));
+    gap: var(--space-5);
+    align-items: stretch;
+}
+
+.plan-card {
+    width: 100%;
+    max-width: 460px;
+    margin-inline: auto;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition:
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-sm) var(--ease-standard),
+        border-color var(--dur-sm) var(--ease-standard);
+}
+
+.plan-card:hover {
+    transform: translateY(var(--motion-lift));
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--clr-border-strong);
+}
+
+.plan-free {
+    background: linear-gradient(180deg, var(--clr-surface) 0%, var(--clr-surface-subtle) 100%);
+}
+
+.plan-premium {
+    border-color: rgba(13, 95, 78, 0.28);
+    box-shadow: var(--shadow-md);
+}
+
+.plan-premium:hover {
+    border-color: var(--clr-primary);
+}
+
+/* Recommended plan: brass imprint rail + quiet elevation, never flashing */
+.plan-featured {
+    border-color: rgba(183, 138, 60, 0.5);
+    box-shadow: var(--shadow-lg);
+    background:
+        radial-gradient(120% 60% at 50% 0%, rgba(183, 138, 60, 0.09) 0%, transparent 62%),
+        var(--clr-surface);
+}
+
+.plan-featured::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 3px;
+    background: var(--grad-brass);
+}
+
+.plan-featured:hover {
+    border-color: var(--clr-brass);
+}
+
+.plan-badge {
+    position: absolute;
+    top: var(--space-4);
+    inset-inline-end: var(--space-4);
+    inset-inline-start: auto;
+    left: auto;
+    background: var(--clr-brass-25);
+    color: var(--clr-brass-deep);
+    border: 1px dashed rgba(183, 138, 60, 0.55);
+    font-family: var(--ff-body);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-label);
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-2xs);
+}
+
+.plan-header {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-6) var(--space-5) var(--space-5);
+    text-align: center;
+    border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.plan-name {
+    font-family: var(--ff-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-h3);
+    color: var(--clr-text);
+    margin: 0 0 var(--space-1);
+}
+
+.plan-desc {
+    flex: 1 1 auto;
+    min-height: calc(var(--lh-md) * 2);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+    margin: 0 0 var(--space-4);
+    max-width: 34ch;
+    margin-inline: auto;
+}
+
+.plan-price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(30px, 1.6vw + 20px, 38px);
+    font-weight: var(--fw-bold);
+    line-height: 1.05;
+    letter-spacing: var(--ls-tight);
+    color: var(--clr-primary-strong);
+    direction: ltr;
+    margin: 0;
+}
+
+.plan-currency {
+    font-family: var(--ff-body);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--clr-text-secondary);
+}
+
+.plan-period-label {
+    font-size: var(--fs-xs);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-faint);
+    margin: var(--space-1) 0 0;
+}
+
+.plan-body {
+    padding: var(--space-5);
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.plan-limits {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-1);
+    margin: 0;
+    font-size: var(--fs-xs);
+    color: var(--clr-text-secondary);
+}
+
+.plan-limits span {
+    padding: 4px 12px;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-pill);
+    background: var(--clr-surface-subtle);
+    font-weight: var(--fw-medium);
+}
+
+.plan-features-title {
+    font-family: var(--ff-body);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-faint);
+    margin: 0;
+}
+
+.plan-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    font-size: var(--fs-md);
+    line-height: var(--lh-md);
+    color: var(--clr-text);
+    padding: var(--space-2) 0;
+    border-bottom: 1px dashed var(--clr-border-subtle);
+}
+
+.plan-features li:last-child {
+    border-bottom: 0;
+}
+
+.plan-feature-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--clr-success);
+}
+
+.plan-footer {
+    padding: var(--space-5);
+    border-top: 1px solid var(--clr-border-subtle);
+    background: var(--clr-surface-subtle);
+    text-align: center;
+}
+
+.plan-cta-full {
+    width: 100%;
+    white-space: normal;
+}
+
+.plan-featured .btn-primary {
+    box-shadow: var(--shadow-primary);
+}
+
+/* Empty state */
+.plans-empty {
+    grid-column: 1 / -1;
+    padding: var(--space-8) var(--space-5);
+    border: 1px dashed var(--clr-border-strong);
+    border-radius: var(--radius-xl);
+    background: var(--clr-surface-sunken);
+    color: var(--clr-text-secondary);
+    font-size: var(--fs-md);
+}
+
+.plans-empty-state .icon-wrapper.icon-wrapper--lg {
+    width: 56px;
+    height: 56px;
+    margin-bottom: var(--space-3);
+}
+
+.plans-empty-state {
+    max-width: 460px;
+    margin: 0 auto;
+}
+
+.plans-empty-state p {
+    font-size: var(--fs-md);
+    line-height: var(--lh-md);
+}
+
+/* ------------------------------------------------------------
+   4. Benefits + closing CTA band
+   ------------------------------------------------------------ */
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+    gap: var(--space-4);
+}
+
+.benefit-card {
+    position: relative;
+    padding: var(--space-6) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border-subtle);
+    box-shadow: var(--shadow-2xs);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    transition:
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-sm) var(--ease-standard),
+        border-color var(--dur-sm) var(--ease-standard);
+}
+
+.benefit-card:hover {
+    transform: translateY(var(--motion-lift));
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--clr-border-strong);
+}
+
+.benefit-card .icon-wrapper {
+    margin-bottom: var(--space-2);
+}
+
+.benefit-title {
+    font-family: var(--ff-display);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-md);
+    color: var(--clr-text);
+    margin: 0 0 var(--space-1);
+}
+
+.benefit-desc {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+    margin: 0;
+}
+
+.subscription-benefits .text-h2 {
+    margin-bottom: var(--space-2);
+}
+
+.subscription-cta-section.plans-cta-band {
+    padding: var(--space-8) 0 var(--space-9);
+}
+
+.plans-cta-panel {
+    position: relative;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+    border: 1px solid rgba(13, 95, 78, 0.2);
+    border-radius: var(--radius-2xl);
+    background:
+        radial-gradient(120% 90% at 15% 0%, rgba(13, 95, 78, 0.09) 0%, transparent 60%),
+        var(--clr-surface);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    overflow: hidden;
+}
+
+.plans-cta-panel::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--space-6);
+    bottom: var(--space-5);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--clr-brass-200), transparent);
+    opacity: 0.7;
+}
+
+.subscription-cta-desc {
+    max-width: 52ch;
+}
+
+/* ------------------------------------------------------------
+   5. Subscribe / payment modals — presentation only
+   ------------------------------------------------------------ */
+
+.wallet-phone-box {
+    margin-top: var(--space-4);
+}
+
+.wallet-phone-box .wallet-phone-note {
+    display: block;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-md);
+    color: var(--clr-text-faint);
+    margin-top: var(--space-1);
+}
+
+.wallet-phone-box .form-control {
+    min-height: 44px;
+    font-family: var(--ff-data);
+    letter-spacing: 0.02em;
+}
+
+.modal-action-stack--spaced {
+    margin-top: var(--space-6);
+}
+
+/* ------------------------------------------------------------
+   6. Clinic registration — grouped steps, upload zones
+   ------------------------------------------------------------ */
+
+.register-hero {
+    padding: var(--space-9) 0 var(--space-8);
+    background:
+        radial-gradient(110% 100% at 85% 0%, rgba(183, 138, 60, 0.18) 0%, transparent 52%),
+        linear-gradient(140deg, var(--clr-primary-deep) 0%, var(--clr-primary) 62%, var(--clr-emerald-500) 100%);
+}
+
+.register-hero .text-h1 {
+    color: #FFFFFF;
+    margin-bottom: var(--space-2);
+}
+
+.register-hero-desc {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-lg);
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.register-section {
+    padding: var(--space-7) 0 var(--space-6);
+}
+
+.register-alert-container {
+    margin-top: var(--space-5);
+}
+
+.register-form-card {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--space-6);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-2xl);
+    background: var(--clr-surface);
+    box-shadow: var(--shadow-lg);
+}
+
+.register-form-card .row {
+    --bs-gutter-y: var(--space-5);
+    margin-top: 0;
+}
+
+/* Step blocks */
+.register-form-section {
+    position: relative;
+    margin: 0 0 var(--space-6);
+    padding: var(--space-5) var(--space-5) var(--space-2);
+    border: 1px solid var(--clr-border-subtle);
+    border-radius: var(--radius-xl);
+    background: var(--clr-surface);
+    box-shadow: var(--shadow-2xs);
+}
+
+.register-form-section:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.register-form-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--ff-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-semibold);
+    line-height: var(--lh-h3);
+    color: var(--clr-text);
+    margin: 0 0 var(--space-2);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.register-form-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    margin: 0;
+    flex-shrink: 0;
+    font-family: var(--ff-data);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+    line-height: 1;
+    color: var(--clr-primary-strong);
+    background: var(--clr-primary-bg);
+    border: 1px solid rgba(13, 95, 78, 0.22);
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-inset);
+}
+
+.register-form-desc {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+    margin: 0 0 var(--space-4);
+}
+
+/* Field rhythm + required / invalid state (kept inline, never removed) */
+.register-form-card .form-group {
+    margin-bottom: 0;
+}
+
+.register-form-card .form-label {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--clr-text);
+    margin-bottom: 6px;
+}
+
+.register-form-card .form-label .text-danger {
+    color: var(--clr-danger);
+    font-weight: var(--fw-bold);
+    margin-inline-start: 2px;
+}
+
+.register-form-card .form-hint {
+    font-size: var(--fs-xs);
+    line-height: var(--lh-md);
+    color: var(--clr-text-faint);
+    margin-top: var(--space-1);
+}
+
+.register-form-card :is(.form-input, .form-select, .form-textarea):user-invalid {
+    border-color: var(--clr-danger);
+    background-color: var(--clr-danger-bg);
+}
+
+.register-form-card :is(.form-input, .form-select, .form-textarea):user-invalid:focus {
+    box-shadow: 0 0 0 4px var(--clr-ring-danger);
+}
+
+.register-form-card .form-textarea {
+    min-height: 84px;
+}
+
+.dob-row {
+    gap: var(--space-2);
+}
+
+/* Working days as selectable chips (CSS reflects the native checkbox) */
+.working-days-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+}
+
+.working-day-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    color: var(--clr-text-secondary);
+    background: var(--clr-surface-subtle);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition:
+        background-color var(--dur-fs) var(--ease-standard),
+        border-color var(--dur-fs) var(--ease-standard),
+        color var(--dur-fs) var(--ease-standard),
+        transform var(--dur-sm) var(--ease-spring);
+}
+
+.working-day-item:hover {
+    border-color: var(--clr-primary);
+    color: var(--clr-primary-strong);
+    transform: translateY(-1px);
+}
+
+.working-day-item:has(input:checked) {
+    background: var(--clr-primary-soft);
+    border-color: rgba(13, 95, 78, 0.35);
+    color: var(--clr-primary-strong);
+    font-weight: var(--fw-semibold);
+}
+
+.working-day-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: var(--clr-primary);
+}
+
+/* Map picker group */
+.register-map-group {
+    margin-top: 0;
+    padding: var(--space-4);
+    border: 1px solid var(--clr-border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--clr-surface-subtle);
+}
+
+.register-map-search-row {
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.register-map-search {
+    margin-bottom: 0;
+    background-color: var(--clr-surface);
+}
+
+.register-map-container {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--clr-border);
+    box-shadow: var(--shadow-inset);
+    overflow: hidden;
+    background-color: var(--clr-surface-sunken);
+    margin-bottom: var(--space-3);
+}
+
+.register-map-tools {
+    gap: var(--space-3);
+}
+
+.register-map-error {
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    background: var(--clr-danger-bg);
+    border: 1px solid var(--clr-danger-border);
+    color: var(--clr-danger-text);
+}
+
+.register-coords-display {
+    font-family: var(--ff-data);
+    font-size: var(--fs-sm);
+    color: var(--clr-text-secondary);
+}
+
+/* Upload zones — dashed surface, hover + focus feedback, status inside */
+.upload-zone {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1.5px dashed var(--clr-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--clr-surface-sunken);
+    transition:
+        border-color var(--dur-sm) var(--ease-standard),
+        background-color var(--dur-sm) var(--ease-standard),
+        box-shadow var(--dur-sm) var(--ease-standard);
+}
+
+.upload-zone:hover {
+    border-color: var(--clr-primary);
+    background: var(--clr-primary-bg);
+}
+
+.upload-zone:focus-within {
+    border-color: var(--clr-primary);
+    background: var(--clr-surface);
+    box-shadow: 0 0 0 4px var(--clr-ring-primary);
+}
+
+.upload-zone-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    color: var(--clr-primary);
+    font-size: 18px;
+    line-height: 1;
+    transition: transform var(--dur-sm) var(--ease-spring);
+}
+
+.upload-zone:hover .upload-zone-icon {
+    transform: translateY(-2px);
+}
+
+.upload-zone-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.upload-input {
+    min-height: 40px;
+    padding: 6px 10px;
+    font-size: var(--fs-sm);
+    color: var(--clr-text-secondary);
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.upload-input::-webkit-file-upload-button {
+    min-height: 28px;
+    margin-inline-end: var(--space-2);
+    padding: 0 var(--space-3);
+    font-family: var(--ff-body);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    color: var(--clr-primary-strong);
+    background: var(--clr-primary-soft);
+    border: 1px solid rgba(13, 95, 78, 0.2);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+}
+
+.upload-input::file-selector-button {
+    min-height: 28px;
+    margin-inline-end: var(--space-2);
+    padding: 0 var(--space-3);
+    font-family: var(--ff-body);
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    color: var(--clr-primary-strong);
+    background: var(--clr-primary-soft);
+    border: 1px solid rgba(13, 95, 78, 0.2);
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+}
+
+.upload-input:hover {
+    border-color: var(--clr-border-strong);
+}
+
+.upload-zone .form-hint {
+    margin-top: var(--space-1);
+}
+
+.upload-status-badge {
+    margin-top: var(--space-2);
+}
+
+.upload-status-badge .badge {
+    max-width: 100%;
+    white-space: normal;
+    text-align: start;
+}
+
+.upload-status-badge .badge .bi {
+    width: auto;
+    height: auto;
+    font-size: 12px;
+}
+
+/* Actions */
+.register-form-actions {
+    margin-top: var(--space-6);
+    padding: var(--space-5) var(--space-5) 0;
+    border-top: 1px solid var(--clr-border-subtle);
+}
+
+.register-form-note {
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+    margin: 0 0 var(--space-4);
+}
+
+.register-form-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.register-form-buttons .btn {
+    min-width: 160px;
+}
+
+/* ------------------------------------------------------------
+   7. Payment result — receipt card
+   ------------------------------------------------------------ */
+
+.payment-result-section {
+    padding: var(--space-9) 0 var(--space-8);
+    min-height: calc(100vh - 245px);
+    min-height: calc(100dvh - 245px);
+    display: flex;
+    align-items: center;
+    background:
+        radial-gradient(90% 60% at 50% 0%, rgba(13, 95, 78, 0.07) 0%, transparent 60%);
+}
+
+.payment-result-card {
+    max-width: 560px;
+    padding: var(--space-8) var(--space-6);
+    border-radius: var(--radius-2xl);
+    border-color: var(--clr-border-subtle);
+    background:
+        radial-gradient(120% 70% at 50% 0%, var(--clr-emerald-25) 0%, transparent 60%),
+        var(--clr-surface);
+    box-shadow: var(--shadow-xl);
+}
+
+.result-icon-circle {
+    width: 78px;
+    height: 78px;
+    margin-bottom: var(--space-5);
+    font-size: 38px;
+    line-height: 1;
+}
+
+.result-icon-circle .bi {
+    font-size: 38px;
+    line-height: 1;
+}
+
+.payment-result-card .text-h1 {
+    font-size: var(--fluid-h2);
+    line-height: var(--lh-h2);
+    margin: 0 0 var(--space-2);
+}
+
+.result-desc {
+    max-width: 44ch;
+    font-size: var(--fs-md);
+    line-height: var(--lh-lg);
+    color: var(--clr-text-secondary);
+    margin: 0 auto var(--space-5);
+}
+
+/* Receipt block: the summary + countdown, typed like a printed slip */
+.result-receipt {
+    margin: 0 auto var(--space-5);
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    border: 1px dashed var(--clr-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--clr-surface-sunken);
+    text-align: start;
+}
+
+.result-receipt-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-2);
+    border-bottom: 1px solid var(--clr-border);
+}
+
+.result-receipt-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-1) 0;
+}
+
+.result-receipt-row + .result-receipt-row {
+    border-top: 1px dotted var(--clr-border);
+}
+
+.result-receipt-label {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-faint);
+}
+
+.result-receipt-value {
+    font-family: var(--ff-data);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--clr-text);
+    direction: ltr;
+    unicode-bidi: isolate;
+    text-align: end;
+}
+
+.result-redirect-notice {
+    display: block;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+    margin: 0;
+}
+
+/* Inside the receipt the notice drops its own frame — the slip is the frame */
+.result-receipt .result-redirect-notice {
+    padding: var(--space-2) 0 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.result-redirect-notice .bi {
+    color: var(--clr-primary);
+    margin-inline-end: var(--space-1);
+    font-size: 14px;
+}
+
+.countdown-badge {
+    width: 26px;
+    height: 26px;
+    font-size: var(--fs-sm);
+    background-color: var(--clr-primary-soft);
+    color: var(--clr-primary-strong);
+    border: 1px solid rgba(13, 95, 78, 0.2);
+}
+
+.result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: 0;
+}
+
+.result-actions .btn {
+    width: 100%;
+    white-space: normal;
+}
+
+.result-actions--row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+}
+
+.result-actions--row .btn {
+    flex: 1 1 200px;
+    width: auto;
+}
+
+/* ------------------------------------------------------------
+   8. Responsive — 1440 / 768 / 375, no horizontal scroll
+   ------------------------------------------------------------ */
+
+@media (max-width: 991px) {
+    .subscription-hero.plans-hero {
+        padding: var(--space-8) 0 var(--space-7);
+    }
+
+    .register-hero {
+        padding: var(--space-7) 0 var(--space-6);
+    }
+
+    .plan-card,
+    .plan-featured {
+        max-width: 560px;
+    }
+
+    .plan-desc {
+        min-height: 0;
+        max-width: none;
+    }
+}
+
+@media (min-width: 992px) {
+    /* The recommended plan lifts out of the row without any JS */
+    .plan-featured {
+        margin-top: calc(-1 * var(--space-4));
+        margin-bottom: calc(-1 * var(--space-4));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .plans-toolbar {
+        position: sticky;
+        top: 64px;
+        z-index: var(--z-sticky);
+        gap: var(--space-2);
+        padding: var(--space-2);
+        border-radius: var(--radius-lg);
+        border-color: var(--clr-border-subtle);
+        background: var(--glass-bg);
+        -webkit-backdrop-filter: var(--glass-blur);
+        backdrop-filter: var(--glass-blur);
+        box-shadow: var(--shadow-md);
+        margin-bottom: var(--space-5);
+    }
+
+    .plans-toolbar .ads-search-wrap {
+        flex: 1 1 100%;
+    }
+
+    .segmented.pricing-toggle {
+        flex: 1 1 auto;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .subscription-section.plans-section {
+        padding: var(--space-4) 0 var(--space-5);
+    }
+
+    .plan-card {
+        max-width: none;
+    }
+
+    .plan-header {
+        padding: var(--space-5) var(--space-4) var(--space-4);
+    }
+
+    .plan-body,
+    .plan-footer {
+        padding: var(--space-4);
+    }
+
+    .plans-cta-panel {
+        padding: var(--space-7) var(--space-4);
+        border-radius: var(--radius-xl);
+    }
+
+    .register-form-card {
+        padding: var(--space-4) var(--space-3);
+        border-radius: var(--radius-xl);
+    }
+
+    .register-form-section {
+        padding: var(--space-4) var(--space-3) var(--space-1);
+    }
+
+    .register-map-group {
+        padding: var(--space-3);
+    }
+
+    .register-form-card .row {
+        --bs-gutter-y: var(--space-4);
+    }
+
+    .upload-zone {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-2);
+    }
+
+    .upload-input {
+        width: 100%;
+    }
+
+    .register-form-buttons {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .register-form-buttons .btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .payment-result-card {
+        padding: var(--space-6) var(--space-4);
+        border-radius: var(--radius-xl);
+    }
+
+    .result-receipt {
+        padding: var(--space-3);
+    }
+
+    .result-actions--row {
+        flex-direction: column;
+    }
+
+    .result-actions--row .btn {
+        flex: 1 1 auto;
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .plan-price {
+        font-size: 28px;
+    }
+
+    .plan-badge {
+        top: var(--space-3);
+        inset-inline-end: var(--space-3);
+        font-size: 11px;
+        padding: 2px 10px;
+    }
+
+    .result-icon-circle,
+    .result-icon-circle .bi {
+        width: 66px;
+        height: 66px;
+        font-size: 30px;
+    }
+
+    .result-receipt-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .result-receipt-value {
+        text-align: start;
+    }
+
+    .working-day-item {
+        min-height: 44px;
+        padding: var(--space-2) var(--space-3);
+    }
+}
+
+/* ------------------------------------------------------------
+   9. Motion & accessibility guards
+   ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+    .plan-card,
+    .plan-card:hover,
+    .benefit-card,
+    .benefit-card:hover,
+    .working-day-item,
+    .working-day-item:hover,
+    .upload-zone-icon,
+    .upload-zone:hover .upload-zone-icon,
+    .segmented.pricing-toggle .segmented-item.toggle-label {
+        transform: none;
+        animation: none;
+        transition: none;
+    }
+
+    .plan-featured {
+        transform: none;
+    }
+
+    .plans-toolbar {
+        transition: none;
+    }
+
+    .subscription-hero.plans-hero,
+    .plans-cta-panel,
+    .payment-result-card {
+        animation: none;
+    }
+
+    html [data-scroll] {
+        opacity: 1;
+        transform: none;
+        filter: none;
+        transition: none;
+    }
+}

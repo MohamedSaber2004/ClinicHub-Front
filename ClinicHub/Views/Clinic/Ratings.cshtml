@@ -13,14 +13,15 @@
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
 }
 
+<div class="co-page co-ratings">
+<div class="page-header co-page-head">
 <h2 class="page-title">
     <span class="page-title-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" stroke="currentColor" stroke-width="2"/>
-        </svg>
+        <i class="bi bi-star"></i>
     </span>
     التقييمات
 </h2>
+</div>
 
 @if (hasError)
 {
@@ -29,13 +30,13 @@
     </div>
 }
 
-<div class="detail-card mb-4">
-    <div class="detail-section-header">
-        <h5>
+<div class="co-doc lift" data-scroll>
+    <div class="co-doc-head">
+        <h3 class="co-doc-title">
             <i class="bi bi-building"></i>
             تقييم العيادة
-        </h5>
-        <span class="badge badge-primary">@totalRatings تقييم</span>
+        </h3>
+        <span class="co-count">@totalRatings تقييم</span>
     </div>
 
     @if (ratings.Count == 0 && !hasError)
@@ -49,7 +50,7 @@
     }
     else if (ratings.Count > 0)
     {
-        <div class="ratings-header-card ratings-header-card--inline">
+        <div class="ratings-header-card ratings-header-card--inline co-score">
             <div class="rhc-score">
                 <span class="rhc-number">@averageRating.ToString("F1")</span>
                 <partial name="_StarRating" model="new { Value = averageRating, Size = 18 }" />
@@ -59,12 +60,12 @@
             @foreach (var r in ratings)
             {
                 var initial = !string.IsNullOrEmpty(r.UserName) ? System.Globalization.StringInfo.GetNextTextElement(r.UserName) : "م";
-                <div class="rating-full-card">
+                <div class="rating-full-card co-review">
                     <div class="rfc-avatar">@initial</div>
                     <div class="rfc-content">
                         <div class="rfc-header">
                             <span class="rfc-name">@r.UserName</span>
-                            <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
+                            <span class="rfc-date tabular">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
                         </div>
                         <partial name="_StarRating" model="new { Value = r.Value, Size = 14 }" />
                         @if (!string.IsNullOrEmpty(r.Review))
@@ -78,13 +79,13 @@
     }
 </div>
 
-<div class="detail-card">
-    <div class="detail-section-header">
-        <h5>
+<div class="co-doc lift" data-scroll>
+    <div class="co-doc-head">
+        <h3 class="co-doc-title">
             <i class="bi bi-person-badge"></i>
             تقييم الاستقبال
-        </h5>
-        <span class="badge badge-info">@totalReceptionRatings تقييم</span>
+        </h3>
+        <span class="co-count">@totalReceptionRatings تقييم</span>
     </div>
 
     @if (receptionRatings.Count == 0 && !hasError)
@@ -98,7 +99,7 @@
     }
     else if (receptionRatings.Count > 0)
     {
-        <div class="ratings-header-card ratings-header-card--inline">
+        <div class="ratings-header-card ratings-header-card--inline co-score">
             <div class="rhc-score">
                 <span class="rhc-number">@receptionAverage.ToString("F1")</span>
                 <partial name="_StarRating" model="new { Value = receptionAverage, Size = 18 }" />
@@ -108,12 +109,12 @@
             @foreach (var r in receptionRatings)
             {
                 var initial = !string.IsNullOrEmpty(r.UserName) ? System.Globalization.StringInfo.GetNextTextElement(r.UserName) : "م";
-                <div class="rating-full-card">
+                <div class="rating-full-card co-review">
                     <div class="rfc-avatar">@initial</div>
                     <div class="rfc-content">
                         <div class="rfc-header">
                             <span class="rfc-name">@r.UserName</span>
-                            <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
+                            <span class="rfc-date tabular">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
                         </div>
                         <partial name="_StarRating" model="new { Value = r.Value, Size = 14 }" />
                         @if (!string.IsNullOrEmpty(r.Review))
@@ -127,13 +128,13 @@
     }
 </div>
 
-<div class="detail-card">
-    <div class="detail-section-header">
-        <h5>
+<div class="co-doc lift" data-scroll>
+    <div class="co-doc-head">
+        <h3 class="co-doc-title">
             <i class="bi bi-brush"></i>
             نظافة المكان
-        </h5>
-        <span class="badge badge-info">@totalCleanlinessRatings تقييم</span>
+        </h3>
+        <span class="co-count">@totalCleanlinessRatings تقييم</span>
     </div>
 
     @if (cleanlinessRatings.Count == 0 && !hasError)
@@ -147,7 +148,7 @@
     }
     else if (cleanlinessRatings.Count > 0)
     {
-        <div class="ratings-header-card ratings-header-card--inline">
+        <div class="ratings-header-card ratings-header-card--inline co-score">
             <div class="rhc-score">
                 <span class="rhc-number">@cleanlinessAverage.ToString("F1")</span>
                 <partial name="_StarRating" model="new { Value = cleanlinessAverage, Size = 18 }" />
@@ -157,12 +158,12 @@
             @foreach (var r in cleanlinessRatings)
             {
                 var initial = !string.IsNullOrEmpty(r.UserName) ? System.Globalization.StringInfo.GetNextTextElement(r.UserName) : "م";
-                <div class="rating-full-card">
+                <div class="rating-full-card co-review">
                     <div class="rfc-avatar">@initial</div>
                     <div class="rfc-content">
                         <div class="rfc-header">
                             <span class="rfc-name">@r.UserName</span>
-                            <span class="rfc-date">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
+                            <span class="rfc-date tabular">@r.CreatedAt.ToString("yyyy-MM-dd")</span>
                         </div>
                         <partial name="_StarRating" model="new { Value = r.Value, Size = 14 }" />
                         @if (!string.IsNullOrEmpty(r.Review))
@@ -175,3 +176,7 @@
         </div>
     }
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" asp-append-version="false" />
+}

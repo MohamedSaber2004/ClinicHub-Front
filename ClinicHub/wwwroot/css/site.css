@@ -10,18 +10,18 @@
    ============================================================ */
 
 :root {
-    /* Legacy aliases → new palette (views reference these) */
-    --primary-color: #0D5F4E;
-    --primary-hover: #0A4E40;
-    --bg-color: #F5F7F6;
-    --sidebar-bg: #FFFFFF;
-    --border-color: #DCE4E0;
-    --text-dark: #16241F;
-    --text-muted: #5A6B64;
-    --text-light: #8A9892;
-    --card-bg: #FFFFFF;
-    --header-bg: #F2F5F3;
-    --transition-speed: 0.25s;
+    /* Legacy aliases → design-system palette (views reference these) */
+    --primary-color: var(--clr-primary);
+    --primary-hover: var(--clr-primary-hover);
+    --bg-color: var(--clr-bg);
+    --sidebar-bg: var(--clr-surface);
+    --border-color: var(--clr-border);
+    --text-dark: var(--clr-text);
+    --text-muted: var(--clr-text-secondary);
+    --text-light: var(--clr-text-faint);
+    --card-bg: var(--clr-surface);
+    --header-bg: var(--clr-table-header);
+    --transition-speed: var(--dur-sm);
 }
 
 html {
@@ -38,6 +38,7 @@ html {
 
 body {
     background-color: var(--clr-bg);
+    background-image: radial-gradient(120% 60% at 100% 0%, rgba(13, 95, 78, 0.035) 0%, transparent 60%);
     margin: 0;
     padding: 0;
     color: var(--clr-text);
@@ -47,21 +48,6 @@ body {
     height: 100dvh;
     overflow: hidden;
     font-family: var(--ff-body);
-}
-
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: #BCC9C2;
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #A3B4AC;
 }
 
 /* Layout Wrapper */

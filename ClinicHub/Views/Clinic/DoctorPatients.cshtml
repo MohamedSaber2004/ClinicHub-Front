@@ -11,24 +11,32 @@
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-people"></i>
-    </span>
-    مرضى العيادة
-</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
 
-<div class="table-card">
-    <div class="table-card-header">
+<div class="page-header cm-page-head">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <i class="bi bi-people"></i>
+            </span>
+            مرضى العيادة
+        </h2>
+    </div>
+</div>
+
+<div class="table-card cm-list-card">
+    <div class="table-card-header cm-ledger-head">
         <h3 class="table-card-title">قائمة المرضى</h3>
     </div>
-    <form method="get" action="@Url.Action("DoctorPatients")" class="filter-bar table-filter-bar">
+    <form method="get" action="@Url.Action("DoctorPatients")" class="filter-bar table-filter-bar cm-list-toolbar">
         <input type="text" name="searchTerm" aria-label="بحث عن مريض" class="form-input" placeholder="بحث بالاسم أو الهاتف..." value="@ViewBag.SearchTerm" />
         <button type="submit" class="btn btn-primary btn-sm">بحث</button>
         <a href="@Url.Action("DoctorPatients")" class="btn btn-outline-secondary btn-sm">مسح</a>
     </form>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table cm-ledger">
             <thead>
                 <tr>
                     <th>المريض</th>
@@ -42,21 +50,21 @@
                 @if (patients.Count == 0)
                 {
                     <tr>
-                    <td colspan="5" class="table-empty">لا يوجد مرضى مطابقون للبحث</td>
+                    <td colspan="5" class="table-empty cm-empty-row">لا يوجد مرضى مطابقون للبحث</td>
                     </tr>
                 }
                 @foreach (var p in patients)
                 {
                     <tr>
                         <td>
-                            <div class="table-user">
+                            <div class="table-user cm-user-cell">
                                 <span class="table-avatar">@Initial(p.FullName)</span>
                                 <span class="table-user-name">@p.FullName</span>
                             </div>
                         </td>
-                        <td>@AgeLabel(p.Age) / @GenderLabel(p.Gender)</td>
-                        <td><span class="badge badge-info">@p.TotalVisits</span></td>
-                        <td>@LastVisitLabel(p.LastVisitDate)</td>
+                        <td class="cm-money">@AgeLabel(p.Age) / @GenderLabel(p.Gender)</td>
+                        <td><span class="badge badge-info cm-money">@p.TotalVisits</span></td>
+                        <td class="cm-money">@LastVisitLabel(p.LastVisitDate)</td>
                         <td>
                             <a class="btn btn-sm btn-outline-primary" href="@Url.Action("DoctorPatientHistory", new { patientId = p.UserId, name = p.FullName })">
                                 <i class="bi bi-clock-history"></i> عرض التاريخ

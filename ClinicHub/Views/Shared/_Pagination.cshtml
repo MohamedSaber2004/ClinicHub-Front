@@ -1,6 +1,9 @@
 @using Microsoft.AspNetCore.Routing
 @{
-    var pagination = ViewBag.Pagination;
+    // Two invocation styles must both work:
+    //   <partial name="_Pagination" />                  → reads ViewBag.Pagination
+    //   <partial name="_Pagination" model="pagination" /> → uses the passed model
+    var pagination = Model ?? ViewBag.Pagination;
     int totalCount = pagination?.TotalCount ?? 0;
     int totalPages = pagination?.TotalPages ?? 0;
     int pageNumber = pagination?.PageNumber ?? 1;
@@ -26,7 +29,11 @@
     var summarySearch = ViewBag.SummarySearch as string;
     var isActive = ViewBag.CurrentActiveFilter as bool?;
     var planId = ViewBag.PlanIdFilter as Guid?;
-    if (pagination == null || totalCount == 0) return;
+    if (pagination == null || totalCount <= 0) return;
+
+    if (pageSize <= 0) pageSize = 20;
+    if (pageNumber < 1) pageNumber = 1;
+    if (totalPages <= 0) totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
     var action = ViewContext.RouteData.Values["action"]?.ToString();
     var routeValues = new RouteValueDictionary
@@ -57,68 +64,79 @@
     // Page window: keep pagination compact on small screens
     int windowFrom = Math.Max(1, pageNumber - 2);
     int windowTo = Math.Min(totalPages, pageNumber + 2);
+
+    int rangeStart = (pageNumber - 1) * pageSize + 1;
+    int rangeEnd = Math.Min(pageNumber * pageSize, totalCount);
 }
 
 <nav class="pagination-nav" aria-label="التنقل بين الصفحات">
-    <ul class="pagination-list">
-        @if (hasPrev)
+    <p class="pagination-summary">
+        عرض <strong>@rangeStart–@rangeEnd</strong> من <strong>@totalCount</strong>
+        @if (totalPages > 1)
         {
-            routeValues["pageNumber"] = pageNumber - 1;
-            <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(action, routeValues)" aria-label="الصفحة السابقة">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                    </svg>
-                    <span class="pagination-text">السابق</span>
-                </a>
-            </li>
+            <span class="pagination-summary-dot" aria-hidden="true">·</span>
+            <span class="pagination-summary-pages">الصفحة @pageNumber من @totalPages</span>
         }
+    </p>
 
-        @if (windowFrom > 1)
-        {
-            routeValues["pageNumber"] = 1;
-            <li class="pagination-item">
-                <a class="pagination-link @(1 == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)">1</a>
-            </li>
-        }
+    @if (totalPages > 1)
+    {
+        <ul class="pagination-list">
+            @if (hasPrev)
+            {
+                routeValues["pageNumber"] = pageNumber - 1;
+                <li class="pagination-item">
+                    <a class="pagination-link pagination-link--nav" href="@Url.Action(action, routeValues)" aria-label="الصفحة السابقة">
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                        <span class="pagination-text">السابق</span>
+                    </a>
+                </li>
+            }
 
-        @if (windowFrom > 2)
-        {
-            <li class="pagination-item pagination-item--gap" aria-hidden="true">…</li>
-        }
+            @if (windowFrom > 1)
+            {
+                routeValues["pageNumber"] = 1;
+                <li class="pagination-item">
+                    <a class="pagination-link @(1 == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)" aria-label="الصفحة 1 من @totalPages">1</a>
+                </li>
+            }
 
-        @for (var i = windowFrom; i <= windowTo; i++)
-        {
-            routeValues["pageNumber"] = i;
-            <li class="pagination-item">
-                <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)" aria-label="الصفحة @i من @totalPages" @(i == pageNumber ? "aria-current=\"page\"" : "")>@i</a>
-            </li>
-        }
+            @if (windowFrom > 2)
+            {
+                <li class="pagination-item pagination-item--gap" aria-hidden="true">…</li>
+            }
 
-        @if (windowTo < totalPages - 1)
-        {
-            <li class="pagination-item pagination-item--gap" aria-hidden="true">…</li>
-        }
+            @for (var i = windowFrom; i <= windowTo; i++)
+            {
+                routeValues["pageNumber"] = i;
+                <li class="pagination-item">
+                    <a class="pagination-link @(i == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)" aria-label="الصفحة @i من @totalPages" @(i == pageNumber ? "aria-current=\"page\"" : "")>@i</a>
+                </li>
+            }
 
-        @if (windowTo < totalPages)
-        {
-            routeValues["pageNumber"] = totalPages;
-            <li class="pagination-item">
-                <a class="pagination-link @(totalPages == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)">@totalPages</a>
-            </li>
-        }
+            @if (windowTo < totalPages - 1)
+            {
+                <li class="pagination-item pagination-item--gap" aria-hidden="true">…</li>
+            }
 
-        @if (hasNext)
-        {
-            routeValues["pageNumber"] = pageNumber + 1;
-            <li class="pagination-item">
-                <a class="pagination-link" href="@Url.Action(action, routeValues)" aria-label="الصفحة التالية">
-                    <span class="pagination-text">التالي</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
-                    </svg>
-                </a>
-            </li>
-        }
-    </ul>
+            @if (windowTo < totalPages)
+            {
+                routeValues["pageNumber"] = totalPages;
+                <li class="pagination-item">
+                    <a class="pagination-link @(totalPages == pageNumber ? "pagination-link--active" : "")" href="@Url.Action(action, routeValues)" aria-label="الصفحة @totalPages من @totalPages">@totalPages</a>
+                </li>
+            }
+
+            @if (hasNext)
+            {
+                routeValues["pageNumber"] = pageNumber + 1;
+                <li class="pagination-item">
+                    <a class="pagination-link pagination-link--nav" href="@Url.Action(action, routeValues)" aria-label="الصفحة التالية">
+                        <span class="pagination-text">التالي</span>
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </a>
+                </li>
+            }
+        </ul>
+    }
 </nav>

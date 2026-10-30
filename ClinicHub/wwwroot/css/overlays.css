@@ -1,0 +1,408 @@
+/* ============================================================
+   ClinicHub — overlays layer (v2)
+   Bell dropdown, toasts, modals, loading overlay + skeletons.
+   Loaded LAST so it re-skins the chrome site.css ships, without
+   renaming a single class the shared JS already depends on.
+   ============================================================ */
+
+/* ============================================================
+   Notification bell
+   ============================================================ */
+
+.ch-bell-btn {
+    border-color: transparent;
+    background: transparent;
+    border-radius: var(--radius-full);
+    color: var(--clr-text-secondary);
+    transition:
+        background-color var(--dur-fs) var(--ease-standard),
+        border-color var(--dur-fs) var(--ease-standard),
+        color var(--dur-fs) var(--ease-standard),
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-sm) var(--ease-standard);
+}
+
+.ch-bell-btn:hover {
+    background: var(--clr-primary-light);
+    border-color: rgba(13, 95, 78, 0.2);
+    color: var(--clr-primary-strong);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
+}
+
+.ch-bell-btn:active {
+    transform: scale(var(--motion-press));
+}
+
+.ch-bell-btn .bi,
+.ch-bell-btn i {
+    font-size: 1.2rem;
+}
+
+.ch-bell-badge {
+    display: flex;
+    top: 2px;
+    inset-inline-end: 2px;
+    min-width: 18px;
+    height: 18px;
+    border: 2px solid var(--clr-surface);
+    background: var(--clr-danger);
+    box-shadow: 0 0 0 0 rgba(177, 59, 50, 0.45);
+    animation: ch-bell-alert 2.6s var(--ease-standard) infinite;
+}
+
+@keyframes ch-bell-alert {
+    0%   { box-shadow: 0 0 0 0 rgba(177, 59, 50, 0.42); }
+    70%  { box-shadow: 0 0 0 7px rgba(177, 59, 50, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(177, 59, 50, 0); }
+}
+
+.ch-bell-dropdown {
+    width: 356px;
+    max-height: 460px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-pop);
+    transform-origin: top center;
+}
+
+/* display:none -> flex, so the entrance is the only animation available */
+.ch-bell-dropdown.open {
+    animation: ch-dropdown-in var(--dur-sm) var(--ease-spring) both;
+}
+
+@keyframes ch-dropdown-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+}
+
+.ch-bell-header {
+    background: linear-gradient(180deg, var(--clr-table-header), #FFFFFF);
+    padding: var(--space-3) var(--space-4);
+    font-family: var(--ff-display);
+    letter-spacing: var(--ls-label);
+}
+
+.ch-bell-list {
+    scrollbar-width: thin;
+}
+
+.ch-bell-item {
+    position: relative;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--clr-border-subtle);
+    transition: background-color var(--dur-fs) var(--ease-standard), padding-inline-start var(--dur-sm) var(--ease-spring);
+}
+
+.ch-bell-item:hover {
+    background-color: var(--clr-primary-light);
+    padding-inline-start: calc(var(--space-4) + 3px);
+}
+
+/* Unread rows carry a start-edge marker so the eye lands on them first */
+.ch-bell-item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+    background: var(--clr-brass);
+    opacity: 0;
+    transition: opacity var(--dur-fs) var(--ease-standard);
+}
+
+.ch-bell-item.unread::before,
+.ch-bell-item[data-unread="true"]::before {
+    opacity: 1;
+}
+
+.ch-bell-item-title {
+    font-weight: 600;
+    color: var(--clr-text);
+}
+
+.ch-bell-item-time {
+    font-family: var(--ff-data);
+    font-size: 11px;
+    color: var(--clr-text-faint);
+}
+
+.ch-bell-empty {
+    padding: var(--space-8) var(--space-4);
+    color: var(--clr-text-faint);
+}
+
+/* ============================================================
+   Toasts — brand palette, spring entrance, receipt-style progress
+   ============================================================ */
+
+#toast-container {
+    z-index: var(--z-toast);
+    gap: var(--space-2);
+}
+
+.ch-toast {
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, #FFFFFF, #FCFDFC);
+    border-color: var(--clr-border);
+    box-shadow: var(--shadow-pop);
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+    animation: toast-in var(--dur-md) var(--ease-spring) both;
+}
+
+.ch-toast.toast-hiding {
+    animation: toast-out var(--dur-fs) var(--ease-in-out) forwards;
+}
+
+.ch-toast::before {
+    width: 4px;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.ch-toast--success { border-color: var(--clr-success-border); }
+.ch-toast--error   { border-color: var(--clr-danger-border); }
+.ch-toast--info    { border-color: var(--clr-info-border); }
+
+.ch-toast--success::before { background: var(--clr-success); }
+.ch-toast--error::before   { background: var(--clr-danger); }
+.ch-toast--info::before    { background: var(--clr-info); }
+
+.ch-toast-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+}
+
+.ch-toast--success .ch-toast-icon { background: var(--clr-success-bg); color: var(--clr-success-text); }
+.ch-toast--error   .ch-toast-icon { background: var(--clr-danger-bg);  color: var(--clr-danger-text);  }
+.ch-toast--info    .ch-toast-icon { background: var(--clr-info-bg);    color: var(--clr-info-text);    }
+
+.ch-toast-title {
+    font-family: var(--ff-display);
+    font-size: var(--fs-md);
+    letter-spacing: var(--ls-label);
+}
+
+.ch-toast-close {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    transition: background-color var(--dur-fs) var(--ease-standard), color var(--dur-fs) var(--ease-standard), transform var(--dur-fs) var(--ease-spring);
+}
+
+.ch-toast-close:hover {
+    background: var(--clr-danger-bg);
+    color: var(--clr-danger-text);
+    transform: rotate(90deg);
+}
+
+.ch-toast-progress {
+    height: 3px;
+    transform-origin: left center;
+    opacity: 0.9;
+}
+
+.ch-toast--success .ch-toast-progress { background: var(--clr-success); }
+.ch-toast--error   .ch-toast-progress { background: var(--clr-danger); }
+.ch-toast--info    .ch-toast-progress { background: var(--clr-info); }
+
+/* ============================================================
+   Modals — glass backdrop, spring dialog entrance
+   ============================================================ */
+
+.modal.show .modal-dialog {
+    transform: none;
+    transition: transform var(--dur-md) var(--ease-spring);
+}
+
+.modal-dialog .modal-content {
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-pop);
+    overflow: hidden;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.modal-content-custom .modal-header-custom,
+.modal-content .modal-header {
+    background: linear-gradient(180deg, var(--clr-surface-subtle), var(--clr-surface));
+}
+
+.modal-icon-circle {
+    width: 58px;
+    height: 58px;
+    border-radius: var(--radius-lg);
+    margin-inline: auto;
+}
+
+.modal-heading {
+    font-family: var(--ff-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-h3);
+    line-height: var(--lh-h3);
+    color: var(--clr-text);
+}
+
+.modal-copy {
+    font-size: var(--fs-md);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+}
+
+.modal-icon-circle .bi {
+    font-size: 26px;
+}
+
+.modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-top: var(--space-2);
+}
+
+/* Status modals (error / success) — one shape, two intents */
+
+.error-modal-content {
+    padding: var(--space-6) var(--space-5);
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    box-shadow: var(--shadow-pop);
+}
+
+.error-modal-icon-wrapper {
+    width: 68px;
+    height: 68px;
+    margin-bottom: var(--space-4);
+    background: var(--clr-danger-bg);
+    color: var(--clr-danger);
+    box-shadow: inset 0 0 0 1px var(--clr-danger-border);
+}
+
+.error-modal-icon-wrapper .bi {
+    font-size: 28px;
+}
+
+.error-modal-icon-wrapper--success {
+    background: var(--clr-success-bg);
+    color: var(--clr-success);
+    box-shadow: inset 0 0 0 1px var(--clr-success-border);
+}
+
+.error-modal-title {
+    font-family: var(--ff-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-h3);
+    line-height: var(--lh-h3);
+    margin-bottom: var(--space-2);
+}
+
+.error-modal-msg {
+    margin-bottom: var(--space-5);
+}
+
+.error-modal-btn {
+    min-width: 160px;
+    padding: 10px var(--space-6);
+    border-radius: var(--radius-pill);
+    background: var(--grad-primary);
+    box-shadow: var(--shadow-primary);
+    transition:
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-sm) var(--ease-standard),
+        filter var(--dur-fs) var(--ease-standard);
+}
+
+.error-modal-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.error-modal-btn:active {
+    transform: scale(var(--motion-press));
+}
+
+/* ============================================================
+   Loading overlay + skeletons
+   ============================================================ */
+
+.skeleton-loading-overlay {
+    background: rgba(245, 247, 246, 0.82);
+    -webkit-backdrop-filter: blur(6px) saturate(120%);
+    backdrop-filter: blur(6px) saturate(120%);
+    z-index: var(--z-overlay);
+}
+
+.skeleton-loading-card {
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--clr-border);
+    box-shadow: var(--shadow-lg);
+    background: var(--clr-surface);
+    animation: ch-pop var(--dur-sm) var(--ease-spring) both;
+}
+
+.skeleton-loading-status {
+    font-family: var(--ff-data);
+    font-size: var(--fs-sm);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-secondary);
+}
+
+.skeleton-spinner-track,
+.skeleton-spinner-ring {
+    stroke: var(--clr-border);
+}
+
+.skeleton-spinner-arc {
+    stroke: var(--clr-primary);
+}
+
+.skeleton-spinner-dot,
+.skeleton-spinner-core {
+    fill: var(--clr-brass);
+}
+
+.skeleton-pulse-ring::after {
+    box-shadow: 0 0 0 0 rgba(13, 95, 78, 0.22);
+}
+
+.api-skeleton-bar__track {
+    background: var(--clr-surface-sunken);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+.api-skeleton-bar__progress,
+.api-skeleton-bar__glow {
+    background: var(--grad-primary);
+    border-radius: var(--radius-pill);
+}
+
+.api-skeleton-bar__shimmer {
+    background: var(--grad-sheen);
+}
+
+.skeleton-bar-shimmer,
+.skeleton-bar-shimmer--title,
+.skeleton-bar-shimmer--sub {
+    background: var(--grad-skeleton);
+    background-size: 200% 100%;
+    border-radius: var(--radius-sm);
+    animation: ch-shimmer 1.4s var(--ease-in-out) infinite;
+}

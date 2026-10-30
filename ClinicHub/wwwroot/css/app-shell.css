@@ -1,0 +1,991 @@
+/* ============================================================
+   ClinicHub — app shell & data surfaces (v2)
+   Loaded AFTER site.css so it refines the frame without fighting it.
+   Scope: sidebar, top header, content area, stat cards, table cards,
+   chart cards, empty states, motion integration.
+   No @media rules here except the coarse-pointer + reduced-motion
+   guards; responsive frame breakpoints stay in site.css.
+   ============================================================ */
+
+/* ---------- App container ---------- */
+
+.app-container {
+    background:
+        radial-gradient(80% 50% at 100% 0%, rgba(13, 95, 78, 0.05) 0%, transparent 55%),
+        var(--clr-bg);
+}
+
+/* ============================================================
+   Sidebar — vertical navigation rail
+   ============================================================ */
+
+.sidebar {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FCFDFC 60%, #F7FAF8 100%);
+    border-left: 1px solid var(--clr-border);
+    box-shadow: -1px 0 0 rgba(10, 46, 38, 0.02), -12px 0 32px rgba(10, 46, 38, 0.05);
+    transition: width var(--dur-md) var(--ease-spring), transform var(--dur-md) var(--ease-spring);
+}
+
+.sidebar-header {
+    position: relative;
+    padding-inline: var(--space-5);
+}
+
+.sidebar-header::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--space-5);
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(to left, var(--clr-brass), rgba(220, 228, 224, 0) 70%);
+}
+
+.brand-logo-img {
+    width: 40px;
+    height: 40px;
+    padding: 5px;
+    border-radius: var(--radius-sm);
+    background: var(--clr-primary-light);
+    box-shadow: var(--shadow-2xs);
+    transition: transform var(--dur-sm) var(--ease-spring), background-color var(--dur-fs) var(--ease-standard);
+}
+
+.sidebar-header:hover .brand-logo-img {
+    transform: scale(1.04);
+}
+
+.logo-brand-ar {
+    font-size: 19px;
+    letter-spacing: -0.01em;
+}
+
+.sidebar-menu {
+    padding: var(--space-5) var(--space-3) var(--space-3);
+}
+
+.sidebar-section {
+    margin: var(--space-6) 12px var(--space-2);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.9px;
+    color: var(--clr-text-faint);
+}
+
+.sidebar-section:first-child {
+    margin-top: var(--space-2);
+}
+
+.sidebar-item {
+    position: relative;
+    padding: 10px 12px;
+    gap: var(--space-3);
+    font-size: var(--fs-md);
+    font-weight: 500;
+    color: var(--clr-ink-500);
+    border-radius: var(--radius-sm);
+    margin-bottom: 3px;
+    overflow: hidden;
+    transition:
+        background-color var(--dur-fs) var(--ease-standard),
+        color var(--dur-fs) var(--ease-standard),
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-fs) var(--ease-standard);
+}
+
+/* Start-edge marker grows from nothing on hover, stays on active */
+.sidebar-item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    width: 3px;
+    height: 0;
+    border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+    background: var(--clr-primary);
+    transform: translateY(-50%);
+    transition: height var(--dur-sm) var(--ease-spring);
+}
+
+.sidebar-item:hover {
+    background-color: var(--clr-sidebar-hover);
+    color: var(--clr-primary-strong);
+    transform: translateX(-3px);
+}
+
+.sidebar-item:hover::before {
+    height: 16px;
+}
+
+.sidebar-item.active {
+    background: linear-gradient(90deg, rgba(13, 95, 78, 0.11) 0%, rgba(13, 95, 78, 0.05) 100%);
+    color: var(--clr-primary-strong);
+    font-weight: 700;
+    box-shadow: none;
+}
+
+.sidebar-item.active::before {
+    height: 22px;
+    background: var(--grad-primary);
+}
+
+.sidebar-item.active::after {
+    content: '';
+    position: absolute;
+    inset-inline-end: 10px;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    border-radius: var(--radius-full);
+    background: var(--clr-brass);
+    transform: translateY(-50%);
+    box-shadow: 0 0 0 3px rgba(183, 138, 60, 0.16);
+}
+
+.sidebar-item i,
+.sidebar-item .bi {
+    width: 22px;
+    height: 22px;
+    font-size: 17px;
+    border-radius: 7px;
+    transition: background-color var(--dur-fs) var(--ease-standard), color var(--dur-fs) var(--ease-standard);
+}
+
+.sidebar-item.active i,
+.sidebar-item.active .bi {
+    color: var(--clr-primary);
+}
+
+.sidebar-item svg {
+    width: 18px;
+    height: 18px;
+    transition: transform var(--dur-sm) var(--ease-spring);
+}
+
+.sidebar-item:hover svg {
+    transform: scale(1.06);
+}
+
+/* Count bubble inside a nav row */
+.sidebar-item .badge-count {
+    margin-inline-start: auto;
+}
+
+.sidebar-bottom {
+    padding: var(--space-2) var(--space-3) var(--space-3);
+    border-top: 1px solid var(--clr-border-subtle);
+    background: linear-gradient(180deg, rgba(242, 245, 243, 0.6), rgba(255, 255, 255, 0));
+}
+
+.sidebar-profile {
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    transition: background-color var(--dur-fs) var(--ease-standard), transform var(--dur-sm) var(--ease-spring), box-shadow var(--dur-sm) var(--ease-standard);
+}
+
+.sidebar-profile:hover {
+    background-color: var(--clr-sidebar-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xs);
+}
+
+.sidebar-profile-avatar {
+    width: 38px;
+    height: 38px;
+    background: var(--grad-primary);
+    box-shadow: var(--shadow-primary);
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: -2px;
+    transition: transform var(--dur-sm) var(--ease-spring);
+}
+
+.sidebar-profile:hover .sidebar-profile-avatar {
+    transform: scale(1.05);
+}
+
+.sidebar-plan-badge {
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--clr-brass-soft);
+    color: var(--clr-brass-deep);
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+/* Collapse / toggle affordance */
+.sidebar-toggle {
+    border-radius: var(--radius-sm);
+    transition: background-color var(--dur-fs) var(--ease-standard), color var(--dur-fs) var(--ease-standard), transform var(--dur-sm) var(--ease-spring);
+}
+
+.sidebar-toggle:hover {
+    transform: scale(1.06);
+}
+
+.app-container.sidebar-collapsed .sidebar-item {
+    justify-content: center;
+    padding-inline: 0;
+}
+
+.app-container.sidebar-collapsed .sidebar-item.active::after {
+    display: none;
+}
+
+/* ============================================================
+   Top header — glass bar
+   ============================================================ */
+
+.top-header {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--clr-border);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 6px 18px rgba(10, 46, 38, 0.035);
+    padding-inline: var(--space-6);
+    gap: var(--space-3);
+}
+
+.header-user {
+    padding: 5px 8px 5px 6px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    transition: background-color var(--dur-fs) var(--ease-standard), border-color var(--dur-fs) var(--ease-standard), box-shadow var(--dur-sm) var(--ease-standard);
+}
+
+.header-user:hover {
+    background-color: var(--clr-surface);
+    border-color: var(--clr-border);
+    box-shadow: var(--shadow-xs);
+}
+
+.user-avatar {
+    border: 1px solid var(--clr-border);
+    box-shadow: 0 0 0 2px var(--clr-surface);
+}
+
+.dept-dropdown {
+    min-height: 40px;
+    border-color: var(--clr-field-border);
+    background-color: var(--clr-surface);
+    transition: border-color var(--dur-fs) var(--ease-standard), box-shadow var(--dur-fs) var(--ease-standard);
+}
+
+.dept-dropdown:focus {
+    border-color: var(--clr-primary);
+    box-shadow: 0 0 0 4px var(--clr-ring-primary);
+}
+
+/* ============================================================
+   Content area
+   ============================================================ */
+
+.content-body {
+    padding: var(--space-6);
+    max-width: var(--content-max);
+    scroll-behavior: smooth;
+    animation: ch-fade var(--dur-md) var(--ease-standard);
+}
+
+.page-title {
+    font-size: var(--fluid-h2);
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: var(--ls-tight);
+}
+
+/* ============================================================
+   Stat cards — the numbers the owner reads first
+   ============================================================ */
+
+.stats-grid {
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.stat-card {
+    position: relative;
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--clr-border-subtle);
+    background: linear-gradient(180deg, #FFFFFF 0%, #FCFDFC 100%);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-sm) var(--ease-standard),
+        border-color var(--dur-fs) var(--ease-standard);
+}
+
+/* Accent rail along the inline-start edge */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    background: var(--grad-primary);
+    opacity: 0.9;
+    transition: width var(--dur-sm) var(--ease-spring);
+}
+
+/* Light sweep on hover */
+.stat-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--grad-sheen);
+    transform: translateX(-120%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(13, 95, 78, 0.2);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.stat-card:hover::before {
+    width: 5px;
+}
+
+.stat-card:hover::after {
+    opacity: 1;
+    animation: ch-sheen var(--dur-xl) var(--ease-standard);
+}
+
+.stat-card--warning::before { background: linear-gradient(180deg, var(--clr-warning), var(--clr-warning-text)); }
+.stat-card--info::before { background: linear-gradient(180deg, var(--clr-info), var(--clr-info-text)); }
+.stat-card--danger::before { background: linear-gradient(180deg, var(--clr-danger), var(--clr-danger-text)); }
+.stat-card--brass::before { background: var(--grad-brass); }
+.stat-card--neutral::before { background: linear-gradient(180deg, var(--clr-border-strong), var(--clr-text-faint)); }
+
+.stat-value {
+    font-size: clamp(22px, 1.6vw + 14px, 30px);
+    color: var(--clr-primary-strong);
+    letter-spacing: -0.02em;
+}
+
+.stat-card--warning .stat-value { color: var(--clr-warning-text); }
+.stat-card--info .stat-value { color: var(--clr-info-text); }
+.stat-card--danger .stat-value { color: var(--clr-danger-text); }
+
+.stat-label {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-secondary);
+}
+
+.stat-card .icon-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    transition: transform var(--dur-sm) var(--ease-spring), box-shadow var(--dur-sm) var(--ease-standard);
+}
+
+.stat-card:hover .icon-wrapper {
+    transform: scale(1.06) rotate(-2deg);
+    box-shadow: var(--shadow-xs);
+}
+
+.stat-subtext {
+    font-size: var(--fs-xs);
+    color: var(--clr-text-faint);
+}
+
+/* ============================================================
+   Table cards
+   ============================================================ */
+
+.table-card {
+    border-radius: var(--radius-lg);
+    border-color: var(--clr-border-subtle);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--dur-md) var(--ease-standard);
+}
+
+.table-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.table-card-header {
+    background: linear-gradient(180deg, var(--clr-table-header), #FFFFFF);
+    height: 52px;
+    padding-inline: var(--space-5);
+    border-bottom: 1px solid var(--clr-border);
+}
+
+.table-card-header::before {
+    width: 4px;
+    height: 18px;
+    border-radius: var(--radius-pill);
+    background: var(--grad-primary);
+    box-shadow: 0 0 0 3px rgba(13, 95, 78, 0.08);
+}
+
+.table-card-title {
+    font-family: var(--ff-display);
+    font-size: var(--fs-md);
+    font-weight: 700;
+    letter-spacing: var(--ls-label);
+}
+
+.custom-table {
+    text-align: right;
+}
+
+.custom-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--clr-table-header);
+    color: var(--clr-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    padding: 12px var(--space-5);
+    border-bottom: 1px solid var(--clr-border);
+    white-space: nowrap;
+}
+
+.custom-table td {
+    padding: 12px var(--space-5);
+    height: 54px;
+    border-bottom: 1px solid var(--clr-border-subtle);
+    transition: background-color var(--dur-instant) linear;
+}
+
+.custom-table tbody tr {
+    transition: background-color var(--dur-fs) var(--ease-standard), box-shadow var(--dur-fs) var(--ease-standard);
+}
+
+.custom-table tbody tr:nth-child(even) td {
+    background-color: rgba(242, 245, 243, 0.45);
+}
+
+.custom-table tbody tr:hover td {
+    background-color: rgba(13, 95, 78, 0.06);
+}
+
+/* Row reads as selected/urgent when it carries a status class */
+.custom-table tbody tr.row-urgent td:first-child {
+    box-shadow: inset 3px 0 0 var(--clr-danger);
+}
+
+.custom-table tbody tr.is-clickable {
+    cursor: pointer;
+}
+
+.custom-table tbody tr.is-clickable:active td {
+    background-color: rgba(13, 95, 78, 0.1);
+}
+
+.table-responsive {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+}
+
+/* ============================================================
+   Range tabs / segmented — inherit the pill language
+   ============================================================ */
+
+.range-tabs {
+    background: var(--clr-surface-sunken);
+    border-color: var(--clr-border-subtle);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    gap: 2px;
+}
+
+.range-tab {
+    padding: 5px 13px;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    transition: background-color var(--dur-fs) var(--ease-standard), color var(--dur-fs) var(--ease-standard), box-shadow var(--dur-fs) var(--ease-standard);
+}
+
+.range-tab:hover {
+    color: var(--clr-primary-strong);
+    background: rgba(13, 95, 78, 0.06);
+}
+
+.range-tab.active {
+    background: var(--clr-surface);
+    color: var(--clr-primary-strong);
+    box-shadow: var(--shadow-xs);
+}
+
+/* ============================================================
+   Chart cards
+   ============================================================ */
+
+.chart-card {
+    border-radius: var(--radius-lg);
+    border-color: var(--clr-border-subtle);
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--dur-sm) var(--ease-standard), border-color var(--dur-fs) var(--ease-standard);
+}
+
+.chart-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--clr-border);
+}
+
+.chart-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--ff-display);
+    font-size: var(--fs-md);
+    font-weight: 700;
+    letter-spacing: var(--ls-label);
+    margin-bottom: var(--space-4);
+}
+
+.chart-title::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--clr-brass);
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   Empty state — quiet, on-brand, never a dead white box
+   ============================================================ */
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-10) var(--space-6);
+    text-align: center;
+    background:
+        radial-gradient(60% 60% at 50% 0%, rgba(13, 95, 78, 0.045) 0%, transparent 70%);
+    border: 1px dashed var(--clr-border-strong);
+    border-radius: var(--radius-lg);
+}
+
+.empty-state .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-2);
+    animation: ch-pop var(--dur-md) var(--ease-spring) both;
+}
+
+.empty-state .icon-wrapper .bi { font-size: 26px; }
+.empty-state .icon-wrapper svg { width: 26px; height: 26px; }
+
+/* ============================================================
+   Notification bell lives in overlays.css (it ships with the
+   dropdown + toast layer that share one animation language).
+   ============================================================ */
+
+/* ============================================================
+   Pagination — the list itself is a token component; here we add
+   the "showing X of Y" line and give the nav links icon rhythm.
+   ============================================================ */
+
+.pagination-nav {
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.pagination-summary {
+    margin: 0;
+    font-size: var(--fs-sm);
+    color: var(--clr-text-secondary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .01em;
+}
+
+.pagination-summary strong {
+    color: var(--clr-text);
+    font-weight: var(--fw-semibold);
+}
+
+.pagination-summary-dot {
+    margin: 0 var(--space-2);
+    color: var(--clr-border-strong);
+}
+
+.pagination-link--nav .bi {
+    font-size: 13px;
+    transition: transform var(--dur-sm) var(--ease-spring);
+}
+
+.pagination-link--nav:hover .bi {
+    transform: translateX(-2px);
+}
+
+/* ============================================================
+   Subscription banner — one callout shape, three intents
+   ============================================================ */
+
+.subscription-banner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-4);
+    padding: 14px 18px;
+    margin-bottom: var(--space-5);
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(115deg, var(--clr-warning) 0%, var(--clr-warning-text) 100%);
+    box-shadow: var(--shadow-md);
+    color: #fff;
+    animation: fadeInUp var(--dur-lg) var(--ease-spring) both;
+}
+
+.subscription-banner-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    background: rgba(255, 255, 255, .18);
+    font-size: 18px;
+}
+
+.subscription-banner-text {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.subscription-banner-title {
+    font-family: var(--ff-display);
+    font-size: var(--fs-base);
+    font-weight: var(--fw-bold);
+    line-height: 1.35;
+}
+
+.subscription-banner-text span {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-regular);
+    line-height: 1.6;
+    color: rgba(255, 255, 255, .9);
+}
+
+.subscription-banner-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 9px 16px;
+    border-radius: var(--radius-pill);
+    background: #fff;
+    color: var(--clr-text);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: var(--shadow-2xs);
+    transition:
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-sm) var(--ease-standard),
+        color var(--dur-fs) var(--ease-standard);
+}
+
+.subscription-banner-btn .bi {
+    font-size: 13px;
+    transition: transform var(--dur-sm) var(--ease-spring);
+}
+
+.subscription-banner-btn:hover {
+    color: var(--clr-primary-strong);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.subscription-banner-btn:hover .bi {
+    transform: translateX(-3px);
+}
+
+.subscription-banner-btn:active {
+    transform: scale(var(--motion-press));
+}
+
+.subscription-banner--warning {
+    background: linear-gradient(115deg, var(--clr-danger) 0%, var(--clr-danger-text) 100%);
+}
+
+.subscription-banner--warning .subscription-banner-btn:hover {
+    color: var(--clr-danger-text);
+}
+
+.subscription-banner--info {
+    background: linear-gradient(115deg, var(--clr-info) 0%, var(--clr-info-text) 100%);
+}
+
+.subscription-banner--info .subscription-banner-btn:hover {
+    color: var(--clr-info-text);
+}
+
+/* ============================================================
+   Reduced motion — one guard for the whole redesign layer:
+   reveals, sheens, lifts and pulse rings all switch off.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+
+    html [data-scroll],
+    html [data-scroll].visible {
+        opacity: 1;
+        transform: none;
+        filter: none;
+    }
+
+    .stat-card::after,
+    .stat-card:hover .icon-wrapper,
+    .sidebar-item:hover,
+    .sidebar-item:hover svg,
+    .sidebar-profile:hover .sidebar-profile-avatar,
+    .btn:hover,
+    .chip:hover,
+    .lift:hover,
+    .pagination-link:hover {
+        transform: none;
+    }
+
+    .dot-live,
+    .badge--live::before {
+        animation: none;
+    }
+}
+
+/* ============================================================
+   Coarse pointers — keep hit areas generous
+   ============================================================ */
+
+@media (pointer: coarse) {
+    .sidebar-item,
+    .table-actions .btn-icon,
+    .bell-btn {
+        min-height: 44px;
+    }
+
+    .stat-card::after {
+        display: none;
+    }
+}
+
+/* ============================================================
+   Sub-sidebar (admin user file) — same language as the main nav
+   ============================================================ */
+
+.sub-sidebar {
+    padding: var(--space-4) var(--space-3);
+    background: var(--clr-surface);
+    border-left: 1px solid var(--clr-border-subtle);
+    gap: 2px;
+}
+
+.sub-sidebar-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 6px 10px;
+    border-radius: var(--radius-pill);
+    color: var(--clr-primary);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    text-decoration: none;
+    transition:
+        background-color var(--dur-fs) var(--ease-standard),
+        transform var(--dur-sm) var(--ease-spring);
+}
+
+.sub-sidebar-back .bi {
+    font-size: 13px;
+    transition: transform var(--dur-sm) var(--ease-spring);
+}
+
+.sub-sidebar-back:hover {
+    background: var(--clr-primary-light);
+    color: var(--clr-primary-strong);
+    text-decoration: none;
+}
+
+.sub-sidebar-back:hover .bi {
+    transform: translateX(3px);
+}
+
+.sub-sidebar-item {
+    position: relative;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+    color: var(--clr-text);
+    transition:
+        background-color var(--dur-fs) var(--ease-standard),
+        color var(--dur-fs) var(--ease-standard),
+        transform var(--dur-sm) var(--ease-spring);
+}
+
+.sub-sidebar-item .bi {
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.sub-sidebar-item:hover {
+    background: var(--clr-surface-sunken);
+    color: var(--clr-primary-strong);
+    transform: translateX(-3px);
+}
+
+.sub-sidebar-item.active {
+    background: var(--grad-primary);
+    color: #fff;
+    font-weight: var(--fw-semibold);
+    box-shadow: var(--shadow-primary);
+}
+
+/* ============================================================
+   Profile card
+   ============================================================ */
+
+.profile-card {
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+}
+
+.profile-card-header {
+    background: var(--grad-hero);
+    gap: var(--space-1);
+}
+
+.profile-card-header::after {
+    height: 3px;
+    background: var(--grad-brass);
+    opacity: 1;
+}
+
+.profile-avatar-large {
+    border: 2px solid rgba(255, 255, 255, .45);
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, .12);
+    transition: transform var(--dur-md) var(--ease-spring);
+}
+
+.profile-card-header:hover .profile-avatar-large {
+    transform: scale(1.04);
+}
+
+.profile-field {
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.profile-field:hover .profile-field-icon {
+    background: var(--clr-primary-light);
+    color: var(--clr-primary);
+}
+
+.profile-field-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    background: var(--clr-surface-sunken);
+    color: var(--clr-text-secondary);
+    font-size: 14px;
+    transition:
+        background-color var(--dur-fs) var(--ease-standard),
+        color var(--dur-fs) var(--ease-standard);
+}
+
+.profile-field-label {
+    flex: 1;
+    font-size: var(--fs-sm);
+}
+
+.profile-edit-btn {
+    margin-top: var(--space-3);
+    background: rgba(255, 255, 255, .16);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .35);
+}
+
+.profile-edit-btn:hover {
+    background: #fff;
+    color: var(--clr-primary-strong);
+}
+
+/* ============================================================
+   Notifications center
+   ============================================================ */
+
+.notif-card {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.notif-item {
+    border-radius: var(--radius-md);
+    transition:
+        background-color var(--dur-fs) var(--ease-standard),
+        border-color var(--dur-fs) var(--ease-standard),
+        transform var(--dur-sm) var(--ease-spring);
+}
+
+.notif-item:hover {
+    transform: translateX(-3px);
+}
+
+.notif-item.unread {
+    background: var(--clr-primary-bg);
+    box-shadow: inset 3px 0 0 var(--clr-primary);
+}
+
+.notif-item-dot {
+    background: var(--clr-primary);
+    box-shadow: 0 0 0 3px var(--clr-primary-light);
+}
+
+.notif-empty {
+    padding: var(--space-9) var(--space-4);
+    color: var(--clr-text-faint);
+}
+
+/* ============================================================
+   Narrow screens — the sticky pagination bar stays single-line
+   and the subscription callout stacks its action.
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .pagination-summary-pages,
+    .pagination-summary-dot {
+        display: none;
+    }
+
+    .subscription-banner {
+        grid-template-columns: auto 1fr;
+        gap: var(--space-3);
+    }
+
+    .subscription-banner-btn {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+        justify-content: center;
+    }
+}

@@ -33,17 +33,29 @@
         if (string.IsNullOrWhiteSpace(imgUrl)) return new List<string>();
         return imgUrl.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
     }
+
+    var activeAdsCount = ads.Count(a => a.Status == 1);
+    var pendingAdsCount = ads.Count(a => a.Status == 0);
+    var endedAdsCount = ads.Count(a => a.Status == 2);
+    var totalAdSpend = ads.Sum(a => a.Amount);
 }
 
-<div class="page-header">
-    <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
-            </svg>
-        </span>
-        الخدمات الإعلانية والترويج
-    </h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
+
+<div class="page-header cm-page-head">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+                </svg>
+            </span>
+            الخدمات الإعلانية والترويج
+        </h2>
+        <p class="page-header-subtitle">إدارة باقات وبرامج الترويج لظهور عيادتك داخل تطبيق المرضى.</p>
+    </div>
     <div class="page-header-actions">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#buyAdModal">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -59,20 +71,66 @@
     <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
 }
 
+@if (ads.Count > 0)
+{
+    <div class="stats-grid cm-ad-metrics">
+        <div class="stat-card stat-card--brass">
+            <div class="stat-info">
+                <span class="stat-value cm-money">@activeAdsCount.ToString("N0")</span>
+                <span class="stat-label">إعلانات نشطة</span>
+                <span class="stat-subtext cm-stat-sub">تظهر الآن في تطبيق المرضى</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--green">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            </div>
+        </div>
+        <div class="stat-card stat-card--warning">
+            <div class="stat-info">
+                <span class="stat-value cm-money">@pendingAdsCount.ToString("N0")</span>
+                <span class="stat-label">بانتظار الدفع</span>
+                <span class="stat-subtext cm-stat-sub">لم يبدأ عرضها بعد</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--amber">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            </div>
+        </div>
+        <div class="stat-card stat-card--neutral">
+            <div class="stat-info">
+                <span class="stat-value cm-money">@endedAdsCount.ToString("N0")</span>
+                <span class="stat-label">إعلانات منتهية</span>
+                <span class="stat-subtext cm-stat-sub">انتهت مدتها</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--primary">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 0 0-9 9H1l3.9 3.9.1.1L9 13H6a7 7 0 1 1 7 7v2a9 9 0 0 0 0-18zm-1 5v5l4 2.3-.7 1.2-4.8-2.9V8H12z"/></svg>
+            </div>
+        </div>
+        <div class="stat-card stat-card--info">
+            <div class="stat-info">
+                <span class="stat-value cm-money cm-money--lg">@totalAdSpend.ToString("N2")</span>
+                <span class="stat-label">إجمالي الإنفاق الإعلاني (ج.م)</span>
+                <span class="stat-subtext cm-stat-sub">من كل الطلبات</span>
+            </div>
+            <div class="icon-wrapper icon-wrapper--blue">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.77 0 2.48.85 2.5 2.1h2.21c-.05-1.95-1.17-3.28-3-3.74V3h-3.4v2.21c-2.9.51-4.8 2.58-4.8 5.33 0 3.48 2.91 4.68 6 5.41 1.73.4 2.5 1.13 2.5 2.19 0 1.21-1.04 1.96-2.9 1.96-2.03 0-2.87-.99-2.9-2.24H6.1c.04 2.36 1.89 3.81 4.1 4.27V24h3.4v-2.16c2.94-.52 4.9-2.45 4.9-5.34 0-4.2-3.4-5.48-6.7-6.2z"/></svg>
+            </div>
+        </div>
+    </div>
+}
+
 @if (packages.Count > 0)
 {
-    <div class="packages-row">
+    <div class="packages-row cm-package-row">
         @foreach (var pkg in packages)
         {
-            <div class="package-mini-card">
-                <div class="package-mini-name">@(pkg.NameAr ?? pkg.Name)</div>
-                <div class="package-mini-desc">@(pkg.DescriptionAr ?? pkg.Description)</div>
-                <div class="package-mini-price">@pkg.Price.ToString("N0") ج.م / @pkg.DurationDays يوم</div>
-                <div class="package-mini-meta text-muted small mt-2">
-                    <div><i class="bi bi-megaphone me-1"></i>@(pkg.MaxAds > 0 ? $"حتى {pkg.MaxAds} إعلانات نشطة" : "إعلانات غير محدودة")</div>
-                    <div><i class="bi bi-eye me-1"></i>@(pkg.MaxImpressions > 0 ? $"{pkg.MaxImpressions:N0} مشاهدة مؤكدة" : "مشاهدات غير محدودة")</div>
+            <div class="package-mini-card cm-package-card">
+                <div class="package-mini-name cm-package-name">@(pkg.NameAr ?? pkg.Name)</div>
+                <div class="package-mini-desc cm-package-desc">@(pkg.DescriptionAr ?? pkg.Description)</div>
+                <div class="package-mini-price cm-package-price">@pkg.Price.ToString("N0") ج.م / @pkg.DurationDays يوم</div>
+                <div class="package-mini-meta cm-package-meta">
+                    <div><i class="bi bi-megaphone" aria-hidden="true"></i>@(pkg.MaxAds > 0 ? $"حتى {pkg.MaxAds} إعلانات نشطة" : "إعلانات غير محدودة")</div>
+                    <div><i class="bi bi-eye" aria-hidden="true"></i>@(pkg.MaxImpressions > 0 ? $"{pkg.MaxImpressions:N0} مشاهدة مؤكدة" : "مشاهدات غير محدودة")</div>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-3" onclick="selectPackageAndOpenModal('@pkg.Id')">
+                <button type="button" class="btn btn-outline-primary btn-sm cm-package-cta" onclick="selectPackageAndOpenModal('@pkg.Id')">
                     شراء هذه الباقة
                 </button>
             </div>
@@ -81,8 +139,8 @@
 }
 
 <!-- Patient App Preview -->
-<div class="table-card ad-preview-card">
-    <div class="table-card-header">
+<div class="table-card ad-preview-card cm-list-card">
+    <div class="table-card-header cm-ledger-head">
         <h3 class="table-card-title">
             <span class="subtitle-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -91,16 +149,16 @@
             </span>
             معاينة الإعلان في تطبيق المرضى
         </h3>
-        <p class="ad-preview-hint">هكذا يظهر إعلانك للمرضى في تطبيق الجوال (بالشعارات والصور المرفوعة). الإعلانات النشطة فقط تظهر للجميع.</p>
+        <p class="ad-preview-hint cm-ad-preview-hint">هكذا يظهر إعلانك للمرضى في تطبيق الجوال (بالشعارات والصور المرفوعة). الإعلانات النشطة فقط تظهر للجميع.</p>
     </div>
 
     @{
         var activeAds = ads.Where(a => a.Status == 1).ToList();
     }
-    <div id="adsPreviewContainer">
+    <div id="adsPreviewContainer" class="cm-preview-wrap">
     @if (activeAds.Count == 0)
     {
-        <div class="ad-preview-empty">
+        <div class="ad-preview-empty cm-preview-empty">
             <p>لا توجد إعلانات نشطة حالياً. بمجرد شراء إعلان وتأكيد الدفع سيظهر هنا وفي تطبيق المرضى.</p>
         </div>
     }
@@ -143,8 +201,8 @@
     </div>
 </div>
 
-<div class="table-card">
-    <div class="table-card-header">
+<div class="table-card cm-list-card">
+    <div class="table-card-header cm-ledger-head">
         <h3 class="table-card-title">
             <span class="subtitle-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -153,10 +211,10 @@
             </span>
             إعلاناتي
         </h3>
-        <div class="table-card-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <div class="ads-search-wrap" style="min-width:180px;flex:1;max-width:280px">
+        <div class="table-card-actions cm-ad-toolbar">
+            <div class="ads-search-wrap cm-ad-search">
                 <svg class="ads-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" id="marketingAdsSearch" aria-label="بحث في الإعلانات" class="form-input form-input-sm" placeholder="بحث في إعلاناتي..." style="padding-right:32px" />
+                <input type="text" id="marketingAdsSearch" aria-label="بحث في الإعلانات" class="form-input form-input-sm cm-ad-search-input cm-money-input" placeholder="بحث في إعلاناتي..." />
             </div>
             <button type="button" class="btn btn-secondary btn-sm" id="refreshAdsBtn" onclick="refreshAds()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -167,7 +225,7 @@
         </div>
     </div>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table cm-ledger">
             <thead>
                 <tr>
                     <th>الباقة</th>
@@ -184,7 +242,7 @@
                 {
                     <tr>
                         <td colspan="7">
-                            <div class="empty-state">
+                            <div class="empty-state cm-empty-row">
                                 <p>لا توجد إعلانات بعد. ابدأ بشراء إعلانك الأول لظهور عيادتك في التطبيق.</p>
                             </div>
                         </td>
@@ -196,7 +254,7 @@
                     {
                         var adImgs = GetImagesList(ad.ImageUrl);
                         <tr>
-                            <td class="text-md-medium">@ad.PackageNameAr</td>
+                            <td class="text-md-medium cm-package-name-cell">@ad.PackageNameAr</td>
                             <td>
                                 @if (adImgs.Count > 0)
                                 {
@@ -207,7 +265,7 @@
                                         }
                                         @if (adImgs.Count > 2)
                                         {
-                                            <span class="badge badge-info">+@(adImgs.Count - 2)</span>
+                                            <span class="badge badge-info cm-badge-inline">+@(adImgs.Count - 2)</span>
                                         }
                                     </div>
                                 }
@@ -216,11 +274,11 @@
                                     <span class="text-muted">الاسم فقط</span>
                                 }
                             </td>
-                            <td class="text-md">@ad.DurationDays يوم</td>
-                            <td class="text-md">@ad.Amount.ToString("N2") ج.م</td>
-                            <td class="text-md">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "-")</td>
-                            <td class="text-md">@(ad.EndDate?.ToString("yyyy-MM-dd") ?? "-")</td>
-                            <td><span class="badge @GetStatusClass(ad.Status)">@GetStatusText(ad.Status)</span></td>
+                            <td class="text-md cm-money">@ad.DurationDays يوم</td>
+                            <td class="text-md cm-money">@ad.Amount.ToString("N2") ج.م</td>
+                            <td class="text-md cm-money">@(ad.StartDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                            <td class="text-md cm-money">@(ad.EndDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                            <td class="cm-status-cell"><span class="badge badge--dot @GetStatusClass(ad.Status)">@GetStatusText(ad.Status)</span></td>
                         </tr>
                     }
                 }
@@ -238,8 +296,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body-custom">
-                <div class="payment-methods-grid">
-                    <label class="payment-method-card selected" id="adMethodWalletCard">
+                <div class="payment-methods-grid cm-methods">
+                    <label class="payment-method-card selected cm-pay-method" id="adMethodWalletCard">
                         <input type="radio" name="adPaymentMethod" value="PaymobWallet" checked>
                         <div class="payment-method-icon payment-method-icon--wallet">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -255,7 +313,7 @@
                         </span>
                     </label>
 
-                    <label class="payment-method-card" id="adMethodCardCard">
+                    <label class="payment-method-card cm-pay-method" id="adMethodCardCard">
                         <input type="radio" name="adPaymentMethod" value="PaymobCreditCard">
                         <div class="payment-method-icon payment-method-icon--card">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -273,12 +331,12 @@
                     </label>
                 </div>
 
-                <div id="adWalletPhoneBox" class="mt-3 text-start">
-                    <label for="adWalletPhoneInput" class="form-label text-muted small mb-1">
-                        <i class="bi bi-phone me-1"></i> رقم المحفظة (فودافون كاش / اتصالات / أورنج / وي):
+                <div id="adWalletPhoneBox" class="cm-wallet-box">
+                    <label for="adWalletPhoneInput" class="form-label cm-wallet-label">
+                        <i class="bi bi-phone" aria-hidden="true"></i> رقم المحفظة (فودافون كاش / اتصالات / أورنج / وي):
                     </label>
-                    <input type="tel" id="adWalletPhoneInput" class="form-control" placeholder="01xxxxxxxxx" dir="ltr" maxlength="11">
-                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
+                    <input type="tel" id="adWalletPhoneInput" class="form-control cm-money-input" placeholder="01xxxxxxxxx" dir="ltr" maxlength="11">
+                    <small class="cm-wallet-hint">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
                 </div>
             </div>
             <div class="modal-footer-custom">
@@ -304,7 +362,7 @@
                 }
                 else
                 {
-                    <div class="row">
+                    <div class="row cm-form-grid">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label" for="buyPackage">الباقة الإعلانية</label>
@@ -331,7 +389,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="buyPrice">السعر الإجمالي</label>
-                        <input type="text" id="buyPrice" class="form-input" readonly placeholder="0.00 ج.م" />
+                        <input type="text" id="buyPrice" class="form-input cm-money cm-money-input" readonly placeholder="0.00 ج.م" />
                     </div>
                     <div class="form-group">
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -374,7 +432,7 @@
                 document.querySelectorAll('#paymentMethodAdModal .payment-method-card').forEach(function(c){ c.classList.remove('selected'); });
                 this.closest('.payment-method-card')?.classList.add('selected');
                 if (adWalletPhoneBox) {
-                    adWalletPhoneBox.style.display = this.value === 'PaymobWallet' ? 'block' : 'none';
+                    adWalletPhoneBox.classList.toggle('cm-hidden', this.value !== 'PaymobWallet');
                 }
             });
         });
@@ -518,7 +576,7 @@
             });
 
             if (uploadBox) {
-                uploadBox.style.display = uploadedAdLogos.length >= currentPackageMaxLogos ? 'none' : 'block';
+                uploadBox.classList.toggle('cm-hidden', uploadedAdLogos.length >= currentPackageMaxLogos);
             }
         }
 
@@ -755,7 +813,7 @@
                     document.querySelectorAll('#adsTableBody tr').forEach(function(tr){
                         if (tr.querySelector('td[colspan]')) return;
                         var txt = tr.textContent.toLowerCase();
-                        tr.style.display = !q || txt.indexOf(q) !== -1 ? '' : 'none';
+                        tr.classList.toggle('cm-hidden', !!q && txt.indexOf(q) === -1);
                     });
                 });
             }

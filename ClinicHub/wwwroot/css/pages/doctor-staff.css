@@ -1,0 +1,2031 @@
+/* ============================================================
+   ClinicHub — Doctor & Staff (front-desk) surfaces
+   Page layer: loaded per-view from @section Styles, AFTER
+   design-system.css + site.css + app-shell.css.
+   Scope: Doctor dashboard, appointment lists, reception queue,
+   staff registration, doctor schedule, assessment sheet, ratings.
+   All colours/space/radius/shadow/type/motion come from tokens.
+   ============================================================ */
+
+/* ============================================================
+   1 · Page openers & shared rhythm
+   ============================================================ */
+
+.ds-hero-gap {
+  margin-bottom: var(--space-6);
+}
+
+/* Reused hint line under the page opener (keeps legacy .table-hint) */
+.ds-scope-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: calc(var(--space-5) * -1 + var(--space-1)) 0 var(--space-6);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--clr-surface);
+  box-shadow: var(--shadow-2xs);
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+}
+
+.ds-scope-note .bi {
+  color: var(--clr-primary);
+  font-size: var(--fs-md);
+}
+
+/* Section panel used across Staff/Doctor cards */
+.ds-panel {
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.ds-panel--flush {
+  padding: 0;
+}
+
+.ds-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--ff-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+}
+
+.ds-panel-title .bi {
+  color: var(--clr-primary);
+  font-size: var(--fs-lg);
+}
+
+/* Small counters that ride next to a section title */
+.ds-count {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--clr-primary-strong);
+}
+
+/* ============================================================
+   2 · Doctor dashboard — stat grid + vertical agenda rail
+   ============================================================ */
+
+/* app-shell.css ships --warning/--info/--danger/--brass/--neutral.
+   The Staff + Doctor dashboards also use these two modifiers, so this
+   sheet completes them with the same token pattern. */
+.stat-card--success::before { background: linear-gradient(180deg, var(--clr-success), var(--clr-success-text)); }
+.stat-card--success .stat-value { color: var(--clr-success-text); }
+
+.stat-card--highlight {
+  border-color: var(--clr-warning-border);
+  background: linear-gradient(180deg, var(--clr-surface) 0%, var(--clr-warning-bg) 100%);
+}
+
+.stat-card--highlight::before { background: linear-gradient(180deg, var(--clr-warning), var(--clr-warning-text)); }
+.stat-card--highlight .stat-value { color: var(--clr-warning-text); }
+
+/* Compact secondary line inside a stat card */
+.ds-stat-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+/* Agenda: the time column carries a dot + a rail that threads the rows */
+.ds-agenda td.ds-agenda-cell {
+  position: relative;
+  padding-inline-start: var(--space-7);
+  white-space: nowrap;
+}
+
+.ds-agenda-cell::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: calc(var(--space-4) - var(--space-1));
+  top: 50%;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--clr-surface);
+  border: 2px solid var(--clr-border-strong);
+  transform: translateY(-50%);
+  transition: border-color var(--dur-fs) var(--ease-standard), background-color var(--dur-fs) var(--ease-standard);
+}
+
+/* The rail itself: one continuous line behind every dot */
+.ds-agenda tbody {
+  position: relative;
+}
+
+.ds-agenda tbody::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: var(--space-4);
+  inset-block: 0;
+  width: var(--space-0);
+  background: linear-gradient(180deg,
+      var(--clr-border) 0%,
+      var(--clr-border) 88%,
+      transparent 100%);
+  z-index: 0;
+}
+
+.ds-agenda tbody tr > * {
+  position: relative;
+  z-index: 1;
+}
+
+.ds-agenda-time {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--clr-text);
+  direction: ltr;
+  display: inline-block;
+}
+
+.ds-agenda-sub {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+/* Rows whose slot has already started read as "live" */
+.ds-agenda tr.ds-row-live .ds-agenda-cell::before {
+  background: var(--clr-success);
+  border-color: var(--clr-success);
+  box-shadow: 0 0 0 var(--space-1) var(--clr-success-bg);
+}
+
+.ds-agenda tr.ds-row-live .ds-agenda-time {
+  color: var(--clr-success-text);
+}
+
+/* Rows already past/closed are quieted, never hidden */
+.ds-agenda tr.ds-row-past .ds-agenda-time {
+  color: var(--clr-text-faint);
+}
+
+/* ============================================================
+   3 · Tables — patient cell, status, actions, empty rows
+   ============================================================ */
+
+.ds-table-card {
+  overflow: hidden;
+}
+
+.ds-table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--clr-border);
+  background: linear-gradient(180deg, var(--clr-table-header), var(--clr-surface));
+}
+
+.ds-table {
+  width: 100%;
+}
+
+/* Patient cell: avatar + name + phone */
+.ds-patient {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.ds-patient-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ds-patient-name {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+  overflow-wrap: anywhere;
+}
+
+.ds-patient-phone {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  color: var(--clr-text-secondary);
+  direction: ltr;
+  text-align: right;
+}
+
+/* Avatar inside dense rows stays small and round */
+.ds-patient .avatar {
+  width: var(--space-7);
+  height: var(--space-7);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-sm);
+}
+
+/* Avatar bubbles produced by wwwroot/js/staff-dashboard-service.js */
+.ds-table .sidebar-profile-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--grad-primary);
+  color: var(--clr-surface);
+  font-weight: var(--fw-bold);
+  flex-shrink: 0;
+}
+
+/* Status column: leading dot even when JS rebuilds the badge class list */
+.ds-status-cell .badge::before {
+  content: '';
+  width: calc(var(--space-1) + var(--space-0));
+  height: calc(var(--space-1) + var(--space-0));
+  border-radius: var(--radius-full);
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.ds-status-cell .badge:empty {
+  display: none;
+}
+
+/* Quiet helper text inside a cell (kept legacy .table-hint alive) */
+.ds-table .table-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+.ds-table .table-hint .bi {
+  color: var(--clr-warning);
+}
+
+/* Empty / loading row */
+.ds-table .table-empty {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  font-size: var(--fs-md);
+  color: var(--clr-text-secondary);
+  background: var(--clr-surface-subtle);
+}
+
+/* Card-level empty note (a <p> that sits outside the table) */
+.ds-table-card > .table-empty {
+  margin: 0;
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  font-size: var(--fs-md);
+  color: var(--clr-text-secondary);
+  background: var(--clr-surface-subtle);
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+/* Mono queue numeral inside table rows */
+.ds-table .queue-number {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--clr-primary-strong);
+  direction: ltr;
+}
+
+/* Row action rail */
+.ds-table .table-actions {
+  gap: var(--space-1);
+}
+
+.ds-action {
+  gap: var(--space-1);
+  border-radius: var(--radius-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.ds-action .bi {
+  font-size: var(--fs-md);
+}
+
+/* Icon-only destructive action */
+.ds-action--danger {
+  color: var(--clr-danger-text);
+  background-color: var(--clr-danger-bg);
+  border: 1px solid var(--clr-danger-border);
+}
+
+.ds-action--danger:hover {
+  background-color: var(--clr-danger);
+  color: var(--clr-surface);
+  border-color: var(--clr-danger);
+}
+
+/* Icon-only confirm action */
+.ds-action--success {
+  color: var(--clr-success-text);
+  background-color: var(--clr-success-bg);
+  border: 1px solid var(--clr-success-border);
+}
+
+.ds-action--success:hover {
+  background-color: var(--clr-success);
+  color: var(--clr-surface);
+  border-color: var(--clr-success);
+}
+
+/* Neutral / info action */
+.ds-action--neutral {
+  color: var(--clr-primary-strong);
+  background-color: var(--clr-primary-soft);
+  border: 1px solid rgba(13, 95, 78, 0.2);
+}
+
+.ds-action--neutral:hover {
+  background-color: var(--clr-primary);
+  color: var(--clr-surface);
+  border-color: var(--clr-primary);
+}
+
+/* Buttons injected by staff-dashboard-service.js keep their legacy
+   Bootstrap-ish class list — normalise them to the page language. */
+.ds-table .btn-outline-success,
+.ds-table .btn-outline-danger,
+.ds-table .btn-outline-primary,
+.ds-table .btn-outline-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: var(--space-7);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--ff-body);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  line-height: 1.4;
+  border-radius: var(--radius-sm);
+  background-color: var(--clr-surface);
+  transition:
+    background-color var(--dur-fs) var(--ease-standard),
+    color var(--dur-fs) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard),
+    box-shadow var(--dur-fs) var(--ease-standard);
+}
+
+.ds-table .btn-outline-success {
+  color: var(--clr-success-text);
+  border: 1px solid var(--clr-success-border);
+}
+
+.ds-table .btn-outline-success:hover {
+  background-color: var(--clr-success-bg);
+  color: var(--clr-success-text);
+  border-color: var(--clr-success);
+}
+
+.ds-table .btn-outline-danger {
+  color: var(--clr-danger-text);
+  border: 1px solid var(--clr-danger-border);
+}
+
+.ds-table .btn-outline-danger:hover {
+  background-color: var(--clr-danger-bg);
+  color: var(--clr-danger-text);
+  border-color: var(--clr-danger);
+}
+
+.ds-table .btn-outline-primary,
+.ds-table .btn-outline-secondary {
+  color: var(--clr-primary-strong);
+  border: 1px solid var(--clr-border-strong);
+}
+
+.ds-table .btn-outline-primary:hover,
+.ds-table .btn-outline-secondary:hover {
+  background-color: var(--clr-primary-soft);
+  color: var(--clr-primary-strong);
+  border-color: var(--clr-primary);
+}
+
+/* JS-generated action wrappers use inline flex divs; keep them tidy */
+.ds-table td > div {
+  align-items: center;
+}
+
+/* ============================================================
+   4 · Filter bar — segmented date scope + status chips
+   ============================================================ */
+
+.ds-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  margin: 0;
+  border-bottom: 1px solid var(--clr-border-subtle);
+  background: var(--clr-surface-subtle);
+}
+
+.ds-filter-search {
+  flex: 1 1 calc(var(--space-12) * 2);
+  min-width: var(--space-11);
+}
+
+.ds-filter-dates {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ds-filter-dates .form-input {
+  min-width: calc(var(--space-12) + var(--space-2));
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+}
+
+/* Date scope: the segmented pill reused as a from → to container */
+.ds-date-scope {
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+}
+
+.ds-date-scope .form-input {
+  min-height: var(--space-7);
+  min-width: calc(var(--space-12) + var(--space-2));
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  direction: ltr;
+  background-color: var(--clr-surface);
+  border-color: var(--clr-border);
+}
+
+.ds-date-sep {
+  color: var(--clr-text-faint);
+  font-family: var(--ff-data);
+  font-size: var(--fs-sm);
+}
+
+.ds-chips {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: 0 var(--space-5) var(--space-4);
+  background: var(--clr-surface-subtle);
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.ds-chips-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-faint);
+  margin-inline-end: var(--space-1);
+}
+
+/* The GET form's status <select> stays in the DOM (inline scripts read
+   .filter-bar select[name="status"]) but is visually replaced by chips. */
+.ds-sr-field {
+  position: absolute;
+  width: var(--space-1);
+  height: var(--space-1);
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ============================================================
+   5 · Reception queue — the signature ticket
+   ============================================================ */
+
+.ds-queue-layout {
+  display: grid;
+  gap: var(--space-5);
+  align-items: start;
+  margin-bottom: var(--space-6);
+}
+
+/* Hero: printed ticket + now-serving panel */
+.ds-queue-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--space-5);
+  align-items: stretch;
+  padding: var(--space-5);
+  background:
+    radial-gradient(90% 70% at 100% 0%, rgba(183, 138, 60, 0.1) 0%, transparent 60%),
+    var(--clr-surface);
+}
+
+.ds-queue-hero--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ds-queue-hero > .section-head {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.ds-ticket-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.ds-ticket-hero .ticket {
+  width: 100%;
+  align-items: stretch;
+}
+
+.ds-ticket-hero .ticket-body {
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+}
+
+/* Lift is the only motion the ticket gets after it prints */
+.ds-ticket-hero .ticket {
+  transition: transform var(--dur-sm) var(--ease-spring), box-shadow var(--dur-sm) var(--ease-standard);
+}
+
+.ds-ticket-hero .ticket:hover {
+  transform: translateY(var(--motion-lift));
+  box-shadow: var(--shadow-lg);
+}
+
+.ds-ticket-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+}
+
+.ds-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--clr-success-border);
+  background: var(--clr-success-bg);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-success-text);
+}
+
+.ds-live-pill .dot-live {
+  flex-shrink: 0;
+}
+
+/* Now-serving panel */
+.ds-now-serving {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--clr-surface-sunken);
+  border: 1px solid var(--clr-border-subtle);
+}
+
+.ds-now-serving-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.ds-now-serving-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-secondary);
+}
+
+.ds-now-serving-body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.ds-now-serving-num {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  color: var(--clr-primary-strong);
+  direction: ltr;
+  flex-shrink: 0;
+}
+
+.ds-now-serving-name {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+  overflow-wrap: anywhere;
+}
+
+.ds-now-serving-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+}
+
+.ds-now-serving-meta .bi {
+  color: var(--clr-text-faint);
+  font-size: var(--fs-md);
+}
+
+.ds-now-serving-empty {
+  font-size: var(--fs-md);
+  color: var(--clr-text-faint);
+}
+
+/* Waiting list rows */
+.ds-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ds-queue-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  background: var(--clr-surface);
+  box-shadow: var(--shadow-2xs);
+  transition:
+    transform var(--dur-sm) var(--ease-spring),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard),
+    background-color var(--dur-fs) var(--ease-standard);
+}
+
+.ds-queue-row:hover {
+  transform: translateY(var(--motion-lift));
+  border-color: rgba(13, 95, 78, 0.22);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.ds-queue-row-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--space-8);
+  padding: var(--space-1) var(--space-2);
+  border: 1px dashed rgba(183, 138, 60, 0.5);
+  border-radius: var(--radius-sm);
+  background: var(--clr-brass-25);
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--clr-brass-deep);
+  direction: ltr;
+}
+
+.ds-queue-row-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: var(--space-0);
+}
+
+.ds-queue-row-name {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+  overflow-wrap: anywhere;
+}
+
+.ds-queue-row-sub {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--fs-xs);
+  color: var(--clr-text-secondary);
+}
+
+.ds-queue-row-sub .tabular {
+  direction: ltr;
+}
+
+.ds-queue-row-status {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ds-queue-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* The patient currently with the doctor */
+.ds-queue-row--live {
+  border-color: rgba(13, 95, 78, 0.32);
+  background: linear-gradient(90deg, rgba(13, 95, 78, 0.07) 0%, var(--clr-surface) 45%);
+}
+
+.ds-queue-row--live .ds-queue-row-num {
+  border-style: solid;
+  border-color: var(--clr-primary);
+  background: var(--clr-primary-soft);
+  color: var(--clr-primary-strong);
+}
+
+/* Finished patients sink back into the paper */
+.ds-queue-row--done {
+  background: var(--clr-surface-subtle);
+  border-color: var(--clr-border-subtle);
+}
+
+.ds-queue-row--done .ds-queue-row-name {
+  color: var(--clr-text-secondary);
+}
+
+.ds-queue-empty {
+  margin: 0;
+}
+
+/* ============================================================
+   6 · Forms — registration, availability, assessment modal
+   ============================================================ */
+
+.ds-form-card {
+  padding: var(--space-6);
+  max-width: calc(var(--space-11) * 6);
+}
+
+.ds-form-grid {
+  display: grid;
+  gap: 0 var(--space-5);
+}
+
+.ds-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-4);
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+/* Sticky save bar for long forms / modal footers */
+.ds-form-actions--sticky {
+  position: sticky;
+  bottom: calc(var(--space-2) * -1);
+  z-index: var(--z-content);
+  margin-bottom: calc(var(--space-2) * -1);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--clr-border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-md);
+}
+
+/* Two-column rhythm for short forms */
+.ds-form-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ds-form-grid--2 .ds-form-full {
+  grid-column: 1 / -1;
+}
+
+.ds-tabular-field {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  text-align: right;
+}
+
+/* Availability rows (built by the view's inline script) */
+.ds-availability {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ds-availability .availability-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  background: var(--clr-surface);
+  box-shadow: var(--shadow-2xs);
+  transition:
+    transform var(--dur-sm) var(--ease-spring),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard);
+}
+
+.ds-availability .availability-row:hover {
+  transform: translateY(var(--motion-lift));
+  border-color: rgba(13, 95, 78, 0.22);
+  box-shadow: var(--shadow-md);
+}
+
+.ds-availability .availability-row select {
+  width: auto;
+  min-width: var(--space-9);
+  min-height: var(--space-7);
+  padding: var(--space-1) var(--space-5) var(--space-1) var(--space-3);
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  color: var(--clr-text);
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-field-border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fs) var(--ease-standard), box-shadow var(--dur-fs) var(--ease-standard);
+}
+
+.ds-availability .availability-row select:focus {
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 var(--space-1) var(--clr-ring-primary);
+  outline: none;
+}
+
+.ds-availability .availability-day {
+  min-width: var(--space-10);
+  font-family: var(--ff-body);
+}
+
+.ds-availability .availability-sep {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-faint);
+  padding: 0 var(--space-1);
+}
+
+.ds-availability .availability-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  margin-inline-start: auto;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--clr-danger-text);
+  font-size: var(--fs-lg);
+  cursor: pointer;
+  transition: background-color var(--dur-fs) var(--ease-standard), color var(--dur-fs) var(--ease-standard), transform var(--dur-sm) var(--ease-spring);
+}
+
+.ds-availability .availability-remove-btn:hover {
+  background: var(--clr-danger-bg);
+  border-color: var(--clr-danger-border);
+}
+
+.ds-availability .availability-remove-btn:active {
+  transform: scale(var(--motion-press));
+}
+
+/* ============================================================
+   7 · Staff schedule — day tabs + slot rows
+   ============================================================ */
+
+.ds-days {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: var(--space-1);
+  margin-bottom: var(--space-5);
+}
+
+.ds-days::-webkit-scrollbar {
+  display: none;
+}
+
+.ds-days .segmented-item .tabular {
+  font-size: var(--fs-xs);
+  opacity: 0.75;
+}
+
+.ds-day-panel {
+  padding: var(--space-5);
+}
+
+.ds-slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ds-slot {
+  display: grid;
+  grid-template-columns: var(--space-10) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--clr-border-subtle);
+  border-inline-start: var(--space-0) solid var(--clr-primary);
+  border-radius: var(--radius-md);
+  background: var(--clr-surface);
+  transition:
+    transform var(--dur-sm) var(--ease-spring),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard);
+}
+
+.ds-slot:hover {
+  transform: translateY(var(--motion-lift));
+  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(13, 95, 78, 0.24);
+}
+
+.ds-slot-time {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--clr-primary-strong);
+  direction: ltr;
+}
+
+/* Rows produced by staff-dashboard-service.js renderDoctorSchedule() */
+.ds-schedule-table tbody tr {
+  transition: background-color var(--dur-fs) var(--ease-standard), box-shadow var(--dur-fs) var(--ease-standard);
+}
+
+.ds-schedule-table tbody tr:hover td {
+  background-color: rgba(13, 95, 78, 0.06);
+  box-shadow: inset var(--space-0) 0 0 var(--clr-primary);
+}
+
+.ds-schedule-table tbody td:nth-child(3),
+.ds-schedule-table tbody td:nth-child(2) {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   8 · Assessment sheet (Doctor/PatientHistory)
+   ============================================================ */
+
+.ds-assess {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.ds-assess-toolbar {
+  align-items: flex-start;
+}
+
+.ds-assess-sheet {
+  padding: var(--space-6);
+}
+
+.ds-assess-panel {
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.ds-assess-panel:last-child {
+  margin-bottom: 0;
+}
+
+.ds-assess-panel-head {
+  margin-bottom: var(--space-4);
+}
+
+.ds-assess-label {
+  font-family: var(--ff-display);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.ds-assess-label .bi {
+  color: var(--clr-primary);
+  font-size: var(--fs-md);
+}
+
+/* Measurement pairs (height / weight / BMI …) */
+.ds-assess-grid {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.ds-assess-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ds-assess-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--clr-surface-subtle);
+}
+
+.ds-assess-field-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-secondary);
+}
+
+.ds-assess-field-value {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  color: var(--clr-text);
+  overflow-wrap: anywhere;
+}
+
+.ds-assess-field-value.is-empty {
+  color: var(--clr-text-faint);
+  font-family: var(--ff-data);
+}
+
+.ds-assess-field-value .tabular {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--clr-primary-strong);
+}
+
+.ds-assess-bmi {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-0) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--clr-primary-soft);
+  border: 1px solid rgba(13, 95, 78, 0.2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-primary-strong);
+}
+
+/* Long free-text clinical blocks */
+.ds-assess-note {
+  padding: var(--space-4);
+  border: 1px solid var(--clr-border-subtle);
+  border-inline-start: var(--space-0) solid var(--clr-brass);
+  border-radius: var(--radius-sm);
+  background: var(--clr-surface-subtle);
+  font-size: var(--fs-md);
+  line-height: var(--lh-lg);
+  color: var(--clr-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ds-assess-note.is-empty {
+  color: var(--clr-text-faint);
+  border-inline-start-color: var(--clr-border-strong);
+  font-family: var(--ff-data);
+}
+
+/* Present-history label/value pairs */
+.ds-assess-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.ds-assess-list-item {
+  display: grid;
+  grid-template-columns: var(--space-11) minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px dashed var(--clr-border-subtle);
+}
+
+.ds-assess-list-item:last-child {
+  border-bottom: 0;
+}
+
+.ds-assess-list-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-secondary);
+}
+
+.ds-assess-list-value {
+  font-size: var(--fs-md);
+  color: var(--clr-text);
+  overflow-wrap: anywhere;
+}
+
+.ds-assess-list-value.text-muted {
+  color: var(--clr-text-faint);
+  font-family: var(--ff-data);
+}
+
+/* Treatment plan cards */
+.ds-assess-plan {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, var(--clr-surface-sunken), var(--clr-surface-subtle));
+  border: 1px solid var(--clr-border-subtle);
+}
+
+.ds-assess-plan-item {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-subtle);
+  transition: transform var(--dur-sm) var(--ease-spring), box-shadow var(--dur-sm) var(--ease-standard);
+}
+
+.ds-assess-plan-item:hover {
+  transform: translateY(var(--motion-lift));
+  box-shadow: var(--shadow-sm);
+}
+
+.ds-assess-plan-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--clr-primary-strong);
+  margin-bottom: var(--space-1);
+}
+
+.ds-assess-plan-desc {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  color: var(--clr-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.ds-assess-plan-desc.text-muted {
+  color: var(--clr-text-faint);
+  font-family: var(--ff-data);
+}
+
+/* Visits timeline card */
+.ds-assess-visits {
+  padding: var(--space-5);
+}
+
+.ds-assess-visits-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  cursor: pointer;
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.ds-assess-visits-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--ff-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+}
+
+/* Modal assessment form: tokens-first inputs, legacy classes retained */
+.ds-assess-form .settings-section {
+  padding: var(--space-4);
+  margin-bottom: var(--space-4) !important;
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--clr-surface-subtle);
+}
+
+.ds-assess-form .settings-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--clr-border-subtle);
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--clr-text);
+}
+
+.ds-assess-form .settings-section-title .bi {
+  color: var(--clr-primary);
+}
+
+.ds-assess-form .settings-section-title.text-success {
+  color: var(--clr-success-text);
+}
+
+.ds-assess-form .settings-section-title.text-success .bi {
+  color: var(--clr-success);
+}
+
+.ds-assess-form .assessment-form-grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.ds-assess-form .assessment-form-col-1 {
+  grid-column: span 1;
+}
+
+.ds-assess-form .assessment-form-col-2 {
+  grid-column: span 2;
+}
+
+.ds-assess-form .assessment-form-col-3 {
+  grid-column: span 3;
+}
+
+.ds-assess-form .form-group {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ds-assess-form .form-label {
+  margin-bottom: 0;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-secondary);
+}
+
+.ds-assess-form .form-control,
+.ds-assess-form .form-select,
+.ds-assess-form .form-textarea {
+  width: 100%;
+  min-height: var(--space-9);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--ff-body);
+  font-size: var(--fs-md);
+  color: var(--clr-text);
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-field-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  box-shadow: var(--shadow-2xs);
+  transition:
+    border-color var(--dur-fs) var(--ease-standard),
+    box-shadow var(--dur-fs) var(--ease-standard),
+    background-color var(--dur-fs) var(--ease-standard);
+}
+
+.ds-assess-form textarea.form-control,
+.ds-assess-form .form-textarea {
+  min-height: var(--space-11);
+  line-height: var(--lh-md);
+  resize: vertical;
+}
+
+.ds-assess-form .form-control:focus,
+.ds-assess-form .form-select:focus,
+.ds-assess-form .form-textarea:focus {
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 var(--space-1) var(--clr-ring-primary);
+}
+
+.ds-assess-form .form-control::placeholder {
+  color: var(--clr-placeholder);
+}
+
+.ds-assess-form .form-control[readonly] {
+  background-color: var(--clr-surface-sunken);
+  color: var(--clr-primary-strong);
+  cursor: default;
+}
+
+.ds-assess-form .form-control[type="number"],
+.ds-assess-form .form-control[type="tel"],
+.ds-assess-form .form-control[type="date"] {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+}
+
+.ds-assess-form .modal-content,
+.ds-modal .modal-content {
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+}
+
+.ds-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--clr-border);
+  background: var(--clr-surface-subtle);
+}
+
+/* Print: the sheet is the deliverable, the shell is not */
+@media print {
+  .ds-assess-toolbar,
+  .ds-modal-footer,
+  .assessment-toolbar-actions,
+  .page-header-actions {
+    display: none !important;
+  }
+
+  .ds-assess-panel,
+  .ds-assess-sheet {
+    box-shadow: none;
+    border-color: var(--clr-border);
+  }
+}
+
+/* ============================================================
+   9 · Ratings
+   ============================================================ */
+
+.ds-ratings-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--clr-border-subtle);
+  background:
+    radial-gradient(70% 90% at 100% 0%, rgba(183, 138, 60, 0.12) 0%, transparent 65%),
+    var(--clr-surface);
+}
+
+.ds-ratings-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.ds-ratings-number {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  letter-spacing: var(--ls-tight);
+  color: var(--clr-primary-strong);
+  direction: ltr;
+}
+
+.ds-ratings-count {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+}
+
+.ds-ratings .stars-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-0);
+}
+
+.ds-ratings .star-filled {
+  color: var(--clr-brass);
+}
+
+.ds-ratings .star-empty {
+  color: var(--clr-border-strong);
+}
+
+.ds-rating-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ds-rating-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--clr-surface);
+}
+
+.ds-rating-card:hover {
+  border-color: rgba(13, 95, 78, 0.2);
+}
+
+.ds-rating-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-full);
+  background: var(--clr-primary-soft);
+  color: var(--clr-primary-strong);
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  flex-shrink: 0;
+}
+
+.ds-rating-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ds-rating-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.ds-rating-name {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+  overflow-wrap: anywhere;
+}
+
+.ds-rating-date {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+  direction: ltr;
+}
+
+.ds-rating-comment {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  color: var(--clr-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+/* ============================================================
+   10 · Responsive — only where the layout genuinely re-flows
+   ============================================================ */
+
+@media (max-width: 1200px) {
+  .ds-queue-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .ds-queue-row-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .ds-assess-form .assessment-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ds-assess-form .assessment-form-col-3 {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .ds-queue-layout,
+  .ds-queue-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ds-form-grid--2,
+  .ds-assess-grid--3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ds-assess-list-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+}
+
+@media (max-width: 640px) {
+  .ds-filter,
+  .ds-chips {
+    padding-inline: var(--space-4);
+  }
+
+  .ds-queue-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .ds-slot {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+
+  .ds-assess-form .assessment-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ds-assess-form .assessment-form-col-2,
+  .ds-assess-form .assessment-form-col-3 {
+    grid-column: 1 / -1;
+  }
+
+  .ds-form-actions {
+    justify-content: stretch;
+  }
+
+  .ds-form-actions .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* ============================================================
+   11 · Reduced motion — the ticket still prints, nothing animates
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-ticket-hero .ticket,
+  .ds-ticket-hero .ticket:hover,
+  .ds-queue-row:hover,
+  .ds-slot:hover,
+  .ds-assess-plan-item:hover,
+  .ds-availability .availability-row:hover {
+    transform: none;
+  }
+
+  .ds-queue-row,
+  .ds-slot,
+  .ds-availability .availability-row,
+  .ds-assess-plan-item,
+  .ds-schedule-table tbody tr {
+    transition-duration: 0.001ms;
+  }
+}
+
+/* ============================================================
+   12 · Newly wired surfaces — Doctor/Staff profile, notifications,
+   patient history timeline, staff schedule + reception registration.
+   These pages link this sheet (see each view's @section Styles);
+   the markup comes from shared partials (_ProfilePage,
+   _NotificationsCenter) and the redesigned views, so we refine
+   their classes here with tokens, never !important, source-order
+   specificity to sit above site.css.
+   ============================================================ */
+
+/* --- Entrance: a single restrained rise on the page's lead card.
+   Uses the ch-rise keyframe from the motion layer. --- */
+.profile-page .profile-card,
+.notif-page .notif-card,
+.ds-history-card,
+.ds-register-card,
+.ds-schedule-card {
+  animation: ch-rise var(--dur-md) var(--ease-spring) both;
+}
+
+/* ------------------------------------------------------------
+   12.1 · Profile detail card (avatar chip + field rows)
+   ------------------------------------------------------------ */
+.profile-page .profile-card {
+  border-radius: var(--radius-lg);
+  border-color: var(--clr-border);
+  box-shadow: var(--shadow-card);
+}
+
+.profile-page .profile-avatar-large {
+  box-shadow: 0 0 0 var(--space-0) rgba(183, 138, 60, 0.55),
+              var(--shadow-md);
+}
+
+.profile-page .profile-avatar-img {
+  border-color: rgba(183, 138, 60, 0.6);
+}
+
+.profile-page .profile-role-label {
+  letter-spacing: var(--ls-label);
+}
+
+/* Edit control on the emerald header — glass pill */
+.profile-page .profile-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-2xs);
+  transition:
+    transform var(--dur-sm) var(--ease-spring),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    background-color var(--dur-sm) var(--ease-standard);
+}
+
+.profile-page .profile-edit-btn:hover {
+  transform: translateY(var(--motion-lift));
+  box-shadow: var(--shadow-md);
+}
+
+.profile-page .profile-edit-btn .bi {
+  color: var(--clr-primary);
+  font-size: var(--fs-md);
+}
+
+.profile-page .profile-card-body {
+  gap: var(--space-2);
+}
+
+/* Field row: icon chip + label + value, RTL-friendly via logical props */
+.profile-page .profile-field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid transparent;
+  border-bottom: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-sm);
+  transition:
+    background-color var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-sm) var(--ease-standard);
+}
+
+.profile-page .profile-field:last-child {
+  border-bottom: 1px solid transparent;
+}
+
+.profile-page .profile-field:hover {
+  background-color: var(--clr-surface-subtle);
+  border-color: var(--clr-border-subtle);
+}
+
+.profile-page .profile-field-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  border-radius: var(--radius-sm);
+  background: var(--clr-primary-soft);
+  color: var(--clr-primary-strong);
+}
+
+.profile-page .profile-field-icon .bi {
+  font-size: var(--fs-md);
+}
+
+.profile-page .profile-field-label {
+  color: var(--clr-text-secondary);
+  letter-spacing: var(--ls-label);
+}
+
+.profile-page .profile-field-value {
+  color: var(--clr-text);
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------
+   12.2 · Notification list — unread rail accent + focus ring
+   ------------------------------------------------------------ */
+.notif-page .notif-card {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.notif-page .notif-item {
+  position: relative;
+  border-bottom: 1px solid var(--clr-border-subtle);
+  transition:
+    background-color var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-sm) var(--ease-standard);
+}
+
+.notif-page .notif-item:hover {
+  background-color: var(--clr-surface-subtle);
+}
+
+.notif-page .notif-item:focus-visible {
+  outline: none;
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 var(--space-1) var(--clr-ring-primary);
+}
+
+/* Unread: an inline-start brass rail that reads at a glance */
+.notif-page .notif-item.unread {
+  background: linear-gradient(90deg,
+      rgba(183, 138, 60, 0.08) 0%,
+      var(--clr-surface) 60%);
+}
+
+.notif-page .notif-item.unread::before {
+  content: '';
+  position: absolute;
+  inset-block: var(--space-2);
+  inset-inline-start: 0;
+  width: var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--clr-brass);
+}
+
+.notif-page .notif-item-icon {
+  border-radius: var(--radius-sm);
+  background: var(--clr-primary-soft);
+  color: var(--clr-primary-strong);
+  transition:
+    background-color var(--dur-sm) var(--ease-standard),
+    color var(--dur-sm) var(--ease-standard),
+    transform var(--dur-sm) var(--ease-spring);
+}
+
+.notif-page .notif-item:hover .notif-item-icon {
+  transform: translateY(var(--motion-lift));
+}
+
+.notif-page .notif-item.unread .notif-item-icon {
+  background: var(--grad-primary);
+  color: var(--clr-surface);
+}
+
+.notif-page .notif-item-dot {
+  background: var(--clr-brass);
+}
+
+.notif-page .notif-item-time {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.notif-page .notif-empty {
+  padding: var(--space-8) var(--space-5);
+}
+
+/* ------------------------------------------------------------
+   12.3 · Patient history timeline — vertical rail + dots
+   (rebuilds site.css rail with logical properties)
+   ------------------------------------------------------------ */
+.ds-timeline .timeline-item {
+  position: relative;
+  display: block;
+  margin: 0;
+  padding-inline-start: var(--space-7);
+  padding-bottom: var(--space-5);
+  animation: ch-rise var(--dur-md) var(--ease-spring) both;
+}
+
+.ds-timeline .timeline-item:nth-child(2) { animation-delay: 0.05s; }
+.ds-timeline .timeline-item:nth-child(3) { animation-delay: 0.1s; }
+.ds-timeline .timeline-item:nth-child(4) { animation-delay: 0.15s; }
+.ds-timeline .timeline-item:nth-child(5) { animation-delay: 0.2s; }
+.ds-timeline .timeline-item:nth-child(n + 6) { animation-delay: 0.25s; }
+
+/* drop the legacy per-row bottom rule inside this page language */
+.ds-timeline .timeline-item:not(:last-child) .timeline-content {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* the continuous rail, threaded through the dots */
+.ds-timeline .timeline-item::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: var(--space-1);
+  inset-block-start: var(--space-2);
+  inset-block-end: 0;
+  width: var(--space-0);
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--clr-primary), var(--clr-border) 70%, var(--clr-border-subtle));
+}
+
+.ds-timeline .timeline-item:last-child::before {
+  inset-block-end: auto;
+  height: var(--space-5);
+}
+
+/* the dot sits centred on the rail (base .timeline-marker::after removed) */
+.ds-timeline .timeline-marker {
+  position: absolute;
+  inset-inline-start: calc((var(--space-1) + var(--space-0) / 2) - (var(--space-3) / 2));
+  inset-block-start: var(--space-1);
+  width: var(--space-3);
+  height: var(--space-3);
+  margin: 0;
+  border: var(--space-0) solid var(--clr-surface);
+  box-shadow: 0 0 0 var(--space-0) var(--clr-border);
+  z-index: 1;
+}
+
+.ds-timeline .timeline-marker::after {
+  display: none;
+}
+
+.ds-timeline .timeline-marker--success { background-color: var(--clr-success); }
+.ds-timeline .timeline-marker--info { background-color: var(--clr-primary); }
+.ds-timeline .timeline-marker--warning { background-color: var(--clr-warning); }
+.ds-timeline .timeline-marker--danger { background-color: var(--clr-danger); }
+
+.ds-timeline .timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ds-timeline .timeline-date {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text-secondary);
+}
+
+.ds-timeline .timeline-text {
+  font-size: var(--fs-md);
+  color: var(--clr-text);
+  overflow-wrap: anywhere;
+}
+
+.ds-timeline .timeline-content .badge {
+  align-self: flex-start;
+  margin-top: var(--space-1);
+}
+
+/* ------------------------------------------------------------
+   12.4 · Reception registration — grouped fieldset sections
+   ------------------------------------------------------------ */
+.ds-register-card {
+  max-width: calc(var(--space-11) * 5);
+}
+
+.ds-register-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.ds-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--clr-surface-subtle);
+}
+
+.ds-field-group-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--clr-border-subtle);
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text);
+}
+
+.ds-field-group-title .bi {
+  color: var(--clr-primary);
+  font-size: var(--fs-lg);
+}
+
+.ds-register-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ds-register-form .form-label {
+  color: var(--clr-text-secondary);
+  letter-spacing: var(--ls-label);
+}
+
+.ds-register-form .form-input[type="tel"],
+.ds-register-form #patientPhone,
+.ds-register-form #doctorSelect {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------
+   12.5 · Schedule — loading placeholder shimmer
+   ------------------------------------------------------------ */
+.ds-schedule-card .table-empty {
+  padding: var(--space-8) var(--space-5);
+}
+
+.ds-schedule-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--clr-text-secondary);
+}
+
+.ds-schedule-loading::before {
+  content: '';
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: var(--radius-full);
+  border: var(--space-0) solid var(--clr-border);
+  border-top-color: var(--clr-primary);
+  animation: ch-spin 0.8s linear infinite;
+}
+
+/* Reduced motion — new surfaces settle, nothing animates on load */
+@media (prefers-reduced-motion: reduce) {
+  .profile-page .profile-card,
+  .notif-page .notif-card,
+  .ds-history-card,
+  .ds-register-card,
+  .ds-schedule-card,
+  .ds-timeline .timeline-item {
+    animation: none;
+  }
+
+  .ds-timeline .timeline-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  .profile-page .profile-edit-btn:hover,
+  .notif-page .notif-item:hover .notif-item-icon {
+    transform: none;
+  }
+
+  .profile-page .profile-field,
+  .notif-page .notif-item,
+  .profile-page .profile-edit-btn,
+  .notif-page .notif-item-icon {
+    transition-duration: 0.001ms;
+  }
+
+  .ds-schedule-loading::before {
+    animation-duration: 0.001ms;
+  }
+}

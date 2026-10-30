@@ -12,63 +12,67 @@
     var mapFieldId = hasMapKey ? "settingsPlaceSearch" : null;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="page-title mb-0">إعدادات العيادة</h2>
-</div>
-
-@if (hasError)
-{
-    <div class="alert alert-danger" role="alert">
-        <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
+<div class="co-page">
+    <div class="page-header co-page-head">
+        <div>
+            <h2 class="page-title">
+                <span class="page-title-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.48.48 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                    </svg>
+                </span>
+                إعدادات العيادة
+            </h2>
+            <p class="page-header-subtitle">بيانات العيادة وموقعها وسياسات الحجز وأوقات العمل</p>
+        </div>
     </div>
-}
 
-<form>
-    <!-- Basic Information -->
-    <div class="detail-card settings-card">
-        <div class="detail-section-header"><h5>المعلومات الأساسية</h5></div>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
+    @if (hasError)
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <form class="co-form">
+        <!-- Basic Information -->
+        <div class="detail-card settings-card co-section">
+            <div class="detail-section-header">
+                <h5><i class="bi bi-info-circle"></i> المعلومات الأساسية</h5>
+            </div>
+            <div class="co-fields">
+                <div class="form-group co-field--6">
                     <label class="form-label" for="settingsName">اسم العيادة</label>
                     <input type="text" class="form-input" id="settingsName" value="@settings?.Name" />
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
+                <div class="form-group co-field--6">
                     <label class="form-label" for="settingsDoctor">الطبيب المسؤول</label>
                     <input type="text" class="form-input" id="settingsDoctor" value="@settings?.ResponsibleDoctor" disabled />
                     <p class="form-hint">الطبيب المسؤول هو مدير العيادة ولا يمكن تعديله.</p>
                 </div>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="form-label" for="settingsDesc">الوصف</label>
-            <textarea class="form-input form-textarea" rows="3" id="settingsDesc">@settings?.Description</textarea>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
+                <div class="form-group co-field--6">
                     <label class="form-label" for="settingsPhone">رقم الهاتف</label>
                     <input type="text" class="form-input" id="settingsPhone" value="@settings?.Phone" placeholder="01XXXXXXXXX" />
                 </div>
-            </div>
-        </div>
-        <input type="hidden" id="settingsManager" value="@settings?.ManagerName" />
-    </div>
-
-    <!-- Location -->
-    <div class="detail-card settings-card">
-        <div class="detail-section-header"><h5>الموقع</h5></div>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
+                <div class="form-group co-field--6">
                     <label class="form-label" for="settingsLocation">الموقع (الغرفة)</label>
                     <input type="text" class="form-input" id="settingsLocation" value="@settings?.Location" placeholder="الطابق - الغرفة" />
                 </div>
+                <div class="form-group co-field--12">
+                    <label class="form-label" for="settingsDesc">الوصف</label>
+                    <textarea class="form-input form-textarea" rows="3" id="settingsDesc">@settings?.Description</textarea>
+                </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group">
+            <input type="hidden" id="settingsManager" value="@settings?.ManagerName" />
+        </div>
+
+        <!-- Location -->
+        <div class="detail-card settings-card co-section">
+            <div class="detail-section-header">
+                <h5><i class="bi bi-geo-alt"></i> الموقع</h5>
+            </div>
+            <div class="co-fields">
+                <div class="form-group co-field--6">
                     <label class="form-label" for="settingsSpecialty">التخصص الرئيسي</label>
                     <select class="form-select" id="settingsSpecialty">
                         <option value="">اختر التخصص</option>
@@ -79,124 +83,129 @@
                         }
                     </select>
                 </div>
+                <div class="form-group co-field--12">
+                    <label class="form-label" for="@mapFieldId">الموقع على الخريطة</label>
+                    <input type="hidden" id="settingsLat" value="@lat.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+                    <input type="hidden" id="settingsLng" value="@lng.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
+                    @if (hasMapKey)
+                    {
+                        <div class="map-search-row">
+                            <input type="text" id="settingsPlaceSearch" class="form-input settings-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" aria-describedby="settingsMapHint" />
+                            <button type="button" class="btn btn-primary btn-sm map-search-btn" id="settingsPlaceSearchBtn">بحث</button>
+                        </div>
+                        <div class="form-hint" id="settingsMapHint">اسحب الدبوس أو ابحث لتحديد موقع العيادة بدقة</div>
+                        <div id="settingsClinicMap" class="settings-map" role="application" aria-label="خريطة تحديد موقع العيادة" aria-describedby="settingsMapHint"></div>
+                        <div class="settings-map-tools">
+                            <button type="button" class="btn btn-sm btn-outline settings-location-btn" id="settingsMyLocationBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+                                موقعي الحالي
+                            </button>
+                            <span class="text-muted text-sm settings-coords-display" id="settingsCoordsDisplay" dir="ltr">@lat.ToString("F4", System.Globalization.CultureInfo.InvariantCulture), @lng.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> خرائط Google غير متاحة حالياً. يرجى مراجعة إعدادات مفتاح API.
+                        </div>
+                    }
+                </div>
             </div>
         </div>
-        <div class="form-group">
-            <label class="form-label" for="@mapFieldId">الموقع على الخريطة</label>
-            <input type="hidden" id="settingsLat" value="@lat.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
-            <input type="hidden" id="settingsLng" value="@lng.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)" />
-            @if (hasMapKey)
-            {
-                <div class="map-search-row">
-                    <input type="text" id="settingsPlaceSearch" class="form-input settings-map-search" placeholder="ابحث عن مكان أو عنوان..." autocomplete="off" aria-describedby="settingsMapHint" />
-                    <button type="button" class="btn btn-primary btn-sm map-search-btn" id="settingsPlaceSearchBtn">بحث</button>
-                </div>
-                <div class="form-hint" id="settingsMapHint">اسحب الدبوس أو ابحث لتحديد موقع العيادة بدقة</div>
-                <div id="settingsClinicMap" class="settings-map" role="application" aria-label="خريطة تحديد موقع العيادة" aria-describedby="settingsMapHint"></div>
-                <div class="settings-map-tools">
-                    <button type="button" class="btn btn-sm btn-outline-primary settings-location-btn" id="settingsMyLocationBtn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
-                        موقعي الحالي
-                    </button>
-                    <span class="text-muted text-sm settings-coords-display" id="settingsCoordsDisplay" dir="ltr">@lat.ToString("F4", System.Globalization.CultureInfo.InvariantCulture), @lng.ToString("F4", System.Globalization.CultureInfo.InvariantCulture)</span>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-warning mt-2" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i> خرائط Google غير متاحة حالياً. يرجى مراجعة إعدادات مفتاح API.
-                </div>
-            }
-        </div>
-    </div>
 
-    <!-- Booking Configuration -->
-    <div class="detail-card settings-card">
-        <div class="detail-section-header"><h5>إعدادات الحجز</h5></div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
+        <!-- Booking Configuration -->
+        <div class="detail-card settings-card co-section">
+            <div class="detail-section-header">
+                <h5><i class="bi bi-calendar-check"></i> إعدادات الحجز</h5>
+            </div>
+            <div class="co-fields">
+                <div class="form-group co-field--4">
                     <label class="form-label" for="settingsFee">رسوم الكشف (جنيه)</label>
                     <input type="number" class="form-input" id="settingsFee" min="0" step="0.01" value="@(settings?.ConsultationFee ?? 0)" />
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
+                <div class="form-group co-field--4">
                     <label class="form-label" for="settingsCurrency">العملة</label>
                     <input type="text" class="form-input" id="settingsCurrency" maxlength="3" value="@(settings?.Currency ?? "EGP")" />
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
+                <div class="form-group co-field--4">
                     <label class="form-label" for="settingsMaxDays">أقصى أيام للحجز المسبق</label>
                     <input type="number" class="form-input" id="settingsMaxDays" min="1" value="@(settings?.MaxAdvanceBookingDays ?? 30)" />
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
+                <div class="form-group co-field--4">
                     <label class="form-label" for="settingsTtl">مهلة تأكيد الحجز (دقائق)</label>
                     <input type="number" class="form-input" id="settingsTtl" min="1" value="@(settings?.ReservationTtlMinutes ?? 10)" />
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
+                <div class="form-group co-field--4">
                     <label class="form-label" for="settingsCancelWindow">مهلة الإلغاء (دقائق)</label>
                     <input type="number" class="form-input" id="settingsCancelWindow" min="1" value="@(settings?.CancellationWindowMinutes ?? 120)" />
                     <p class="form-hint">الفترة المتاحة للمريض لإلغاء الحجز واسترداد رسومه بعد تأكيده (افتراضياً 120 دقيقة = ساعتان).</p>
                 </div>
             </div>
-        </div>
-        <div class="settings-slot-info">
-            <i class="bi bi-clock"></i>
-            <span>مدة الموعد ثابتة: <strong>30 دقيقة</strong> — تُطبق على جميع الأطباء والأيام ولا يمكن تغييرها. كل موعد محجوز لمدة 30 دقيقة بالتحديد.</span>
-        </div>
-    </div>
-
-    <!-- Clinic Availability & Working Hours Section -->
-    @{
-        var clinicMgmt = ViewBag.ClinicManagement as ClinicManagmentDto;
-        var workingHoursDisplay = !string.IsNullOrWhiteSpace(clinicMgmt?.WorkingHours) ? clinicMgmt.WorkingHours : "السبت - الخميس: 09:00 ص - 09:00 م | الجمعة: عطلة";
-        var activeDaysList = clinicMgmt?.WorkingDays?.Select(d => d.DayOfWeek).ToList() ?? new List<string> { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday" };
-    }
-    <div class="detail-card settings-card">
-        <div class="detail-section-header">
-            <h5>أوقات وأيام عمل العيادة</h5>
-            <a href="/Clinic/ClinicAvailability" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-calendar-week"></i> إدارة الجدول التفصيلي
-            </a>
-        </div>
-        <p class="form-hint">مواعيد العمل الرسمية للعيادة المعتمدة لاستقبال المرضى وحجز المواعيد.</p>
-        
-        <div class="settings-availability-preview">
-            <div class="settings-availability-info">
-                <span class="settings-availability-title"><i class="bi bi-clock-history text-primary"></i> أوقات الدوام الحالية:</span>
-                <span class="settings-availability-val">@workingHoursDisplay</span>
+            <div class="settings-slot-info">
+                <i class="bi bi-clock"></i>
+                <span>مدة الموعد ثابتة: <strong>30 دقيقة</strong> — تُطبق على جميع الأطباء والأيام ولا يمكن تغييرها. كل موعد محجوز لمدة 30 دقيقة بالتحديد.</span>
             </div>
-            <div class="settings-availability-actions mt-3">
-                <a href="/Clinic/ClinicAvailability" class="btn btn-sm btn-primary">
-                    <i class="bi bi-pencil-square"></i> تعديل مواعيد وأيام العمل
+        </div>
+
+        <!-- Clinic Availability & Working Hours Section -->
+        @{
+            var clinicMgmt = ViewBag.ClinicManagement as ClinicManagmentDto;
+            var workingHoursDisplay = !string.IsNullOrWhiteSpace(clinicMgmt?.WorkingHours) ? clinicMgmt.WorkingHours : "السبت - الخميس: 09:00 ص - 09:00 م | الجمعة: عطلة";
+            var activeDaysList = clinicMgmt?.WorkingDays?.Select(d => d.DayOfWeek).ToList() ?? new List<string> { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday" };
+        }
+        <div class="detail-card settings-card co-section">
+            <div class="detail-section-header">
+                <h5><i class="bi bi-calendar-week"></i> أوقات وأيام عمل العيادة</h5>
+                <a href="/Clinic/ClinicAvailability" class="btn btn-sm btn-outline">
+                    <i class="bi bi-calendar-week"></i> إدارة الجدول التفصيلي
                 </a>
             </div>
-        </div>
-    </div>
+            <p class="form-hint">مواعيد العمل الرسمية للعيادة المعتمدة لاستقبال المرضى وحجز المواعيد.</p>
 
-    <!-- Status + Save -->
-    <div class="detail-card settings-card">
-        <div class="detail-section-header"><h5>الحالة</h5></div>
-        <div class="form-group">
-            <label class="form-toggle">
-                <input type="checkbox" id="settingsActive" @(settings?.IsActive ?? true ? "checked" : "") />
-                <span class="toggle-track"></span>
-                <span class="toggle-label">العيادة نشطة</span>
-            </label>
+            <div class="settings-availability-preview">
+                <div class="settings-availability-info">
+                    <span class="settings-availability-title"><i class="bi bi-clock-history text-primary"></i> أوقات الدوام الحالية:</span>
+                    <span class="settings-availability-val">@workingHoursDisplay</span>
+                </div>
+                <div class="settings-availability-actions">
+                    <a href="/Clinic/ClinicAvailability" class="btn btn-sm btn-primary">
+                        <i class="bi bi-pencil-square"></i> تعديل مواعيد وأيام العمل
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="settings-save-row">
-            <button type="button" class="btn btn-primary" id="saveSettingsBtn">
-                <i class="bi bi-check2"></i> حفظ الإعدادات
-            </button>
+
+        <!-- Status -->
+        <div class="detail-card settings-card co-section">
+            <div class="detail-section-header">
+                <h5><i class="bi bi-toggle-on"></i> الحالة</h5>
+            </div>
+            <div class="form-group">
+                <label class="form-toggle">
+                    <input type="checkbox" id="settingsActive" @(settings?.IsActive ?? true ? "checked" : "") />
+                    <span class="toggle-track"></span>
+                    <span class="toggle-label">العيادة نشطة</span>
+                </label>
+            </div>
         </div>
-    </div>
-</form>
+
+        <div class="co-save-bar">
+            <span class="co-save-info">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span class="co-save-summary">تُطبَّق الإعدادات على رسوم الكشف وسياسات الحجز مباشرة بعد الحفظ.</span>
+            </span>
+            <span class="co-save-btns settings-save-row">
+                <button type="button" class="btn btn-primary" id="saveSettingsBtn">
+                    <i class="bi bi-check2"></i> حفظ الإعدادات
+                </button>
+            </span>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     @if (hasMapKey)

@@ -10,48 +10,70 @@
     var hasFilters = !string.IsNullOrWhiteSpace(searchTerm) || !string.IsNullOrWhiteSpace(statusFilter) || !string.IsNullOrWhiteSpace(userTypesFilter);
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-finance.css?v=20261027_redesign_v2" />
+}
+
+<div class="af-page">
 <div class="page-header">
-    <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+    <div class="af-head-main">
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+                </svg>
+            </span>
+            إدارة المستخدمين والمرضى
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <button type="button" class="btn btn-primary" id="addUserBtn" title="إضافة مستخدم">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
             </svg>
-        </span>
-        إدارة المستخدمين والمرضى
-    </h2>
-    <button type="button" class="btn btn-primary" id="addUserBtn" title="إضافة مستخدم">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-        إضافة مستخدم
-    </button>
+            إضافة مستخدم
+        </button>
+    </div>
 </div>
 
 <!-- Filter Bar -->
 <form method="get" action="/Admin/Users" class="filter-bar">
     <input type="text" id="filterSearch" aria-label="بحث في المستخدمين" name="searchTerm" class="form-input" placeholder="بحث بالاسم أو البريد أو الهاتف..." value="@searchTerm" />
-    <select id="filterUserTypes" name="userTypes" class="form-select" onchange="this.form.submit()">
-        <option value="">جميع الأدوار</option>
-        <option value="2" selected="@(userTypesFilter == "2" ? true : null)">مدير النظام</option>
-        <option value="16" selected="@(userTypesFilter == "16" ? true : null)">مدير عيادة</option>
-        <option value="4" selected="@(userTypesFilter == "4" ? true : null)">طبيب</option>
-        <option value="8" selected="@(userTypesFilter == "8" ? true : null)">موظف</option>
-        <option value="1" selected="@(userTypesFilter == "1" ? true : null)">مريض</option>
-    </select>
-    <select id="filterStatus" name="status" class="form-select" onchange="this.form.submit()">
-        <option value="">جميع الحالات</option>
-        <option value="نشط" selected="@(statusFilter == "نشط" ? true : null)">نشط</option>
-        <option value="غير نشط" selected="@(statusFilter == "غير نشط" ? true : null)">غير نشط</option>
-    </select>
+    <div class="af-filter-group">
+        <span class="af-filter-label" id="usersRoleLabel">الدور</span>
+        <select id="filterUserTypes" name="userTypes" class="form-select" aria-labelledby="usersRoleLabel" onchange="this.form.submit()">
+            <option value="">جميع الأدوار</option>
+            <option value="2" selected="@(userTypesFilter == "2" ? true : null)">مدير النظام</option>
+            <option value="16" selected="@(userTypesFilter == "16" ? true : null)">مدير عيادة</option>
+            <option value="4" selected="@(userTypesFilter == "4" ? true : null)">طبيب</option>
+            <option value="8" selected="@(userTypesFilter == "8" ? true : null)">موظف</option>
+            <option value="1" selected="@(userTypesFilter == "1" ? true : null)">مريض</option>
+        </select>
+    </div>
+    <div class="af-filter-group">
+        <span class="af-filter-label" id="usersStatusLabel">الحالة</span>
+        <select id="filterStatus" name="status" class="form-select" aria-labelledby="usersStatusLabel" onchange="this.form.submit()">
+            <option value="">جميع الحالات</option>
+            <option value="نشط" selected="@(statusFilter == "نشط" ? true : null)">نشط</option>
+            <option value="غير نشط" selected="@(statusFilter == "غير نشط" ? true : null)">غير نشط</option>
+        </select>
+    </div>
+    <div class="filter-bar-spacer"></div>
     <button type="submit" class="btn btn-secondary btn-sm">بحث</button>
     @if (hasFilters)
     {
-        <a href="/Admin/Users" class="btn btn-secondary btn-sm">مسح الفلاتر</a>
+        <a href="/Admin/Users" class="btn btn-ghost btn-sm">مسح الفلاتر</a>
     }
 </form>
 
 <!-- Users Table -->
 <div class="table-card">
+    <div class="table-card-header af-card-header">
+        <h3 class="table-card-title mb-0">@ViewData["Title"]</h3>
+        <div class="table-card-actions af-card-actions">
+            <span class="badge badge-secondary tabular">@users.Count</span>
+        </div>
+    </div>
     <div class="table-responsive">
         <table class="custom-table users-table">
             <thead>
@@ -101,13 +123,13 @@
                                         "ClinicStaff" => "موظف",
                                         _ => "مريض"
                                     };
-                                    <span class="badge badge-info">@roleName</span>
+                                    <span class="badge badge--dot badge-info">@roleName</span>
                                 }
                             }
                             </div>
                         </td>
-                        <td class="text-md">@u.RegistrationDate</td>
-                        <td><span class="badge @u.StatusClass">@u.Status</span></td>
+                        <td class="text-md af-money">@u.RegistrationDate</td>
+                        <td><span class="badge badge--dot @u.StatusClass">@u.Status</span></td>
                         <td>
                             <div class="table-actions">
                                 <a class="btn-icon" title="عرض التفاصيل" aria-label="عرض تفاصيل المستخدم @u.Name"
@@ -147,15 +169,21 @@
                 @if (users.Count == 0)
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted table-empty">لا يوجد مستخدمون مطابقون لمعايير البحث.</td>
+                        <td colspan="7">
+                            <div class="af-empty-cell">
+                                <p class="mb-0">لا يوجد مستخدمون مطابقون لمعايير البحث.</p>
+                            </div>
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
+    <div class="af-table-foot">
+        <partial name="_Pagination" />
+    </div>
 </div>
-
-<partial name="_Pagination" />
+</div><!-- /af-page -->
 
 <form id="createUserForm" method="post" action="/Admin/Users/Create">
     <div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
@@ -327,7 +355,7 @@
                 </p>
                 <div class="d-flex gap-2 justify-content-center">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger">حذف</button>
+                    <button type="button" id="confirmDeleteBtn" class="btn btn-danger-solid">حذف</button>
                 </div>
             </div>
         </div>

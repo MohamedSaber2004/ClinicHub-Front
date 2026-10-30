@@ -31,7 +31,8 @@
     int Nearest5(double v) => Math.Clamp((int)Math.Round(v / 5.0) * 5, 5, 100);
 }
 
-<div class="page-header">
+<div class="co-page co-reports">
+<div class="page-header co-page-head">
     <h2 class="page-title">
         <span class="page-title-icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
@@ -48,8 +49,8 @@
 </div>
 
 <!-- Quick Period & Filter Toolbar -->
-<div class="period-pills-bar print-hide">
-    <div class="period-pills">
+<div class="period-pills-bar co-toolbar print-hide">
+    <div class="period-pills co-segmented">
         <a href="/Clinic/Reports?period=today" class="period-pill @(selectedPeriod == "today" ? "active" : "")">
             <i class="bi bi-calendar-event"></i> اليوم
         </a>
@@ -79,9 +80,9 @@
 </div>
 
 <!-- Operational KPI Statistics Grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-info">
+<div class="stats-grid co-stats stagger" data-scroll>
+    <div class="stat-card co-stat stat-card--info lift">
+        <div class="stat-info co-stat-info">
             <span class="stat-value">@report.TotalAppointments</span>
             <span class="stat-label">إجمالي المواعيد المحجوزة</span>
             <div class="stat-subtext">
@@ -95,8 +96,8 @@
         </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-info">
+    <div class="stat-card co-stat lift">
+        <div class="stat-info co-stat-info">
             <span class="stat-value">@report.CompletedVisits</span>
             <span class="stat-label">الزيارات المكتملة</span>
             <div class="stat-subtext">
@@ -110,8 +111,8 @@
         </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-info">
+    <div class="stat-card co-stat stat-card--warning lift">
+        <div class="stat-info co-stat-info">
             <span class="stat-value">@report.CancelledVisits</span>
             <span class="stat-label">الإلغاءات وعدم الحضور</span>
             <div class="stat-subtext">
@@ -126,8 +127,8 @@
         </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-info">
+    <div class="stat-card co-stat stat-card--brass lift">
+        <div class="stat-info co-stat-info">
             <span class="stat-value">@report.PeriodRevenue.ToString("N0") ج.م</span>
             <span class="stat-label">إيرادات الفترة</span>
             <div class="stat-subtext">
@@ -143,10 +144,10 @@
 </div>
 
 <!-- Visual Analytics Grid (Pure CSS Visualization) -->
-<div class="reports-analytics-grid">
+<div class="reports-analytics-grid co-analytics">
     <!-- Card 1: Attendance & Compliance -->
-    <div class="analytics-card">
-        <div class="analytics-card-header">
+    <div class="analytics-card co-card lift" data-scroll>
+        <div class="analytics-card-header co-card-head">
             <h3 class="analytics-card-title">
                 <i class="bi bi-pie-chart text-success"></i>
                 معدلات الحضور والالتزام
@@ -204,8 +205,8 @@
     </div>
 
     <!-- Card 2: Peak Hours & Hourly Volume -->
-    <div class="analytics-card">
-        <div class="analytics-card-header">
+    <div class="analytics-card co-card lift" data-scroll>
+        <div class="analytics-card-header co-card-head">
             <h3 class="analytics-card-title">
                 <i class="bi bi-bar-chart-line text-primary"></i>
                 ساعات الذروة وكثافة الزيارات
@@ -238,8 +239,8 @@
     </div>
 
     <!-- Card 3: Weekly Workload & Capacity -->
-    <div class="analytics-card">
-        <div class="analytics-card-header">
+    <div class="analytics-card co-card lift" data-scroll>
+        <div class="analytics-card-header co-card-head">
             <h3 class="analytics-card-title">
                 <i class="bi bi-calendar-check text-amber"></i>
                 توزيع الأحمال اليومية
@@ -280,7 +281,7 @@
 </div>
 
 <!-- Doctor Operational Performance Table -->
-<div class="table-card mb-5">
+<div class="table-card co-roster mb-5" data-scroll>
     <div class="analytics-card-header">
         <h3 class="analytics-card-title">
             <i class="bi bi-person-workspace text-primary"></i>
@@ -374,7 +375,7 @@
 </div>
 
 <!-- Operational Flow & Traffic Log -->
-<div class="table-card">
+<div class="table-card co-roster" data-scroll>
     <div class="analytics-card-header">
         <h3 class="analytics-card-title">
             <i class="bi bi-card-checklist text-primary"></i>
@@ -430,3 +431,8 @@
         </table>
     </div>
 </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" asp-append-version="false" />
+}

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ClinicHub — Design Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="/css/design-system.css?v=3" />
+    <link rel="stylesheet" href="/css/site.css?v=3" />
+    <link rel="stylesheet" href="/css/app-shell.css?v=3" />
+    <link rel="stylesheet" href="/css/overlays.css?v=3" />
+    <link rel="stylesheet" href="/css/pages/public.css?v=3" />
+    <style>
+        /* preview-only scaffolding: scrollable page, not the locked app shell */
+        html, body { height: auto; overflow: visible; }
+        .preview-page { padding: 32px; max-width: 1500px; margin: 0 auto; }
+        .preview-band { margin-bottom: 40px; }
+        .preview-shell { height: 560px; border: 1px solid #DCE4E0; border-radius: 18px; overflow: hidden; }
+    </style>
+</head>
+<body>
+<div class="preview-page">
+
+    <header class="page-header">
+        <div>
+            <h1 class="page-title mb-1">لوحة التصميم — ClinicHub</h1>
+            <p class="page-header-subtitle mb-0">معاينة المكوّنات بعد إعادة التصميم (RTL، خط IBM Plex، هوية Emerald/Brass)</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-secondary" type="button"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+            <button class="btn btn-primary" type="button"><i class="bi bi-plus-lg"></i> موعد جديد</button>
+        </div>
+    </header>
+
+    <section class="preview-band preview-shell">
+        <div class="app-container" style="height:560px">
+            <main role="main" class="content-body">
+                <div class="stats-grid">
+                    <article class="stat-card">
+                        <div class="stat-info">
+                            <span class="stat-label">مواعيد اليوم</span>
+                            <span class="stat-value">128</span>
+                            <span class="stat-subtext"><span class="badge badge-success">+12%</span> مقارنة بالأمس</span>
+                        </div>
+                        <span class="icon-wrapper icon-wrapper--primary"><i class="bi bi-calendar-check"></i></span>
+                    </article>
+                    <article class="stat-card stat-card--warning">
+                        <div class="stat-info">
+                            <span class="stat-label">في الانتظار</span>
+                            <span class="stat-value">17</span>
+                            <span class="stat-subtext"><span class="dot-live"></span> طابور حيّ الآن</span>
+                        </div>
+                        <span class="icon-wrapper icon-wrapper--amber"><i class="bi bi-hourglass-split"></i></span>
+                    </article>
+                    <article class="stat-card stat-card--info">
+                        <div class="stat-info">
+                            <span class="stat-label">إيراد الشهر</span>
+                            <span class="stat-value">48,220 EGP</span>
+                            <span class="stat-subtext">صافي بعد رسوم المنصة</span>
+                        </div>
+                        <span class="icon-wrapper icon-wrapper--blue"><i class="bi bi-wallet2"></i></span>
+                    </article>
+                    <article class="stat-card stat-card--brass">
+                        <div class="stat-info">
+                            <span class="stat-label">مرحلة التحويل</span>
+                            <span class="stat-value">3</span>
+                            <span class="stat-subtext">بانتظار اعتماد المالك</span>
+                        </div>
+                        <span class="icon-wrapper icon-wrapper--brass"><i class="bi bi-bank"></i></span>
+                    </article>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-card-header">
+                        <h3 class="table-card-title">آخر المواعيد</h3>
+                        <div class="table-card-actions">
+                            <span class="badge badge-secondary">اليوم</span>
+                            <button class="btn btn-sm btn-ghost" type="button">عرض الكل</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>المريض</th>
+                                    <th>الطبيب</th>
+                                    <th>الوقت</th>
+                                    <th>الحالة</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="is-clickable">
+                                    <td class="text-md-bold">منى عبد الله</td>
+                                    <td class="text-md">د. كريم سامي</td>
+                                    <td class="tabular text-md">10:30 م</td>
+                                    <td><span class="badge badge--dot badge-success">مؤكد</span></td>
+                                    <td><div class="table-actions"><button class="btn-icon" type="button"><i class="bi bi-pencil"></i></button><button class="btn-icon btn-icon--danger" type="button"><i class="bi bi-trash"></i></button></div></td>
+                                </tr>
+                                <tr class="row-urgent">
+                                    <td class="text-md-bold">أحمد فؤاد</td>
+                                    <td class="text-md">د. ليلى حسن</td>
+                                    <td class="tabular text-md">11:15 ص</td>
+                                    <td><span class="badge badge--dot badge--live badge-warning">في الانتظار</span></td>
+                                    <td><div class="table-actions"><button class="btn-icon" type="button"><i class="bi bi-pencil"></i></button><button class="btn-icon btn-icon--danger" type="button"><i class="bi bi-trash"></i></button></div></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-md-bold">سارة محمود</td>
+                                    <td class="text-md">د. كريم سامي</td>
+                                    <td class="tabular text-md">01:00 م</td>
+                                    <td><span class="badge badge--dot badge-danger">ملغي</span></td>
+                                    <td><div class="table-actions"><button class="btn-icon" type="button"><i class="bi bi-arrow-repeat"></i></button></div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <section class="preview-band surface" style="padding:24px">
+        <div class="section-head"><h3 class="section-head-title">الأزرار والشارات</h3></div>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+            <button class="btn btn-primary">أساسي</button>
+            <button class="btn btn-secondary">ثانوي</button>
+            <button class="btn btn-outline">خطي</button>
+            <button class="btn btn-ghost">شبح</button>
+            <button class="btn btn-success">نجاح</button>
+            <button class="btn btn-danger-solid">حذف</button>
+            <button class="btn btn-brass">تحويل</button>
+            <button class="btn btn-sm">صغير</button>
+            <button class="btn" disabled>معطّل</button>
+            <span class="badge-count">9</span>
+            <span class="badge-count badge-count--danger">128</span>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+            <span class="badge badge-success">نشِط</span>
+            <span class="badge badge-warning">معلّق</span>
+            <span class="badge badge-info">قيد المراجعة</span>
+            <span class="badge badge-danger">مرفوض</span>
+            <span class="badge badge-primary">اشتراك</span>
+            <span class="badge badge-brass">مميز</span>
+            <span class="badge badge-secondary">مسودة</span>
+            <span class="badge badge--dot badge-success">مدفوع</span>
+            <span class="badge badge-lg badge-primary">موعد مؤكد</span>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button class="chip active">اليوم</button>
+            <button class="chip">هذا الأسبوع</button>
+            <button class="chip">هذا الشهر</button>
+            <button class="chip">أسنان</button>
+            <button class="chip">جلدية</button>
+            <button class="show-more-toggle">عرض المزيد</button>
+        </div>
+    </section>
+
+    <section class="preview-band surface" style="padding:24px">
+        <div class="section-head"><h3 class="section-head-title">النماذج</h3></div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">اسم المريض <span class="required">*</span></label>
+                    <div class="form-field">
+                        <span class="form-field-icon"><i class="bi bi-person"></i></span>
+                        <input class="form-input" placeholder="ابحث باسم المريض" />
+                    </div>
+                    <span class="form-hint">يظهر الاسم كما هو مسجّل في الملف الطبي.</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">التخصص</label>
+                    <select class="form-select"><option>أسنان</option><option>عظام</option></select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="form-label">ملاحظات</label>
+                    <textarea class="form-textarea" placeholder="اكتب ملاحظة قصيرة"></textarea>
+                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> هذا الحقل مطلوب</div>
+                </div>
+                <div class="d-flex flex-column gap-3">
+                    <label class="form-check"><input type="checkbox" checked /><span>تأكيد الموعد بالرسائل</span></label>
+                    <label class="form-check"><input type="radio" name="r" checked /><span>حضور شخصي</span></label>
+                    <label class="form-toggle"><input type="checkbox" checked /><span class="toggle-track"></span><span class="toggle-label">تفعيل التنبيهات</span></label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="preview-band surface" style="padding:24px">
+        <div class="section-head"><h3 class="section-head-title">العنصر المميز: تذكرة الانتظار</h3></div>
+        <div class="d-flex flex-wrap gap-4 align-items-start">
+            <div class="ticket ticket-print" style="width:230px">
+                <div class="ticket-body">
+                    <span class="ticket-label">دور المريض الحالي</span>
+                    <span class="ticket-number">A-07</span>
+                    <span class="ticket-imprint">DOCTORY · RECEIPT</span>
+                </div>
+                <div class="ticket-perf"></div>
+                <div class="ticket-body" style="padding:12px">
+                    <span class="text-md">د. كريم سامي — عيادة 2</span>
+                </div>
+            </div>
+            <div class="segmented">
+                <button class="segmented-item active">اليوم</button>
+                <button class="segmented-item">الأسبوع</button>
+                <button class="segmented-item">الشهر</button>
+            </div>
+            <nav class="pagination-nav" aria-label="ترقيم الصفحات">
+                <p class="pagination-summary">
+                    عرض <strong>21–40</strong> من <strong>340</strong>
+                    <span class="pagination-summary-dot" aria-hidden="true">·</span>
+                    <span class="pagination-summary-pages">الصفحة 2 من 17</span>
+                </p>
+                <ul class="pagination-list">
+                    <li class="pagination-item"><a class="pagination-link pagination-link--nav" href="#"><i class="bi bi-chevron-right"></i><span class="pagination-text">السابق</span></a></li>
+                    <li class="pagination-item"><a class="pagination-link" href="#">1</a></li>
+                    <li class="pagination-item"><span class="pagination-item--gap">…</span></li>
+                    <li class="pagination-item"><a class="pagination-link pagination-link--active" href="#" aria-current="page">2</a></li>
+                    <li class="pagination-item"><a class="pagination-link" href="#">3</a></li>
+                    <li class="pagination-item"><a class="pagination-link pagination-link--nav" href="#"><span class="pagination-text">التالي</span><i class="bi bi-chevron-left"></i></a></li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <section class="preview-band surface" style="padding:24px">
+        <div class="section-head"><h3 class="section-head-title">حالات فارغة وسkeletons</h3></div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="empty-state">
+                    <span class="icon-wrapper icon-wrapper--primary"><i class="bi bi-calendar-x"></i></span>
+                    <h3 class="text-h3">لا مواعيد اليوم</h3>
+                    <p class="text-md mb-3">أول ما حد يحجز هيظهر الموعد هنا فورًا.</p>
+                    <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> أضف موعدًا</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="table-card">
+                    <div class="table-card-header"><h3 class="table-card-title">إيرادات الأسبوع</h3></div>
+                    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+                        <div class="skeleton-shimmer" style="height:16px;border-radius:8px"></div>
+                        <div class="skeleton-shimmer" style="height:16px;border-radius:8px;width:80%"></div>
+                        <div class="skeleton-shimmer" style="height:16px;border-radius:8px;width:55%"></div>
+                        <div class="skeleton-shimmer" style="height:64px;border-radius:12px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="preview-band surface" style="padding:24px">
+        <div class="section-head"><h3 class="section-head-title">Shared partials</h3></div>
+
+        <div class="subscription-banner" role="status">
+            <span class="subscription-banner-icon" aria-hidden="true"><i class="bi bi-stars"></i></span>
+            <p class="subscription-banner-text">
+                <strong class="subscription-banner-title">لوحة تحكم محدودة</strong>
+                <span>اشترك الآن لفتح جميع الميزات والأدوات التشغيلية.</span>
+            </p>
+            <a href="#" class="subscription-banner-btn">اشترك الآن <i class="bi bi-arrow-left" aria-hidden="true"></i></a>
+        </div>
+
+        <div class="subscription-banner subscription-banner--warning" role="status">
+            <span class="subscription-banner-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle-fill"></i></span>
+            <p class="subscription-banner-text">
+                <strong class="subscription-banner-title">الاشتراك غير نشط</strong>
+                <span>يرجى تجديد الاشتراك للاستمرار في استخدام جميع الخدمات.</span>
+            </p>
+            <a href="#" class="subscription-banner-btn">تجديد الاشتراك <i class="bi bi-arrow-left" aria-hidden="true"></i></a>
+        </div>
+
+        <div class="subscription-banner subscription-banner--info" role="status">
+            <span class="subscription-banner-icon" aria-hidden="true"><i class="bi bi-credit-card-2-front-fill"></i></span>
+            <p class="subscription-banner-text">
+                <strong class="subscription-banner-title">باقتك الحالية: الاحترافية</strong>
+                <span>الحد الأقصى 5 أطباء، 12 موظفين</span>
+            </p>
+            <a href="#" class="subscription-banner-btn">تفاصيل الاشتراك <i class="bi bi-arrow-left" aria-hidden="true"></i></a>
+        </div>
+
+        <nav class="sub-sidebar" aria-label="أقسام الملف" style="width:240px">
+            <div class="sub-sidebar-header">
+                <a href="#" class="sub-sidebar-back"><i class="bi bi-arrow-right" aria-hidden="true"></i> المستخدمون</a>
+            </div>
+            <a href="#" class="sub-sidebar-item active" aria-current="page"><i class="bi bi-person-lines-fill"></i> نظرة عامة</a>
+            <a href="#" class="sub-sidebar-item"><i class="bi bi-clipboard2-check"></i> الزيارات والتقييمات</a>
+            <a href="#" class="sub-sidebar-item"><i class="bi bi-inboxes"></i> الطلبات</a>
+            <a href="#" class="sub-sidebar-item"><i class="bi bi-credit-card"></i> المدفوعات</a>
+        </nav>
+
+        <div class="profile-card" style="margin-top:24px">
+            <div class="profile-card-header">
+                <div class="profile-avatar-large"><span>د</span></div>
+                <div class="profile-name-row"><h2 class="profile-full-name">د. كريم سامي</h2></div>
+                <p class="profile-role-label">طبيب</p>
+                <button type="button" class="btn profile-edit-btn"><i class="bi bi-pencil-square"></i> تعديل الملف الشخصي</button>
+            </div>
+            <div class="profile-card-body">
+                <div class="profile-field">
+                    <span class="profile-field-icon"><i class="bi bi-envelope" aria-hidden="true"></i></span>
+                    <span class="profile-field-label">البريد الإلكتروني</span>
+                    <span class="profile-field-value" dir="ltr">kareem@doctory.app</span>
+                </div>
+                <div class="profile-field">
+                    <span class="profile-field-icon"><i class="bi bi-telephone" aria-hidden="true"></i></span>
+                    <span class="profile-field-label">رقم الهاتف</span>
+                    <span class="profile-field-value" dir="ltr">0100 000 0000</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="notif-card" style="margin-top:24px">
+            <div class="notif-list">
+                <div class="notif-item unread" role="button" tabindex="0">
+                    <div class="notif-item-icon"><i class="bi bi-credit-card"></i></div>
+                    <div class="notif-item-content">
+                        <div class="notif-item-title">دفعة جديدة <span class="notif-item-dot"></span></div>
+                        <div class="notif-item-body">تم إنشاء دفعة تحويل لصافي مستحقات العيادة.</div>
+                        <div class="notif-item-time">28 أكتوبر 2026</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ol class="auth-steps" aria-label="خطوات استعادة كلمة المرور" style="margin-top:24px">
+            <li class="auth-step is-done">البريد الإلكتروني</li>
+            <li class="auth-step is-current">رمز التحقق</li>
+            <li class="auth-step">كلمة المرور الجديدة</li>
+        </ol>
+    </section>
+
+</div>
+</body>
+</html>

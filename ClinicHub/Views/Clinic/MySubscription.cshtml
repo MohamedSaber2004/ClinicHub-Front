@@ -8,15 +8,31 @@
     var quote = ViewBag.CancellationQuote as SubscriptionCancellationQuoteDto;
 }
 
-<div class="page-header">
-    <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="currentColor"/>
-            </svg>
-        </span>
-        اشتراكي
-    </h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
+
+<div class="page-header cm-page-head">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="currentColor"/>
+                </svg>
+            </span>
+            اشتراكي
+        </h2>
+        @if (subscription != null)
+        {
+            <p class="page-header-subtitle">باقتك الحالية @subscription.PlanName — @subscription.StartDate.ToString("yyyy-MM-dd") إلى @subscription.EndDate.ToString("yyyy-MM-dd")</p>
+        }
+    </div>
+    @if (subscription != null && subscription.IsActive)
+    {
+        <div class="page-header-actions">
+            <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-outline btn-sm">عرض كل الباقات</a>
+        </div>
+    }
 </div>
 
 @if (ViewBag.ErrorMessage != null)
@@ -28,14 +44,14 @@
 }
 else if (subscription == null)
 {
-    <div class="subscription-empty-state">
-        <div class="empty-state-icon">
+    <div class="subscription-empty-state cm-subs-empty">
+        <div class="empty-state-icon cm-subs-empty-icon">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="var(--clr-success)"/>
             </svg>
         </div>
-        <h3>ليس لديك اشتراك نشط</h3>
-        <p>اشترك الآن للاستفادة من جميع ميزات المنصة لإدارة عيادتك بكفاءة.</p>
+        <h3 class="cm-subs-empty-title">ليس لديك اشتراك نشط</h3>
+        <p class="cm-subs-empty-copy">اشترك الآن للاستفادة من جميع ميزات المنصة لإدارة عيادتك بكفاءة.</p>
         <a href="@HomeRoutes.Pages.Subscriptions()" class="btn btn-primary btn-lg">عرض الباقات والاشتراك</a>
     </div>
 }
@@ -46,126 +62,143 @@ else
     var periodText = subscription.Period == 0 ? "شهري" : "سنوي";
     var currentPlan = plans.FirstOrDefault(p => p.Id == subscription.PlanId);
     var planNameText = !string.IsNullOrWhiteSpace(currentPlan?.NameAr) ? currentPlan.NameAr : subscription.PlanName;
+    var activePlans = plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder).ToList();
+    var maxSort = activePlans.Count > 0 ? activePlans.Max(p => p.SortOrder) : 0;
 
-    <div class="subscription-status-card">
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="subs-detail-card">
-                    <div class="subs-detail-header">
-                        <span class="badge @statusClass badge-lg">@statusText</span>
-                    </div>
-                    <div class="subs-detail-body">
-                        <div class="subs-detail-row">
-                            <span class="subs-detail-label">الباقة</span>
-                            <span class="subs-detail-value">@planNameText</span>
-                        </div>
-                        <div class="subs-detail-row">
-                            <span class="subs-detail-label">المدة</span>
-                            <span class="subs-detail-value">@periodText</span>
-                        </div>
-                        <div class="subs-detail-row">
-                            <span class="subs-detail-label">المبلغ</span>
-                            <span class="subs-detail-value">@subscription.Amount.ToString("N0") ج.م</span>
-                        </div>
-                        <div class="subs-detail-row">
-                            <span class="subs-detail-label">تاريخ البداية</span>
-                            <span class="subs-detail-value">@subscription.StartDate.ToString("yyyy-MM-dd")</span>
-                        </div>
-                        <div class="subs-detail-row">
-                            <span class="subs-detail-label">تاريخ النهاية</span>
-                            <span class="subs-detail-value">@subscription.EndDate.ToString("yyyy-MM-dd")</span>
-                        </div>
-                        @if (subscription.PaidAt.HasValue)
-                        {
-                            <div class="subs-detail-row">
-                                <span class="subs-detail-label">تاريخ الدفع</span>
-                                <span class="subs-detail-value">@subscription.PaidAt.Value.ToString("yyyy-MM-dd")</span>
-                            </div>
-                        }
-                        @if (subscription.CancelledAt.HasValue || (subscription.RefundAmount ?? 0) > 0)
-                        {
-                            <div class="subs-detail-row">
-                                <span class="subs-detail-label">تاريخ الإلغاء</span>
-                                <span class="subs-detail-value">@(subscription.CancelledAt?.ToString("yyyy-MM-dd") ?? "—")</span>
-                            </div>
-                            <div class="subs-detail-row">
-                                <span class="subs-detail-label">طريقة الإلغاء</span>
-                                <span class="subs-detail-value">@RefundDisplay.SourceText(subscription.CancellationSource)</span>
-                            </div>
-                            <div class="subs-detail-row">
-                                <span class="subs-detail-label">المبلغ المسترد</span>
-                                <span class="subs-detail-value">@((subscription.RefundAmount ?? 0).ToString("N2")) ج.م</span>
-                            </div>
-                            <div class="subs-detail-row">
-                                <span class="subs-detail-label">حالة الاسترداد</span>
-                                <span class="subs-detail-value">
-                                    <span class="badge @RefundDisplay.StatusClass(subscription.RefundStatus ?? 0)">
-                                        @RefundDisplay.StatusText(subscription.RefundStatus ?? 0)
-                                    </span>
-                                </span>
-                            </div>
-                        }
-                    </div>
-                    @if (subscription.IsActive)
-                    {
-                        <div class="subs-detail-footer">
-                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal">إلغاء الاشتراك</button>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="subs-detail-footer">
-                            <div class="renew-alert">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
-                                <span>اشتراكك منتهٍ أو غير نشط. يرجى التجديد للاستمرار في استخدام لوحة التحكم.</span>
-                            </div>
-                            <button type="button"
-                               class="btn btn-primary btn-renew js-subscribe-open"
-                               data-plan-id="@subscription.PlanId"
-                               data-period="@subscription.Period"
-                               data-plan-name="@planNameText">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" fill="currentColor"/></svg>
-                                تجديد الاشتراك — @planNameText
-                            </button>
-                        </div>
-                    }
-                </div>
+    <div class="subscription-status-card cm-subs-grid">
+        <div class="subs-detail-card cm-detail-card">
+            <div class="subs-detail-header cm-detail-head">
+                <span class="cm-plan-name">@planNameText</span>
+                <span class="badge badge--dot @statusClass badge-lg">@statusText</span>
             </div>
-            <div class="col-md-6">
-                <div class="subs-plans-preview">
-                    <h4>@(subscription.IsActive ? "الباقات المتاحة" : "اختر باقة للتجديد")</h4>
-                    <div class="subscription-plans">
-                        @foreach (var plan in plans.Where(p => p.IsActive).OrderBy(p => p.SortOrder))
-                        {
-                            var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
-                            var isTop = plan.SortOrder >= maxSort;
-                            var planClass = isTop ? "plan-premium" : "plan-free";
-                            var isCurrent = plan.Id.ToString() == subscription.PlanId.ToString();
-                            <div class="plan-card @planClass">
-                                <div class="plan-header">
-                                    <h3 class="plan-name">@plan.NameAr</h3>
-                                    <p class="plan-price">@plan.PriceMonthly.ToString("N0") <span class="plan-currency">ج.م</span></p>
-                                </div>
-                                <div class="plan-footer">
-                                    @if (subscription.IsActive)
-                                    {
-                                        <span class="plan-current">@(isCurrent ? "الباقة الحالية" : "")</span>
-                                    }
-                                    else
-                                    {
-                                        <button type="button"
-                                           class="btn btn-sm @(isCurrent ? "btn-primary" : "btn-secondary") btn-plan-subscribe js-subscribe-open"
-                                           data-plan-id="@plan.Id"
-                                           data-period="@subscription.Period"
-                                           data-plan-name="@plan.NameAr">
-                                            @(isCurrent ? "تجديد هذه الباقة" : "اشترك بهذه الباقة")
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-                        }
+            <div class="subs-detail-body cm-detail-body">
+                <div class="subs-detail-row cm-detail-row">
+                    <span class="subs-detail-label cm-detail-label">الباقة</span>
+                    <span class="subs-detail-value cm-detail-value">@planNameText</span>
+                </div>
+                <div class="subs-detail-row cm-detail-row">
+                    <span class="subs-detail-label cm-detail-label">المدة</span>
+                    <span class="subs-detail-value cm-detail-value">@periodText</span>
+                </div>
+                <div class="subs-detail-row cm-detail-row">
+                    <span class="subs-detail-label cm-detail-label">المبلغ</span>
+                    <span class="subs-detail-value cm-detail-value cm-money">@subscription.Amount.ToString("N0") ج.م</span>
+                </div>
+                <div class="subs-detail-row cm-detail-row">
+                    <span class="subs-detail-label cm-detail-label">تاريخ البداية</span>
+                    <span class="subs-detail-value cm-detail-value cm-money">@subscription.StartDate.ToString("yyyy-MM-dd")</span>
+                </div>
+                <div class="subs-detail-row cm-detail-row">
+                    <span class="subs-detail-label cm-detail-label">تاريخ النهاية</span>
+                    <span class="subs-detail-value cm-detail-value cm-money">@subscription.EndDate.ToString("yyyy-MM-dd")</span>
+                </div>
+                @if (subscription.PaidAt.HasValue)
+                {
+                    <div class="subs-detail-row cm-detail-row">
+                        <span class="subs-detail-label cm-detail-label">تاريخ الدفع</span>
+                        <span class="subs-detail-value cm-detail-value cm-money">@subscription.PaidAt.Value.ToString("yyyy-MM-dd")</span>
+                    </div>
+                }
+                @if (subscription.CancelledAt.HasValue || (subscription.RefundAmount ?? 0) > 0)
+                {
+                    <div class="subs-detail-row cm-detail-row">
+                        <span class="subs-detail-label cm-detail-label">تاريخ الإلغاء</span>
+                        <span class="subs-detail-value cm-detail-value cm-money">@(subscription.CancelledAt?.ToString("yyyy-MM-dd") ?? "—")</span>
+                    </div>
+                    <div class="subs-detail-row cm-detail-row">
+                        <span class="subs-detail-label cm-detail-label">طريقة الإلغاء</span>
+                        <span class="subs-detail-value cm-detail-value">@RefundDisplay.SourceText(subscription.CancellationSource)</span>
+                    </div>
+                    <div class="subs-detail-row cm-detail-row">
+                        <span class="subs-detail-label cm-detail-label">المبلغ المسترد</span>
+                        <span class="subs-detail-value cm-detail-value cm-money">@((subscription.RefundAmount ?? 0).ToString("N2")) ج.م</span>
+                    </div>
+                    <div class="subs-detail-row cm-detail-row">
+                        <span class="subs-detail-label cm-detail-label">حالة الاسترداد</span>
+                        <span class="subs-detail-value cm-detail-value">
+                            <span class="badge badge--dot @RefundDisplay.StatusClass(subscription.RefundStatus ?? 0)">
+                                @RefundDisplay.StatusText(subscription.RefundStatus ?? 0)
+                            </span>
+                        </span>
+                    </div>
+                }
+            </div>
+            <div class="subs-detail-footer cm-detail-foot">
+                <div class="cm-period-row">
+                    <span class="cm-period-label">دورة الاشتراك</span>
+                    <div class="segmented cm-period-segmented" role="radiogroup">
+                        <label class="segmented-item" aria-selected="@(subscription.Period == 0 ? "true" : "false")">
+                            <input type="radio" name="subPeriod" value="0" checked="@(subscription.Period == 0)" />
+                            <span>شهري</span>
+                            <span class="cm-period-price cm-money">@((currentPlan?.PriceMonthly ?? subscription.Amount).ToString("N0")) ج.م</span>
+                        </label>
+                        <label class="segmented-item" aria-selected="@(subscription.Period == 1 ? "true" : "false")">
+                            <input type="radio" name="subPeriod" value="1" checked="@(subscription.Period == 1)" />
+                            <span>سنوي</span>
+                            <span class="cm-period-price cm-money">@((currentPlan?.PriceYearly ?? subscription.Amount).ToString("N0")) ج.م</span>
+                        </label>
                     </div>
                 </div>
+                @if (subscription.IsActive)
+                {
+                    <button type="button" class="btn btn-danger cm-cancel-btn" data-bs-toggle="modal" data-bs-target="#cancelSubscriptionModal">إلغاء الاشتراك</button>
+                }
+                else
+                {
+                    <div class="renew-alert cm-renew-alert">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/></svg>
+                        <span>اشتراكك منتهٍ أو غير نشط. يرجى التجديد للاستمرار في استخدام لوحة التحكم.</span>
+                    </div>
+                    <button type="button"
+                       class="btn btn-primary btn-renew js-subscribe-open cm-renew-btn"
+                       data-plan-id="@subscription.PlanId"
+                       data-period="@subscription.Period"
+                       data-plan-name="@planNameText">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" fill="currentColor"/></svg>
+                        تجديد الاشتراك — @planNameText
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="subs-plans-preview cm-plans-col">
+            <h4 class="subs-plans-title cm-plans-title">@(subscription.IsActive ? "الباقات المتاحة" : "اختر باقة للتجديد")</h4>
+            <div class="subscription-plans cm-plans-list">
+                @foreach (var plan in activePlans)
+                {
+                    var isTop = plan.SortOrder >= maxSort;
+                    var planClass = isTop ? "plan-premium" : "plan-free";
+                    var isCurrent = plan.Id.ToString() == subscription.PlanId.ToString();
+                    <div class="plan-card @planClass cm-plan-card @(isCurrent ? "cm-plan-card--current" : "") @(isTop ? "cm-plan-card--premium" : "")">
+                        <div class="plan-header cm-plan-main">
+                            <h3 class="plan-name cm-plan-name">@plan.NameAr</h3>
+                            <p class="plan-price cm-plan-price-row">
+                                <span class="cm-money">@plan.PriceMonthly.ToString("N0") ج.م</span>
+                                <span class="cm-plan-tag">شهري</span>
+                            </p>
+                            <p class="plan-price cm-plan-price-row">
+                                <span class="cm-money">@plan.PriceYearly.ToString("N0") ج.م</span>
+                                <span class="cm-plan-tag">سنوي</span>
+                            </p>
+                        </div>
+                        <div class="plan-footer cm-plan-cta">
+                            @if (subscription.IsActive)
+                            {
+                                <span class="plan-current cm-plan-tag">@(isCurrent ? "الباقة الحالية" : "")</span>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                   class="btn btn-sm @(isCurrent ? "btn-primary" : "btn-secondary") btn-plan-subscribe js-subscribe-open cm-plan-cta"
+                                   data-plan-id="@plan.Id"
+                                   data-period="@subscription.Period"
+                                   data-plan-name="@plan.NameAr">
+                                    @(isCurrent ? "تجديد هذه الباقة" : "اشترك بهذه الباقة")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -180,8 +213,8 @@ else
             </div>
             <div class="modal-body-custom">
                 <p class="modal-premium-subtitle" id="paymentMethodSubModalSubtitle"></p>
-                <div class="payment-methods-grid">
-                    <label class="payment-method-card selected">
+                <div class="payment-methods-grid cm-methods">
+                    <label class="payment-method-card selected cm-pay-method">
                         <input type="radio" name="subPaymentMethod" value="PaymobWallet" checked>
                         <div class="payment-method-icon payment-method-icon--wallet">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -196,7 +229,7 @@ else
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
                         </span>
                     </label>
-                    <label class="payment-method-card">
+                    <label class="payment-method-card cm-pay-method">
                         <input type="radio" name="subPaymentMethod" value="PaymobCreditCard">
                         <div class="payment-method-icon payment-method-icon--card">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -213,12 +246,12 @@ else
                         </span>
                     </label>
                 </div>
-                <div id="subWalletPhoneBox" class="mt-3 text-start">
-                    <label for="subWalletPhoneInput" class="form-label text-muted small mb-1">
-                        <i class="bi bi-phone me-1"></i> رقم المحفظة (فودافون كاش / اتصالات / أورنج / وي):
+                <div id="subWalletPhoneBox" class="cm-wallet-box">
+                    <label for="subWalletPhoneInput" class="form-label cm-wallet-label">
+                        <i class="bi bi-phone" aria-hidden="true"></i> رقم المحفظة (فودافون كاش / اتصالات / أورنج / وي):
                     </label>
-                    <input type="tel" id="subWalletPhoneInput" class="form-control" placeholder="01xxxxxxxxx" dir="ltr" maxlength="11">
-                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
+                    <input type="tel" id="subWalletPhoneInput" class="form-control cm-money-input" placeholder="01xxxxxxxxx" dir="ltr" maxlength="11">
+                    <small class="cm-wallet-hint">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
                 </div>
             </div>
             <div class="modal-footer-custom">
@@ -257,27 +290,27 @@ else
                     }
                     else
                     {
-                        <div class="subs-detail-card mb-4">
-                            <div class="subs-detail-body">
-                                <div class="subs-detail-row">
-                                    <span class="subs-detail-label">الباقة</span>
-                                    <span class="subs-detail-value">@(string.IsNullOrWhiteSpace(quote.PlanName) ? subscription.PlanName : quote.PlanName)</span>
+                        <div class="subs-detail-card cm-detail-card cm-quote-card">
+                            <div class="subs-detail-body cm-detail-body">
+                                <div class="subs-detail-row cm-detail-row">
+                                    <span class="subs-detail-label cm-detail-label">الباقة</span>
+                                    <span class="subs-detail-value cm-detail-value">@(string.IsNullOrWhiteSpace(quote.PlanName) ? subscription.PlanName : quote.PlanName)</span>
                                 </div>
-                                <div class="subs-detail-row">
-                                    <span class="subs-detail-label">الأيام المستخدمة</span>
-                                    <span class="subs-detail-value">@quote.UsedDays من @quote.TotalDays يوم</span>
+                                <div class="subs-detail-row cm-detail-row">
+                                    <span class="subs-detail-label cm-detail-label">الأيام المستخدمة</span>
+                                    <span class="subs-detail-value cm-detail-value cm-money">@quote.UsedDays من @quote.TotalDays يوم</span>
                                 </div>
-                                <div class="subs-detail-row">
-                                    <span class="subs-detail-label">المبلغ المدفوع</span>
-                                    <span class="subs-detail-value">@quote.AmountPaid.ToString("N2") @quote.Currency</span>
+                                <div class="subs-detail-row cm-detail-row">
+                                    <span class="subs-detail-label cm-detail-label">المبلغ المدفوع</span>
+                                    <span class="subs-detail-value cm-detail-value cm-money">@quote.AmountPaid.ToString("N2") @quote.Currency</span>
                                 </div>
-                                <div class="subs-detail-row">
-                                    <span class="subs-detail-label">قيمة الأيام المستخدمة</span>
-                                    <span class="subs-detail-value">@quote.ChargeAmount.ToString("N2") @quote.Currency</span>
+                                <div class="subs-detail-row cm-detail-row">
+                                    <span class="subs-detail-label cm-detail-label">قيمة الأيام المستخدمة</span>
+                                    <span class="subs-detail-value cm-detail-value cm-money">@quote.ChargeAmount.ToString("N2") @quote.Currency</span>
                                 </div>
-                                <div class="subs-detail-row">
-                                    <span class="subs-detail-label">المبلغ المسترد</span>
-                                    <span class="subs-detail-value">@quote.RefundAmount.ToString("N2") @quote.Currency</span>
+                                <div class="subs-detail-row cm-detail-row">
+                                    <span class="subs-detail-label cm-detail-label">المبلغ المسترد</span>
+                                    <span class="subs-detail-value cm-detail-value cm-money cm-money--lg">@quote.RefundAmount.ToString("N2") @quote.Currency</span>
                                 </div>
                             </div>
                         </div>
@@ -296,111 +329,6 @@ else
         </div>
     </div>
 }
-
-<style>
-    .subscription-empty-state {
-        text-align: center;
-        padding: var(--space-10) var(--space-5);
-    }
-    .empty-state-icon {
-        margin-bottom: var(--space-5);
-    }
-    .subscription-empty-state h3 {
-        font-size: var(--fs-xl);
-        font-weight: var(--fw-semibold);
-        margin-bottom: var(--space-3);
-    }
-    .subscription-empty-state p {
-        color: var(--clr-text-secondary);
-        margin-bottom: var(--space-6);
-        max-width: 400px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .subscription-status-card {
-        padding: var(--space-5) 0;
-    }
-    .subs-detail-card {
-        background: var(--clr-surface);
-        border: 1px solid var(--clr-border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-    }
-    .subs-detail-header {
-        padding: var(--space-4) var(--space-5);
-        border-bottom: 1px solid var(--clr-border);
-    }
-    .subs-detail-body {
-        padding: var(--space-4) var(--space-5);
-    }
-    .subs-detail-row {
-        display: flex;
-        justify-content: space-between;
-        padding: var(--space-2) 0;
-        border-bottom: 1px solid var(--clr-bg);
-    }
-    .subs-detail-row:last-child {
-        border-bottom: none;
-    }
-    .subs-detail-label {
-        font-size: var(--fs-sm);
-        color: var(--clr-text-secondary);
-    }
-    .subs-detail-value {
-        font-size: var(--fs-sm);
-        font-weight: var(--fw-semibold);
-        color: var(--clr-text);
-    }
-    .subs-detail-footer {
-        padding: var(--space-4) var(--space-5);
-        border-top: 1px solid var(--clr-border);
-    }
-    .subs-plans-preview h4 {
-        font-size: var(--fs-lg);
-        font-weight: var(--fw-semibold);
-        margin-bottom: var(--space-4);
-    }
-    .subs-plans-preview .subscription-plans {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3);
-    }
-    .subs-plans-preview .plan-card {
-        padding: var(--space-3) var(--space-4);
-    }
-    /* Renew subscription styles */
-    .renew-alert {
-        display: flex;
-        align-items: flex-start;
-        gap: var(--space-2);
-        padding: var(--space-3);
-        background: color-mix(in srgb, var(--clr-warning) 12%, transparent);
-        border: 1px solid color-mix(in srgb, var(--clr-warning) 40%, transparent);
-        border-radius: var(--radius-md);
-        color: var(--clr-text);
-        font-size: var(--fs-sm);
-        margin-bottom: var(--space-3);
-    }
-    .renew-alert svg {
-        flex-shrink: 0;
-        color: var(--clr-warning);
-        margin-top: 1px;
-    }
-    .btn-renew {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-        width: 100%;
-        justify-content: center;
-    }
-    .btn-plan-subscribe {
-        width: 100%;
-        text-align: center;
-    }
-    .subs-plans-preview .plan-footer {
-        padding-top: var(--space-2);
-    }
-</style>
 
 @section Scripts {
     <script>
@@ -459,7 +387,7 @@ else
                     document.querySelectorAll('#paymentMethodSubModal .payment-method-card').forEach(function (c) { c.classList.remove('selected'); });
                     this.closest('.payment-method-card')?.classList.add('selected');
                     if (subWalletPhoneBox) {
-                        subWalletPhoneBox.style.display = this.value === 'PaymobWallet' ? 'block' : 'none';
+                        subWalletPhoneBox.classList.toggle('cm-hidden', this.value !== 'PaymobWallet');
                     }
                 });
             });

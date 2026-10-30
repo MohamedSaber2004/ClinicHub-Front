@@ -33,25 +33,57 @@
         _ => "غير معروفة"
     };
     string MethodClass(int m) => m switch { 0 => "badge-primary", 1 => "badge-warning", 2 => "badge-info", _ => "badge-secondary" };
+
+    // Split-bar step chosen from the real gross/fee values delivered by the
+    // backend. Widths are utility classes (cm-split-00 … cm-split-50) so the
+    // view never emits an inline style.
+    string SplitStep(decimal gross, decimal fee)
+    {
+        if (gross <= 0 || fee <= 0) return "cm-split-00";
+        var pct = (int)Math.Round(fee * 100m / gross, MidpointRounding.AwayFromZero);
+        if (pct <= 0) return "cm-split-00";
+        if (pct >= 50) return "cm-split-50";
+        var step = (int)Math.Round(pct / 5m, MidpointRounding.AwayFromZero) * 5;
+        if (step < 5) step = 5;
+        return "cm-split-" + step.ToString("00");
+    }
 }
 
-<div class="page-header">
-    <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" fill="currentColor"/>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
+
+<div class="page-header cm-page-head">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" fill="currentColor"/>
+                </svg>
+            </span>
+            إيرادات المواعيد
+        </h2>
+        <p class="page-header-subtitle">جميع المبالغ المعروضة هي صافي العيادة فقط من الحجوزات (بدون رسوم المنصة).</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="@Url.Action("Payouts")" class="btn btn-secondary btn-sm">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
             </svg>
-        </span>
-        إيرادات المواعيد
-    </h2>
-    <p class="text-md text-muted">جميع المبالغ المعروضة هي صافي العيادة فقط من الحجوزات (بدون رسوم المنصة).</p>
+            مستحقاتي والتحويلات
+        </a>
+    </div>
 </div>
 
 <div class="stats-grid">
-    <div class="stat-card">
+    <div class="stat-card stat-card--info">
         <div class="stat-info">
-            <span class="stat-value">@stats.TodayNet.ToString("N0") ج.م</span>
+            <span class="stat-value cm-money">@stats.TodayNet.ToString("N0") ج.م</span>
             <span class="stat-label">صافي إيرادات اليوم</span>
+            @if (stats.TodayPlatformFees is > 0)
+            {
+                <span class="stat-subtext cm-money cm-stat-sub">رسوم المنصة: @stats.TodayPlatformFees.Value.ToString("N0") ج.م</span>
+            }
         </div>
         <div class="icon-wrapper icon-wrapper--green">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -59,10 +91,14 @@
             </svg>
         </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card--info">
         <div class="stat-info">
-            <span class="stat-value">@stats.MonthNet.ToString("N0") ج.م</span>
+            <span class="stat-value cm-money">@stats.MonthNet.ToString("N0") ج.م</span>
             <span class="stat-label">صافي إيرادات الشهر</span>
+            @if (stats.MonthPlatformFees is > 0)
+            {
+                <span class="stat-subtext cm-money cm-stat-sub">رسوم المنصة: @stats.MonthPlatformFees.Value.ToString("N0") ج.م</span>
+            }
         </div>
         <div class="icon-wrapper icon-wrapper--primary">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -70,21 +106,29 @@
             </svg>
         </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card--brass">
         <div class="stat-info">
-            <span class="stat-value">@stats.PaidNet.ToString("N0") ج.م</span>
+            <span class="stat-value cm-money">@stats.PaidNet.ToString("N0") ج.م</span>
             <span class="stat-label">صافي مدفوعات محصلة</span>
+            @if (stats.PaidPlatformFees is > 0)
+            {
+                <span class="stat-subtext cm-money cm-stat-sub">رسوم المنصة: @stats.PaidPlatformFees.Value.ToString("N0") ج.م</span>
+            }
         </div>
-        <div class="icon-wrapper icon-wrapper--blue">
+        <div class="icon-wrapper icon-wrapper--brass">
             <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
             </svg>
         </div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card stat-card--warning">
         <div class="stat-info">
-            <span class="stat-value">@stats.PendingNet.ToString("N0") ج.م</span>
+            <span class="stat-value cm-money">@stats.PendingNet.ToString("N0") ج.م</span>
             <span class="stat-label">صافي مدفوعات معلقة</span>
+            @if (stats.PendingPlatformFees is > 0)
+            {
+                <span class="stat-subtext cm-money cm-stat-sub">رسوم المنصة: @stats.PendingPlatformFees.Value.ToString("N0") ج.م</span>
+            }
         </div>
         <div class="icon-wrapper icon-wrapper--amber">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -110,9 +154,22 @@
     <a href="@Url.Action("AppointmentRevenue")" class="btn btn-outline-secondary btn-sm">مسح</a>
 </form>
 
-<div class="table-card">
+<div class="table-card cm-list-card">
+    <div class="table-card-header cm-ledger-head">
+        <h3 class="table-card-title">كشف إيرادات الحجوزات</h3>
+        <div class="table-card-actions">
+            @if (revenues.Count > 0)
+            {
+                <span class="badge badge-info">@revenues.Count سجل</span>
+            }
+            else
+            {
+                <span class="badge badge-secondary">—</span>
+            }
+        </div>
+    </div>
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table cm-ledger">
             <thead>
                 <tr>
                     <th>المريض</th>
@@ -128,19 +185,42 @@
                 @if (revenues.Count == 0)
                 {
                     <tr>
-                        <td colspan="7" class="text-md text-center">لا توجد إيرادات مطابقة للفلاتر المحددة</td>
+                        <td colspan="7">
+                            <div class="empty-state cm-empty-row">
+                                <p>لا توجد إيرادات مطابقة للفلاتر المحددة</p>
+                            </div>
+                        </td>
                     </tr>
                 }
                 @foreach (var rev in revenues)
                 {
+                    var fee = rev.PlatformFee ?? 0;
+                    var showSplit = rev.PlatformFee.HasValue && rev.PlatformFee.Value > 0 && rev.Amount > 0;
                     <tr>
                         <td class="text-md-medium">@rev.PatientName</td>
                         <td class="text-md">@rev.DoctorName</td>
-                        <td class="text-md">@(rev.AppointmentDate.Year > 2000 ? rev.AppointmentDate.ToString("yyyy-MM-dd") : "—")</td>
-                        <td class="text-md">@rev.StartTime</td>
-                        <td class="text-md-medium">@rev.NetAmount.ToString("N0") ج.م</td>
-                        <td><span class="badge @MethodClass(rev.Method)">@MethodLabel(rev.Method)</span></td>
-                        <td><span class="badge @StatusClass(rev.Status)">@StatusLabel(rev.Status)</span></td>
+                        <td class="text-md cm-money">@(rev.AppointmentDate.Year > 2000 ? rev.AppointmentDate.ToString("yyyy-MM-dd") : "—")</td>
+                        <td class="text-md cm-money">@rev.StartTime</td>
+                        <td class="text-md-medium">
+                            <span class="cm-money">@rev.NetAmount.ToString("N0") ج.م</span>
+                            @if (showSplit)
+                            {
+                                <div class="cm-split @SplitStep(rev.Amount, fee)">
+                                    <div class="cm-split-bar" role="img"
+                                         aria-label="الإجمالي @rev.Amount.ToString("N0") ج.م، صافي العيادة @rev.NetAmount.ToString("N0") ج.م، رسوم المنصة @fee.ToString("N0") ج.م">
+                                        <span class="cm-split-seg cm-split-seg--net"></span>
+                                        <span class="cm-split-seg cm-split-seg--fee"></span>
+                                    </div>
+                                    <div class="cm-split-legend">
+                                        <span class="cm-split-key cm-split-key--net">صافي العيادة <span class="cm-money cm-money--sm">@rev.NetAmount.ToString("N0")</span></span>
+                                        <span class="cm-split-key cm-split-key--fee">رسوم المنصة <span class="cm-money cm-money--sm">@fee.ToString("N0")</span></span>
+                                        <span class="cm-split-key cm-split-key--gross">الإجمالي <span class="cm-money cm-money--sm">@rev.Amount.ToString("N0")</span></span>
+                                    </div>
+                                </div>
+                            }
+                        </td>
+                        <td><span class="badge badge--dot @MethodClass(rev.Method)">@MethodLabel(rev.Method)</span></td>
+                        <td><span class="badge badge--dot @StatusClass(rev.Status)">@StatusLabel(rev.Status)</span></td>
                     </tr>
                 }
             </tbody>
@@ -149,4 +229,4 @@
     <partial name="_Pagination" />
 </div>
 
-<p class="text-md text-muted">ملاحظة: المبلغ في كل صف هو صافي مستحقات العيادة من الحجز فقط، ولا يشمل رسوم المنصة الخاصة بالإدارة.</p>
+<p class="cm-foot-note">ملاحظة: المبلغ في كل صف هو صافي مستحقات العيادة من الحجز فقط، ولا يشمل رسوم المنصة الخاصة بالإدارة.</p>

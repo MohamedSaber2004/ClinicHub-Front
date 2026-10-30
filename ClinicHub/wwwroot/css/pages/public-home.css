@@ -1,0 +1,1177 @@
+/* ============================================================
+   Public home — landing (Index), About & Privacy
+   Loaded LAST on those three pages only (Views render it in the
+   "Styles" section), after design-system → site → app-shell →
+   overlays → pages/public.css. Plain source order therefore wins:
+   nothing in this file uses !important.
+   Every selector is namespaced `.ph-` so it cannot collide with
+   another page bundle.
+   Identity: emerald on paper, brass as the single accessory.
+   ============================================================ */
+
+/* Local reading measures (ch keeps the line length honest) */
+:root {
+  --ph-measure: 68ch;
+  --ph-lead-measure: 62ch;
+  --ph-band-max: 1120px;
+  --ph-card-min: 250px;
+}
+
+/* ============================================================
+   1 · Section scaffolding
+   ============================================================ */
+
+.ph-band {
+  position: relative;
+  padding: var(--space-11) 0 var(--space-10);
+}
+
+.ph-band--tinted {
+  background-color: var(--clr-surface);
+  border-block: 1px solid var(--clr-border-subtle);
+}
+
+.ph-head {
+  max-width: var(--ph-lead-measure);
+  margin: 0 auto var(--space-9);
+  text-align: center;
+}
+
+.ph-head-title {
+  font-family: var(--ff-display);
+  font-size: var(--fluid-h2);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-h2);
+  letter-spacing: var(--ls-tight);
+  color: var(--clr-text);
+  margin: var(--space-3) 0;
+  text-wrap: balance;
+}
+
+.ph-head-title--start {
+  text-align: start;
+}
+
+.ph-head-lead {
+  font-family: var(--ff-body);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-lg);
+  line-height: var(--lh-lg);
+  color: var(--clr-text-secondary);
+  max-width: var(--ph-lead-measure);
+  margin: 0 auto;
+}
+
+/* Eyebrow chip — the .badge primitive, sized for marketing heads */
+.ph-eyebrow {
+  gap: var(--space-1);
+  padding: 5px var(--space-4);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+}
+
+.ph-eyebrow .bi {
+  font-size: 13px;
+  width: 13px;
+  height: 13px;
+}
+
+/* Grids — auto-fit so 1, 2 or 6 records all look intentional */
+.ph-grid {
+  display: grid;
+  gap: var(--space-5);
+  align-items: stretch;
+  margin-inline: auto;
+  max-width: 100%;
+}
+
+.ph-grid--services {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ph-card-min)), 1fr));
+}
+
+.ph-grid--plans,
+.ph-grid--features,
+.ph-grid--sec {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--ph-card-min)), 1fr));
+  max-width: var(--ph-band-max);
+}
+
+.ph-grid--sec {
+  max-width: 1040px;
+}
+
+/* ============================================================
+   2 · Card language (shared by services / features / security)
+   ============================================================ */
+
+.ph-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  padding: var(--space-6);
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform var(--dur-sm) var(--ease-spring),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard);
+}
+
+.ph-card-icon {
+  margin-bottom: var(--space-4);
+}
+
+.ph-card-title {
+  font-family: var(--ff-display);
+  font-size: var(--fluid-h3);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-h3);
+  color: var(--clr-text);
+  margin: 0 0 var(--space-2);
+  text-wrap: balance;
+}
+
+.ph-card-desc {
+  font-family: var(--ff-body);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-md);
+  line-height: var(--lh-md);
+  color: var(--clr-text-secondary);
+  margin: 0;
+}
+
+/* Hover: lift + card shadow. The `.visible:hover` half of each pair
+   out-ranks design-system's `html [data-scroll].visible` transform
+   (0-2-1), so a revealing card still lifts once it has settled. */
+.ph-card:hover,
+.ph-card.visible:hover {
+  transform: translateY(var(--motion-lift));
+  border-color: var(--clr-emerald-200);
+  box-shadow: var(--shadow-card-hover);
+  transition-delay: 0s;
+}
+
+.ph-card:hover .icon-wrapper,
+.ph-card.visible:hover .icon-wrapper {
+  transform: scale(1.06);
+}
+
+/* ============================================================
+   3 · Landing hero
+   ============================================================ */
+
+.ph-hero {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-12) 0 var(--space-10);
+  background-color: var(--clr-bg);
+  background-image:
+    radial-gradient(44% 36% at 88% 4%, var(--clr-brass-50) 0%, transparent 68%),
+    radial-gradient(58% 46% at 6% 0%, var(--clr-emerald-50) 0%, transparent 70%),
+    var(--grad-hero);
+}
+
+/* Fine "ledger paper" dot field, faded toward the edges */
+.ph-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--clr-emerald-200) 1px, transparent 1.5px);
+  background-size: 26px 26px;
+  opacity: 0.34;
+  -webkit-mask-image: radial-gradient(58% 52% at 50% 0%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(58% 52% at 50% 0%, #000 0%, transparent 78%);
+  pointer-events: none;
+}
+
+.ph-hero::after {
+  content: '';
+  position: absolute;
+  inset-inline: var(--space-6);
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--clr-border-strong) 18%, var(--clr-border-strong) 82%, transparent);
+  pointer-events: none;
+}
+
+.ph-hero-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: var(--ph-measure);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ph-hero-title {
+  font-family: var(--ff-display);
+  font-size: calc(var(--fluid-h1) * 1.4);
+  font-weight: var(--fw-bold);
+  line-height: 1.32;
+  letter-spacing: var(--ls-tight);
+  color: var(--clr-text);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.ph-hero-lead {
+  font-family: var(--ff-body);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-lg);
+  line-height: var(--lh-lg);
+  color: var(--clr-text-secondary);
+  max-width: var(--ph-lead-measure);
+  margin: 0;
+}
+
+.ph-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* ============================================================
+   4 · Trust row (stat-card language, no invented numbers)
+   ============================================================ */
+
+.ph-trust {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  padding: var(--space-6) 0 0;
+  margin: var(--space-8) auto 0;
+  max-width: var(--ph-band-max);
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.ph-trust-item {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-4);
+  overflow: hidden;
+  text-align: start;
+  background: linear-gradient(180deg, var(--clr-surface) 0%, var(--clr-surface-subtle) 100%);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform var(--dur-sm) var(--ease-spring),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard);
+}
+
+.ph-trust-item::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 3px;
+  background: var(--grad-primary);
+  transition: width var(--dur-sm) var(--ease-spring);
+}
+
+.ph-trust-item--accent::before {
+  background: var(--grad-brass);
+}
+
+.ph-trust-item:hover,
+.ph-trust-item.visible:hover {
+  transform: translateY(var(--motion-lift));
+  border-color: var(--clr-emerald-200);
+  box-shadow: var(--shadow-card-hover);
+  transition-delay: 0s;
+}
+
+.ph-trust-item:hover::before,
+.ph-trust-item.visible:hover::before {
+  width: 5px;
+}
+
+.ph-trust-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.ph-trust-title {
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-md);
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.ph-trust-sub {
+  font-family: var(--ff-body);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-md);
+  line-height: var(--lh-md);
+  color: var(--clr-text-faint);
+  margin: 0;
+}
+
+/* ============================================================
+   5 · Ad package cards
+   ============================================================ */
+
+.ph-plan {
+  padding: 0;
+  gap: 0;
+}
+
+.ph-plan-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-4) var(--space-5) 0;
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--clr-brass-25);
+  border: 1px solid var(--clr-brass-200);
+  color: var(--clr-brass-deep);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+}
+
+.ph-plan-head {
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  text-align: center;
+  border-bottom: 1px solid var(--clr-border-subtle);
+  background-image: var(--grad-primary-soft);
+}
+
+.ph-plan-name {
+  font-family: var(--ff-display);
+  font-size: var(--fluid-h3);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-h3);
+  color: var(--clr-text);
+  margin: 0 0 var(--space-1);
+}
+
+.ph-plan-desc {
+  font-family: var(--ff-body);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-md);
+  color: var(--clr-text-secondary);
+  margin: 0 0 var(--space-4);
+}
+
+.ph-plan-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.ph-plan-amount {
+  font-family: var(--ff-data);
+  font-size: var(--fluid-h1);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  letter-spacing: var(--ls-tight);
+  color: var(--clr-primary-strong);
+}
+
+.ph-plan-currency {
+  font-family: var(--ff-body);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  color: var(--clr-text-secondary);
+}
+
+.ph-plan-period {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: var(--space-3) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-faint);
+}
+
+.ph-plan-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1;
+  padding: var(--space-5);
+}
+
+.ph-plan-limits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.ph-plan-limit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-pill);
+  background-color: var(--clr-surface-sunken);
+  border: 1px solid var(--clr-border-subtle);
+  color: var(--clr-text-secondary);
+  font-family: var(--ff-data);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ph-plan-features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ph-plan-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  color: var(--clr-text);
+}
+
+.ph-plan-feature .bi {
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--clr-primary);
+}
+
+.ph-plan-footer {
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.ph-plan-cta {
+  width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
+.ph-plans-more {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-7);
+}
+
+/* ============================================================
+   6 · "Why Doctory" split + portal card
+   ============================================================ */
+
+.ph-why-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: var(--space-9);
+  align-items: center;
+}
+
+.ph-why-lead {
+  font-family: var(--ff-body);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-lg);
+  color: var(--clr-text-secondary);
+  max-width: var(--ph-measure);
+  margin: var(--space-4) 0 0;
+}
+
+.ph-checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+  margin: var(--space-6) 0 0;
+}
+
+.ph-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.ph-band--tinted .ph-check {
+  background-color: var(--clr-surface-subtle);
+}
+
+.ph-check-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background-color: var(--clr-primary-bg);
+  color: var(--clr-primary);
+}
+
+.ph-check-icon .bi {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.ph-check-text {
+  font-family: var(--ff-body);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-md);
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.ph-check-body {
+  min-width: 0;
+}
+
+.ph-check-title {
+  font-family: var(--ff-display);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-lg);
+  color: var(--clr-text);
+  margin: 0 0 var(--space-0);
+}
+
+.ph-check-desc {
+  font-family: var(--ff-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  color: var(--clr-text-secondary);
+  margin: 0;
+}
+
+.ph-portal {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-7);
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.ph-portal::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background: var(--grad-brass);
+}
+
+.ph-portal::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -40%;
+  width: 70%;
+  background-image: radial-gradient(50% 50% at 50% 50%, var(--clr-emerald-25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.ph-portal-title {
+  position: relative;
+  font-family: var(--ff-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-h3);
+  color: var(--clr-text);
+  margin: var(--space-3) 0 0;
+}
+
+.ph-portal-desc {
+  position: relative;
+  font-family: var(--ff-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  color: var(--clr-text-secondary);
+  margin: 0;
+}
+
+.ph-portal-actions {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* ============================================================
+   7 · About / Privacy page hero
+   ============================================================ */
+
+.ph-page-hero {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-11) 0 var(--space-9);
+  text-align: center;
+  background-color: var(--clr-bg);
+  background-image:
+    radial-gradient(40% 40% at 12% 0%, var(--clr-brass-50) 0%, transparent 70%),
+    var(--grad-hero);
+}
+
+.ph-page-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--clr-emerald-200) 1px, transparent 1.5px);
+  background-size: 26px 26px;
+  opacity: 0.3;
+  -webkit-mask-image: radial-gradient(52% 60% at 50% 0%, #000 0%, transparent 80%);
+  mask-image: radial-gradient(52% 60% at 50% 0%, #000 0%, transparent 80%);
+  pointer-events: none;
+}
+
+.ph-page-hero-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: var(--ph-measure);
+  margin: 0 auto;
+}
+
+.ph-page-title {
+  font-family: var(--ff-display);
+  font-size: calc(var(--fluid-h1) * 1.15);
+  font-weight: var(--fw-bold);
+  line-height: 1.35;
+  letter-spacing: var(--ls-tight);
+  color: var(--clr-text);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.ph-page-lead {
+  font-family: var(--ff-body);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-lg);
+  color: var(--clr-text-secondary);
+  max-width: var(--ph-lead-measure);
+  margin: 0;
+}
+
+/* ============================================================
+   8 · Long-form reading rhythm
+   ============================================================ */
+
+.ph-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: var(--space-9);
+  align-items: start;
+  max-width: var(--ph-band-max);
+  margin: 0 auto var(--space-10);
+}
+
+.ph-split-copy {
+  min-width: 0;
+}
+
+.ph-prose {
+  font-family: var(--ff-body);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-lg);
+  line-height: var(--lh-lg);
+  color: var(--clr-text-secondary);
+  max-width: var(--ph-measure);
+  margin: var(--space-4) 0 0;
+}
+
+.ph-prose strong {
+  color: var(--clr-primary);
+  font-weight: var(--fw-semibold);
+}
+
+/* Ecosystem / roles list (About) */
+.ph-eco {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-6);
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.ph-eco::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 3px;
+  background: var(--grad-primary);
+}
+
+.ph-eco-title {
+  font-family: var(--ff-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-h3);
+  color: var(--clr-text);
+  margin: var(--space-3) 0 0;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.ph-eco-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+  margin: var(--space-5) 0 0;
+}
+
+.ph-eco-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--clr-surface-subtle);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+  transition:
+    background-color var(--dur-fs) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard),
+    box-shadow var(--dur-sm) var(--ease-standard);
+}
+
+.ph-eco-row:hover {
+  background-color: var(--clr-surface);
+  border-color: var(--clr-emerald-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.ph-eco-num {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 26px;
+  padding: 0 var(--space-1);
+  border: 1px dashed var(--clr-brass-200);
+  border-radius: var(--radius-pill);
+  background-color: var(--clr-brass-25);
+  font-family: var(--ff-data);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-caps);
+  direction: ltr;
+  color: var(--clr-brass-deep);
+}
+
+.ph-eco-body {
+  min-width: 0;
+}
+
+.ph-eco-name {
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-md);
+  color: var(--clr-text);
+  margin: 0 0 var(--space-0);
+}
+
+.ph-eco-desc {
+  font-family: var(--ff-body);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-md);
+  color: var(--clr-text-secondary);
+  margin: 0;
+}
+
+/* ============================================================
+   9 · Privacy — contents chips, security cards, legal note
+   ============================================================ */
+
+.ph-toc {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  max-width: var(--ph-band-max);
+  margin: 0 auto var(--space-8);
+  padding: 0;
+}
+
+.ph-toc-chip .bi {
+  font-size: 13px;
+}
+
+.ph-sec-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.ph-sec-title {
+  font-family: var(--ff-display);
+  font-size: var(--fluid-h3);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-h3);
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.ph-sec-desc {
+  font-family: var(--ff-body);
+  font-size: var(--fs-md);
+  line-height: var(--lh-lg);
+  color: var(--clr-text-secondary);
+  margin: 0;
+}
+
+.ph-sec-desc strong {
+  color: var(--clr-text);
+  font-weight: var(--fw-semibold);
+}
+
+.ph-sec {
+  scroll-margin-top: calc(var(--header-height) + var(--space-5));
+}
+
+.ph-legal {
+  position: relative;
+  overflow: hidden;
+  max-width: var(--ph-band-max);
+  margin: var(--space-9) auto 0;
+  padding: var(--space-7);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-xl);
+  background-color: var(--clr-surface);
+  background-image:
+    radial-gradient(46% 60% at 100% 0%, var(--clr-brass-25) 0%, transparent 65%),
+    var(--grad-primary-soft);
+  box-shadow: var(--shadow-md);
+}
+
+.ph-legal-title {
+  position: relative;
+  font-family: var(--ff-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-h3);
+  color: var(--clr-text);
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.ph-legal-text {
+  position: relative;
+  font-family: var(--ff-body);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-lg);
+  color: var(--clr-text-secondary);
+  max-width: var(--ph-measure);
+  margin: 0 0 var(--space-4);
+}
+
+.ph-legal-text:last-child {
+  margin-bottom: 0;
+}
+
+.ph-legal-mail {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xs);
+  background-color: var(--clr-primary-bg);
+  font-family: var(--ff-data);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  direction: ltr;
+  color: var(--clr-primary-strong);
+}
+
+/* ============================================================
+   10 · Scroll reveal — staggered groups
+   design-system.css owns the base `html [data-scroll]` transition;
+   these rules add the per-child delay and re-declare the transition
+   list at a rank that beats it, so card hover properties keep
+   animating on grids whose children reveal on scroll.
+   ============================================================ */
+
+.ph-grid > .ph-card[data-scroll],
+.ph-grid > .ph-plan[data-scroll],
+.ph-trust > .ph-trust-item[data-scroll] {
+  transition:
+    opacity var(--dur-lg) var(--ease-spring),
+    transform var(--dur-lg) var(--ease-spring),
+    filter var(--dur-lg) var(--ease-standard),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard);
+}
+
+.ph-grid > [data-scroll]:nth-child(2),
+.ph-trust > [data-scroll]:nth-child(2) {
+  transition-delay: calc(var(--stagger-step) * 1);
+}
+
+.ph-grid > [data-scroll]:nth-child(3),
+.ph-trust > [data-scroll]:nth-child(3) {
+  transition-delay: calc(var(--stagger-step) * 2);
+}
+
+.ph-grid > [data-scroll]:nth-child(4),
+.ph-trust > [data-scroll]:nth-child(4) {
+  transition-delay: calc(var(--stagger-step) * 3);
+}
+
+.ph-grid > [data-scroll]:nth-child(5) {
+  transition-delay: calc(var(--stagger-step) * 4);
+}
+
+.ph-grid > [data-scroll]:nth-child(n + 6) {
+  transition-delay: calc(var(--stagger-step) * 5);
+}
+
+/* Cards that reveal on scroll must not keep the delay on hover */
+.ph-grid > [data-scroll]:hover,
+.ph-trust > [data-scroll]:hover {
+  transition-delay: 0s;
+}
+
+/* ============================================================
+   11 · Responsive — 1440 / 992 / 768 / 576 / 375
+   ============================================================ */
+
+@media (min-width: 1440px) {
+  .ph-hero {
+    padding: var(--space-12) 0 var(--space-11);
+  }
+
+  .ph-band {
+    padding: var(--space-12) 0 var(--space-11);
+  }
+}
+
+@media (max-width: 991px) {
+  .ph-why-grid,
+  .ph-split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-7);
+  }
+
+  .ph-portal {
+    padding: var(--space-6);
+  }
+
+  .ph-trust {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ph-band {
+    padding: var(--space-10) 0 var(--space-9);
+  }
+}
+
+@media (max-width: 768px) {
+  .ph-hero {
+    padding: var(--space-9) 0 var(--space-8);
+  }
+
+  .ph-page-hero {
+    padding: var(--space-9) 0 var(--space-7);
+  }
+
+  .ph-band {
+    padding: var(--space-8) 0 var(--space-7);
+  }
+
+  .ph-head {
+    margin-bottom: var(--space-7);
+  }
+
+  .ph-hero-title {
+    font-size: calc(var(--fluid-h1) * 1.25);
+  }
+
+  .ph-page-title {
+    font-size: calc(var(--fluid-h1) * 1.05);
+  }
+
+  .ph-split {
+    margin-bottom: var(--space-8);
+  }
+
+  .ph-legal {
+    padding: var(--space-6);
+    margin-top: var(--space-8);
+  }
+}
+
+@media (max-width: 575px) {
+  .ph-hero {
+    padding: var(--space-8) 0 var(--space-7);
+  }
+
+  .ph-page-hero {
+    padding: var(--space-8) 0 var(--space-6);
+  }
+
+  .ph-band {
+    padding: var(--space-8) 0 var(--space-6);
+  }
+
+  .ph-hero-title {
+    font-size: var(--fluid-h1);
+    line-height: 1.4;
+  }
+
+  .ph-hero-lead,
+  .ph-head-lead,
+  .ph-why-lead,
+  .ph-prose,
+  .ph-page-lead,
+  .ph-legal-text {
+    font-size: var(--fs-md);
+    line-height: var(--lh-lg);
+  }
+
+  .ph-hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ph-hero-cta .btn {
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .ph-trust {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+  }
+
+  .ph-card,
+  .ph-eco,
+  .ph-portal {
+    padding: var(--space-5);
+  }
+
+  .ph-plan-body {
+    padding: var(--space-4);
+  }
+
+  .ph-plan-amount {
+    font-size: calc(var(--fluid-h1) * 0.8);
+  }
+
+  .ph-grid {
+    gap: var(--space-4);
+  }
+
+  .ph-plans-more .btn {
+    width: 100%;
+    white-space: normal;
+  }
+}
+
+/* ============================================================
+   12 · Motion policy
+   ============================================================ */
+
+/* Content stays readable when JS never adds `.visible` */
+@media (scripting: none) {
+  html [data-scroll] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Nothing travels; content is simply there */
+  html [data-scroll] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  .ph-grid > .ph-card[data-scroll],
+  .ph-grid > .ph-plan[data-scroll],
+  .ph-trust > .ph-trust-item[data-scroll] {
+    transition: box-shadow var(--dur-fs) var(--ease-standard), border-color var(--dur-fs) var(--ease-standard);
+  }
+
+  .ph-grid > [data-scroll],
+  .ph-trust > [data-scroll] {
+    transition-delay: 0s;
+  }
+
+  .ph-hero-inner.stagger > * {
+    animation: none;
+  }
+
+  .ph-card,
+  .ph-trust-item,
+  .ph-eco-row,
+  .ph-portal,
+  .ph-eco,
+  .ph-legal {
+    animation: none;
+  }
+
+  .ph-card:hover,
+  .ph-card.visible:hover,
+  .ph-trust-item:hover,
+  .ph-trust-item.visible:hover {
+    transform: none;
+  }
+
+  .ph-card:hover .icon-wrapper,
+  .ph-card.visible:hover .icon-wrapper {
+    transform: none;
+  }
+}

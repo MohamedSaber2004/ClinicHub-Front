@@ -6,15 +6,23 @@
     var hasError = !string.IsNullOrEmpty(ViewBag.ErrorMessage as string);
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-            <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-    </span>
-    أوقات عمل الأطباء
-</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
+
+<div class="page-header cm-page-head cm-doc-head">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            أوقات عمل الأطباء
+        </h2>
+    </div>
+</div>
 
 @if (hasError)
 {
@@ -28,7 +36,7 @@
     {
         <div class="stat-card">
             <div class="stat-info">
-                <span class="stat-value" @(stat.Label == "مدة الحجز (ثابتة)" ? "id=\"statDurationValue\"" : "")>@stat.Value</span>
+                <span class="stat-value cm-money" @(stat.Label == "مدة الحجز (ثابتة)" ? "id=\"statDurationValue\"" : "")>@stat.Value</span>
                 <span class="stat-label">@stat.Label</span>
             </div>
             <div class="icon-wrapper icon-wrapper--@stat.IconColor">
@@ -40,17 +48,22 @@
     }
 </div>
 
-<div class="detail-card">
-    <div class="detail-section-header">
-        <h5>جدول العمل الأسبوعي</h5>
-        <span class="badge badge-info" id="typicalDurationBadge">مدة الحجز: 30 دقيقة (ثابتة)</span>
+<div class="detail-card cm-card cm-sched-card">
+    <div class="detail-section-header cm-card-head">
+        <h5 class="cm-card-title">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/>
+            </svg>
+            جدول العمل الأسبوعي
+        </h5>
+        <span class="badge badge-info cm-badge-inline" id="typicalDurationBadge">مدة الحجز: 30 دقيقة (ثابتة)</span>
     </div>
-    <p class="form-hint mb-3">حدد أيام ومواعيد تواجد الأطباء في العيادة. اترك الوقت فارغاً ليكون اليوم عطلة. مدة الموعد مثبتة على 30 دقيقة لجميع الأيام ولا يمكن تغييرها.</p>
+    <p class="form-hint cm-form-hint">حدد أيام ومواعيد تواجد الأطباء في العيادة. اترك الوقت فارغاً ليكون اليوم عطلة. مدة الموعد مثبتة على 30 دقيقة لجميع الأيام ولا يمكن تغييرها.</p>
     <div id="availabilityContainer"></div>
-    <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn mt-2">
+    <button type="button" id="addAvailabilityBtn" class="btn btn-sm add-availability-btn">
         <i class="bi bi-plus-circle"></i> إضافة يوم
     </button>
-    <div class="mt-4">
+    <div class="cm-sched-actions">
         <button type="button" class="btn btn-primary" id="saveAvailabilityBtn">
             <i class="bi bi-check2"></i> حفظ أوقات العمل
         </button>
@@ -97,9 +110,9 @@
                     var mm = (i < 10 ? '0' : '') + i;
                     minuteOptions += '<option value="' + mm + '"' + (t && t.minute === mm ? ' selected' : '') + '>' + mm + '</option>';
                 }
-                return '<select class="availability-' + prefix + '-hour form-select auth-form-control">' + hourOptions + '</select>' +
-                    '<select class="availability-' + prefix + '-minute form-select auth-form-control">' + minuteOptions + '</select>' +
-                    '<select class="availability-' + prefix + '-period form-select auth-form-control">' +
+                return '<select class="availability-' + prefix + '-hour form-select auth-form-control cm-sched-select cm-sched-time">' + hourOptions + '</select>' +
+                    '<select class="availability-' + prefix + '-minute form-select auth-form-control cm-sched-select cm-sched-time">' + minuteOptions + '</select>' +
+                    '<select class="availability-' + prefix + '-period form-select auth-form-control cm-sched-select">' +
                         '<option value="AM"' + (t && t.period === 'AM' ? ' selected' : '') + '>صباحاً</option>' +
                         '<option value="PM"' + (t && t.period === 'PM' ? ' selected' : '') + '>مساءً</option>' +
                     '</select>';
@@ -119,17 +132,17 @@
             function addAvailabilityRow(id, day, fromTime, toTime, slotMin) {
                 var container = $('#availabilityContainer');
                 var row = $(
-                    '<div class="availability-row">' +
-                        '<select class="availability-day form-select auth-form-control">' +
+                    '<div class="availability-row cm-sched-row">' +
+                        '<select class="availability-day form-select auth-form-control cm-sched-select">' +
                             '<option value="">اليوم</option>' +
                             DAY_NAMES.map(function (name, i) {
                                 return '<option value="' + i + '"' + (day === i ? ' selected' : '') + '>' + name + '</option>';
                             }).join('') +
                         '</select>' +
                         timeSelectsHtml('from', fromTime || '09:00') +
-                        '<span class="availability-sep">إلى</span>' +
+                        '<span class="availability-sep cm-sched-sep">إلى</span>' +
                         timeSelectsHtml('to', toTime || '17:00') +
-                        '<button type="button" class="availability-remove-btn" title="حذف"><i class="bi bi-x-circle"></i></button>' +
+                        '<button type="button" class="availability-remove-btn cm-sched-remove" title="حذف"><i class="bi bi-x-circle"></i></button>' +
                     '</div>'
                 );
                 if (id && id !== '00000000-0000-0000-0000-000000000000') row.attr('data-id', id);

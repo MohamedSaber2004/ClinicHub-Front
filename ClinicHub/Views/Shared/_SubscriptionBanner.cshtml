@@ -4,37 +4,46 @@
 }
 @if (!hasSubscription)
 {
-    <div class="subscription-banner">
-        <div class="subscription-banner-content">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
-            </svg>
-            <span>أنت تشاهد لوحة تحكم محدودة. اشترك الآن لفتح جميع الميزات.</span>
-            <a href="@HomeRoutes.Pages.Subscriptions()" class="subscription-banner-btn">اشترك الآن</a>
-        </div>
+    <div class="subscription-banner" role="status">
+        <span class="subscription-banner-icon" aria-hidden="true"><i class="bi bi-stars"></i></span>
+        <p class="subscription-banner-text">
+            <strong class="subscription-banner-title">لوحة تحكم محدودة</strong>
+            <span>اشترك الآن لفتح جميع الميزات والأدوات التشغيلية.</span>
+        </p>
+        <a href="@HomeRoutes.Pages.Subscriptions()" class="subscription-banner-btn">
+            اشترك الآن
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </a>
     </div>
 }
 else if (_user?.HasActivePlan == false)
 {
-    <div class="subscription-banner subscription-banner--warning">
-        <div class="subscription-banner-content">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-            </svg>
-            <span>اشتراكك غير نشط. يرجى تجديد الاشتراك للاستمرار في استخدام جميع الخدمات.</span>
-            <a href="@ClinicRoutes.Pages.MySubscription()" class="subscription-banner-btn">تجديد الاشتراك</a>
-        </div>
+    <div class="subscription-banner subscription-banner--warning" role="status">
+        <span class="subscription-banner-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle-fill"></i></span>
+        <p class="subscription-banner-text">
+            <strong class="subscription-banner-title">الاشتراك غير نشط</strong>
+            <span>يرجى تجديد الاشتراك للاستمرار في استخدام جميع الخدمات.</span>
+        </p>
+        <a href="@ClinicRoutes.Pages.MySubscription()" class="subscription-banner-btn">
+            تجديد الاشتراك
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </a>
     </div>
 }
 else if (_user != null && _user.MaxDoctors.HasValue)
 {
-    <div class="subscription-banner subscription-banner--info">
-        <div class="subscription-banner-content">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-            </svg>
-            <span>باقتك الحالية: <strong>@_user.PlanName</strong> — الحد الأقصى: @_user.MaxDoctors أطباء، @( _user.MaxStaff.HasValue ? $" {_user.MaxStaff} موظفين" : "غير محدود" )</span>
-            <a href="/Clinic/MySubscription" class="subscription-banner-btn">تفاصيل الاشتراك</a>
-        </div>
+    <div class="subscription-banner subscription-banner--info" role="status">
+        <span class="subscription-banner-icon" aria-hidden="true"><i class="bi bi-credit-card-2-front-fill"></i></span>
+        <p class="subscription-banner-text">
+            <strong class="subscription-banner-title">باقتك الحالية: @_user.PlanName</strong>
+            <span>
+                الحد الأقصى @_user.MaxDoctors أطباء،
+                @(_user.MaxStaff.HasValue ? $"{_user.MaxStaff} موظفين" : "موظفون غير محدودين")
+            </span>
+        </p>
+        <a href="@ClinicRoutes.Pages.MySubscription()" class="subscription-banner-btn">
+            تفاصيل الاشتراك
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </a>
     </div>
 }

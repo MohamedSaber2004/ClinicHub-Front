@@ -6,19 +6,36 @@
     var days = ViewBag.Days is int d ? d : 30;
     string[] rangeLabels = { "آخر 7 أيام", "آخر 30 يوماً", "آخر 90 يوماً" };
     int[] rangeValues = { 7, 30, 90 };
+
+    string StatAccent(string? color) => color switch
+    {
+        "amber" => " stat-card--warning",
+        "blue" => " stat-card--info",
+        "brass" => " stat-card--brass",
+        "danger" => " stat-card--danger",
+        _ => ""
+    };
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-    </span>
-    لوحة التحكم - نظرة عامة
-</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-directory.css?v=20261027_redesign_v2" />
+}
+
+<div class="ad-page">
+
+<div class="page-header">
+    <h2 class="page-title">
+        <span class="page-title-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+        </span>
+        لوحة التحكم - نظرة عامة
+    </h2>
+</div>
 
 @if (ViewBag.HasError == true)
 {
@@ -31,10 +48,10 @@
 }
 
 <!-- KPI Stat Cards -->
-<div class="stats-grid">
+<div class="stats-grid ad-dash-grid stagger">
     @foreach (var stat in stats)
     {
-        <div class="stat-card">
+        <div class="stat-card@(StatAccent(stat.IconColor))">
             <div class="stat-info">
                 <span class="stat-value">@stat.Value</span>
                 <span class="stat-label">@stat.Label</span>
@@ -126,26 +143,54 @@
     </div>
 </div>
 
+</div>
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
     <script>
         (function () {
+            // Chart colours are read from the design-system tokens.
+            // The literals below are only fallbacks for the very same tokens.
+            var tokenStyles = getComputedStyle(document.documentElement);
+
+            function readToken(name, fallback) {
+                var value = tokenStyles.getPropertyValue(name);
+                return value && value.trim() ? value.trim() : fallback;
+            }
+
+            function withAlpha(color, alphaValue) {
+                var hex = (color || '').trim().replace('#', '');
+                if (hex.length === 3) { hex = hex.split('').map(function (c) { return c + c; }).join(''); }
+                if (!/^[0-9a-f]{6}$/i.test(hex)) { return color; }
+                var num = parseInt(hex, 16);
+                return 'rgba(' + ((num >> 16) & 255) + ', ' + ((num >> 8) & 255) + ', ' + (num & 255) + ', ' + alphaValue + ')';
+            }
+
+            var primaryColor = readToken('--chart-1', '#0D5F4E');
+            var greenColor = readToken('--chart-2', '#1E8A5A');
+            var blueColor = readToken('--chart-3', '#2F6FB2');
+            var amberColor = readToken('--chart-5', '#D08A1E');
+            var dangerColor = readToken('--chart-6', '#B13B32');
             var palettes = {
-                primary: '#0D5F4E',
-                primarySoft: 'rgba(13, 95, 78, 0.14)',
-                blue: '#2F6FB2',
-                blueSoft: 'rgba(47, 111, 178, 0.14)',
-                amber: '#D08A1E',
-                amberSoft: 'rgba(208, 138, 30, 0.16)',
-                green: '#1E8A5A',
-                greenSoft: 'rgba(30, 138, 90, 0.16)',
-                danger: '#B13B32',
-                dangerSoft: 'rgba(177, 59, 50, 0.16)'
+                primary: primaryColor,
+                primarySoft: withAlpha(primaryColor, 0.14),
+                blue: blueColor,
+                blueSoft: withAlpha(blueColor, 0.14),
+                amber: amberColor,
+                amberSoft: withAlpha(amberColor, 0.16),
+                green: greenColor,
+                greenSoft: withAlpha(greenColor, 0.16),
+                danger: dangerColor,
+                dangerSoft: withAlpha(dangerColor, 0.16),
+                brass: readToken('--chart-4', '#B78A3C'),
+                grid: readToken('--chart-grid', 'rgba(22, 36, 31, 0.08)'),
+                axis: readToken('--chart-axis', '#5A6B64'),
+                surface: readToken('--clr-surface', '#FFFFFF')
             };
 
             Chart.defaults.font.family = "'Cairo', sans-serif";
             Chart.defaults.font.size = 12;
-            Chart.defaults.color = '#5A6B66';
+            Chart.defaults.color = palettes.axis;
             Chart.defaults.plugins.legend.rtl = true;
             Chart.defaults.plugins.legend.textDirection = 'rtl';
             Chart.defaults.plugins.tooltip.rtl = true;

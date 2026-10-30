@@ -22,7 +22,10 @@
         <link rel="preconnect" href="@_doctoryOptions.Value.BaseUrl" crossorigin />
     }
     <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css?v=20260910_skeleton_v3" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app-shell.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/overlays.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <a class="skip-link" href="#main-content">تخطَّ إلى المحتوى الرئيسي</a>

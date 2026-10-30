@@ -3,15 +3,34 @@
     var paymentUrl = ViewBag.PaymentUrl as string ?? "";
 }
 
-<section class="payment-frame-section">
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/clinic-money.css?v=20261027_redesign_v2" />
+}
+
+<section class="payment-frame-section cm-frame">
     <div class="container">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-            <h2 class="text-h2 mb-0">صفحة الدفع الإلكتروني</h2>
-            <a href="/" class="btn btn-secondary">العودة للرئيسية</a>
-        </div>
-        
-        <div class="card shadow-sm border-0 overflow-hidden payment-frame-card">
-            <iframe id="paymentFrame" src="@paymentUrl" class="payment-frame-iframe"></iframe>
+        <div class="cm-frame-card">
+            <div class="cm-frame-bar">
+                <h2 class="cm-frame-title">
+                    <span class="page-title-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                        </svg>
+                    </span>
+                    صفحة الدفع الإلكتروني
+                </h2>
+                <a href="/" class="btn btn-secondary btn-sm">العودة للرئيسية</a>
+            </div>
+            <div class="cm-frame-body">
+                <div class="cm-frame-skeleton" aria-hidden="true">
+                    <span class="skeleton-bar-shimmer cm-skeleton-line cm-skeleton-line--title"></span>
+                    <span class="skeleton-bar-shimmer cm-skeleton-line cm-skeleton-line--sub"></span>
+                    <span class="skeleton-bar-shimmer cm-skeleton-line cm-skeleton-line--field"></span>
+                    <span class="skeleton-bar-shimmer cm-skeleton-line cm-skeleton-line--field"></span>
+                    <span class="skeleton-bar-shimmer cm-skeleton-line cm-skeleton-line--cta"></span>
+                </div>
+                <iframe id="paymentFrame" src="@paymentUrl" class="payment-frame-iframe"></iframe>
+            </div>
         </div>
     </div>
 </section>

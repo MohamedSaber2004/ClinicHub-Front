@@ -3,40 +3,73 @@
     Layout = "_StaffLayout";
 }
 
-<h2 class="page-title">
-    <span class="page-title-icon">
-        <i class="bi bi-person-plus"></i>
-    </span>
-    تسجيل مريض وافد
-</h2>
+<div class="page-header">
+    <div>
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <i class="bi bi-person-plus"></i>
+            </span>
+            تسجيل مريض وافد
+        </h2>
+    </div>
+    <div class="page-header-actions">
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("Queue")">
+            <i class="bi bi-list-ol"></i>
+            طابور المرضى
+        </a>
+    </div>
+</div>
 
-<div class="register-patient-card">
-    <div class="detail-card">
-        <form id="registerForm">
-            <div class="form-group">
-                <label for="patientName" class="form-label">اسم المريض</label>
-                <input type="text" id="patientName" class="form-input" placeholder="أدخل اسم المريض" required />
+<div class="table-card ds-panel ds-register-card">
+    <form id="registerForm" class="ds-register-form">
+        <div class="ds-field-group">
+            <h3 class="ds-field-group-title">
+                <i class="bi bi-person-vcard"></i>
+                بيانات المريض
+            </h3>
+            <div class="ds-form-grid ds-form-grid--2">
+                <div class="form-group">
+                    <label for="patientName" class="form-label">اسم المريض</label>
+                    <input type="text" id="patientName" class="form-input" placeholder="أدخل اسم المريض" required />
+                </div>
+                <div class="form-group">
+                    <label for="patientPhone" class="form-label">رقم الهاتف</label>
+                    <input type="tel" id="patientPhone" class="form-input" placeholder="010 xxxxxxxx" required />
+                </div>
+                <div class="form-group ds-form-full">
+                    <label for="complaint" class="form-label">ملاحظات / الشكوى</label>
+                    <textarea id="complaint" class="form-textarea" rows="3" placeholder="الشكوى أو ملاحظات إضافية"></textarea>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="patientPhone" class="form-label">رقم الهاتف</label>
-                <input type="tel" id="patientPhone" class="form-input" placeholder="010 xxxxxxxx" required />
+        </div>
+
+        <div class="ds-field-group">
+            <h3 class="ds-field-group-title">
+                <i class="bi bi-calendar2-check"></i>
+                الحجز
+            </h3>
+            <div class="ds-form-grid">
+                <div class="form-group">
+                    <label for="doctorSelect" class="form-label">اختيار الطبيب</label>
+                    <select id="doctorSelect" class="form-select" required>
+                        <option value="">-- جاري تحميل الأطباء --</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="doctorSelect" class="form-label">اختيار الطبيب</label>
-                <select id="doctorSelect" class="form-select" required>
-                    <option value="">-- جاري تحميل الأطباء --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="complaint" class="form-label">ملاحظات / الشكوى</label>
-                <textarea id="complaint" class="form-textarea" rows="3" placeholder="الشكوى أو ملاحظات إضافية"></textarea>
-            </div>
+        </div>
+
+        <div class="ds-form-actions">
+            <a href="@Url.Action("Appointments")" class="btn btn-ghost btn-sm">إلغاء</a>
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-save"></i> تسجيل المريض
             </button>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/doctor-staff.css?v=20261027_redesign_v2" />
+}
 
 @section Scripts {
     <script>

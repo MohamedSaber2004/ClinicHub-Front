@@ -1,0 +1,1289 @@
+/* ============================================================
+   ClinicHub — admin finance console (pages/admin-finance.css)
+   Scope: Admin money screens (payments, payouts, ads & ad
+   subscriptions, plans & subscriptions, users money drill-down).
+
+   Loaded AFTER site.css / app-shell.css / overlays.css through the
+   "Styles" section, so every rule here refines the shared primitives
+   instead of fighting them. Tokens only — no raw hex, no pixel
+   spacing. Page-specific classes are prefixed `af-`.
+   ============================================================ */
+
+/* ============================================================
+   1. Page rhythm & headers
+   ============================================================ */
+
+.af-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.af-head-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.af-header-note {
+    max-width: 72ch;
+    margin: 0;
+    font-size: var(--fs-md);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+}
+
+.af-header-note strong {
+    color: var(--clr-text);
+    font-weight: var(--fw-semibold);
+}
+
+/* Callout that explains a money rule (net vs fee) without a table */
+.af-fee-note {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--clr-info-border);
+    border-radius: var(--radius-md);
+    background: var(--clr-info-bg);
+    color: var(--clr-info-text);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+}
+
+.af-fee-note .bi,
+.af-fee-note svg {
+    flex-shrink: 0;
+    font-size: var(--fs-md);
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+/* ============================================================
+   2. Toolbar / search / filter chrome
+   ============================================================ */
+
+/* Ads page quick-search sits under the title (was an inline style) */
+.af-ads-search-wrap {
+    margin-top: var(--space-3);
+    max-width: 28em;
+}
+
+.af-toolbar-hint {
+    margin: 0;
+    font-size: var(--fs-xs);
+    color: var(--clr-text-faint);
+}
+
+.af-kbd {
+    padding: 1px var(--space-1);
+    border: var(--border-1);
+    border-radius: var(--radius-xs);
+    background: var(--clr-surface-subtle);
+    box-shadow: var(--shadow-2xs);
+    font-family: var(--ff-data);
+    font-size: var(--fs-xs);
+    color: var(--clr-text-secondary);
+}
+
+.af-filter-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.af-filter-label {
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-secondary);
+    white-space: nowrap;
+}
+
+/* Quick status chips (submit buttons inside a GET form) */
+.af-chips {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.af-chip-submit {
+    font-family: var(--ff-body);
+    line-height: 1.55;
+}
+
+/* Date range styled as a segmented pill */
+.af-range {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1);
+    gap: var(--space-1);
+    background: var(--clr-surface-subtle);
+    border: 1px solid var(--clr-border-subtle);
+    border-radius: var(--radius-pill);
+}
+
+.af-range .af-filter-label {
+    padding-inline: var(--space-2) var(--space-1);
+}
+
+.af-range .form-input,
+.af-range .form-select {
+    width: auto;
+    min-width: 0;
+    min-height: 34px;
+    padding: var(--space-1) var(--space-2);
+    border-color: transparent;
+    background-color: var(--clr-surface);
+    font-size: var(--fs-sm);
+    font-family: var(--ff-data);
+}
+
+.af-range-sep {
+    color: var(--clr-text-faint);
+    font-size: var(--fs-sm);
+    padding-inline: var(--space-1);
+}
+
+/* ============================================================
+   3. Table cards & dense money rows
+   ============================================================ */
+
+/* Header that also carries actions/filters — must not clip them */
+.af-card-header {
+    height: auto;
+    min-height: 52px;
+    padding-block: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.af-card-actions {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.af-table-foot {
+    padding: var(--space-3) var(--space-5) var(--space-4);
+    border-top: 1px solid var(--clr-border-subtle);
+    background: var(--clr-surface-subtle);
+}
+
+/* Empty row content inside a table cell */
+.af-empty-cell {
+    padding: var(--space-6) var(--space-3);
+    text-align: center;
+    color: var(--clr-text-secondary);
+    font-size: var(--fs-md);
+}
+
+.af-empty-cell .empty-state {
+    padding: var(--space-6) var(--space-4);
+    border-style: solid;
+    border-color: var(--clr-border-subtle);
+    background: none;
+}
+
+/* Money + identifiers stay LTR + monospaced in the RTL ledger */
+.af-money {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-align: end;
+}
+
+.af-stat-money {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    gap: var(--space-1);
+    justify-content: flex-end;
+}
+
+/* Secondary lines stacked under a stat value / a status badge */
+.af-stat-lines {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0);
+    margin-top: var(--space-1);
+}
+
+.af-stat-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+    font-size: var(--fs-xs);
+    color: var(--clr-text-secondary);
+}
+
+.af-stat-line strong {
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    color: var(--clr-text);
+    font-weight: var(--fw-semibold);
+}
+
+.af-status-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+}
+
+.af-id-cell {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0);
+    min-width: 0;
+}
+
+/* ============================================================
+   4. Split bar — net to clinic vs platform fee (or ok vs failed)
+   Percent buckets keep widths token-driven with no inline styles.
+   ============================================================ */
+
+.af-split {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 12em;
+}
+
+.af-split-track {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    height: var(--space-3);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    background: var(--clr-surface-sunken);
+    border: 1px solid var(--clr-border-subtle);
+}
+
+.af-split-seg {
+    flex: 0 0 auto;
+    transition: width var(--dur-md) var(--ease-spring);
+}
+
+.af-split-seg--net {
+    background: var(--grad-primary);
+}
+
+.af-split-seg--fee {
+    background: var(--grad-brass);
+}
+
+.af-split-seg--ok {
+    background: var(--clr-success);
+}
+
+.af-split-seg--fail {
+    background: var(--clr-danger);
+}
+
+.af-split-seg--pending {
+    background: repeating-linear-gradient(
+        135deg,
+        var(--clr-border-strong) 0 var(--space-1),
+        var(--clr-surface-sunken) var(--space-1) var(--space-2)
+    );
+}
+
+.af-split-seg--p0 { width: 0; }
+.af-split-seg--p10 { width: 10%; }
+.af-split-seg--p20 { width: 20%; }
+.af-split-seg--p30 { width: 30%; }
+.af-split-seg--p40 { width: 40%; }
+.af-split-seg--p50 { width: 50%; }
+.af-split-seg--p60 { width: 60%; }
+.af-split-seg--p70 { width: 70%; }
+.af-split-seg--p80 { width: 80%; }
+.af-split-seg--p90 { width: 90%; }
+.af-split-seg--p100 { width: 100%; }
+
+.af-split-legend {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    font-size: var(--fs-xs);
+    color: var(--clr-text-secondary);
+}
+
+.af-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    white-space: nowrap;
+}
+
+.af-legend-dot {
+    width: var(--space-2);
+    height: var(--space-2);
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.af-legend-dot--net { background: var(--clr-primary); }
+.af-legend-dot--fee { background: var(--clr-brass); }
+.af-legend-dot--ok { background: var(--clr-success); }
+.af-legend-dot--fail { background: var(--clr-danger); }
+.af-legend-dot--pending { background: var(--clr-border-strong); }
+
+.af-legend-value {
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    unicode-bidi: isolate;
+    color: var(--clr-text);
+    font-weight: var(--fw-semibold);
+}
+
+/* ============================================================
+   5. Payout batches — expandable detail + action pair
+   ============================================================ */
+
+.payout-details-row {
+    display: none;
+    background: var(--clr-surface-sunken);
+}
+
+.payout-details-row[data-open="true"] {
+    display: table-row;
+}
+
+.payout-details-row > td {
+    padding: var(--space-4) var(--space-5);
+    background: var(--clr-surface-sunken);
+}
+
+.af-batch-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: var(--border-1);
+    border-radius: var(--radius-md);
+    background: var(--clr-surface);
+    box-shadow: var(--shadow-xs);
+    animation: ch-rise var(--dur-sm) var(--ease-spring) both;
+}
+
+.af-batch-detail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.af-batch-detail-title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-family: var(--ff-display);
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-bold);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text);
+}
+
+.af-batch-detail-title svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--clr-brass);
+}
+
+.af-batch-detail .table-responsive {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--clr-border-subtle);
+}
+
+.af-sub-table thead th {
+    position: static;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-xs);
+}
+
+.af-sub-table td {
+    padding: var(--space-2) var(--space-3);
+    height: auto;
+    background-color: var(--clr-surface) !important;
+}
+
+.af-sub-table tbody tr:hover td {
+    background-color: var(--clr-primary-light) !important;
+}
+
+.af-action-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.af-budget-chip {
+    align-self: center;
+    min-width: 9ch;
+    justify-content: center;
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
+/* ============================================================
+   6. Plans & subscriptions cards — the ticket language
+   Price reads like a printed slip: mono numerals, perforated tear,
+   brass imprint on the recommended plan. Hidden plans go quiet,
+   never grey-on-grey unreadable.
+   ============================================================ */
+
+.af-plan-grid-note {
+    margin: 0;
+    font-size: var(--fs-sm);
+    color: var(--clr-text-secondary);
+}
+
+/* Auto-fit grid: 1440 shows 4-up, 768 two-up, 375 stacks — no h-scroll */
+.af-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: var(--space-5);
+    align-items: stretch;
+}
+
+.af-plan {
+    position: relative;
+    border-radius: var(--radius-xl);
+    border-color: var(--clr-border);
+    box-shadow: var(--shadow-sm);
+    transition:
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-sm) var(--ease-standard),
+        border-color var(--dur-sm) var(--ease-standard);
+}
+
+.af-plan:hover {
+    transform: translateY(var(--motion-lift));
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--clr-border-strong);
+}
+
+/* Recommended plan: brass rail on the start edge, no new hue */
+.af-plan--featured {
+    border-color: rgba(183, 138, 60, 0.45);
+    box-shadow: var(--shadow-md);
+}
+
+.af-plan--featured::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 4px;
+    background: var(--grad-brass);
+    z-index: 1;
+}
+
+/* Hidden plan reads as inactive without disappearing */
+.af-plan--off {
+    background: var(--clr-surface-subtle);
+    border-style: dashed;
+    border-color: var(--clr-border-strong);
+    box-shadow: none;
+}
+
+.af-plan-imprint {
+    position: absolute;
+    top: var(--space-4);
+    inset-inline-end: var(--space-4);
+    z-index: 2;
+}
+
+/* ---- header: plan identity + the two prices ---- */
+.af-plan-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-6) var(--space-5) var(--space-5);
+    text-align: center;
+}
+
+.af-plan-state {
+    align-self: flex-start;
+    margin-inline-end: auto;
+}
+
+.af-plan-name {
+    margin: var(--space-1) 0 0;
+}
+
+.af-plan-desc {
+    max-width: 34ch;
+    margin: 0;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+}
+
+.af-plan-figure {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    margin: var(--space-3) 0 0;
+    font-family: var(--ff-data);
+    font-size: clamp(28px, 1.5vw + 18px, 36px);
+    font-weight: var(--fw-bold);
+    line-height: 1.05;
+    letter-spacing: var(--ls-tight);
+    color: var(--clr-primary-strong);
+}
+
+.af-plan-price {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+}
+
+.af-plan-period {
+    margin: var(--space-1) 0 0;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-faint);
+}
+
+.af-plan-yearly {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px dashed var(--clr-border);
+    width: 100%;
+    font-size: var(--fs-sm);
+    color: var(--clr-text-secondary);
+}
+
+.af-plan-yearly-value {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--fw-semibold);
+    color: var(--clr-text);
+}
+
+/* ---- limits as chips (site.css styles .plan-limits span) ---- */
+.af-plan-limits {
+    gap: var(--space-2);
+    margin: 0;
+}
+
+.af-plan-limits .bi {
+    font-size: 12px;
+    color: var(--clr-primary);
+    margin-inline-end: var(--space-1);
+}
+
+/* ---- feature catalogue: check = included, dash = not included ---- */
+.af-plan-features-title {
+    margin: 0;
+    font-size: var(--fs-xs);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-faint);
+}
+
+.af-plan-features li.af-feature-off {
+    color: var(--clr-text-faint);
+}
+
+.af-feature-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--clr-success);
+}
+
+.af-feature-icon--off {
+    color: var(--clr-text-faint);
+}
+
+/* ---- footer actions ---- */
+.af-plan-foot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    background: var(--clr-surface-subtle);
+}
+
+.af-plan-foot .btn {
+    min-height: 36px;
+}
+
+/* ============================================================
+   6b. Subscription ledger — filter chrome + refund trail
+   ============================================================ */
+
+/* Chip rows wrap; the collapse toggle is CSS-only (a nameless checkbox
+   inside the GET form, so it never reaches the query string). */
+.af-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.af-chip-row-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    transition: max-height var(--dur-md) var(--ease-standard);
+}
+
+.af-chip-more {
+    display: none;
+    cursor: pointer;
+}
+
+.af-chip-more-hide {
+    display: none;
+}
+
+/* Refund trail under a status badge */
+.af-refund-trail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0);
+    margin-top: var(--space-1);
+    font-size: var(--fs-xs);
+    color: var(--clr-text-secondary);
+}
+
+.af-refund-trail .cell-sub {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+}
+
+.af-refund-trail strong {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--fw-semibold);
+    color: var(--clr-text);
+}
+
+.af-plan-cta {
+    min-width: 0;
+}
+
+/* ============================================================
+   7. Users money drill-down (around the shared sub sidebar)
+   Header keeps the .user-profile-header contract, tabs keep
+   .sub-sidebar, every block is a .surface panel with .section-head.
+   ============================================================ */
+
+.af-user-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    min-width: 0;
+}
+
+.af-user-tabs {
+    margin-bottom: var(--space-1);
+}
+
+.af-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.af-panel-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-family: var(--ff-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-semibold);
+    color: var(--clr-text);
+}
+
+.af-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+}
+
+.af-profile-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+/* Compact identity strip reused by the drill-down tabs */
+.af-user-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin-bottom: 0;
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    background:
+        radial-gradient(70% 120% at 100% 0%, rgba(183, 138, 60, 0.07) 0%, transparent 60%),
+        var(--clr-surface);
+    border: 1px solid var(--clr-border-subtle);
+    box-shadow: var(--shadow-xs);
+}
+
+.af-user-head .user-profile-avatar-lg {
+    width: 56px;
+    height: 56px;
+}
+
+.af-user-head .user-profile-avatar-lg span {
+    font-size: var(--fs-h3);
+}
+
+.af-user-head-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+    flex: 1 1 16em;
+}
+
+.af-user-aside {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-inline-start: auto;
+}
+
+/* The four overview numbers read as stat cards, not plain boxes */
+.af-user-content .user-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: 0;
+}
+
+.af-user-stat {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    padding: var(--space-5) var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--clr-border-subtle);
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--clr-surface-subtle) 100%);
+    box-shadow: var(--shadow-xs);
+    text-align: start;
+    align-items: flex-start;
+    transition:
+        transform var(--dur-sm) var(--ease-spring),
+        box-shadow var(--dur-sm) var(--ease-standard),
+        border-color var(--dur-fs) var(--ease-standard);
+}
+
+.af-user-stat::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    background: var(--grad-primary);
+    opacity: 0.9;
+    transition: width var(--dur-sm) var(--ease-spring);
+}
+
+.af-user-stat--brass::before { background: var(--grad-brass); }
+.af-user-stat--info::before { background: linear-gradient(180deg, var(--clr-info), var(--clr-info-text)); }
+
+.af-user-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: rgba(13, 95, 78, 0.18);
+}
+
+.af-user-stat:hover::before { width: 5px; }
+
+.af-user-stat .user-stat-value {
+    font-size: clamp(22px, 1.4vw + 14px, 28px);
+    color: var(--clr-primary-strong);
+    letter-spacing: var(--ls-tight);
+}
+
+.af-user-stat .user-stat-label {
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-label);
+    color: var(--clr-text-secondary);
+}
+
+/* Info rows read as a ledger: label left, tabular value right */
+.af-user-content .detail-info-row,
+.af-detail-panel .detail-info-row {
+    padding: var(--space-3) 0;
+    border-bottom: 1px dashed var(--clr-border-subtle);
+}
+
+.af-user-content .detail-info-value,
+.af-detail-panel .detail-info-value {
+    font-variant-numeric: tabular-nums;
+}
+
+.af-user-content .detail-info-value--mono,
+.af-detail-id {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: var(--ff-data);
+    font-size: var(--fs-sm);
+    letter-spacing: 0.01em;
+}
+
+/* Change-password form inside the user file */
+.af-user-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.af-user-form .btn {
+    align-self: flex-start;
+}
+
+/* ============================================================
+   8. Detail page & refund blocks
+   ============================================================ */
+
+.af-detail-amount {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Slip header: code + date on one side, the amount printed like a ticket */
+.af-detail-head {
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius-xl);
+    background:
+        radial-gradient(60% 120% at 100% 0%, rgba(183, 138, 60, 0.08) 0%, transparent 62%),
+        var(--clr-surface);
+}
+
+.af-detail-head .detail-amount {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(24px, 1.4vw + 16px, 32px);
+    color: var(--clr-primary-strong);
+}
+
+.af-detail-subtitle {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-sm);
+    color: var(--clr-text-secondary);
+}
+
+.af-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-5);
+    align-items: start;
+}
+
+.af-detail-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-5);
+}
+
+.af-detail-panel .subtitle-icon .bi {
+    font-size: 17px;
+    line-height: 1;
+}
+
+/* Amount share: refunded vs still refundable — widths stay token-driven */
+.af-detail-split {
+    max-width: 32em;
+}
+
+/* Timeline gets the house marker language without touching shared rules */
+.af-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.af-timeline .timeline-date {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-family: var(--ff-data);
+    font-variant-numeric: tabular-nums;
+}
+
+.af-timeline .timeline-marker {
+    box-shadow: 0 0 0 4px var(--clr-surface), 0 0 0 5px var(--clr-border);
+}
+
+.af-detail-notes {
+    margin: 0;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--clr-border-strong);
+    background: var(--clr-surface-sunken);
+    font-size: var(--fs-md);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+}
+
+.af-refund-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--clr-danger-border);
+    border-radius: var(--radius-md);
+    background: var(--clr-danger-bg);
+}
+
+.af-refund-box-title {
+    margin: 0;
+    font-family: var(--ff-display);
+    font-size: var(--fs-md);
+    font-weight: var(--fw-bold);
+    color: var(--clr-danger-text);
+}
+
+.af-refund-box-copy {
+    margin: 0;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    color: var(--clr-danger-text);
+}
+
+.af-modal-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--clr-danger-bg);
+    color: var(--clr-danger-text);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    font-weight: var(--fw-medium);
+}
+
+.af-modal-warning svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    fill: currentColor;
+}
+
+/* Inline form row (platform fee setting) */
+.af-form-inline {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-4) var(--space-5);
+}
+
+.af-form-inline-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.af-form-inline-field .form-input {
+    width: auto;
+    min-width: 12ch;
+}
+
+.af-form-inline-hint {
+    flex: 1 1 18em;
+    margin: 0;
+    font-size: var(--fs-sm);
+    line-height: var(--lh-md);
+    color: var(--clr-text-secondary);
+}
+
+/* ============================================================
+   9. Redirect interstitial (KPI entry point)
+   ============================================================ */
+
+.af-redirect {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-9) var(--space-5);
+}
+
+.af-redirect-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-7) var(--space-8);
+    text-align: center;
+    background: var(--clr-surface);
+    border: var(--border-1);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    animation: ch-pop var(--dur-md) var(--ease-spring) both;
+}
+
+.af-redirect-spinner {
+    width: var(--space-8);
+    height: var(--space-8);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--clr-border);
+    border-top-color: var(--clr-primary);
+    animation: ch-spin 0.9s linear infinite;
+}
+
+.af-redirect-copy {
+    margin: 0;
+    font-size: var(--fs-md);
+    color: var(--clr-text-secondary);
+}
+
+/* ============================================================
+   9b. Admin profile & notifications
+   Both pages render frozen shared partials (.profile-card / .notif-*).
+   Everything here is scoped to the page wrapper so nothing leaks into
+   the other roles' profile screens.
+   ============================================================ */
+
+.af-section-head {
+    margin-bottom: 0;
+}
+
+.af-admin-profile .profile-page {
+    max-width: 620px;
+}
+
+.af-admin-profile .profile-card {
+    overflow: hidden;
+}
+
+.af-admin-profile .profile-field-value {
+    font-variant-numeric: tabular-nums;
+}
+
+.af-admin-profile .profile-card-body .profile-field:last-child {
+    border-bottom: 0;
+}
+
+.af-admin-notifications .notif-page {
+    max-width: 880px;
+}
+
+.af-admin-notifications .notif-card {
+    padding: var(--space-5);
+}
+
+.af-admin-notifications .notif-list {
+    gap: var(--space-2);
+}
+
+/* Money / clinic notifications get the brass accessory, not a new hue */
+.af-admin-notifications .notif-item[data-type="17"] .notif-item-icon,
+.af-admin-notifications .notif-item[data-type="18"] .notif-item-icon {
+    color: var(--clr-brass-deep);
+    background: var(--clr-brass-25);
+    border-color: rgba(183, 138, 60, 0.35);
+}
+
+.af-admin-notifications .notif-item-time {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+}
+
+.af-admin-notifications .notif-empty {
+    border: 1px dashed var(--clr-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--clr-surface-sunken);
+    font-size: var(--fs-md);
+}
+
+/* ============================================================
+   10. Real responsive needs
+   ============================================================ */
+
+@media (max-width: 767px) {
+    .af-ads-search-wrap {
+        max-width: none;
+    }
+
+    .af-range {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .af-range .form-input {
+        flex: 1 1 0;
+    }
+
+    .af-split {
+        min-width: 0;
+    }
+
+    .af-form-inline {
+        align-items: stretch;
+    }
+
+    .af-form-inline-field .form-input {
+        width: 100%;
+    }
+
+    /* Plan cards go full width, price stays on one line */
+    .af-plan-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .af-plan-head {
+        padding: var(--space-5) var(--space-4) var(--space-4);
+    }
+
+    .af-plan-imprint {
+        top: var(--space-3);
+        inset-inline-end: var(--space-3);
+    }
+
+    /* Chip rows wrap; the collapsed row opens with the CSS-only toggle */
+    .af-chip-row--collapse .af-chip-row-inner {
+        max-height: 40px;
+        overflow: hidden;
+    }
+
+    .af-chip-row--collapse:has(.af-chip-more-input:checked) .af-chip-row-inner {
+        max-height: 26em;
+    }
+
+    .af-chip-more {
+        display: inline-block;
+    }
+
+    .af-chip-row--collapse:has(.af-chip-more-input:checked) .af-chip-more-show {
+        display: none;
+    }
+
+    .af-chip-row--collapse:has(.af-chip-more-input:checked) .af-chip-more-hide {
+        display: inline;
+    }
+
+    .af-detail-head,
+    .af-detail-panel,
+    .af-panel-body,
+    .af-user-head {
+        padding: var(--space-4);
+    }
+
+    .af-user-head .user-profile-info {
+        min-width: 0;
+    }
+
+    .af-user-aside {
+        margin-inline-start: 0;
+    }
+}
+
+/* Wide screens: the recommended plan lifts out of the row, no JS needed */
+@media (min-width: 1200px) {
+    .af-plan--featured {
+        margin-top: calc(-1 * var(--space-4));
+        margin-bottom: calc(-1 * var(--space-4));
+    }
+}
+
+/* ============================================================
+   11. Coarse pointers — plan actions and nav chips stay tappable
+   ============================================================ */
+
+@media (pointer: coarse) {
+    .af-plan-foot .btn,
+    .af-chip-row .chip,
+    .af-chip-more,
+    .notif-item {
+        min-height: 44px;
+    }
+}
+
+/* ============================================================
+   12. Motion guard
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .af-split-seg,
+    .af-batch-detail,
+    .af-redirect-card,
+    .af-plan,
+    .af-plan:hover,
+    .af-user-stat,
+    .af-user-stat:hover,
+    .af-chip-row-inner,
+    .stat-card,
+    .chip {
+        animation: none;
+        transition: none;
+        transform: none;
+    }
+
+    .af-redirect-spinner {
+        animation-duration: 1.6s;
+    }
+
+    .payout-details-row[data-open="true"] > td {
+        animation: none;
+    }
+
+    html [data-scroll] {
+        opacity: 1;
+        transform: none;
+        filter: none;
+        transition: none;
+    }
+}

@@ -11,37 +11,50 @@
     var selectedUserTypes = ViewBag.SelectedUserTypes as string;
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-directory.css?v=20261027_redesign_v2" />
+}
+
+<div class="ad-page">
+
 <div class="page-header">
     <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C9.243 2 7 4.243 7 7v2c0 2.206 1.794 4 4 4v2.184c-2.804.418-4.994 2.617-4.994 5.316V22h2v-1.5c0-2.206 1.794-4 4-4s4 1.794 4 4V22h2v-1.5c0-2.699-2.19-4.898-4.994-5.316V13c2.206 0 4-1.794 4-4V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2c0 1.654-1.346 3-3 3s-3-1.346-3-3V7z" fill="currentColor"/>
-            </svg>
-        </span>
+        <span class="page-title-icon"><i class="bi bi-capsule"></i></span>
         إدارة الأطباء
     </h2>
-    @* Add button removed - user creation moved to Users page *@
+    <span class="ad-table-head-count"><i class="bi bi-people"></i> @doctors.Count طبيب</span>
 </div>
 
 <!-- Filter Bar -->
-<form method="get" action="/Admin/Doctors" class="filter-bar">
-    <input type="text" name="searchTerm" class="form-input" aria-label="بحث عن طبيب" placeholder="بحث عن طبيب..." value="@searchTerm" />
-    <select name="clinicId" class="form-select" onchange="this.form.submit()">
-        <option value="">جميع العيادات</option>
-        @foreach (var c in clinics)
-        {
-            <option value="@c.Id" selected="@(selectedClinicId == c.Id ? true : null)">@c.Name</option>
-        }
-    </select>
-    <select name="userTypes" class="form-select" onchange="this.form.submit()">
-        <option value="">جميع الأدوار</option>
-        <option value="4" selected="@(selectedUserTypes == "4" ? true : null)">طبيب</option>
-        <option value="16" selected="@(selectedUserTypes == "16" ? true : null)">مدير عيادة</option>
-    </select>
-    <label class="filter-checkbox">
-        <input type="checkbox" name="isUnassigned" value="true" onchange="this.form.submit()" @(isUnassigned == true ? "checked" : "") />
-        <span class="filter-checkbox-label">غير منتسبين لعيادة</span>
-    </label>
+<form method="get" action="/Admin/Doctors" class="ad-filter">
+    <div class="ad-filter-fields">
+        <div class="ad-filter-field ad-filter-field--search">
+            <span class="ad-filter-label"><i class="bi bi-search"></i>بحث عن طبيب</span>
+            <input type="text" name="searchTerm" class="form-input" aria-label="بحث عن طبيب" placeholder="بحث عن طبيب..." value="@searchTerm" />
+        </div>
+        <div class="ad-filter-field">
+            <span class="ad-filter-label"><i class="bi bi-hospital"></i>العيادة</span>
+            <select name="clinicId" class="form-select" onchange="this.form.submit()">
+                <option value="">جميع العيادات</option>
+                @foreach (var c in clinics)
+                {
+                    <option value="@c.Id" selected="@(selectedClinicId == c.Id ? true : null)">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="ad-filter-field">
+            <span class="ad-filter-label"><i class="bi bi-person-badge"></i>الدور</span>
+            <select name="userTypes" class="form-select" onchange="this.form.submit()">
+                <option value="">جميع الأدوار</option>
+                <option value="4" selected="@(selectedUserTypes == "4" ? true : null)">طبيب</option>
+                <option value="16" selected="@(selectedUserTypes == "16" ? true : null)">مدير عيادة</option>
+            </select>
+        </div>
+        <label class="form-check">
+            <input type="checkbox" name="isUnassigned" value="true" onchange="this.form.submit()" @(isUnassigned == true ? "checked" : "") />
+            <span>غير منتسبين لعيادة</span>
+        </label>
+    </div>
 </form>
 
 <!-- Doctors Table -->
@@ -95,29 +108,23 @@
                         </td>
                         <td>
                             <div class="table-actions">
-                                <button class="btn-icon btn-edit-doctor" title="تعديل" aria-label="تعديل الطبيب @d.FullName"
+                                <button class="btn-icon btn-icon--primary btn-edit-doctor" title="تعديل" aria-label="تعديل الطبيب @d.FullName"
                                         data-id="@d.Id"
                                         data-name="@d.FullName"
                                         data-email="@d.Email"
                                         data-phone="@d.PhoneNumber"
                                         data-active="@d.IsActive.ToString().ToLower()">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                    </svg>
+                                    <i class="bi bi-pencil" aria-hidden="true"></i>
                                 </button>
-                                <button class="btn-icon btn-change-password-doctor" title="تغيير كلمة المرور" aria-label="تغيير كلمة مرور الطبيب @d.FullName"
+                                <button class="btn-icon btn-key-doctor btn-change-password-doctor" title="تغيير كلمة المرور" aria-label="تغيير كلمة مرور الطبيب @d.FullName"
                                         data-id="@d.Id"
                                         data-name="@d.FullName">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/>
-                                    </svg>
+                                    <i class="bi bi-key" aria-hidden="true"></i>
                                 </button>
-                                <button class="btn-icon btn-delete-doctor" title="حذف" aria-label="حذف الطبيب @d.FullName"
+                                <button class="btn-icon btn-icon--danger btn-delete-doctor" title="حذف" aria-label="حذف الطبيب @d.FullName"
                                         data-id="@d.Id"
                                         data-name="@d.FullName">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                                    </svg>
+                                    <i class="bi bi-trash3" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </td>

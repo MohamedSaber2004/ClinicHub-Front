@@ -19,27 +19,33 @@
     };
 }
 
-<section class="subscription-hero">
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/public-plans.css?v=20261027_redesign_v2" asp-append-version="false" />
+}
+
+<section class="subscription-hero plans-hero">
     <div class="container text-center">
         <h1 class="text-h1">اختر باقة الاشتراك المناسبة لعيادتك</h1>
         <p class="subscription-hero-desc">اشترك الآن في الباقة التي تناسب حجم عيادتك، واستفد من ميزات الإدارة والتشغيل والترويج الإعلاني</p>
     </div>
 </section>
 
-<section class="subscription-section">
+<section class="subscription-section plans-section">
     <div class="container">
-        <div class="ads-search-wrap" style="max-width:420px;margin:0 auto 16px">
-            <svg class="ads-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="planSearch" aria-label="بحث في الباقات" class="form-input ads-global-input" placeholder="بحث في الباقات والمميزات..." autocomplete="off" />
-        </div>
+        <div class="plans-toolbar" data-scroll>
+            <div class="ads-search-wrap plans-search">
+                <i class="bi bi-search ads-search-icon" aria-hidden="true"></i>
+                <input type="text" id="planSearch" aria-label="بحث في الباقات" class="form-input ads-global-input" placeholder="بحث في الباقات والمميزات..." autocomplete="off" />
+            </div>
 
-        <div class="pricing-toggle">
-            <span class="toggle-label">شهرياً</span>
-            <label class="form-toggle">
-                <input type="checkbox" id="periodToggle" />
-                <span class="toggle-track"></span>
-            </label>
-            <span class="toggle-label">سنوياً</span>
+            <div class="pricing-toggle segmented">
+                <span class="toggle-label segmented-item">شهرياً</span>
+                <label class="form-toggle">
+                    <input type="checkbox" id="periodToggle" aria-label="تبديل فترة التسعير بين شهرياً وسنوياً" />
+                    <span class="toggle-track"></span>
+                </label>
+                <span class="toggle-label segmented-item">سنوياً</span>
+            </div>
         </div>
 
         <div class="subscription-plans" id="planCards">
@@ -55,7 +61,7 @@
                 {
                     var maxSort = plans.Where(p => p.IsActive).Max(p => p.SortOrder);
                     var isTop = plan.SortOrder >= maxSort;
-                    var planClass = isTop ? "plan-premium" : "plan-free";
+                    var planClass = isTop ? "plan-premium plan-featured" : "plan-free";
                     var featureList = JsonSerializer.Deserialize<List<string>>(plan.Features) ?? new();
                     var includesAds = featureList.Contains("marketing_tools");
                     var badge = isTop ? "الأفضل والأشمل" : (includesAds ? "تشمل ميزة الإعلانات" : "");
@@ -66,7 +72,7 @@
                             <span class="plan-badge">@badge</span>
                         }
                         <div class="plan-header">
-                            <h3 class="plan-name">@plan.NameAr</h3>
+                            <h2 class="plan-name">@plan.NameAr</h2>
                             <p class="plan-desc">@plan.DescriptionAr</p>
                             <p class="plan-price">
                                 <span class="price-monthly">@plan.PriceMonthly.ToString("N0")</span>
@@ -83,13 +89,12 @@
                                 <span>@(plan.MaxDoctors.HasValue ? $"حتى {plan.MaxDoctors} أطباء" : "أطباء غير محدود")</span>
                                 <span>@(plan.MaxStaff.HasValue ? $"حتى {plan.MaxStaff} موظف" : "موظفين غير محدود")</span>
                             </div>
+                            <p class="plan-features-title">المميزات</p>
                             <ul class="plan-features">
                                 @foreach (var feature in featureList)
                                 {
                                     <li>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--clr-success)"/>
-                                        </svg>
+                                        <i class="bi bi-check-lg plan-feature-icon" aria-hidden="true"></i>
                                         <span>@(featureLabels.ContainsKey(feature) ? featureLabels[feature] : feature)</span>
                                     </li>
                                 }
@@ -112,55 +117,57 @@
         <div class="benefits-grid">
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 10h-5v5h-2v-5H6v-2h5V6h2v5h5v2z" fill="currentColor"/></svg>
+                    <i class="bi bi-window-dock" aria-hidden="true"></i>
                 </div>
-                <h4 class="benefit-title">لوحة تحكم متكاملة</h4>
+                <h3 class="benefit-title">لوحة تحكم متكاملة</h3>
                 <p class="benefit-desc">تابع جميع عمليات عيادتك من خلال لوحة تحكم ذكية وسهلة الاستخدام</p>
             </div>
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary icon-wrapper--green">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/></svg>
+                    <i class="bi bi-calendar2-check" aria-hidden="true"></i>
                 </div>
-                <h4 class="benefit-title">إدارة الأطباء والمواعيد</h4>
+                <h3 class="benefit-title">إدارة الأطباء والمواعيد</h3>
                 <p class="benefit-desc">أدر جداول الأطباء والمواعيد بسهولة مع إشعارات تلقائية للمرضى</p>
             </div>
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary icon-wrapper--amber">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="m4.93 4.93 4.24 4.24" stroke="currentColor" stroke-width="2"/><path d="m14.83 9.17 4.24-4.24" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+                    <i class="bi bi-megaphone" aria-hidden="true"></i>
                 </div>
-                <h4 class="benefit-title">ميزة الإعلانات والترويج</h4>
+                <h3 class="benefit-title">ميزة الإعلانات والترويج</h3>
                 <p class="benefit-desc">الظهور في تطبيق المرضى بشعار مميز وشارة عيادة معتمدة لزيادة الحجوزات</p>
             </div>
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary icon-wrapper--blue">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 2 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/></svg>
+                    <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
                 </div>
-                <h4 class="benefit-title">تقارير وإحصائيات فورية</h4>
+                <h3 class="benefit-title">تقارير وإحصائيات فورية</h3>
                 <p class="benefit-desc">تقارير مفصلة عن أداء عيادتك والإيرادات ونسبة الحجوزات اليومية والشهرية</p>
             </div>
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary icon-wrapper--green">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="currentColor"/></svg>
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
                 </div>
-                <h4 class="benefit-title">دعم فني مستمر</h4>
+                <h3 class="benefit-title">دعم فني مستمر</h3>
                 <p class="benefit-desc">فريق الدعم الفني متاح لمساعدتك في إعداد حسابك وتهيئة الأطباء والخدمات</p>
             </div>
             <div class="benefit-card">
                 <div class="icon-wrapper icon-wrapper--primary icon-wrapper--blue">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" fill="currentColor"/></svg>
+                    <i class="bi bi-bell" aria-hidden="true"></i>
                 </div>
-                <h4 class="benefit-title">إشعارات ذكية</h4>
+                <h3 class="benefit-title">إشعارات ذكية</h3>
                 <p class="benefit-desc">إشعارات وتنبيهات فورية للمرضى والعيادة لتنظيم سير العمل بدون تأخير</p>
             </div>
         </div>
     </div>
 </section>
 
-<section class="subscription-cta-section">
-    <div class="container text-center">
-        <h2 class="text-h2">انضم إلى منصة Doctory</h2>
-        <p class="subscription-cta-desc">أدرج عيادتك اليوم، اختر باقتك، وابدأ في إدارة أعمالك باحترافية</p>
-        <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary btn-lg">ابدأ الآن</a>
+<section class="subscription-cta-section plans-cta-band">
+    <div class="container">
+        <div class="plans-cta-panel">
+            <h2 class="text-h2">انضم إلى منصة Doctory</h2>
+            <p class="subscription-cta-desc">أدرج عيادتك اليوم، اختر باقتك، وابدأ في إدارة أعمالك باحترافية</p>
+            <a href="@HomeRoutes.Pages.ClinicRegister()" class="btn btn-primary btn-lg">ابدأ الآن</a>
+        </div>
     </div>
 </section>
 
@@ -224,10 +231,10 @@
                         <i class="bi bi-phone me-1"></i> رقم المحفظة (فودافون كاش / اتصالات / أورنج / وي):
                     </label>
                     <input type="tel" id="walletPhoneInput" class="form-control" placeholder="01xxxxxxxxx" dir="ltr" maxlength="11">
-                    <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
+                    <small class="form-hint">(للتجربة في بيئة الاختبار يمكنك استخدام: 01010101010)</small>
                 </div>
 
-                <div class="modal-action-stack" style="margin-top: 24px;">
+                <div class="modal-action-stack mt-4">
                     <button type="button" class="btn btn-primary" id="confirmPaymentMethodBtn">
                         <i class="bi bi-lock-fill me-1"></i> متابعة للدفع
                     </button>

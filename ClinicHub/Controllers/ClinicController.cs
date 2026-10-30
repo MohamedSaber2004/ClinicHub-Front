@@ -33,6 +33,7 @@ namespace ClinicHub.Controllers
         private readonly INotificationService _notificationService;
         private readonly IRatingsService _ratingsService;
         private readonly IClinicPaymentService _clinicPaymentService;
+        private readonly IClinicPayoutService _clinicPayoutService;
 
         public ClinicController(
             ISubscriptionService subscriptionService,
@@ -51,7 +52,8 @@ namespace ClinicHub.Controllers
             IDoctorDashboardService doctorDashboardService,
             INotificationService notificationService,
             IRatingsService ratingsService,
-            IClinicPaymentService clinicPaymentService)
+            IClinicPaymentService clinicPaymentService,
+            IClinicPayoutService clinicPayoutService)
         {
             _subscriptionService = subscriptionService;
             _planService = planService;
@@ -70,6 +72,7 @@ namespace ClinicHub.Controllers
             _notificationService = notificationService;
             _ratingsService = ratingsService;
             _clinicPaymentService = clinicPaymentService;
+            _clinicPayoutService = clinicPayoutService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -694,6 +697,88 @@ namespace ClinicHub.Controllers
             ViewBag.StatusFilter = status;
             ViewBag.MethodFilter = method;
             return View();
+        }
+
+        public async Task<IActionResult> Payouts(int historyPage = 1)
+        {
+            ViewBag.Summary = new ClinicPayoutSummaryDto();
+            ViewBag.Account = null;
+            ViewBag.History = new PagginatedResult<PayoutItemDto>(new List<PayoutItemDto>(), 0, historyPage, 10);
+
+            try
+            {
+                ViewBag.Summary = await _clinicPayoutService.GetSummaryAsync();
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "حدث خطأ غير متوقع أثناء تحميل مستحقات العيادة.";
+            }
+
+            try
+            {
+                ViewBag.Account = await _clinicPayoutService.GetAccountAsync();
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = TempData["Error"] ?? ex.Message;
+            }
+            catch (Exception)
+            {
+                // Summary already surfaced an error if the API is unreachable.
+            }
+
+            try
+            {
+                ViewBag.History = await _clinicPayoutService.GetHistoryAsync(historyPage, 10);
+            }
+            catch (ApiException ex)
+            {
+                TempData["Error"] = TempData["Error"] ?? ex.Message;
+            }
+            catch (Exception)
+            {
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SavePayoutAccount([FromBody] UpsertPayoutAccountRequest request)
+        {
+            if (request == null ||
+                string.IsNullOrWhiteSpace(request.HolderName) ||
+                string.IsNullOrWhiteSpace(request.NationalId) ||
+                string.IsNullOrWhiteSpace(request.BankCode) ||
+                string.IsNullOrWhiteSpace(request.AccountNumber))
+            {
+                Response.StatusCode = 400;
+                return Json(new { success = false, message = "يرجى استكمال بيانات الحساب البنكي بما فيها الرقم القومي." });
+            }
+
+            try
+            {
+                var account = await _clinicPayoutService.UpsertAccountAsync(request);
+                return Json(new
+                {
+                    success = true,
+                    message = "تم حفظ الحساب البنكي بنجاح، وهو الآن بانتظار اعتماد الإدارة.",
+                    data = account
+                });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
         }
 
         public async Task<IActionResult> MedicalRecords(string? searchTerm, int pageNumber = 1, int pageSize = 10)

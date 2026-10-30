@@ -1,0 +1,1174 @@
+/* ============================================================
+   Clinic money + doctor clinic screens (pages/clinic-money.css)
+   Owns: AppointmentRevenue, Payouts, MySubscription, Marketing,
+   AdPaymentResult, PaymentFrame, Doctor* screens.
+   Loaded per-view AFTER design-system/site/app-shell/overlays, so
+   every rule here is additive refinement — no global class is
+   redefined outside a cm- scope.
+   Tokens only: --clr-*, --space-*, --radius-*, --shadow-*,
+   --fs-*, --dur-*, --ease-*.
+   ============================================================ */
+
+/* ============================================================
+   1. Money legibility — numbers stay LTR inside the RTL page
+   (mirrors the site.css payments pass; never reverse this)
+   ============================================================ */
+
+.cm-money {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+.cm-money--lg {
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-bold);
+  color: var(--clr-primary-strong);
+}
+
+.cm-money--sm {
+  font-size: var(--fs-xs);
+  color: var(--clr-text-secondary);
+}
+
+.cm-id {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: var(--ff-data);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-secondary);
+}
+
+.cm-note {
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+  margin: var(--space-4) 0 0;
+}
+
+.cm-foot-note {
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+  margin-top: var(--space-4);
+}
+
+/* ============================================================
+   2. Page opener + shared card shells
+   ============================================================ */
+
+.cm-page-head .page-header-subtitle {
+  max-width: 72ch;
+}
+
+.cm-card {
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.cm-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.cm-card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--ff-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  margin: 0;
+}
+
+.cm-empty-row {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  color: var(--clr-text-faint);
+  font-size: var(--fs-sm);
+}
+
+/* ============================================================
+   3. Revenue ledger — gross = platform fee + clinic net
+   Steps are utility classes chosen in Razor (no inline widths).
+   ============================================================ */
+
+.cm-ledger-head {
+  height: auto;
+  min-height: 52px;
+  padding-block: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.cm-split {
+  margin-top: var(--space-2);
+  min-width: 140px;
+}
+
+.cm-split-bar {
+  display: flex;
+  align-items: stretch;
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--clr-surface-sunken);
+  border: 1px solid var(--clr-border-subtle);
+  overflow: hidden;
+}
+
+.cm-split-seg {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.cm-split-seg--net {
+  flex: 1 1 auto;
+  background: var(--grad-primary);
+}
+
+.cm-split-seg--fee {
+  background: var(--grad-brass);
+}
+
+.cm-split-00 .cm-split-seg--fee { width: 0%; }
+.cm-split-05 .cm-split-seg--fee { width: 5%; }
+.cm-split-10 .cm-split-seg--fee { width: 10%; }
+.cm-split-15 .cm-split-seg--fee { width: 15%; }
+.cm-split-20 .cm-split-seg--fee { width: 20%; }
+.cm-split-25 .cm-split-seg--fee { width: 25%; }
+.cm-split-30 .cm-split-seg--fee { width: 30%; }
+.cm-split-35 .cm-split-seg--fee { width: 35%; }
+.cm-split-40 .cm-split-seg--fee { width: 40%; }
+.cm-split-45 .cm-split-seg--fee { width: 45%; }
+.cm-split-50 .cm-split-seg--fee { width: 50%; }
+
+.cm-split-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+.cm-split-key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+.cm-split-key::before {
+  content: '';
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-xs);
+  flex-shrink: 0;
+}
+
+.cm-split-key--net::before { background: var(--clr-primary); }
+.cm-split-key--fee::before { background: var(--clr-brass); }
+.cm-split-key--gross::before { background: var(--clr-border-strong); }
+
+.cm-stat-sub {
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+   4. Payouts — available panel, bank state, account form
+   ============================================================ */
+
+.cm-withdraw-panel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(183, 138, 60, 0.28);
+  background:
+    radial-gradient(70% 120% at 100% 0%, rgba(183, 138, 60, 0.1) 0%, transparent 60%),
+    linear-gradient(180deg, var(--clr-surface) 0%, var(--clr-surface-subtle) 100%);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cm-withdraw-panel::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  background: var(--grad-brass);
+}
+
+.cm-withdraw-label {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.cm-withdraw-amount {
+  display: block;
+  font-size: var(--fluid-h2);
+  font-weight: var(--fw-bold);
+  color: var(--clr-brass-deep);
+}
+
+.cm-withdraw-meta {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+.cm-withdraw-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.cm-withdraw-aside {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.cm-bank-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.cm-bank-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--clr-surface-subtle);
+}
+
+.cm-bank-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-secondary);
+}
+
+.cm-bank-value {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+}
+
+/* Form shell — the payout account form uses the full .form-* system */
+.cm-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-5);
+}
+
+.cm-form-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.cm-form-foot .cm-note {
+  margin: 0;
+}
+
+/* .field-error is only rendered when it carries text */
+.field-error:empty {
+  display: none;
+}
+
+.cm-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+/* ============================================================
+   5. MySubscription — relocated from the view's <style> block,
+   plus plan cards / period segmented / pay-method radio cards.
+   ============================================================ */
+
+.cm-subs-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-10) var(--space-5);
+  background: radial-gradient(60% 60% at 50% 0%, rgba(13, 95, 78, 0.045) 0%, transparent 70%);
+  border: 1px dashed var(--clr-border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.cm-subs-empty-icon {
+  margin-bottom: var(--space-4);
+}
+
+.cm-subs-empty-title {
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  margin: 0 0 var(--space-2);
+}
+
+.cm-subs-empty-copy {
+  color: var(--clr-text-secondary);
+  margin: 0 0 var(--space-5);
+  max-width: 40ch;
+}
+
+.cm-subs-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.cm-detail-card {
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+.cm-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  background: linear-gradient(180deg, var(--clr-table-header), var(--clr-surface));
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.cm-detail-body {
+  padding: var(--space-4) var(--space-5);
+}
+
+.cm-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.cm-detail-row:last-child {
+  border-bottom: none;
+}
+
+.cm-detail-label {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+}
+
+.cm-detail-value {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+}
+
+.cm-detail-foot {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--clr-border);
+  background-color: var(--clr-surface-subtle);
+}
+
+.cm-renew-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  background-color: var(--clr-warning-bg);
+  border: 1px solid var(--clr-warning-border);
+  border-radius: var(--radius-md);
+  color: var(--clr-text);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-md);
+}
+
+.cm-renew-alert svg {
+  flex-shrink: 0;
+  color: var(--clr-warning-text);
+}
+
+.cm-renew-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.cm-plans-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cm-plans-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--ff-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-semibold);
+  margin: 0;
+}
+
+.cm-plans-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cm-plan-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  transition:
+    border-color var(--dur-fs) var(--ease-standard),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    transform var(--dur-sm) var(--ease-spring);
+}
+
+.cm-plan-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.cm-plan-card--current {
+  border-color: var(--clr-primary);
+  box-shadow: var(--shadow-primary);
+  background: linear-gradient(180deg, var(--clr-surface) 0%, var(--clr-emerald-25) 100%);
+}
+
+.cm-plan-card--premium .cm-plan-name {
+  color: var(--clr-brass-deep);
+}
+
+.cm-plan-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.cm-plan-name {
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  margin: 0;
+}
+
+.cm-plan-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.cm-plan-price {
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--clr-primary-strong);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.cm-plan-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: var(--clr-primary-light);
+  color: var(--clr-primary-strong);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+}
+
+.cm-plan-cta {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Period selector — the .segmented primitive, radio driven */
+.cm-period-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.cm-period-label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text-secondary);
+}
+
+.cm-period-segmented {
+  position: relative;
+}
+
+.cm-period-segmented .segmented-item {
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: var(--space-1) var(--space-4);
+}
+
+.cm-period-segmented .segmented-item input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cm-period-price {
+  font-family: var(--ff-data);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  color: var(--clr-text-faint);
+}
+
+.cm-period-segmented .segmented-item[aria-selected="true"] .cm-period-price {
+  color: var(--clr-primary-strong);
+}
+
+/* Payment method radio cards (modal) */
+.cm-methods .payment-method-card {
+  border-color: var(--clr-border);
+}
+
+.cm-pay-method {
+  gap: var(--space-3);
+  padding: var(--space-4);
+  transition:
+    border-color var(--dur-fs) var(--ease-standard),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    background-color var(--dur-fs) var(--ease-standard),
+    transform var(--dur-sm) var(--ease-spring);
+}
+
+.cm-pay-method:hover {
+  transform: translateY(-2px);
+}
+
+.cm-pay-method.selected {
+  border-color: var(--clr-primary);
+  background: linear-gradient(180deg, var(--clr-surface) 0%, var(--clr-emerald-25) 100%);
+  box-shadow: var(--shadow-primary);
+}
+
+.cm-wallet-box {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--clr-surface-subtle);
+}
+
+.cm-wallet-hint {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+.cm-wallet-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--clr-text-secondary);
+}
+
+.cm-money-input {
+  direction: ltr;
+  text-align: start;
+  letter-spacing: var(--ls-label);
+}
+
+.cm-hidden {
+  display: none !important;
+}
+
+.cm-cancel-btn {
+  align-self: flex-start;
+}
+
+.cm-quote-card {
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================================
+   6. Marketing — package summary cards, toolbar, previews
+   ============================================================ */
+
+.cm-ad-toolbar {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.cm-ad-search {
+  flex: 1 1 auto;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.cm-ad-search-input {
+  padding-inline-end: var(--space-8);
+}
+
+.cm-package-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.cm-package-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: linear-gradient(180deg, var(--clr-surface) 0%, var(--clr-surface-subtle) 100%);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform var(--dur-sm) var(--ease-spring),
+    box-shadow var(--dur-sm) var(--ease-standard),
+    border-color var(--dur-fs) var(--ease-standard);
+}
+
+.cm-package-card::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 3px;
+  background: var(--grad-brass);
+  opacity: 0.9;
+}
+
+.cm-package-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(183, 138, 60, 0.32);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.cm-package-name {
+  font-family: var(--ff-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-bold);
+  color: var(--clr-text);
+}
+
+.cm-package-desc {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-md);
+  color: var(--clr-text-secondary);
+  min-height: var(--lh-md);
+}
+
+.cm-package-price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  color: var(--clr-brass-deep);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.cm-package-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+.cm-package-cta {
+  margin-top: var(--space-3);
+  width: 100%;
+  justify-content: center;
+}
+
+.cm-ad-metrics {
+  margin-bottom: var(--space-5);
+}
+
+.cm-preview-wrap {
+  padding: var(--space-4) var(--space-5);
+}
+
+.cm-package-name-cell {
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text);
+}
+
+.cm-ad-preview-hint {
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+  margin: 0 var(--space-3) 0 0;
+}
+
+.cm-preview-empty {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  color: var(--clr-text-faint);
+  font-size: var(--fs-sm);
+}
+
+/* Upload dropzone box (toggled by the view's own JS) */
+.ad-logo-upload-box {
+  display: block;
+}
+
+.cm-logo-limit {
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+   7. Payment frame + redirect results
+   ============================================================ */
+
+.cm-frame {
+  padding: var(--space-5) 0 var(--space-8);
+}
+
+.cm-frame-card {
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--clr-surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.cm-frame-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-5);
+  background: linear-gradient(180deg, var(--clr-table-header), var(--clr-surface));
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.cm-frame-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  margin: 0;
+}
+
+.cm-frame-body {
+  position: relative;
+  min-height: 650px;
+  background-color: var(--clr-surface-subtle);
+}
+
+/* Skeleton sits BEHIND the iframe: while the gateway paints, the
+   shimmer shows; once it renders, the frame covers it. No JS. */
+.cm-frame-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.cm-frame .payment-frame-iframe {
+  position: relative;
+  z-index: 1;
+  min-height: 650px;
+  background: transparent;
+}
+
+.cm-skeleton-line {
+  height: var(--space-4);
+  border-radius: var(--radius-sm);
+}
+
+.cm-skeleton-line--title { height: var(--space-5); width: 40%; }
+.cm-skeleton-line--sub { width: 65%; }
+.cm-skeleton-line--field { height: var(--space-8); width: 80%; }
+.cm-skeleton-line--cta { height: var(--space-8); width: 30%; align-self: center; }
+
+.cm-result-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.cm-result-card::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 4px;
+  background: var(--grad-primary);
+}
+
+.cm-result-card--fail::before { background: linear-gradient(90deg, var(--clr-danger), var(--clr-danger-text)); }
+
+.cm-result-title {
+  font-family: var(--ff-display);
+  font-size: var(--fluid-h2);
+  font-weight: var(--fw-h2);
+  line-height: var(--lh-h2);
+  margin: 0 0 var(--space-2);
+}
+
+.cm-countdown-badge {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-redirect-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 320px;
+  margin: var(--space-5) auto 0;
+  padding: var(--space-4);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--clr-surface-subtle);
+}
+
+/* ============================================================
+   8. Doctor screens — lists, availability, assessment form
+   ============================================================ */
+
+.cm-doc-head {
+  margin-bottom: var(--space-5);
+}
+
+.cm-list-card {
+  overflow: hidden;
+}
+
+.cm-list-toolbar {
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--clr-surface-subtle);
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.cm-list-toolbar .filter-bar {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+/* Row fade-out used by the appointments status script */
+.cm-row-fading {
+  opacity: 0;
+  transition: opacity var(--dur-md) var(--ease-standard);
+}
+
+.cm-user-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.cm-status-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+/* Availability builder rows (markup generated by the view's JS) */
+.cm-sched-card {
+  padding: var(--space-5);
+}
+
+.cm-sched-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.cm-badge-inline {
+  margin-inline-start: var(--space-2);
+}
+
+/* Availability rows built by the view's own script */
+.cm-sched-row {
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--dur-fs) var(--ease-standard),
+    background-color var(--dur-fs) var(--ease-standard);
+}
+
+.cm-sched-row:hover {
+  border-color: var(--clr-border-strong);
+  background-color: var(--clr-surface);
+}
+
+.cm-sched-select {
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-sched-time {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.cm-sched-sep {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-faint);
+}
+
+.cm-sched-remove {
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--dur-fs) var(--ease-standard),
+    background-color var(--dur-fs) var(--ease-standard);
+}
+
+.cm-sched-remove:hover {
+  color: var(--clr-danger-text);
+  background-color: var(--clr-danger-bg);
+}
+
+.cm-form-hint {
+  margin-bottom: var(--space-4);
+}
+
+/* ---------- Assessment sheet panels ---------- */
+
+.cm-sheet-section {
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-2xs);
+  break-inside: avoid;
+}
+
+.cm-sheet-section .section-head {
+  border-bottom-color: var(--clr-border-subtle);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.cm-sheet-section .assessment-section-title {
+  text-decoration: none;
+  margin-bottom: 0;
+}
+
+.cm-sheet-section .assessment-section-title .bi {
+  color: var(--clr-primary);
+}
+
+.cm-measure {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-timeline-date {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: var(--ff-data);
+  font-size: var(--fs-xs);
+}
+
+/* ---------- Assessment edit form (modal) ---------- */
+
+.cm-form-section {
+  background-color: var(--clr-surface-subtle);
+  border: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.cm-form-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--ff-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--clr-text);
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+.cm-form-section .assessment-form-grid {
+  gap: var(--space-4);
+}
+
+.cm-form-section .form-group,
+.cm-form-section .assessment-form-col-1 > .form-label,
+.cm-form-section .assessment-form-col-2 > .form-label,
+.cm-form-section .assessment-form-col-3 > .form-label {
+  margin-bottom: var(--space-1);
+}
+
+.cm-form-section .assessment-form-col-1,
+.cm-form-section .assessment-form-col-2,
+.cm-form-section .assessment-form-col-3 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Sticky save bar inside the scrollable dialog */
+.cm-form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  background-color: var(--clr-surface);
+  border-top: 1px solid var(--clr-border);
+  box-shadow: 0 -6px 18px rgba(10, 46, 38, 0.05);
+}
+
+.cm-form-actions .unsaved-badge {
+  margin-inline-end: auto;
+}
+
+/* ============================================================
+   9. Responsive — only where the layouts above need to stack
+   ============================================================ */
+
+@media (max-width: 1200px) {
+  .cm-subs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+  .cm-bank-grid,
+  .cm-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cm-split {
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cm-withdraw-panel {
+    padding: var(--space-4);
+  }
+
+  .cm-ad-search {
+    max-width: 100%;
+  }
+
+  .cm-frame-body {
+    min-height: 480px;
+  }
+
+  .cm-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cm-form-actions .unsaved-badge {
+    margin-inline-end: 0;
+  }
+}
+
+/* ============================================================
+   10. Reduced motion — lift/shimmer guards
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-plan-card,
+  .cm-package-card,
+  .cm-pay-method {
+    transition: none;
+  }
+
+  .cm-plan-card:hover,
+  .cm-package-card:hover,
+  .cm-pay-method:hover {
+    transform: none;
+  }
+
+  .cm-frame-skeleton .skeleton-bar-shimmer {
+    animation: none;
+  }
+}
