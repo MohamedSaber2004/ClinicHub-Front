@@ -802,7 +802,52 @@ namespace ClinicHub.Controllers
                 ViewBag.Patients = new List<DoctorPatientDto>();
                 ViewBag.Pagination = null;
             }
+
+            await LoadClinicDoctorsAsync();
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RegisterPatient([FromBody] RegisterPatientFromStaffRequest request)
+        {
+            try
+            {
+                var clinicId = CurrentUser?.ClinicId;
+                if (clinicId is null || clinicId == Guid.Empty)
+                    return Json(new { success = false, message = "لم يتم العثور على العيادة المرتبطة بحسابك." });
+
+                request.ClinicId = clinicId.Value.ToString();
+                var result = await _doctorDashboardService.RegisterPatientAsync(request);
+                return Json(new { success = true, data = result, message = "تم تسجيل المريض. أكمل الزيارة من «مواعيد الأطباء» ليظهر في السجل الطبي." });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        private async Task LoadClinicDoctorsAsync()
+        {
+            ViewBag.Doctors = new List<DoctorDto>();
+            try
+            {
+                var clinicId = CurrentUser?.ClinicId;
+                if (clinicId is null || clinicId == Guid.Empty)
+                    return;
+
+                var doctors = await _clinicDoctorService.GetDoctorsAsync(clinicId.Value, pageNumber: 1, pageSize: 100);
+                ViewBag.Doctors = doctors.Items;
+            }
+            catch
+            {
+                // The modal simply renders without options; the page itself stays usable.
+            }
         }
 
         public IActionResult PatientPortal()

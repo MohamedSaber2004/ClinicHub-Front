@@ -1,4 +1,5 @@
 using ClinicHub.Services.ReponseModels;
+using ClinicHub.Services.RequestModels;
 
 namespace ClinicHub.Services.Contracts
 {
@@ -12,6 +13,7 @@ namespace ClinicHub.Services.Contracts
         Task<bool> CompleteAppointmentAsync(Guid id);
         Task<AppointmentAcceptResponseDto?> UpdateStatusAsync(Guid id, int status, string? notes = null);
         Task<PagginatedResult<DoctorPatientDto>> GetPatientsAsync(string? searchTerm = null, int pageNumber = 1, int pageSize = 10);
+        Task<RegisterPatientResultDto> RegisterPatientAsync(RegisterPatientFromStaffRequest request);
         Task<PagginatedResult<PatientHistoryDto>> GetPatientHistoryAsync(Guid patientId, int pageNumber = 1, int pageSize = 10);
         Task<PatientAssessmentDto?> GetPatientAssessmentAsync(Guid patientId);
         Task<bool> SavePatientAssessmentAsync(Guid patientId, PatientAssessmentDto assessment);

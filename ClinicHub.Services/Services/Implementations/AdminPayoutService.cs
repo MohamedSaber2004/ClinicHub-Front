@@ -75,6 +75,44 @@ namespace ClinicHub.Services.Services.Implementations
                 response, "تعذر رفض الحساب البنكي.");
         }
 
+        public async Task<PayoutAccountAdminDto> UpsertClinicAccountAsync(AdminUpsertPayoutAccountRequest request)
+        {
+            var payload = new
+            {
+                holderName = request.HolderName,
+                nationalId = request.NationalId,
+                bankCode = request.BankCode,
+                accountNumber = request.AccountNumber,
+                bankTransactionType = request.BankTransactionType
+            };
+
+            var content = new StringContent(
+                JsonConvert.SerializeObject(payload, _jsonSettings),
+                Encoding.UTF8,
+                "application/json");
+
+            var message = new HttpRequestMessage(HttpMethod.Put, DoctoryRoutes.AdminPayouts.UpsertClinicAccount(request.ClinicId))
+            {
+                Content = content
+            };
+
+            var response = await _httpClient.SendAsync(message);
+            return await _deserializerService.DeserializeApiResponse<PayoutAccountAdminDto>(
+                response, "تعذر حفظ بيانات الحساب البنكي للعيادة.");
+        }
+
+        public async Task<ClinicLedgerCreditDto> CreditClinicAsync(CreditClinicLedgerRequest request)
+        {
+            var content = new StringContent(
+                JsonConvert.SerializeObject(request, _jsonSettings),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await _httpClient.PostAsync(DoctoryRoutes.AdminPayouts.CreditClinic, content);
+            return await _deserializerService.DeserializeApiResponse<ClinicLedgerCreditDto>(
+                response, "تعذر إضافة المستحقات للعيادة.");
+        }
+
         public async Task<PayoutBudgetDto> GetBudgetAsync()
         {
             var response = await _httpClient.GetAsync(DoctoryRoutes.AdminPayouts.Budget);
@@ -119,6 +157,9 @@ namespace ClinicHub.Services.Services.Implementations
 
         public async Task<PayoutBatchDto> CancelBatchAsync(Guid id) =>
             await PostBatchAsync(DoctoryRoutes.AdminPayouts.Cancel(id), "تعذر إلغاء الدفعة.");
+
+        public async Task<PayoutBatchDto> ReconcileBatchAsync(Guid id) =>
+            await PostBatchAsync(DoctoryRoutes.AdminPayouts.Reconcile(id), "تعذر تحديث حالة الدفعة من بايمن.");
 
         public async Task<PayoutBatchDto> RetryItemAsync(Guid itemId)
         {

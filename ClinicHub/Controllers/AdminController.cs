@@ -976,7 +976,42 @@ namespace ClinicHub.Controllers
             ViewBag.StatusFilter = status;
             ViewBag.Search = search;
             ViewBag.BatchStatusFilter = batchStatus;
+
+            try
+            {
+                ViewBag.PayoutMinimum = (await _platformSettingService.GetSettingAsync()).MinimumPayoutAmount;
+            }
+            catch (ApiException)
+            {
+                ViewBag.PayoutMinimum = 0m;
+            }
+            catch (Exception)
+            {
+                ViewBag.PayoutMinimum = 0m;
+            }
+
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdatePayoutMinimum(decimal minimumPayoutAmount)
+        {
+            try
+            {
+                var updated = await _platformSettingService.UpdatePayoutMinimumAsync(minimumPayoutAmount);
+                TempData["SuccessMessage"] = $"تم تحديث الحد الأدنى للتحويل إلى {updated.MinimumPayoutAmount:N2} ج.م";
+            }
+            catch (ApiException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            catch (Exception)
+            {
+                TempData["ErrorMessage"] = "تعذر تحديث الحد الأدنى للتحويل";
+            }
+
+            return RedirectToAction(nameof(Payouts));
         }
 
         [HttpGet]
@@ -987,6 +1022,27 @@ namespace ClinicHub.Controllers
             {
                 var budget = await _adminPayoutService.GetBudgetAsync();
                 return Json(new { success = budget.Success, balance = budget.Balance, currency = budget.Currency, message = budget.StatusDescription });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpGet]
+        [Route("Admin/Payouts/Eligibility")]
+        public async Task<IActionResult> PayoutEligibility()
+        {
+            try
+            {
+                var preview = await _adminPayoutService.GetPreviewAsync();
+                return Json(new { success = true, minimum = preview.MinimumAmount, items = preview.Items });
             }
             catch (ApiException ex)
             {
@@ -1035,6 +1091,11 @@ namespace ClinicHub.Controllers
         [Route("Admin/Payouts/CancelBatch")]
         public async Task<IActionResult> CancelPayoutBatch([FromBody] PayoutBatchActionRequest request) =>
             await BatchActionAsync(request.Id, _adminPayoutService.CancelBatchAsync, "تم إلغاء الدفعة وإرجاع المبالغ المحجوزة للعيادات.");
+
+        [HttpPost]
+        [Route("Admin/Payouts/ReconcileBatch")]
+        public async Task<IActionResult> ReconcilePayoutBatch([FromBody] PayoutBatchActionRequest request) =>
+            await BatchActionAsync(request.Id, _adminPayoutService.ReconcileBatchAsync, "تم تحديث حالة الدفعة من بايمن.");
 
         [HttpPost]
         [Route("Admin/Payouts/RetryItem")]
@@ -1114,6 +1175,53 @@ namespace ClinicHub.Controllers
             {
                 var account = await _adminPayoutService.RejectAccountAsync(request.Id, request.Reason.Trim());
                 return Json(new { success = true, message = "تم رفض الحساب البنكي وإشعار العيادة بالسبب.", data = account });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPut]
+        [Route("Admin/Payouts/UpsertClinicAccount")]
+        public async Task<IActionResult> UpsertClinicPayoutAccount([FromBody] AdminUpsertPayoutAccountRequest request)
+        {
+            try
+            {
+                var account = await _adminPayoutService.UpsertClinicAccountAsync(request);
+                return Json(new { success = true, message = $"تم حفظ الحساب البنكي لعيادة {account.ClinicName} واعتماده.", data = account });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        [Route("Admin/Payouts/CreditClinic")]
+        public async Task<IActionResult> CreditClinic([FromBody] CreditClinicLedgerRequest request)
+        {
+            try
+            {
+                var credit = await _adminPayoutService.CreditClinicAsync(request);
+                return Json(new
+                {
+                    success = true,
+                    message = $"تمت إضافة {credit.Amount:N2} ج.م لعيادة {credit.ClinicName}. الرصيد المتاح الآن {credit.AvailableBalance:N2} ج.م",
+                    data = credit
+                });
             }
             catch (ApiException ex)
             {
@@ -1667,10 +1775,23 @@ namespace ClinicHub.Controllers
 
         [HttpPost]
         [Route("Admin/Users/Edit")]
-        public async Task<IActionResult> EditUser(Guid id, string fullName, string phoneNumber, DateTime? birthDate, int? gender, bool? isActive)
+        public async Task<IActionResult> EditUser(Guid id, string fullName, string phoneNumber, DateTime? birthDate, int? gender, bool? isActive, int? role, int? originalRole)
         {
+            var roleChanged = role.HasValue && role != originalRole;
             try
             {
+                // Role first: the API replaces the whole role set, so a rejected role
+                // (e.g. clinic-bound role without a clinic) should stop the save instead
+                // of leaving the profile edited while the role silently stays as it was.
+                if (roleChanged)
+                {
+                    await _userService.EditUserRoleAsync(new EditUserRoleRequest
+                    {
+                        Id = id,
+                        Role = (ClinicHub.Services.Enums.UserType)role!.Value
+                    });
+                }
+
                 var request = new EditUserRequest
                 {
                     Id = id,
@@ -1682,7 +1803,7 @@ namespace ClinicHub.Controllers
                 };
                 var result = await _userService.EditUserAsync(request);
                 if (result.Success)
-                    TempData["SuccessMessage"] = "تم تعديل المستخدم بنجاح";
+                    TempData["SuccessMessage"] = roleChanged ? "تم تعديل المستخدم وتغيير دوره بنجاح" : "تم تعديل المستخدم بنجاح";
                 else
                     TempData["ErrorMessage"] = result.Message;
             }

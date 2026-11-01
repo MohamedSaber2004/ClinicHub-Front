@@ -5,7 +5,7 @@
 
     var patients = ViewBag.Patients as IReadOnlyCollection<DoctorPatientDto> ?? new List<DoctorPatientDto>();
 
-    string GenderLabel(int? g) => g == 0 ? "ذكر" : g == 1 ? "أنثى" : "غير محدد";
+    string GenderLabel(int? g) => g == 1 ? "ذكر" : g == 2 ? "أنثى" : g == 3 ? "آخر" : "غير محدد";
     string AgeLabel(int? age) => age.HasValue ? $"{age} سنة" : "غير محدد";
     string LastVisitLabel(DateTime d) => d.Year > 2000 ? d.ToString("yyyy-MM-dd") : "—";
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];

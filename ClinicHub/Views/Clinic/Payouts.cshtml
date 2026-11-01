@@ -291,7 +291,8 @@
         </div>
 
         <div class="cm-form-foot">
-            <button type="submit" class="btn btn-primary" id="payoutSaveBtn">@(hasAccount ? "تحديث الحساب" : "حفظ الحساب")</button>
+            <button type="submit" class="btn btn-primary" id="payoutSaveBtn"
+                    data-default-label="@(hasAccount ? "تحديث الحساب" : "حفظ الحساب")">@(hasAccount ? "تحديث الحساب" : "حفظ الحساب")</button>
             <span class="cm-note">الحد الأدنى للتحويل: <span class="cm-money">@summary.MinimumPayoutAmount.ToString("N2") @summary.Currency</span></span>
         </div>
     </form>
@@ -321,14 +322,13 @@
                     <th>الحالة</th>
                     <th>تاريخ الإرسال</th>
                     <th>تاريخ الصرف</th>
-                    <th>معاملة بايمن</th>
                 </tr>
             </thead>
             <tbody>
                 @if (history.Items.Count == 0)
                 {
                     <tr>
-                        <td colspan="7">
+                        <td colspan="6">
                             <div class="empty-state cm-empty-row">
                                 <p>لم يتم تحويل أي مبالغ للعيادة بعد</p>
                             </div>
@@ -352,16 +352,6 @@
                         </td>
                         <td class="text-md cm-money">@(line.SentAt?.ToString("yyyy-MM-dd") ?? "—")</td>
                         <td class="text-md cm-money">@(line.SettledAt?.ToString("yyyy-MM-dd") ?? "—")</td>
-                        <td class="text-md">
-                            @if (string.IsNullOrWhiteSpace(line.PaymobTransactionId))
-                            {
-                                <span>—</span>
-                            }
-                            else
-                            {
-                                <span class="cm-id">@line.PaymobTransactionId</span>
-                            }
-                        </td>
                     </tr>
                 }
             </tbody>
@@ -380,7 +370,7 @@
     }
 </div>
 
-<p class="cm-foot-note">ملاحظة: رصيد التحويل يتكوّن من صافي الحجوزات بعد خصم رسوم المنصة فقط. المبالغ داخل فترة السماح لا تكون قابلة للتحويل حتى انتهائها.</p>
+<p class="cm-foot-note">ملاحظة: رصيد التحويل يتكوّن من صافي الحجوزات بعد خصم رسوم المنصة فقط. المبالغ داخل فترة السماح لا تكون قابلة للتحويل حتى انتهائها. التحويل البنكي عليه رسوم من بايمن (حاليًا 4% + ض.ق.م 14%) تُخصم من مبلغ التحويل نفسه، فتستلم صافي المبلغ بعد الرسوم.</p>
 
 @section Scripts {
     <script>
@@ -481,7 +471,7 @@
                 })
                 .finally(function () {
                     btn.disabled = false;
-                    btn.textContent = @(hasAccount ? "'تحديث الحساب'" : "'حفظ الحساب'");
+                    btn.textContent = btn.dataset.defaultLabel || btn.textContent;
                 });
             });
         })();

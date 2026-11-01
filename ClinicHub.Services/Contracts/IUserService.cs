@@ -15,5 +15,7 @@ namespace ClinicHub.Services.Contracts
         Task<ApiResponse<bool>> DeleteUserAsync(DeleteUserRequest request);
 
         Task<ApiResponse<bool>> EditUserAsync(EditUserRequest request);
+
+        Task<ApiResponse<bool>> EditUserRoleAsync(EditUserRoleRequest request);
     }
 }

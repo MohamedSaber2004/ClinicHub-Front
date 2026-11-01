@@ -96,7 +96,7 @@
                                 <div class="table-avatar table-avatar--md">
                                     @if (!string.IsNullOrWhiteSpace(u.Image))
                                     {
-                                        <img src="@u.Image" alt="@u.Name" loading="lazy" decoding="async" />
+                                        <img src="@u.Image" alt="@u.Name" loading="lazy" decoding="async" data-fallback="avatar" />
                                     }
                                     else
                                     {
@@ -143,6 +143,7 @@
                                         data-name="@u.Name"
                                         data-email="@u.Email"
                                         data-phone="@u.Phone"
+                                        data-role="@u.Role"
                                         data-active="@(u.StatusClass == "badge-success" ? "true" : "false")">
                                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                         <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -407,6 +408,7 @@
                     </div>
                     <h3 class="modal-heading text-center">تعديل بيانات المستخدم</h3>
                     <input type="hidden" id="editUserId" name="id" value="" />
+                    <input type="hidden" id="editUserOriginalRole" name="originalRole" value="" />
                     <div class="form-group text-start">
                         <label class="form-label" for="editUserName">الاسم الكامل</label>
                         <input type="text" id="editUserName" name="fullName" class="form-input" required />
@@ -421,6 +423,17 @@
                             <option value="true">نشط</option>
                             <option value="false">غير نشط</option>
                         </select>
+                    </div>
+                    <div class="form-group text-start">
+                        <label class="form-label" for="editUserRole">الدور</label>
+                        <select id="editUserRole" name="role" class="form-select">
+                            <option value="1">مريض</option>
+                            <option value="4">طبيب</option>
+                            <option value="8">موظف</option>
+                            <option value="16">مدير عيادة</option>
+                            <option value="2">مدير النظام</option>
+                        </select>
+                        <small class="form-hint">تغيير الدور يستبدل أدوار المستخدم الحالية.</small>
                     </div>
                     <div class="d-flex gap-2 justify-content-center">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
@@ -624,6 +637,19 @@
             var editUserName = document.getElementById('editUserName');
             var editUserPhone = document.getElementById('editUserPhone');
             var editUserStatus = document.getElementById('editUserStatus');
+            var editUserRole = document.getElementById('editUserRole');
+            var editUserOriginalRole = document.getElementById('editUserOriginalRole');
+
+            // The row carries the dashboard role name, while the API expects the
+            // bitmask value from UserType (1 user, 2 admin, 4 doctor, 8 staff, 16 owner).
+            var ROLE_VALUES = {
+                Patient: 1,
+                SystemAdmin: 2,
+                Doctor: 4,
+                ClinicStaff: 8,
+                ClinicOwner: 16,
+                ClinicManager: 16
+            };
 
             document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
                 btn.addEventListener('click', function() {
@@ -631,6 +657,9 @@
                     if (editUserName) editUserName.value = btn.getAttribute('data-name') || '';
                     if (editUserPhone) editUserPhone.value = btn.getAttribute('data-phone') || '';
                     if (editUserStatus) editUserStatus.value = btn.getAttribute('data-active') || 'true';
+                    var rowRole = ROLE_VALUES[btn.getAttribute('data-role')] || 1;
+                    if (editUserRole) editUserRole.value = rowRole;
+                    if (editUserOriginalRole) editUserOriginalRole.value = rowRole;
                     if (editUserModal) editUserModal.show();
                 });
             });

@@ -14,7 +14,7 @@ namespace ClinicHub.Services.ReponseModels
         // PERSONAL HISTORY
         public string PatientName { get; set; } = string.Empty;
         public int? Age { get; set; }
-        public int? Gender { get; set; } // 0: Male, 1: Female
+        public int? Gender { get; set; } // 1: Male, 2: Female, 3: Other
         public string? Occupation { get; set; }
         public string? Handedness { get; set; } // Right, Left, Ambidextrous
         public string? SpecialHabits { get; set; }

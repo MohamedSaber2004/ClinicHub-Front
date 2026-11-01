@@ -4,8 +4,9 @@
     ViewData["Title"] = "السجل الطبي الإلكتروني (EMR) - Doctory";
 
     var patients = ViewBag.Patients as IReadOnlyCollection<DoctorPatientDto> ?? new List<DoctorPatientDto>();
+    var doctors = ViewBag.Doctors as IReadOnlyCollection<DoctorDto> ?? new List<DoctorDto>();
 
-    string GenderLabel(int? g) => g == 0 ? "ذكر" : g == 1 ? "أنثى" : "غير محدد";
+    string GenderLabel(int? g) => g == 1 ? "ذكر" : g == 2 ? "أنثى" : g == 3 ? "آخر" : "غير محدد";
     string AgeLabel(int? age) => age.HasValue ? $"{age} سنة" : "غير محدد";
     string LastVisitLabel(DateTime d) => d.Year > 2000 ? d.ToString("yyyy-MM-dd") : "—";
     string Initial(string? name) => string.IsNullOrWhiteSpace(name) ? "م" : name.Trim()[..1];
@@ -20,7 +21,12 @@
                 </span>
                 السجل الطبي الإلكتروني (EMR)
             </h2>
-            <p class="page-header-subtitle">ملفات المرضى والزيارات السابقة لكل مريض داخل العيادة</p>
+            <p class="page-header-subtitle">ملفات المرضى والزيارات السابقة لكل مريض داخل العيادة — يظهر المريض هنا بعد إكمال زيارته</p>
+        </div>
+        <div class="page-header-actions">
+            <button type="button" class="btn btn-primary btn-sm" id="openRegisterPatientBtn">
+                <i class="bi bi-person-plus"></i> تسجيل مريض
+            </button>
         </div>
     </div>
 
@@ -93,6 +99,171 @@
     </div>
 </div>
 
+<div class="modal fade" id="registerPatientModal" tabindex="-1" aria-labelledby="registerPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registerPatientModalLabel">تسجيل مريض جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="rpFullName">الاسم الكامل</label>
+                        <input type="text" class="form-control" id="rpFullName" maxlength="200" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rpPhone">رقم الهاتف</label>
+                        <input type="tel" class="form-control" id="rpPhone" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rpEmail">البريد الإلكتروني (اختياري)</label>
+                        <input type="email" class="form-control" id="rpEmail" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="rpAge">السن</label>
+                        <input type="number" class="form-control" id="rpAge" min="0" max="120" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="rpGender">النوع</label>
+                        <select class="form-select" id="rpGender">
+                            <option value="1">ذكر</option>
+                            <option value="2">أنثى</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="rpDoctor">الطبيب</label>
+                        <select class="form-select" id="rpDoctor">
+                            @if (doctors.Count == 0)
+                            {
+                                <option value="">لا يوجد أطباء في العيادة</option>
+                            }
+                            else
+                            {
+                                @foreach (var doctor in doctors)
+                                {
+                                    <option value="@doctor.Id">@doctor.UserName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="rpType">نوع الزيارة</label>
+                        <select class="form-select" id="rpType">
+                            <option value="0">كشف</option>
+                            <option value="1">إعادة</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="rpDate">التاريخ</label>
+                        <input type="date" class="form-control" id="rpDate" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="rpStart">من الساعة</label>
+                        <input type="time" class="form-control" id="rpStart" value="10:00" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="rpEnd">إلى الساعة</label>
+                        <input type="time" class="form-control" id="rpEnd" value="10:30" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="rpComplaint">الشكوى</label>
+                        <textarea class="form-control" id="rpComplaint" rows="2" maxlength="1000"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="rpChronic">الأمراض المزمنة (اختياري)</label>
+                        <textarea class="form-control" id="rpChronic" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="rpSubmitBtn">تسجيل المريض</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261030_availability_v3" />
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var modalEl = document.getElementById('registerPatientModal');
+            if (!modalEl) return;
+
+            var modal = new bootstrap.Modal(modalEl);
+            var submitBtn = document.getElementById('rpSubmitBtn');
+
+            document.getElementById('rpDate').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('openRegisterPatientBtn').addEventListener('click', function () {
+                modal.show();
+            });
+
+            submitBtn.addEventListener('click', async function () {
+                var fullName = document.getElementById('rpFullName').value.trim();
+                var phone = document.getElementById('rpPhone').value.trim();
+                var complaint = document.getElementById('rpComplaint').value.trim();
+                var doctorId = document.getElementById('rpDoctor').value;
+                var date = document.getElementById('rpDate').value;
+
+                if (!fullName || !phone || !complaint || !doctorId || !date) {
+                    showInfoToast('اكمل الاسم والهاتف والشكوى واختر الطبيب والتاريخ.');
+                    return;
+                }
+
+                var ageRaw = document.getElementById('rpAge').value;
+                var payload = {
+                    fullName: fullName,
+                    phoneNumber: phone,
+                    email: document.getElementById('rpEmail').value.trim() || null,
+                    age: ageRaw ? parseInt(ageRaw, 10) : null,
+                    gender: parseInt(document.getElementById('rpGender').value, 10),
+                    doctorId: doctorId,
+                    clinicId: '00000000-0000-0000-0000-000000000000',
+                    appointmentDate: date + 'T00:00:00',
+                    startTime: document.getElementById('rpStart').value || '10:00',
+                    endTime: document.getElementById('rpEnd').value || '10:30',
+                    appointmentType: parseInt(document.getElementById('rpType').value, 10),
+                    complaint: complaint,
+                    chronicDiseases: document.getElementById('rpChronic').value.trim() || null
+                };
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'جارٍ التسجيل...';
+
+                try {
+                    var response = await fetch('/Clinic/RegisterPatient', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    var data = await response.json();
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.message || ('HTTP ' + response.status));
+                    }
+
+                    modal.hide();
+                    modalEl.addEventListener('hidden.bs.modal', function () {
+                        showSuccessModal(
+                            (data.message || 'تم تسجيل المريض.') +
+                            '<br><br>لإظهاره في السجل الطبي اضغط «إكمال» على موعده في صفحة <a href="/Clinic/DoctorAppointments">مواعيد الأطباء</a>.');
+                    }, { once: true });
+                    document.getElementById('rpFullName').value = '';
+                    document.getElementById('rpPhone').value = '';
+                    document.getElementById('rpEmail').value = '';
+                    document.getElementById('rpAge').value = '';
+                    document.getElementById('rpComplaint').value = '';
+                    document.getElementById('rpChronic').value = '';
+                } catch (err) {
+                    showErrorModal(err.message || 'تعذر تسجيل المريض.');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'تسجيل المريض';
+                }
+            });
+        })();
+    </script>
 }

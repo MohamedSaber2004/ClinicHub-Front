@@ -1,7 +1,10 @@
 @using ClinicHub.Services.ReponseModels
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
 @{
     ViewData["Title"] = "تحويلات العيادات";
     Layout = "_AdminLayout";
+
+    var canCreditManually = !HostEnvironment.IsProduction();
 
     var preview = ViewBag.Preview as PayoutPreviewDto ?? new PayoutPreviewDto();
     var accounts = ViewBag.Accounts as IReadOnlyCollection<PayoutAccountAdminDto> ?? new List<PayoutAccountAdminDto>();
@@ -69,6 +72,22 @@
         3 => "badge-secondary",
         _ => "badge-secondary"
     };
+    string DisbursementStatusLabel(string? status) => status?.Trim().ToLowerInvariant() switch
+    {
+        "pending" or "processing" => "قيد المعالجة",
+        "successful" or "success" or "succeeded" => "تم التحويل",
+        "failed" or "failure" => "فشل التحويل",
+        "declined" or "rejected" => "مرفوض",
+        null or "" => "—",
+        _ => status!
+    };
+    string DisbursementStatusClass(string? status) => status?.Trim().ToLowerInvariant() switch
+    {
+        "successful" or "success" or "succeeded" => "badge-success",
+        "failed" or "failure" or "declined" or "rejected" => "badge-danger",
+        "pending" or "processing" => "badge-primary",
+        _ => "badge-secondary"
+    };
     string TransactionTypeLabel(string? type) => type switch
     {
         "cash_transfer" => "تحويل نقدي",
@@ -120,7 +139,7 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/admin-finance.css?v=20261027_redesign_v2" />
+    <link rel="stylesheet" href="~/css/pages/admin-finance.css?v=20261030_payout_details_v3" />
 }
 
 <div class="af-page">
@@ -187,6 +206,33 @@
                 <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
             </svg>
         </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-card-header af-card-header">
+        <h3 class="table-card-title mb-0">إعدادات التحويل</h3>
+        <div class="table-card-actions af-card-actions">
+            <span class="badge badge-info tabular">@(((decimal)(ViewBag.PayoutMinimum ?? 0m)).ToString("N2")) ج.م</span>
+        </div>
+    </div>
+    <div class="p-3">
+        <form method="post" action="/Admin/UpdatePayoutMinimum">
+            @Html.AntiForgeryToken()
+            <div class="d-flex flex-wrap align-items-end gap-3">
+                <div class="form-group mb-0 flex-grow-1">
+                    <label class="form-label" for="payoutMinimumInput">الحد الأدنى لمستحقات العيادة قبل أن تصبح قابلة للتحويل</label>
+                    <input type="number" class="form-input" id="payoutMinimumInput" name="minimumPayoutAmount"
+                           min="112" step="0.01" required
+                           value="@(((decimal)(ViewBag.PayoutMinimum ?? 0m)).ToString("0.00"))" />
+                </div>
+                <button type="submit" class="btn btn-primary">حفظ الحد الأدنى</button>
+            </div>
+            <div class="text-md text-muted mt-1">لا يقل عن 112 ج.م — الحد الأدنى الذي تقبله بايمن لكل تحويل.</div>
+        </form>
+        <p class="text-md text-muted mt-3 mb-0">
+            ملاحظة: بايمن تخصم رسوم التحويل البنكي (حاليًا 4% + ض.ق.م 14%) من مبلغ التحويل نفسه، أي من مستحقات العيادة. المحفظة يُخصم منها المبلغ المسجل للعيادة فقط، والعيادة تستلم الصافي بعد الرسوم.
+        </p>
     </div>
 </div>
 
@@ -348,6 +394,10 @@
                                     <button type="button" class="btn btn-primary btn-sm payout-execute-btn" data-batch-id="@batch.Id">تنفيذ التحويلات</button>
                                     <button type="button" class="btn btn-danger btn-sm payout-cancel-btn" data-batch-id="@batch.Id">إلغاء</button>
                                 }
+                                @if (batch.Status == 2)
+                                {
+                                    <button type="button" class="btn btn-outline-primary btn-sm payout-reconcile-btn" data-batch-id="@batch.Id">تحديث الحالة</button>
+                                }
                                 <button type="button" class="btn btn-ghost btn-sm payout-details-btn" data-batch-id="@batch.Id" aria-expanded="false">تفاصيل</button>
                             </div>
                         </td>
@@ -370,7 +420,7 @@
                                                 <th>المبلغ</th>
                                                 <th>الحساب</th>
                                                 <th>الحالة</th>
-                                                <th>معاملة بايمن</th>
+                                                <th>حالة معاملة بايمن</th>
                                                 <th>الإجراءات</th>
                                             </tr>
                                         </thead>
@@ -389,16 +439,8 @@
                                                         }
                                                         <div class="text-md text-muted tabular">محاولات: @line.Attempts</div>
                                                     </td>
-                                                    <td class="text-md af-id-cell">
-                                                        @if (string.IsNullOrWhiteSpace(line.PaymobTransactionId))
-                                                        {
-                                                            <span class="text-muted">—</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="af-money tabular">@line.PaymobTransactionId</span>
-                                                            <div class="text-md text-muted">@line.DisbursementStatus</div>
-                                                        }
+                                                    <td class="af-status-cell">
+                                                        <span class="badge badge--dot @DisbursementStatusClass(line.DisbursementStatus)">@DisbursementStatusLabel(line.DisbursementStatus)</span>
                                                     </td>
                                                     <td class="table-actions">
                                                         @if (line.CanRetry)
@@ -439,7 +481,7 @@
 
 <div class="table-card">
     <div class="table-card-header af-card-header">
-        <h3 class="table-card-title mb-0">حسابات العيادات البنكية</h3>
+        <h3 class="table-card-title mb-0">العيادات والحسابات البنكية</h3>
         <div class="table-card-actions af-card-actions">
             <span class="badge badge-secondary tabular">@accounts.Count</span>
         </div>
@@ -467,13 +509,9 @@
             <thead>
                 <tr>
                     <th>العيادة</th>
-                    <th>صاحب الحساب</th>
-                    <th>البنك</th>
-                    <th>رقم الحساب</th>
-                    <th>الرقم القومي</th>
-                    <th>نوع التحويل</th>
-                    <th>تاريخ التقديم</th>
+                    <th>الحساب البنكي</th>
                     <th>الحالة</th>
+                    <th>المستحقات</th>
                     <th>الإجراءات</th>
                 </tr>
             </thead>
@@ -481,9 +519,9 @@
                 @if (accounts.Count == 0)
                 {
                     <tr>
-                        <td colspan="9">
+                        <td colspan="5">
                             <div class="af-empty-cell">
-                                <p class="mb-0">لا توجد حسابات بنكية مطابقة للفلاتر المحددة</p>
+                                <p class="mb-0">لا توجد عيادات مطابقة للفلاتر المحددة</p>
                             </div>
                         </td>
                     </tr>
@@ -492,35 +530,82 @@
                 {
                     <tr>
                         <td class="text-md-medium">@acc.ClinicName</td>
-                        <td class="text-md">@acc.HolderName</td>
-                        <td class="text-md">@BankName(acc.BankCode) <span class="text-muted af-money">@acc.BankCode</span></td>
-                        <td class="text-md af-money tabular">@acc.MaskedAccountNumber</td>
-                        <td class="text-md af-money tabular">@acc.MaskedNationalId</td>
-                        <td class="text-md">@TransactionTypeLabel(acc.BankTransactionType)</td>
-                        <td class="text-md af-money tabular">@acc.SubmittedAt.ToString("yyyy-MM-dd")</td>
-                        <td class="af-status-cell">
-                            <span class="badge badge--dot @StatusClass(acc.Status)">@StatusLabel(acc.Status)</span>
-                            @if (acc.Status == 2 && !string.IsNullOrWhiteSpace(acc.RejectionReason))
-                            {
-                                <div class="text-md text-muted">@acc.RejectionReason</div>
-                            }
+                        <td>
+                            <div class="af-status-cell">
+                                @if (acc.HasAccount)
+                                {
+                                    <div class="text-md-medium">@BankName(acc.BankCode) <span class="text-muted af-money">@acc.BankCode</span></div>
+                                    <div class="text-md af-money tabular">@acc.MaskedAccountNumber</div>
+                                    <div class="text-md text-muted">@acc.HolderName</div>
+                                }
+                                else
+                                {
+                                    <span class="text-md text-muted">لا يوجد حساب مسجل</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <div class="af-status-cell">
+                                <span class="badge badge--dot @StatusClass(acc.Status)">@StatusLabel(acc.Status)</span>
+                                @if (acc.HasAccount)
+                                {
+                                    <div class="text-md text-muted">@TransactionTypeLabel(acc.BankTransactionType)</div>
+                                }
+                                @if (acc.Status == 2 && !string.IsNullOrWhiteSpace(acc.RejectionReason))
+                                {
+                                    <div class="text-md text-muted">@acc.RejectionReason</div>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <div class="af-status-cell">
+                                <div class="text-md-medium tabular">متاح: @acc.AvailableBalance.ToString("N2") ج.م</div>
+                                @if (acc.ReservedBalance > 0)
+                                {
+                                    <div class="text-md text-muted tabular">محجوز: @acc.ReservedBalance.ToString("N2") ج.م</div>
+                                }
+                                @if (acc.PendingBalance > 0)
+                                {
+                                    <div class="text-md text-muted tabular">قيد السماح: @acc.PendingBalance.ToString("N2") ج.م</div>
+                                }
+                                <div class="text-md text-muted tabular">إجمالي الحجوزات: @acc.TotalEarned.ToString("N2") ج.م</div>
+                            </div>
                         </td>
                         <td class="table-actions">
-                            @if (acc.Status == 0 || acc.Status == 2)
-                            {
-                                <div class="af-action-pair">
+                            <div class="af-action-pair">
+                                <button type="button" class="btn btn-ghost btn-sm payout-account-btn"
+                                        data-clinic-id="@acc.ClinicId"
+                                        data-clinic-name="@acc.ClinicName"
+                                        data-holder-name="@acc.HolderName"
+                                        data-bank-code="@acc.BankCode"
+                                        data-account-mask="@acc.MaskedAccountNumber">بيانات الحساب</button>
+                                @if (canCreditManually)
+                                {
+                                    <button type="button" class="btn btn-outline-primary btn-sm payout-credit-btn"
+                                            data-clinic-id="@acc.ClinicId"
+                                            data-clinic-name="@acc.ClinicName">إضافة مستحقات</button>
+                                }
+                                @if (acc.Status == 0 || acc.Status == 2)
+                                {
                                     <button type="button" class="btn btn-primary btn-sm payout-verify-btn"
                                             data-account-id="@acc.Id"
                                             data-clinic-name="@acc.ClinicName">اعتماد</button>
                                     <button type="button" class="btn btn-danger btn-sm payout-reject-btn"
                                             data-account-id="@acc.Id"
                                             data-clinic-name="@acc.ClinicName">رفض</button>
-                                </div>
-                            }
-                            else
-                            {
-                                <span class="text-md text-muted">—</span>
-                            }
+                                }
+                                else if (acc.Status == 1)
+                                {
+                                    <button type="button" class="btn btn-outline-primary btn-sm payout-eligibility-btn"
+                                            data-clinic-id="@acc.ClinicId"
+                                            data-clinic-name="@acc.ClinicName"
+                                            data-account-last4="@acc.MaskedAccountNumber">تحويل</button>
+                                }
+                                else
+                                {
+                                    <span class="text-md text-muted">—</span>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
@@ -553,6 +638,96 @@
     </div>
 </div>
 
+<div class="modal fade" id="payoutAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">بيانات الحساب البنكي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-md mb-3" id="payoutAccountClinicName"></p>
+                <div class="form-group">
+                    <label class="form-label" for="payoutAccountHolder">اسم صاحب الحساب</label>
+                    <input type="text" id="payoutAccountHolder" class="form-input" maxlength="200" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="payoutAccountBank">البنك</label>
+                    <select id="payoutAccountBank" class="form-select">
+                        <option value="CIB">البنك التجاري الدولي (CIB)</option>
+                        <option value="NBE">البنك الأهلي المصري (NBE)</option>
+                        <option value="MISR">بنك مصر (MISR)</option>
+                        <option value="QNB">QNB الأهلي (QNB)</option>
+                        <option value="HSBC">HSBC</option>
+                        <option value="CAE">بنك القاهرة (CAE)</option>
+                        <option value="AAIB">البنك العربي الأفريقي الدولي (AAIB)</option>
+                        <option value="ADIB">بنك أبوظبي الإسلامي (ADIB)</option>
+                        <option value="ADCB">بنك أبوظبي التجاري (ADCB)</option>
+                        <option value="ENBD">بنك الإمارات دبي الوطني (ENBD)</option>
+                        <option value="SAIB">بنك الاستثمار العربي (SAIB)</option>
+                        <option value="NBK">بنك الكويت الوطني (NBK)</option>
+                        <option value="BLOM">بنك لبنان والمهجر (BLOM)</option>
+                        <option value="FAB">بنك أبوظبي الأول (FAB)</option>
+                        <option value="ABC">البنك العربي (ABC)</option>
+                        <option value="AUB">البنك الأهلي المتحد (AUB)</option>
+                        <option value="EGB">البنك المصري الخليجي (EGB)</option>
+                        <option value="HDB">بنك التنمية الصناعية (HDB)</option>
+                        <option value="ARAB">البنك العربي (ARAB)</option>
+                        <option value="ABRK">بنك البركة (ABRK)</option>
+                        <option value="POST">البريد المصري (POST)</option>
+                        <option value="NSB">بنك ناصر الاجتماعي (NSB)</option>
+                        <option value="SCB">ستاندرد تشارترد (SCB)</option>
+                        <option value="MASH">بنك المشرق (MASH)</option>
+                        <option value="NBG">البنك الأهلي اليوناني (NBG)</option>
+                        <option value="CBE">البنك المركزي المصري (CBE)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="payoutAccountNumber">رقم الحساب / الآيبان / الكارت</label>
+                    <input type="text" id="payoutAccountNumber" class="form-input af-money" dir="ltr" autocomplete="off" />
+                    <div class="text-md text-muted mt-1" id="payoutAccountMaskHint"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="payoutAccountNationalId">الرقم القومي</label>
+                    <input type="text" id="payoutAccountNationalId" class="form-input af-money" dir="ltr" maxlength="14" autocomplete="off" />
+                </div>
+                <p class="text-md text-muted mb-0">الحفظ من هنا يعتمد الحساب تلقائيًا — أي تحويل مستقبلي لهذه العيادة سيذهب إلى هذه البيانات.</p>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="payoutAccountSaveBtn">حفظ واعتماد</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="payoutCreditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">إضافة مستحقات لعيادة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-md mb-3" id="payoutCreditClinicName"></p>
+                <div class="form-group">
+                    <label class="form-label" for="payoutCreditAmount">المبلغ (ج.م)</label>
+                    <input type="number" id="payoutCreditAmount" class="form-input" min="0.01" step="0.01" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="payoutCreditNotes">السبب / ملاحظات <span class="text-muted">(اختياري)</span></label>
+                    <input type="text" id="payoutCreditNotes" class="form-input" maxlength="500" placeholder="مثال: تسوية يدوية لاختبار التحويل" />
+                </div>
+                <p class="text-md text-muted mb-0">المبلغ يُضاف فورًا إلى الرصيد المتاح للعيادة كقيد تسوية، ويظهر في سجلها المالي.</p>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="payoutCreditSaveBtn">إضافة المبلغ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="payoutCreateModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-content-custom">
@@ -572,6 +747,43 @@
             <div class="modal-footer-custom">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                 <button type="button" class="btn btn-primary" id="payoutCreateConfirmBtn">تأكيد الإنشاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="payoutEligibilityModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-custom">
+            <div class="modal-header-custom">
+                <h5 class="modal-title">تحويل مستحقات عيادة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-md mb-3" id="payoutEligibilityClinicName"></p>
+                <p class="text-md text-muted" id="payoutEligibilityLoading">جارٍ فحص أهلية العيادة...</p>
+                <div class="d-none" id="payoutEligibilityResult">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-md text-muted">الرصيد المتاح للتحويل</span>
+                        <span class="text-md-medium tabular" id="payoutEligibilityAvailable">—</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-md text-muted">الحساب البنكي</span>
+                        <span class="text-md-medium tabular" id="payoutEligibilityAccount">—</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-md text-muted">الحد الأدنى للتحويل</span>
+                        <span class="text-md tabular" id="payoutEligibilityMinimum">—</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-start py-2">
+                        <span class="text-md text-muted">القرار</span>
+                        <span class="text-md-medium text-end" id="payoutEligibilityDecision">—</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                <button type="button" class="btn btn-primary" id="payoutEligibilityConfirmBtn" disabled>إنشاء دفعة لهذه العيادة</button>
             </div>
         </div>
     </div>
@@ -736,6 +948,100 @@
                     });
             });
 
+            var eligibilityModalEl = document.getElementById('payoutEligibilityModal');
+            var eligibilityModal = eligibilityModalEl ? new bootstrap.Modal(eligibilityModalEl) : null;
+            var eligibilityClinicId = null;
+
+            function formatPayoutMoney(value) {
+                return Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
+            }
+
+            document.querySelectorAll('.payout-eligibility-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    eligibilityClinicId = btn.getAttribute('data-clinic-id');
+
+                    var confirmBtn = document.getElementById('payoutEligibilityConfirmBtn');
+                    var loading = document.getElementById('payoutEligibilityLoading');
+                    var result = document.getElementById('payoutEligibilityResult');
+                    var decision = document.getElementById('payoutEligibilityDecision');
+
+                    document.getElementById('payoutEligibilityClinicName').textContent =
+                        'العيادة: ' + (btn.getAttribute('data-clinic-name') || '');
+                    document.getElementById('payoutEligibilityAccount').textContent =
+                        btn.getAttribute('data-account-last4') || '—';
+                    loading.classList.remove('d-none');
+                    result.classList.add('d-none');
+                    decision.textContent = '—';
+                    confirmBtn.disabled = true;
+                    if (eligibilityModal) eligibilityModal.show();
+
+                    fetch('/Admin/Payouts/Eligibility', { headers: { 'Accept': 'application/json' } })
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            loading.classList.add('d-none');
+                            if (!data || !data.success) {
+                                showErrorModal((data && data.message) || 'تعذر فحص أهلية العيادة.');
+                                return;
+                            }
+
+                            // The preview only lists clinics that have something available,
+                            // so a missing row means this clinic has nothing to transfer yet.
+                            var items = data.items || [];
+                            var item = items.filter(function (i) {
+                                return String(i.clinicId).toLowerCase() === String(eligibilityClinicId).toLowerCase();
+                            })[0];
+
+                            var eligible = !!item && item.eligible;
+                            var reason = item ? item.ineligibilityReason : 'لا يوجد رصيد متاح للتحويل حتى الآن';
+
+                            document.getElementById('payoutEligibilityAvailable').textContent =
+                                formatPayoutMoney(item ? item.availableBalance : 0);
+                            document.getElementById('payoutEligibilityMinimum').textContent = formatPayoutMoney(data.minimum);
+
+                            if (eligible) {
+                                decision.innerHTML = '<span class="badge badge--dot badge-success">مؤهل للتحويل</span>';
+                                confirmBtn.disabled = false;
+                            } else {
+                                decision.innerHTML = '<span class="badge badge--dot badge-warning">غير مؤهل</span>';
+                                if (reason) {
+                                    var note = document.createElement('div');
+                                    note.className = 'text-md text-muted mt-1';
+                                    note.textContent = reason;
+                                    decision.appendChild(note);
+                                }
+                            }
+
+                            result.classList.remove('d-none');
+                        })
+                        .catch(function () {
+                            loading.classList.add('d-none');
+                            showErrorModal('عذراً، حدث خطأ أثناء فحص أهلية العيادة.');
+                        });
+                });
+            });
+
+            document.getElementById('payoutEligibilityConfirmBtn').addEventListener('click', function () {
+                if (!eligibilityClinicId) return;
+
+                var btn = this;
+                btn.disabled = true;
+                postJson('/Admin/Payouts/CreateBatch', { clinicIds: [eligibilityClinicId] })
+                    .then(function (result) {
+                        if (result.ok && result.data && result.data.success) {
+                            if (eligibilityModal) eligibilityModal.hide();
+                            showSuccessModal(result.data.message || 'تم إنشاء الدفعة.');
+                            setTimeout(function () { window.location.reload(); }, 1500);
+                        } else {
+                            showErrorModal((result.data && result.data.message) || 'تعذر إنشاء الدفعة.');
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(function () {
+                        showErrorModal('عذراً، حدث خطأ أثناء إنشاء الدفعة.');
+                        btn.disabled = false;
+                    });
+            });
+
             document.getElementById('payoutBudgetBtn').addEventListener('click', function () {
                 var btn = this;
                 var target = document.getElementById('payoutBudgetValue');
@@ -790,12 +1096,136 @@
                 });
             });
 
+            document.querySelectorAll('.payout-reconcile-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    runBatchAction('/Admin/Payouts/ReconcileBatch', btn.getAttribute('data-batch-id'), btn, 'تم تحديث حالة الدفعة من بايمن.');
+                });
+            });
+
             document.querySelectorAll('.payout-retry-btn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     askConfirm('إعادة المحاولة تُرسل التحويل نفسه مرة أخرى بعد التحقق من أنه لم يصل إلى بايمن. متابعة؟', function () {
                         runBatchAction('/Admin/Payouts/RetryItem', btn.getAttribute('data-item-id'), btn, 'تمت إعادة المحاولة.');
                     });
                 });
+            });
+
+            var accountModalEl = document.getElementById('payoutAccountModal');
+            var accountModal = accountModalEl ? new bootstrap.Modal(accountModalEl) : null;
+            var accountClinicId = null;
+
+            document.querySelectorAll('.payout-account-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    accountClinicId = btn.getAttribute('data-clinic-id');
+                    document.getElementById('payoutAccountClinicName').textContent =
+                        'العيادة: ' + (btn.getAttribute('data-clinic-name') || '');
+                    document.getElementById('payoutAccountHolder').value = btn.getAttribute('data-holder-name') || '';
+
+                    var bank = btn.getAttribute('data-bank-code');
+                    if (bank) document.getElementById('payoutAccountBank').value = bank;
+
+                    document.getElementById('payoutAccountNumber').value = '';
+                    document.getElementById('payoutAccountNationalId').value = '';
+
+                    var mask = btn.getAttribute('data-account-mask');
+                    document.getElementById('payoutAccountMaskHint').textContent = mask
+                        ? 'الحساب الحالي: ' + mask + ' — اكتب الرقم كاملًا لحفظه من جديد.'
+                        : 'لا يوجد حساب مسجل بعد لهذه العيادة.';
+
+                    if (accountModal) accountModal.show();
+                });
+            });
+
+            document.getElementById('payoutAccountSaveBtn').addEventListener('click', function () {
+                if (!accountClinicId) return;
+
+                var holderName = document.getElementById('payoutAccountHolder').value.trim();
+                var accountNumber = document.getElementById('payoutAccountNumber').value.trim();
+                var nationalId = document.getElementById('payoutAccountNationalId').value.trim();
+
+                if (!holderName || !accountNumber || !nationalId) {
+                    showErrorModal('يرجى استكمال اسم صاحب الحساب ورقم الحساب والرقم القومي.');
+                    return;
+                }
+
+                var btn = this;
+                btn.disabled = true;
+
+                fetch('/Admin/Payouts/UpsertClinicAccount', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        clinicId: accountClinicId,
+                        holderName: holderName,
+                        bankCode: document.getElementById('payoutAccountBank').value,
+                        accountNumber: accountNumber,
+                        nationalId: nationalId,
+                        bankTransactionType: 'cash_transfer'
+                    })
+                })
+                    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+                    .then(function (result) {
+                        if (result.ok && result.data && result.data.success) {
+                            if (accountModal) accountModal.hide();
+                            showSuccessModal(result.data.message || 'تم حفظ الحساب البنكي.');
+                            setTimeout(function () { window.location.reload(); }, 1500);
+                        } else {
+                            showErrorModal((result.data && result.data.message) || 'تعذر حفظ بيانات الحساب البنكي.');
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(function () {
+                        showErrorModal('عذراً، حدث خطأ أثناء حفظ بيانات الحساب البنكي.');
+                        btn.disabled = false;
+                    });
+            });
+
+            var creditModalEl = document.getElementById('payoutCreditModal');
+            var creditModal = creditModalEl ? new bootstrap.Modal(creditModalEl) : null;
+            var creditClinicId = null;
+
+            document.querySelectorAll('.payout-credit-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    creditClinicId = btn.getAttribute('data-clinic-id');
+                    document.getElementById('payoutCreditClinicName').textContent =
+                        'العيادة: ' + (btn.getAttribute('data-clinic-name') || '');
+                    document.getElementById('payoutCreditAmount').value = '';
+                    document.getElementById('payoutCreditNotes').value = '';
+                    if (creditModal) creditModal.show();
+                });
+            });
+
+            document.getElementById('payoutCreditSaveBtn').addEventListener('click', function () {
+                if (!creditClinicId) return;
+
+                var amount = Number(document.getElementById('payoutCreditAmount').value);
+                if (!amount || amount <= 0) {
+                    showErrorModal('يرجى إدخال مبلغ أكبر من صفر.');
+                    return;
+                }
+
+                var btn = this;
+                btn.disabled = true;
+
+                postJson('/Admin/Payouts/CreditClinic', {
+                    clinicId: creditClinicId,
+                    amount: amount,
+                    notes: document.getElementById('payoutCreditNotes').value.trim() || null
+                })
+                    .then(function (result) {
+                        if (result.ok && result.data && result.data.success) {
+                            if (creditModal) creditModal.hide();
+                            showSuccessModal(result.data.message || 'تمت إضافة المستحقات.');
+                            setTimeout(function () { window.location.reload(); }, 1500);
+                        } else {
+                            showErrorModal((result.data && result.data.message) || 'تعذر إضافة المستحقات للعيادة.');
+                            btn.disabled = false;
+                        }
+                    })
+                    .catch(function () {
+                        showErrorModal('عذراً، حدث خطأ أثناء إضافة المستحقات.');
+                        btn.disabled = false;
+                    });
             });
         })();
     </script>

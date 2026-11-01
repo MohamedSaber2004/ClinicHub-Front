@@ -3,6 +3,7 @@ using ClinicHub.Services.Contracts;
 using ClinicHub.Services.Exceptions;
 using ClinicHub.Services.Options;
 using ClinicHub.Services.ReponseModels;
+using ClinicHub.Services.RequestModels;
 using ClinicHub.Services.Routes.Api;
 using ClinicHub.Services.Utilities;
 using Microsoft.Extensions.Options;
@@ -170,6 +171,32 @@ namespace ClinicHub.Services.Services.Implementations
             {
                 var response = await _httpClient.PutAsync(DoctoryRoutes.DoctorDashboard.CompleteAppointment(id), null);
                 return await _deserializerService.DeserializeApiResponse<bool>(response, "حدث خطأ في إكمال الموعد");
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<RegisterPatientResultDto> RegisterPatientAsync(RegisterPatientFromStaffRequest request)
+        {
+            try
+            {
+                var json = JsonConvert.SerializeObject(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(DoctoryRoutes.DoctorDashboard.RegisterPatient, content);
+                var body = await response.Content.ReadAsStringAsync();
+
+                var errors = ApiErrorExtractor.ExtractErrors(body);
+                if (!response.IsSuccessStatusCode)
+                    throw new ApiException((int)response.StatusCode, string.Join(" ", errors));
+
+                var obj = JsonConvert.DeserializeObject<JObject>(body);
+                var dataToken = obj?["data"] ?? obj?["Data"];
+                var dataJson = dataToken?.ToString() ?? body;
+                return JsonConvert.DeserializeObject<RegisterPatientResultDto>(dataJson, _jsonSettings)
+                    ?? throw new ApiException(500, "تعذر قراءة نتيجة تسجيل المريض.");
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

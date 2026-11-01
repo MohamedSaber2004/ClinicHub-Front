@@ -6,5 +6,6 @@ namespace ClinicHub.Services.Contracts
     {
         Task<PlatformSettingDto> GetSettingAsync();
         Task<PlatformSettingDto> UpdateSettingAsync(decimal appointmentFeePercent);
+        Task<PlatformSettingDto> UpdatePayoutMinimumAsync(decimal minimumPayoutAmount);
     }
 }

@@ -98,12 +98,15 @@ namespace ClinicHub.Services.Routes.Api
             public string Accounts => $"{_baseRoute}/payout-accounts";
             public string Verify(Guid id) => $"{Accounts}/{id}/verify";
             public string Reject(Guid id) => $"{Accounts}/{id}/reject";
+            public string UpsertClinicAccount(Guid clinicId) => $"{Accounts}/clinics/{clinicId}";
+            public string CreditClinic => $"{_baseRoute}/payout-ledger/credit";
 
             public string Batches => $"{_baseRoute}/payout-batches";
             public string Batch(Guid id) => $"{Batches}/{id}";
             public string Approve(Guid id) => $"{Batch(id)}/approve";
             public string Execute(Guid id) => $"{Batch(id)}/execute";
             public string Cancel(Guid id) => $"{Batch(id)}/cancel";
+            public string Reconcile(Guid id) => $"{Batch(id)}/reconcile";
             public string RetryItem(Guid id) => $"{_baseRoute}/payout-items/{id}/retry";
         }
 
@@ -210,6 +213,7 @@ namespace ClinicHub.Services.Routes.Api
             public string Create => $"{BaseRoute}";
             public string Delete(Guid id) => $"{BaseRoute}/{id}";
             public string EditUser(Guid id) => $"{BaseRoute}/{id}";
+            public string EditRole(Guid id) => $"{BaseRoute}/{id}/roles";
 }
 
         public class DoctorRoutes
@@ -398,6 +402,7 @@ namespace ClinicHub.Services.Routes.Api
             public string RejectAppointment(Guid id) => $"{_baseRoute}/appointments/{id}/reject";
             public string CompleteAppointment(Guid id) => $"{_baseRoute}/appointments/{id}/complete";
             public string Patients => $"{_baseRoute}/patients";
+            public string RegisterPatient => $"{_baseRoute}/patients/register";
             public string PatientHistory(Guid patientId) => $"{_baseRoute}/patients/{patientId}/history";
             public string PatientAssessment(Guid patientId) => $"{_baseRoute}/patients/{patientId}/assessment";
         }

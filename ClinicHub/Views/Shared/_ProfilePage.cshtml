@@ -50,7 +50,7 @@
             <div class="profile-avatar-large">
                 @if (!string.IsNullOrWhiteSpace(profilePictureUrl))
                 {
-                    <img src="@profilePictureUrl" alt="@FullName()" class="profile-avatar-img" />
+                    <img src="@profilePictureUrl" alt="@FullName()" class="profile-avatar-img" data-fallback="avatar" />
                 }
                 else
                 {

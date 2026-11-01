@@ -13,8 +13,9 @@
 
     string GenderLabel(int? g) => g switch
     {
-        0 => "ذكر (Male)",
-        1 => "أنثى (Female)",
+        1 => "ذكر (Male)",
+        2 => "أنثى (Female)",
+        3 => "آخر",
         _ => "—"
     };
 
@@ -454,8 +455,9 @@
                                 <label class="form-label" for="inp-gender">الجنس (Sex)</label>
                                 <select class="form-select" id="inp-gender">
                                     <option value="">— اختر الجنس —</option>
-                                    <option value="0" selected="@(assessment.Gender == 0)">ذكر (Male)</option>
-                                    <option value="1" selected="@(assessment.Gender == 1)">أنثى (Female)</option>
+                                    <option value="1" selected="@(assessment.Gender == 1)">ذكر (Male)</option>
+                                    <option value="2" selected="@(assessment.Gender == 2)">أنثى (Female)</option>
+                                    <option value="3" selected="@(assessment.Gender == 3)">آخر</option>
                                 </select>
                             </div>
                             <div class="assessment-form-col-1">

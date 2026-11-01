@@ -238,13 +238,6 @@
     gap: var(--space-1);
 }
 
-.af-id-cell {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-0);
-    min-width: 0;
-}
-
 /* ============================================================
    4. Split bar — net to clinic vs platform fee (or ok vs failed)
    Percent buckets keep widths token-driven with no inline styles.

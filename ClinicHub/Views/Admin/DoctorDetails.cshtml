@@ -60,7 +60,7 @@ else
         <div class="user-profile-avatar-lg">
             @if (!string.IsNullOrWhiteSpace(doctor.ProfilePictureUrl))
             {
-                <img src="@doctor.ProfilePictureUrl" alt="@doctor.UserName" class="header-avatar-img" />
+                <img src="@doctor.ProfilePictureUrl" alt="@doctor.UserName" class="header-avatar-img" data-fallback="avatar" />
             }
             else
             {

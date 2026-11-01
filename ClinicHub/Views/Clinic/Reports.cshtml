@@ -5,7 +5,7 @@
     var selectedPeriod = ViewBag.SelectedPeriod as string ?? "week";
     var selectedDoctorId = ViewBag.SelectedDoctorId as Guid?;
     var report = ViewBag.Report as ClinicOperationalReportDto ?? new ClinicOperationalReportDto();
-    var clinicDoctors = ViewBag.ClinicDoctors as List<DoctorDto> ?? new List<DoctorDto>();
+    var clinicDoctors = ViewBag.ClinicDoctors as IReadOnlyCollection<DoctorDto> ?? new List<DoctorDto>();
 
     string StatusLabel(int s) => s switch
     {
@@ -29,18 +29,41 @@
     };
 
     int Nearest5(double v) => Math.Clamp((int)Math.Round(v / 5.0) * 5, 5, 100);
+
+    string PeriodLabel(string p) => p switch
+    {
+        "today" => "اليوم",
+        "week" => "هذا الأسبوع",
+        "month" => "هذا الشهر",
+        "last30" => "آخر 30 يوماً",
+        _ => "الفترة المحددة"
+    };
+
+    var selectedDoctorName = selectedDoctorId.HasValue
+        ? clinicDoctors.FirstOrDefault(d => d.Id == selectedDoctorId)?.UserName
+        : null;
 }
 
 <div class="co-page co-reports">
 <div class="page-header co-page-head">
-    <h2 class="page-title">
-        <span class="page-title-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-            </svg>
-        </span>
-        التقارير التشغيلية ومؤشرات الأداء
-    </h2>
+    <div class="co-page-head-main">
+        <h2 class="page-title">
+            <span class="page-title-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+            </span>
+            التقارير التشغيلية ومؤشرات الأداء
+        </h2>
+        <p class="page-header-subtitle reports-subtitle">
+            <span><i class="bi bi-calendar3 me-1"></i>@PeriodLabel(selectedPeriod)</span>
+            <span class="reports-subtitle-dot" aria-hidden="true"></span>
+            <span>
+                <i class="bi bi-person me-1"></i>
+                @(string.IsNullOrWhiteSpace(selectedDoctorName) ? "جميع الأطباء" : selectedDoctorName)
+            </span>
+        </p>
+    </div>
     <div class="page-header-actions reports-header-actions print-hide">
         <button type="button" class="btn btn-outline" onclick="window.print()">
             <i class="bi bi-printer me-1"></i> طباعة التقرير
@@ -50,25 +73,29 @@
 
 <!-- Quick Period & Filter Toolbar -->
 <div class="period-pills-bar co-toolbar print-hide">
-    <div class="period-pills co-segmented">
-        <a href="/Clinic/Reports?period=today" class="period-pill @(selectedPeriod == "today" ? "active" : "")">
-            <i class="bi bi-calendar-event"></i> اليوم
-        </a>
-        <a href="/Clinic/Reports?period=week" class="period-pill @(selectedPeriod == "week" ? "active" : "")">
-            <i class="bi bi-calendar-week"></i> هذا الأسبوع
-        </a>
-        <a href="/Clinic/Reports?period=month" class="period-pill @(selectedPeriod == "month" ? "active" : "")">
-            <i class="bi bi-calendar-month"></i> هذا الشهر
-        </a>
-        <a href="/Clinic/Reports?period=last30" class="period-pill @(selectedPeriod == "last30" ? "active" : "")">
-            <i class="bi bi-clock-history"></i> آخر 30 يوم
-        </a>
+    <div class="reports-toolbar-group">
+        <span class="reports-toolbar-label"><i class="bi bi-calendar-range"></i> الفترة</span>
+        <div class="period-pills co-segmented">
+            <a href="/Clinic/Reports?period=today" class="period-pill @(selectedPeriod == "today" ? "active" : "")">
+                <i class="bi bi-calendar-event"></i> اليوم
+            </a>
+            <a href="/Clinic/Reports?period=week" class="period-pill @(selectedPeriod == "week" ? "active" : "")">
+                <i class="bi bi-calendar-week"></i> هذا الأسبوع
+            </a>
+            <a href="/Clinic/Reports?period=month" class="period-pill @(selectedPeriod == "month" ? "active" : "")">
+                <i class="bi bi-calendar-month"></i> هذا الشهر
+            </a>
+            <a href="/Clinic/Reports?period=last30" class="period-pill @(selectedPeriod == "last30" ? "active" : "")">
+                <i class="bi bi-clock-history"></i> آخر 30 يوم
+            </a>
+        </div>
     </div>
 
     @if (clinicDoctors.Count > 0)
     {
-        <div class="reports-filters-group">
-            <select class="form-select" onchange="window.location = '/Clinic/Reports?period=@selectedPeriod' + (this.value ? '&doctorId=' + this.value : '')">
+        <div class="reports-toolbar-group reports-filters-group">
+            <label class="reports-toolbar-label" for="reportsDoctorFilter"><i class="bi bi-person-badge"></i> الطبيب</label>
+            <select id="reportsDoctorFilter" class="form-select" onchange="window.location = '/Clinic/Reports?period=@selectedPeriod' + (this.value ? '&doctorId=' + this.value : '')">
                 <option value="">جميع الأطباء</option>
                 @foreach (var d in clinicDoctors)
                 {
@@ -281,26 +308,27 @@
 </div>
 
 <!-- Doctor Operational Performance Table -->
-<div class="table-card co-roster mb-5" data-scroll>
-    <div class="analytics-card-header">
-        <h3 class="analytics-card-title">
-            <i class="bi bi-person-workspace text-primary"></i>
+<div class="table-card co-roster reports-card" data-scroll>
+    <div class="table-card-header co-roster-head reports-card-head">
+        <h3 class="co-roster-title">
+            <span class="reports-card-icon"><i class="bi bi-person-workspace"></i></span>
             تقرير إنتاجية وأداء أطباء العيادة
         </h3>
-        <span class="text-muted fs-sm">إجمالي @report.Doctors.Count أطباء نشطين</span>
+        <p class="reports-card-hint">مرتّب تنازلياً حسب إجمالي المواعيد</p>
+        <span class="co-count tabular">@report.Doctors.Count أطباء</span>
     </div>
 
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table reports-table">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th class="col-rank">#</th>
                     <th>الطبيب</th>
                     <th>التخصص</th>
-                    <th>إجمالي المواعيد</th>
-                    <th>الزيارات المكتملة</th>
-                    <th>الملغاة / غياب</th>
-                    <th>التقييم</th>
+                    <th class="col-num">إجمالي المواعيد</th>
+                    <th class="col-wide">الزيارات المكتملة</th>
+                    <th class="col-num">الملغاة / غياب</th>
+                    <th class="col-num">التقييم</th>
                     <th>حالة التشغيل</th>
                 </tr>
             </thead>
@@ -320,7 +348,7 @@
                         : "badge-warning";
 
                     <tr>
-                        <td>@rowIndex</td>
+                        <td class="col-rank">@rowIndex</td>
                         <td>
                             <div class="user-avatar-cell">
                                 <div class="avatar avatar--sm bg-primary text-white">@doc.Name.Substring(0, 1)</div>
@@ -330,23 +358,25 @@
                         <td>
                             <span class="badge badge-info">@doc.Specialty</span>
                         </td>
-                        <td>
-                            <span class="fw-bold font-data">@doc.TotalAppointments</span>
+                        <td class="col-num">
+                            <span class="fw-bold">@doc.TotalAppointments</span>
                         </td>
                         <td>
                             <div class="table-progress">
-                                <span class="table-progress-val">@doc.CompletedVisits</span>
+                                <span class="table-progress-val font-data">@doc.CompletedVisits</span>
                                 <div class="table-progress-track">
                                     <div class="table-progress-fill w-pct-@progPct"></div>
                                 </div>
-                                <span class="text-muted fs-sm font-data">@doc.CompletionPercentage%</span>
+                                <span class="table-progress-pct font-data">@doc.CompletionPercentage%</span>
                             </div>
                         </td>
                         <td>
-                            <span class="text-warning font-data">@doc.CancelledCount ملغى</span> /
-                            <span class="text-danger font-data">@doc.NoShowCount غياب</span>
+                            <div class="reports-split">
+                                <span class="reports-chip reports-chip--warning" title="مواعيد ملغاة">@doc.CancelledCount ملغى</span>
+                                <span class="reports-chip reports-chip--danger" title="غياب دون إخطار">@doc.NoShowCount غياب</span>
+                            </div>
                         </td>
-                        <td>
+                        <td class="col-num">
                             @if (doc.ReviewCount > 0)
                             {
                                 <div class="d-flex align-items-center gap-1">
@@ -357,7 +387,7 @@
                             }
                             else
                             {
-                                <span class="text-muted fs-sm">-</span>
+                                <span class="text-muted fs-sm">—</span>
                             }
                         </td>
                         <td>
@@ -367,7 +397,15 @@
                 }
                 @if (report.Doctors.Count == 0)
                 {
-                    <tr><td colspan="8" class="text-center text-muted">لا يوجد أطباء لعرضهم.</td></tr>
+                    <tr>
+                        <td colspan="8">
+                            <div class="reports-empty">
+                                <span class="reports-empty-icon"><i class="bi bi-people"></i></span>
+                                <p class="reports-empty-title">لا يوجد أطباء لعرضهم</p>
+                                <p class="reports-empty-text">أضف أطباء للعيادة أو اختر فترة زمنية أخرى.</p>
+                            </div>
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>
@@ -375,24 +413,25 @@
 </div>
 
 <!-- Operational Flow & Traffic Log -->
-<div class="table-card co-roster" data-scroll>
-    <div class="analytics-card-header">
-        <h3 class="analytics-card-title">
-            <i class="bi bi-card-checklist text-primary"></i>
+<div class="table-card co-roster reports-card" data-scroll>
+    <div class="table-card-header co-roster-head reports-card-head">
+        <h3 class="co-roster-title">
+            <span class="reports-card-icon"><i class="bi bi-card-checklist"></i></span>
             سجل حركة الزيارات خلال فترة التقرير
         </h3>
-        <span class="text-muted fs-sm"><i class="bi bi-clock me-1"></i>@report.RecentVisits.Count حركة</span>
+        <p class="reports-card-hint">آخر الحركات المسجلة داخل الفترة المحددة</p>
+        <span class="co-count tabular"><i class="bi bi-clock"></i> @report.RecentVisits.Count حركة</span>
     </div>
 
     <div class="table-responsive">
-        <table class="custom-table">
+        <table class="custom-table reports-table">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th class="col-rank">#</th>
                     <th>المريض</th>
                     <th>الطبيب المعالج</th>
                     <th>التخصص</th>
-                    <th>موعد الحجز</th>
+                    <th class="col-num">موعد الحجز</th>
                     <th>الحالة</th>
                 </tr>
             </thead>
@@ -402,7 +441,7 @@
                 {
                     logIndex++;
                     <tr>
-                        <td>@logIndex</td>
+                        <td class="col-rank">@logIndex</td>
                         <td>
                             <div class="user-avatar-cell">
                                 <div class="avatar avatar--sm bg-secondary text-white">@(log.PatientName.Length > 0 ? log.PatientName.Substring(0, 1) : "-")</div>
@@ -415,8 +454,11 @@
                         <td>
                             <span class="badge badge-subtle">@log.Specialty</span>
                         </td>
-                        <td>
-                            <span class="font-data">@log.AppointmentDate.ToString("yyyy-MM-dd") - @log.StartTime.ToString(@"hh\:mm")</span>
+                        <td class="col-num">
+                            <span class="reports-datetime">
+                                <span class="reports-datetime-date">@log.AppointmentDate.ToString("yyyy-MM-dd")</span>
+                                <span class="reports-datetime-time">@log.StartTime.ToString(@"hh\:mm")</span>
+                            </span>
                         </td>
                         <td>
                             <span class="badge @StatusClass((int)log.Status)">@StatusLabel((int)log.Status)</span>
@@ -425,7 +467,15 @@
                 }
                 @if (report.RecentVisits.Count == 0)
                 {
-                    <tr><td colspan="6" class="text-center text-muted">لا توجد زيارات مسجلة في هذه الفترة.</td></tr>
+                    <tr>
+                        <td colspan="6">
+                            <div class="reports-empty">
+                                <span class="reports-empty-icon"><i class="bi bi-calendar2-week"></i></span>
+                                <p class="reports-empty-title">لا توجد زيارات في هذه الفترة</p>
+                                <p class="reports-empty-text">جرّب اختيار فترة أطول أو طبيب مختلف لعرض حركة الزيارات.</p>
+                            </div>
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>
@@ -434,5 +484,5 @@
 </div>
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" asp-append-version="false" />
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261030_availability_v3" asp-append-version="false" />
 }

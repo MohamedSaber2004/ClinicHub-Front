@@ -88,7 +88,7 @@
                     <div class="sidebar-profile-avatar">
                         @if (!string.IsNullOrWhiteSpace(_profilePic))
                         {
-                            <img src="@_profilePic" alt="@_profileName" class="header-avatar-img" />
+                            <img src="@_profilePic" alt="@_profileName" class="header-avatar-img" data-fallback="avatar" />
                         }
                         else
                         {
@@ -144,7 +144,7 @@
                     <div class="sidebar-profile-avatar header-avatar">
                         @if (!string.IsNullOrWhiteSpace(_profilePic))
                         {
-                            <img src="@_profilePic" alt="@_profileName" class="header-avatar-img" />
+                            <img src="@_profilePic" alt="@_profileName" class="header-avatar-img" data-fallback="avatar" />
                         }
                         else
                         {
@@ -175,6 +175,7 @@
     <partial name="_ValidationScriptsPartial" />
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/scroll-animations.js" asp-append-version="true"></script>
+    <script src="~/js/image-fallback.js" asp-append-version="true"></script>
     <script src="~/js/notification-service.js" asp-append-version="true"></script>
     <partial name="_NotificationsBellScript" />
     <partial name="_FcmConfig" />

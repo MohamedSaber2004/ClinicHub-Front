@@ -438,12 +438,17 @@
   font-size: var(--fs-sm);
 }
 
-/* one repeating slot row: open · separator · close */
+/* one repeating slot row: open · separator · close
+   Capped so the pickers keep a sane width on wide desktop screens. */
 .schedule-time-row.co-slot {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 340px) auto minmax(0, 340px);
+  justify-content: center;
   align-items: end;
   gap: var(--space-4);
+  width: 100%;
+  max-width: 780px;
+  margin-inline: auto;
 }
 
 .schedule-time-box.co-slot-field {
@@ -630,6 +635,9 @@
   align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+  width: 100%;
+  max-width: 780px;
+  margin-inline: auto;
   padding-top: var(--space-2);
   border-top: 1px dashed var(--clr-border-subtle);
 }
@@ -740,14 +748,17 @@
 }
 
 .week-ribbon-day.co-week-tab {
-  flex: 1 0 auto;
-  min-width: 104px;
+  flex: 1 1 104px;
+  /* wide enough for "9:00 ص - 9:00 م"; narrower viewports scroll the strip instead of wrapping */
+  min-width: 132px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-0);
-  padding: var(--space-2) var(--space-3);
+  /* the today tab pins a tag on its top edge; every tab reserves that band so the
+     names of all seven days stay on one baseline */
+  padding: var(--space-5) var(--space-3) var(--space-0);
   border-radius: var(--radius-pill);
   background: transparent;
   border: 1px solid transparent;
@@ -789,8 +800,10 @@
   margin-top: 0;
 }
 
+/* the today tag is absolutely positioned, so the name must not reserve room for it —
+   site.css still drops it 10px, which made the today tab sit lower than its siblings */
 .week-ribbon-day.co-week-tab.is-today .week-ribbon-name {
-  margin-top: var(--space-2);
+  margin-top: 0;
 }
 
 .week-ribbon-status-dot {
@@ -811,19 +824,22 @@
   font-weight: var(--fw-semibold);
   color: inherit;
   direction: ltr;
+  white-space: nowrap;
 }
 
 .week-ribbon-today-tag {
   position: absolute;
-  top: 0;
-  inset-inline: 0;
-  border-radius: var(--radius-pill) var(--radius-pill) 0 0;
+  top: 3px;
+  inset-inline: 3px;
+  border-radius: var(--radius-pill) var(--radius-pill) var(--space-1) var(--space-1);
   background: var(--grad-brass);
   color: var(--clr-surface);
   font-size: 10px;
   font-weight: var(--fw-bold);
   line-height: 1.5;
   padding: 0 var(--space-2);
+  text-align: center;
+  pointer-events: none;
 }
 
 /* AM / PM legend */
@@ -1803,6 +1819,349 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* --- 8.1 Reports — page head, toolbar, card heads ----------- */
+
+.co-reports {
+  gap: var(--space-5);
+}
+
+.co-reports .stats-grid.co-stats,
+.co-reports .reports-analytics-grid.co-analytics,
+.co-reports .table-card.co-roster {
+  margin-bottom: 0;
+}
+
+.co-page-head-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.reports-subtitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.reports-subtitle > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.reports-subtitle-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--clr-border-strong);
+}
+
+.reports-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.reports-toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  color: var(--clr-text-faint);
+  white-space: nowrap;
+}
+
+.reports-filters-group {
+  flex-wrap: nowrap;
+}
+
+.reports-filters-group .form-select {
+  flex: 0 1 280px;
+  width: auto;
+  min-width: 200px;
+}
+
+.table-card-header.co-roster-head.reports-card-head {
+  align-items: center;
+  gap: var(--space-3);
+  background: linear-gradient(180deg, var(--clr-surface-sunken) 0%, var(--clr-surface) 100%);
+}
+
+.co-roster-title .reports-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--clr-primary-soft);
+  color: var(--clr-primary-strong);
+  font-size: 16px;
+}
+
+.co-reports .co-roster-title {
+  gap: var(--space-2);
+  min-width: 0;
+  font-size: var(--fs-lg);
+}
+
+.reports-card-hint {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+.reports-card-head .co-count {
+  white-space: nowrap;
+}
+
+/* --- 8.2 Reports — table readability ------------------------ */
+
+.co-reports .table-card.co-roster .table-responsive {
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.reports-table {
+  min-width: 720px;
+}
+
+.reports-table th {
+  padding-block: var(--space-2);
+  background: var(--clr-surface-sunken);
+  color: var(--clr-text-faint);
+  font-size: var(--fs-xs);
+  letter-spacing: 0;
+}
+
+.reports-table td {
+  vertical-align: middle;
+}
+
+.reports-table tbody tr:nth-child(even) td {
+  background-color: var(--clr-surface-subtle);
+}
+
+.reports-table tbody tr:hover td {
+  background-color: var(--clr-primary-light);
+}
+
+.reports-table .col-rank {
+  width: 52px;
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  color: var(--clr-text-faint);
+}
+
+.reports-table .col-num {
+  white-space: nowrap;
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.reports-table .col-wide {
+  min-width: 190px;
+}
+
+.reports-table .table-progress {
+  min-width: 170px;
+}
+
+.table-progress-pct {
+  min-width: 4ch;
+  text-align: end;
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+.reports-split {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.reports-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-0) var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: var(--ff-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+
+.reports-chip--warning {
+  background: var(--clr-warning-bg);
+  border-color: var(--clr-warning-border);
+  color: var(--clr-warning-text);
+}
+
+.reports-chip--danger {
+  background: var(--clr-danger-bg);
+  border-color: var(--clr-danger-border);
+  color: var(--clr-danger-text);
+}
+
+.reports-datetime {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.reports-datetime-date {
+  font-size: var(--fs-sm);
+  color: var(--clr-text);
+}
+
+.reports-datetime-time {
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+/* --- 8.3 Reports — empty states ----------------------------- */
+
+.reports-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-7) var(--space-4);
+  text-align: center;
+}
+
+.reports-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--clr-surface-sunken);
+  color: var(--clr-text-faint);
+  font-size: 22px;
+}
+
+.reports-empty-title {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--clr-text);
+}
+
+.reports-empty-text {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--clr-text-faint);
+}
+
+/* --- 8.4 Reports — responsive ------------------------------- */
+
+@media (max-width: 992px) {
+  .co-reports .period-pills-bar.co-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .co-reports .reports-toolbar-group,
+  .co-reports .reports-filters-group {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .co-reports .reports-filters-group .form-select {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .reports-card-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .co-reports .stats-grid.co-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .co-reports .reports-analytics-grid.co-analytics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .co-reports .analytics-card.co-card {
+    padding: var(--space-4);
+  }
+
+  .reports-table {
+    min-width: 640px;
+  }
+
+  .co-reports .table-card.co-roster .table-responsive {
+    border-top: none;
+  }
+
+  .reports-card-head {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+}
+
+@media (max-width: 576px) {
+  .co-reports .stats-grid.co-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reports-table {
+    min-width: 560px;
+  }
+
+  .reports-table th,
+  .reports-table td {
+    padding-inline: var(--space-3);
+  }
+
+  .co-roster-title .reports-card-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .co-reports .co-roster-title {
+    font-size: var(--fs-md);
+  }
+
+  .reports-toolbar-label {
+    display: none;
+  }
+}
+
+@media print {
+  .co-reports .reports-table {
+    min-width: 0;
+  }
+
+  .co-reports .table-responsive {
+    overflow: visible;
+  }
+
+  .reports-card-hint {
+    display: none;
+  }
 }
 
 .co-print-only {

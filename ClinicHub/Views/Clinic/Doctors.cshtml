@@ -134,7 +134,7 @@
                                         @if (imgUrl != null)
                                         {
                                             <span class="avatar avatar--sm avatar--circle co-avatar">
-                                                <img src="@imgUrl" alt="صورة" loading="lazy" decoding="async" />
+                                                <img src="@imgUrl" alt="صورة" loading="lazy" decoding="async" data-fallback="avatar" />
                                             </span>
                                         }
                                         else
@@ -229,7 +229,7 @@
 </div>
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261030_availability_v3" />
 }
 
 <div class="modal fade" id="createDoctorModal" tabindex="-1" aria-hidden="true">
@@ -547,7 +547,7 @@
                 ? '<span class="badge badge-success">نشط</span>'
                 : '<span class="badge badge-danger">غير نشط</span>';
             var imgHtml = doctor.profilePictureUrl
-                ? '<img src="' + attachmentBaseUrl + '/files/' + doctor.profilePictureUrl.replace(/^files\//, '') + '" alt="صورة الطبيب" class="modal-avatar-img" />'
+                ? '<img src="' + attachmentBaseUrl + '/files/' + doctor.profilePictureUrl.replace(/^files\//, '') + '" alt="صورة الطبيب" class="modal-avatar-img" data-fallback="avatar" />'
                 : '<div class="modal-avatar-placeholder"><i class="bi bi-person"></i></div>';
             var availHtml = '';
             if (doctor.availabilities && doctor.availabilities.length > 0) {

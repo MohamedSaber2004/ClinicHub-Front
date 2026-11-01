@@ -22,21 +22,6 @@
         (5, "الجمعة", "جمعة")
     };
 
-    string FormatTime12Razor(string timeStr)
-    {
-        if (string.IsNullOrEmpty(timeStr)) return "—";
-        var parts = timeStr.Split(':');
-        if (parts.Length < 2) return timeStr;
-        if (!int.TryParse(parts[0], out var h)) return timeStr;
-        var m = parts[1];
-        var isAm = h < 12;
-        var period = isAm ? "ص" : "م";
-        var desc = isAm ? "صباحاً" : "مساءً";
-        var h12 = h % 12;
-        if (h12 == 0) h12 = 12;
-        return $"{h12}:{m} {period} ({desc})";
-    }
-
     bool IsAmRazor(string timeStr)
     {
         if (string.IsNullOrEmpty(timeStr)) return true;
@@ -259,9 +244,6 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="schedule-time-preview" id="startPreview_@day.id">
-                                        <span class="preview-12h">@FormatTime12Razor(startHours)</span>
-                                    </div>
                                 </div>
 
                                 <div class="schedule-time-separator-wrap">
@@ -287,9 +269,6 @@
                                                 <i class="bi bi-moon-stars-fill"></i> م
                                             </button>
                                         </div>
-                                    </div>
-                                    <div class="schedule-time-preview" id="endPreview_@day.id">
-                                        <span class="preview-12h">@FormatTime12Razor(endHours)</span>
                                     </div>
                                 </div>
                             </div>
@@ -391,7 +370,7 @@
 </div>
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261030_availability_v3" />
 }
 
 @section Scripts {
@@ -499,16 +478,6 @@
                         tag.className = 'schedule-period-badge badge-pm';
                         tag.innerHTML = '<i class="bi bi-moon-stars-fill"></i> <span>مساءً</span>';
                     }
-                }
-
-                // Update 12-Hour Preview
-                var preview = group.querySelector('.schedule-time-preview');
-                if (preview) {
-                    var h12 = h % 12;
-                    if (h12 === 0) h12 = 12;
-                    var chip = isAm ? 'ص' : 'م';
-                    var desc = isAm ? 'صباحاً' : 'مساءً';
-                    preview.innerHTML = '<span class="preview-12h">' + h12 + ':' + m + ' ' + chip + ' (' + desc + ')</span>';
                 }
             }
 

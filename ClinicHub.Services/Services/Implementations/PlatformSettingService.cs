@@ -54,5 +54,23 @@ namespace ClinicHub.Services.Services.Implementations
                 throw new ApiException(500, $"تعذر تحديث نسبة رسوم المنصة: {ex.Message}");
             }
         }
+
+        public async Task<PlatformSettingDto> UpdatePayoutMinimumAsync(decimal minimumPayoutAmount)
+        {
+            try
+            {
+                var payload = new { minimumPayoutAmount };
+                var json = JsonConvert.SerializeObject(payload);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync(DoctoryRoutes.PlatformSettings.Update, content);
+                return await _deserializerService.DeserializeApiResponse<PlatformSettingDto>(response, "تعذر تحديث الحد الأدنى للتحويل")
+                    ?? new PlatformSettingDto { MinimumPayoutAmount = minimumPayoutAmount };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"تعذر تحديث الحد الأدنى للتحويل: {ex.Message}");
+            }
+        }
     }
 }

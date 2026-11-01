@@ -10,6 +10,7 @@ using ClinicHub.Services.Utilities;
 using MediatR;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace ClinicHub.Services.Services.Implementations
@@ -30,6 +31,7 @@ namespace ClinicHub.Services.Services.Implementations
         private readonly string _createUser;
         private readonly Func<Guid, string> _deleteUser;
         private readonly Func<Guid, string> _updateUser;
+        private readonly Func<Guid, string> _editUserRole;
 
         public UserService(HttpClient httpClient, IOptions<Doctory> doctoryOptions, IDeserializerService deserializerService)
         {
@@ -42,6 +44,7 @@ namespace ClinicHub.Services.Services.Implementations
             _createUser = DoctoryRoutes.Users.Create;
             _deleteUser = DoctoryRoutes.Users.Delete;
             _updateUser = DoctoryRoutes.Users.EditUser;
+            _editUserRole = DoctoryRoutes.Users.EditRole;
         }
 
         public async Task<Unit> ChangePasswordAsync(ChangePasswordRequest request)
@@ -138,17 +141,33 @@ namespace ClinicHub.Services.Services.Implementations
                 if (response.IsSuccessStatusCode && Guid.TryParse(body.Trim('"'), out var plainId))
                     return new ApiResponse<Guid> { Success = true, Data = plainId };
 
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Guid>>(body, _jsonSettings);
-                if (apiResponse != null && apiResponse.Success)
-                    return apiResponse;
+                // The API answers with { success, data: { id } } and omits data on failure.
+                // Deserializing straight into ApiResponse<Guid> threw on that shape and hid
+                // the real validation message behind a JSON conversion error.
+                var envelope = JsonConvert.DeserializeObject<JObject>(body);
+                if (envelope?.Value<bool?>("success") == true)
+                {
+                    var dataToken = envelope["data"] ?? envelope["Data"];
+                    var rawId = dataToken is JObject dataObject
+                        ? dataObject.Value<string>("id") ?? dataObject.Value<string>("Id")
+                        : dataToken?.ToString();
+
+                    return new ApiResponse<Guid>
+                    {
+                        Success = true,
+                        Data = Guid.TryParse(rawId, out var createdId) ? createdId : Guid.Empty
+                    };
+                }
 
                 var errors = ApiErrorExtractor.ExtractErrors(body);
                 var combined = string.Join("\n", errors);
 
                 if (string.IsNullOrWhiteSpace(combined))
-                    combined = apiResponse?.Message ?? "حدث خطأ في إنشاء المستخدم";
+                    combined = envelope?.Value<string>("message") ?? envelope?.Value<string>("Message") ?? "حدث خطأ في إنشاء المستخدم";
 
-                var statusCode = apiResponse?.StatusCode > 0 ? apiResponse.StatusCode : (int)response.StatusCode;
+                var statusCode = envelope?.Value<int?>("statusCode") is int apiStatus && apiStatus > 0
+                    ? apiStatus
+                    : (int)response.StatusCode;
                 throw new ApiException(statusCode, combined);
             }
             catch (ApiException) { throw; }
@@ -200,6 +219,36 @@ namespace ClinicHub.Services.Services.Implementations
 
                 var response = await _httpClient.SendAsync(requestMessage);
                 var success = await _deserializerService.DeserializeApiResponse<bool?>(response, "حدث خطأ في تعديل المستخدم");
+                return new ApiResponse<bool> { Success = true, Data = success ?? true };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"حدث خطأ غير متوقع: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<bool>> EditUserRoleAsync(EditUserRoleRequest request)
+        {
+            try
+            {
+                var url = _editUserRole(request.Id);
+                var payload = new Dictionary<string, object?>
+                {
+                    ["NewRole"] = (int)request.Role
+                };
+
+                var json = JsonConvert.SerializeObject(payload, _jsonSettings);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // PUT replaces the whole role set; the API keeps the user's clinic for clinic-bound roles.
+                var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
+                {
+                    Content = content
+                };
+
+                var response = await _httpClient.SendAsync(requestMessage);
+                var success = await _deserializerService.DeserializeApiResponse<bool?>(response, "حدث خطأ في تغيير دور المستخدم");
                 return new ApiResponse<bool> { Success = true, Data = success ?? true };
             }
             catch (ApiException) { throw; }

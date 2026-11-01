@@ -9,6 +9,8 @@ namespace ClinicHub.Services.Contracts
         Task<List<PayoutAccountAdminDto>> GetAccountsAsync(int? status = null, string? search = null);
         Task<PayoutAccountAdminDto> VerifyAccountAsync(Guid id);
         Task<PayoutAccountAdminDto> RejectAccountAsync(Guid id, string reason);
+        Task<PayoutAccountAdminDto> UpsertClinicAccountAsync(AdminUpsertPayoutAccountRequest request);
+        Task<ClinicLedgerCreditDto> CreditClinicAsync(CreditClinicLedgerRequest request);
 
         Task<PayoutBudgetDto> GetBudgetAsync();
         Task<PagginatedResult<PayoutBatchDto>> GetBatchesAsync(int pageNumber = 1, int pageSize = 20, int? status = null);
@@ -17,6 +19,7 @@ namespace ClinicHub.Services.Contracts
         Task<PayoutBatchDto> ApproveBatchAsync(Guid id);
         Task<PayoutBatchDto> ExecuteBatchAsync(Guid id);
         Task<PayoutBatchDto> CancelBatchAsync(Guid id);
+        Task<PayoutBatchDto> ReconcileBatchAsync(Guid id);
         Task<PayoutBatchDto> RetryItemAsync(Guid itemId);
     }
 }

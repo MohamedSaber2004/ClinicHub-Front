@@ -125,7 +125,7 @@
                                         @if (!string.IsNullOrEmpty(staff.Image))
                                         {
                                             <span class="avatar avatar--sm avatar--circle co-avatar">
-                                                <img src="@_attachmentUrlResolver.Resolve(staff.Image)" alt="@staff.FullName" loading="lazy" decoding="async" />
+                                                <img src="@_attachmentUrlResolver.Resolve(staff.Image)" alt="@staff.FullName" loading="lazy" decoding="async" data-fallback="avatar" />
                                             </span>
                                         }
                                         else
@@ -223,7 +223,7 @@
 </div>
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261027_redesign_v2" />
+    <link rel="stylesheet" href="~/css/pages/clinic-ops.css?v=20261030_availability_v3" />
 }
 
 <div class="modal fade" id="createStaffModal" tabindex="-1" aria-hidden="true">
@@ -622,7 +622,7 @@
                 ? '<span class="badge badge-success">نشط</span>'
                 : '<span class="badge badge-danger">غير نشط</span>';
             var imageHtml = staff.image
-                ? '<div class="text-center mb-3"><img src="' + attachmentBaseUrl + '/files/' + staff.image.replace(/^files\//, '') + '" alt="' + escapeHtml(staff.fullName) + '" class="modal-staff-avatar-img" /></div>'
+                ? '<div class="text-center mb-3"><img src="' + attachmentBaseUrl + '/files/' + staff.image.replace(/^files\//, '') + '" alt="' + escapeHtml(staff.fullName) + '" class="modal-staff-avatar-img" data-fallback="avatar" /></div>'
                 : '<div class="text-center mb-3"><span class="modal-staff-avatar-initial">' + (staff.fullName ? staff.fullName.charAt(0) : '') + '</span></div>';
             return imageHtml
                 + '<div class="detail-grid">'

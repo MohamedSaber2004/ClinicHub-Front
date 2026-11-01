@@ -1834,6 +1834,11 @@ html [data-scroll].visible {
   transform: translateX(18px);
 }
 
+/* In RTL the knob rests on the right edge, so it has to travel the other way */
+[dir="rtl"] .form-toggle input:checked + .toggle-track::after {
+  transform: translateX(-18px);
+}
+
 .form-toggle input:focus-visible + .toggle-track {
   box-shadow: 0 0 0 3px var(--clr-ring-primary);
 }
