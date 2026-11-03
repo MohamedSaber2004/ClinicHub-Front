@@ -187,17 +187,23 @@
                             {
                                 <span class="table-hint"><i class="bi bi-hourglass-split"></i> بانتظار دفع المريض</span>
                             }
-                            else if (app.Status == 1 && SlotStarted(app))
-                            {
-                                <div class="table-actions">
-                                    <button class="btn btn-sm ds-action ds-action--neutral" onclick="updateStatus('@app.Id', 3)">
-                                        <i class="bi bi-check2-circle"></i> إكمال
-                                    </button>
-                                </div>
-                            }
                             else if (app.Status == 1)
                             {
-                                <span class="table-hint"><i class="bi bi-calendar-clock"></i> لم يحن موعد الزيارة بعد</span>
+                                <div class="table-actions">
+                                    @if (SlotStarted(app))
+                                    {
+                                        <button class="btn btn-sm ds-action ds-action--neutral" onclick="updateStatus('@app.Id', 3)">
+                                            <i class="bi bi-check2-circle"></i> إكمال
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="table-hint"><i class="bi bi-calendar-clock"></i> لم يحن موعد الزيارة بعد</span>
+                                    }
+                                    <button class="btn btn-sm ds-action ds-action--danger" onclick="cancelWithRefund('@app.Id')">
+                                        <i class="bi bi-x-circle"></i> إلغاء وإرجاع الفلوس
+                                    </button>
+                                </div>
                             }
                             else
                             {
@@ -218,8 +224,8 @@
 
 @section Scripts {
     <script>
-        var _statusLabels = { 2: 'ملغى', 3: 'مكتمل', 6: 'بانتظار الدفع' };
-        var _statusClasses = { 2: 'badge-danger', 3: 'badge-success', 6: 'badge-warning' };
+        var _statusLabels = { 2: 'ملغى', 3: 'مكتمل', 6: 'بانتظار الدفع', 7: 'مرفوض' };
+        var _statusClasses = { 2: 'badge-danger', 3: 'badge-success', 6: 'badge-warning', 7: 'badge-danger' };
 
         function updateRowAfterStatus(appointmentId, statusCode) {
             var row = document.querySelector('tr[data-id="' + appointmentId + '"]');
@@ -254,7 +260,18 @@
             }
         };
 
-        window.updateStatus = async function (appointmentId, statusCode) {
+        window.cancelWithRefund = function (appointmentId) {
+            var message = 'المريض دفع مبلغ الحجز بالفعل. إلغاء الموعد يرد له المبلغ كاملًا ويخرج من قائمة مواعيده. هل تريد المتابعة؟';
+            if (typeof showConfirmModal === 'function') {
+                showConfirmModal(message, function () {
+                    updateStatus(appointmentId, 2, true);
+                });
+            } else {
+                updateStatus(appointmentId, 2, true);
+            }
+        };
+
+        window.updateStatus = async function (appointmentId, statusCode, isPaidCancellation) {
             let notes = null;
             if (statusCode === 2) {
                 notes = prompt('يرجى إدخال سبب الرفض/الإلغاء (اختياري):');
@@ -270,12 +287,16 @@
                 if (!res.ok || data.success === false) {
                     throw new Error(data.message || ('HTTP ' + res.status));
                 }
+                const successMessage = isPaidCancellation
+                    ? 'تم إلغاء الموعد وسيتم رد مبلغ الحجز للمريض'
+                    : (data.message || 'تم تحديث حالة الموعد بنجاح');
                 if (typeof showSuccessModal === 'function') {
-                    showSuccessModal(data.message || 'تم تحديث حالة الموعد بنجاح');
+                    showSuccessModal(successMessage);
                 } else {
-                    alert(data.message || 'تم تحديث حالة الموعد بنجاح');
+                    alert(successMessage);
                 }
-                updateRowAfterStatus(appointmentId, statusCode);
+                // A rejected request lands as Rejected (7); a paid one is cancelled (2).
+                updateRowAfterStatus(appointmentId, statusCode === 2 && !isPaidCancellation ? 7 : statusCode);
             } catch (err) {
                 if (typeof showErrorModal === 'function') {
                     showErrorModal(err.message);
