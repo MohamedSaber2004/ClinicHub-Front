@@ -45,11 +45,11 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
-        public async Task<TestPushResultDto> SendTestPushAsync(Guid userId, string? title, string? body)
+        public async Task<TestPushResultDto> SendTestPushAsync(Guid userId, int type)
         {
             try
             {
-                var json = JsonConvert.SerializeObject(new { title, body }, _jsonSettings);
+                var json = JsonConvert.SerializeObject(new { type }, _jsonSettings);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync(DoctoryRoutes.AdminDashboard.TestPush(userId), content);
                 return await _deserializerService.DeserializeApiResponse<TestPushResultDto>(response, "تعذر إرسال إشعار الاختبار")

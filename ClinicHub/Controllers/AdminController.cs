@@ -1764,12 +1764,17 @@ namespace ClinicHub.Controllers
         {
             try
             {
-                var result = await _adminDashboardService.SendTestPushAsync(id, request?.Title, request?.Body);
+                var result = await _adminDashboardService.SendTestPushAsync(id, request?.Type ?? 0);
 
                 return Json(new
                 {
                     success = true,
                     fullName = result.FullName,
+                    type = result.Type,
+                    title = result.Title,
+                    body = result.Body,
+                    link = result.Link,
+                    badge = result.Badge,
                     totalDevices = result.TotalDevices,
                     deliveredCount = result.DeliveredCount,
                     devices = result.Devices.Select(d => new

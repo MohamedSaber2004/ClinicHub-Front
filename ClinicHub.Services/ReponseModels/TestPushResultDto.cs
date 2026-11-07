@@ -4,6 +4,11 @@ namespace ClinicHub.Services.ReponseModels
     {
         public Guid UserId { get; set; }
         public string FullName { get; set; } = "";
+        public int Type { get; set; }
+        public string? Title { get; set; }
+        public string? Body { get; set; }
+        public string? Link { get; set; }
+        public int? Badge { get; set; }
         public int TotalDevices { get; set; }
         public int DeliveredCount { get; set; }
         public List<TestPushDeviceDto> Devices { get; set; } = new();

@@ -424,12 +424,20 @@
                 </p>
                 <input type="hidden" id="testPushUserId" value="" />
                 <div class="form-group text-start">
-                    <label class="form-label" for="testPushTitle">العنوان (اختياري)</label>
-                    <input type="text" id="testPushTitle" class="form-input" maxlength="120" placeholder="اتركه فارغًا لاستخدام العنوان الافتراضي" />
-                </div>
-                <div class="form-group text-start">
-                    <label class="form-label" for="testPushBody">النص (اختياري)</label>
-                    <input type="text" id="testPushBody" class="form-input" maxlength="500" placeholder="اتركه فارغًا لاستخدام النص الافتراضي" />
+                    <label class="form-label" for="testPushType">نوع الإشعار</label>
+                    <select id="testPushType" class="form-select">
+                        <option value="0" selected>تذكير بالموعد (AppointmentReminder)</option>
+                        <option value="3">تأكيد الحجز (AppointmentConfirmation)</option>
+                        <option value="12">طلب حجز جديد (NewBookingRequest)</option>
+                        <option value="19">قبول الموعد (AppointmentAccepted)</option>
+                        <option value="4">إلغاء الموعد (AppointmentCancellation)</option>
+                        <option value="2">تأكيد الدفع (PaymentConfirmation)</option>
+                        <option value="1">رسالة جديدة (NewMessage)</option>
+                        <option value="5">إعلان من النظام (SystemAnnouncement)</option>
+                    </select>
+                    <small class="text-muted d-block mt-1">
+                        العنوان والنص والرابط يُبنى من نفس كود الإشعارات الحقيقي باستخدام آخر حجز للمستخدم، ويُسجَّل إشعار فعلي في صندوقه.
+                    </small>
                 </div>
                 <p class="text-start mb-2" id="testPushNoDeviceHint" data-devices="0"></p>
                 <div class="text-start d-none" id="testPushResult"></div>
@@ -702,18 +710,24 @@
 
                 var rows = (data.devices || []).map(function (d) {
                     var detail = d.success
-                        ? 'رسالة مُسلّمة من FCM: ' + esc(d.messageId)
+                        ? 'FCM قَبِل الرسالة: ' + esc(d.messageId)
                         : esc(d.errorCode || 'خطأ') + (d.error ? ' — ' + esc(d.error) : '');
                     return '<tr>'
                         + '<td>' + esc(d.platform) + '</td>'
                         + '<td class="text-md">' + esc(d.tokenPreview) + '</td>'
                         + '<td class="text-md">' + esc(d.registeredAt || '-') + '</td>'
-                        + '<td><span class="badge badge--dot ' + (d.success ? 'badge-success' : 'badge-warning') + '">' + (d.success ? 'وصل' : 'فشل') + '</span></td>'
+                        + '<td><span class="badge badge--dot ' + (d.success ? 'badge-success' : 'badge-warning') + '">' + (d.success ? 'مقبول' : 'مرفوض') + '</span></td>'
                         + '<td class="text-md">' + detail + '</td>'
                         + '</tr>';
                 }).join('');
 
-                testPushResult.innerHTML = '<div class="mb-2">وصل إلى ' + (data.deliveredCount || 0) + ' من ' + (data.totalDevices || 0) + ' جهاز.</div>'
+                testPushResult.innerHTML = '<div class="mb-2">قبلت FCM الرسالة على ' + (data.deliveredCount || 0) + ' من ' + (data.totalDevices || 0) + ' جهاز — ظهورها على الشاشة يعتمد على إعدادات الجهاز نفسها.</div>'
+                    + '<div class="alert alert-light mb-2 text-md">'
+                    + '<div><strong>العنوان المُرسَل:</strong> ' + esc(data.title || '-') + '</div>'
+                    + '<div><strong>النص المُرسَل:</strong> ' + esc(data.body || '-') + '</div>'
+                    + '<div><strong>الرابط:</strong> ' + esc(data.link || '-') + '</div>'
+                    + '<div><strong>عدّاد iOS (badge):</strong> ' + (data.badge == null ? '-' : esc(data.badge)) + '</div>'
+                    + '</div>'
                     + '<table class="custom-table"><thead><tr>'
                     + '<th>النظام</th><th>رمز الجهاز</th><th>تاريخ التسجيل</th><th>الحالة</th><th>التفاصيل</th>'
                     + '</tr></thead><tbody>' + rows + '</tbody></table>';
@@ -732,10 +746,8 @@
                             : 'لا يوجد جهاز مسجّل لهذا المستخدم — لن يصل أي إشعار.';
                     }
 
-                    var titleInput = document.getElementById('testPushTitle');
-                    var bodyInput = document.getElementById('testPushBody');
-                    if (titleInput) titleInput.value = '';
-                    if (bodyInput) bodyInput.value = '';
+                    var typeSelectOnOpen = document.getElementById('testPushType');
+                    if (typeSelectOnOpen) typeSelectOnOpen.value = '0';
                     if (testPushResult) {
                         testPushResult.innerHTML = '';
                         testPushResult.classList.add('d-none');
@@ -750,8 +762,7 @@
                     var id = testPushUserId ? testPushUserId.value : '';
                     if (!id) return;
 
-                    var titleInput = document.getElementById('testPushTitle');
-                    var bodyInput = document.getElementById('testPushBody');
+                    var typeSelect = document.getElementById('testPushType');
                     var originalLabel = testPushSendBtn.textContent;
 
                     testPushSendBtn.disabled = true;
@@ -760,10 +771,7 @@
                     fetch('/Admin/Users/TestPush?id=' + encodeURIComponent(id), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            title: titleInput && titleInput.value ? titleInput.value : null,
-                            body: bodyInput && bodyInput.value ? bodyInput.value : null
-                        })
+                        body: JSON.stringify({ type: parseInt(typeSelect && typeSelect.value || '0', 10) })
                     })
                         .then(function (res) { return res.json(); })
                         .then(function (data) {
