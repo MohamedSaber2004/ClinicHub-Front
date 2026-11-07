@@ -361,6 +361,7 @@ namespace ClinicHub.Services.Routes.Api
 
             public string Stats => $"{_baseRoute}/stats";
             public string UserOverview(Guid id) => $"{_baseRoute}/users/{id}/overview";
+            public string TestPush(Guid id) => $"{_baseRoute}/users/{id}/test-push";
             public string RevenueTrend(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)
                 => $"{_baseRoute}/revenue-trend{BuildGraphQuery(granularity, fromDate, toDate)}";
             public string ClinicsGrowth(string granularity = "day", DateTime? fromDate = null, DateTime? toDate = null)

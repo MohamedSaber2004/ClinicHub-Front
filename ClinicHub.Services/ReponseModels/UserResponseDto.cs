@@ -15,5 +15,6 @@ namespace ClinicHub.Services.ReponseModels
         public DateTime CreatedAt { get; set; }
         public string? Image { get; set; }
         public string? ImageUrl { get; set; }
+        public int DeviceCount { get; set; }
     }
 }

@@ -1665,7 +1665,8 @@ namespace ClinicHub.Controllers
                     Status = u.IsActive ? "نشط" : "غير نشط",
                     StatusClass = u.IsActive ? "badge-success" : "badge-warning",
                     Role = MapUserTypeToRole(u.Roles.FirstOrDefault()).ToString(),
-                    Roles = u.Roles.Select(r => MapUserTypeToRole(r).ToString()).Where(r => r != UserRole.Patient.ToString()).ToList()
+                    Roles = u.Roles.Select(r => MapUserTypeToRole(r).ToString()).Where(r => r != UserRole.Patient.ToString()).ToList(),
+                    DeviceCount = u.DeviceCount
                 }).ToList();
 
                 if (!string.IsNullOrEmpty(status))
@@ -1756,6 +1757,52 @@ namespace ClinicHub.Controllers
             }
             return RedirectToAction("Users");
         }
+
+        [HttpPost]
+        [Route("Admin/Users/TestPush")]
+        public async Task<IActionResult> SendTestPush(Guid id, [FromBody] SendTestPushRequest? request)
+        {
+            try
+            {
+                var result = await _adminDashboardService.SendTestPushAsync(id, request?.Title, request?.Body);
+
+                return Json(new
+                {
+                    success = true,
+                    fullName = result.FullName,
+                    totalDevices = result.TotalDevices,
+                    deliveredCount = result.DeliveredCount,
+                    devices = result.Devices.Select(d => new
+                    {
+                        platform = TestPushPlatformLabel(d.Platform),
+                        tokenPreview = d.TokenPreview,
+                        registeredAt = d.RegisteredAt == default ? "" : d.RegisteredAt.ToString("d MMM yyyy HH:mm"),
+                        success = d.Success,
+                        messageId = d.MessageId,
+                        errorCode = d.ErrorCode,
+                        error = d.Error
+                    })
+                });
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = ex.StatusCode;
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Response.StatusCode = 500;
+                return Json(new { success = false, message = $"حدث خطأ غير متوقع: {ex.Message}" });
+            }
+        }
+
+        private static string TestPushPlatformLabel(int platform) => (DevicePlatform)platform switch
+        {
+            DevicePlatform.Android => "Android",
+            DevicePlatform.iOS => "iOS",
+            DevicePlatform.Web => "Web",
+            _ => platform.ToString()
+        };
 
         [HttpPost]
         [Route("Admin/Users/Create")]

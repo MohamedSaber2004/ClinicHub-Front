@@ -45,6 +45,23 @@ namespace ClinicHub.Services.Services.Implementations
             }
         }
 
+        public async Task<TestPushResultDto> SendTestPushAsync(Guid userId, string? title, string? body)
+        {
+            try
+            {
+                var json = JsonConvert.SerializeObject(new { title, body }, _jsonSettings);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(DoctoryRoutes.AdminDashboard.TestPush(userId), content);
+                return await _deserializerService.DeserializeApiResponse<TestPushResultDto>(response, "تعذر إرسال إشعار الاختبار")
+                    ?? new TestPushResultDto();
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw new ApiException(500, $"تعذر إرسال إشعار الاختبار: {ex.Message}");
+            }
+        }
+
         public async Task<AdminDashboardStatsDto> GetStatsAsync()
         {
             try

@@ -13,5 +13,6 @@ namespace ClinicHub.Services.ReponseModels
         public string StatusClass { get; set; } = "";
         public string Role { get; set; } = "";
         public List<string> Roles { get; set; } = new();
+        public int DeviceCount { get; set; }
     }
 }
